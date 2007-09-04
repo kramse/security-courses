@@ -1,0 +1,4247 @@
+% ^^A        Metacomments 
+% \iffalse
+%
+% foiltex.dtx Copyright (C) 1995,1997,1998,2002 IBM Corporation
+%
+%%
+%% These files are updated versions of the FoilTeX package for use with
+%% the new LaTeX2e.  There are many enhancements and a few bugs
+%% have been fixed.  Undoubtedly there are many more.  Contact
+%% the author if you find any bugs or have suggestions for improvement
+%% of this suite of files.
+%% ********************************************************************
+% 
+%<package|sample|17pt|20pt|25pt|30pt|short|fonts|oldstyle>\def\foiltexdate{2002/10/29}
+%<package|sample|17pt|20pt|25pt|30pt|short|fonts|oldstyle>\def\foiltexversion{2.1.4a}
+%<package|fonts>\NeedsTeXFormat{LaTeX2e}[1996/12/01]
+%<sample|17pt|20pt|25pt|30pt|short|oldstyle>\NeedsTeXFormat{LaTeX2e}
+%<package>\ProvidesClass{foils}
+%<17pt>\ProvidesFile{foil17.clo}
+%<20pt>\ProvidesFile{foil20.clo}
+%<25pt>\ProvidesFile{foil25.clo}
+%<30pt>\ProvidesFile{foil30.clo}
+%<short>\ProvidesFile{foilshrt.sty}
+%<fonts>\ProvidesFile{fltfonts.def}
+%<sample>\ProvidesFile{sampfoil.tex}
+%<oldstyle>\ProvidesFile{foils.sty}
+%<*driver>
+\def\foiltexdate{2002/10/29}
+\def\foiltexversion{2.1.4a}
+\ProvidesFile{foiltex.drv}
+%</driver>
+       [\foiltexdate\space v\foiltexversion\space
+%<package>        FoilTeX Class File, Copyright IBM 1995,1997,1998,2002]
+%<17pt|20pt|25pt|30pt|short>        FoilTeX file (size option), Copyright IBM 1995,1997,1998,2002]
+%<fonts>        FoilTeX font definition file, Copyright IBM 1995,1997,1998,2002]
+%<sample>        Sample FoilTeX file, Copyright IBM 1995,1997,1998,2002]
+%<oldstyle>        FoilTeX Compatibility Style File, Copyright IBM 1995,1997,1998,2002]
+%<*driver>
+]
+\documentclass[draft]{ltxdoc}
+\GetFileInfo{foiltex.drv}
+%\EnableCrossrefs
+%\DisableCrossrefs % Say \DisableCrossrefs if index is ready
+%\RecordChanges     % Gather update information
+%\OnlyDescription  % uncomment for user instructions only
+\DeclareRobustCommand\FoilTeX{{\normalfont%
+   {\sffamily Foil}\kern-.03em{\rmfamily\TeX}}}
+\newcommand\at{\char '100 }  % An @ sign character for \tt font
+\newcommand\bs{\char '134 }  % A backslash character for \tt font
+\newcommand{\AMSTeX}{{$\cal A$}\kern-.1667em\lower.5ex\hbox{$\cal M$}%
+    \kern-.125em{$\cal S$}-\TeX}
+\newcommand{\VTeX}{V\TeX}
+\newcommand{\postscript}{\textsc{PostScript}}
+\newcommand\listi{ \bs\at listI}
+\newcommand\textsfb[1]{\textsf{\textbf{#1}}}
+\newcommand\textsfi[1]{\textsf{\textsl{#1}}}
+\newcommand\tabfiller[1]{\vrule height #1 width 0pt}
+\DeclareFixedFont{\samphugesf}{OT1}{cmss}{m}{n}{20.78}
+\hfuzz 1pt
+\usepackage{latexsym}
+\let\oldendverbatim\endverbatim
+\def\endverbatim{\oldendverbatim\vskip-\baselineskip}
+\AtBeginDocument{\DeleteShortVerb{\|}}
+
+\begin{document}
+ \title{The \FoilTeX\ class package\thanks{This package
+        has version number~v\foiltexversion, last
+        revised \foiltexdate.}}
+ \author{Jim Hafner\\
+  IBM Research Division\\
+  Almaden Research Center, K56-B2\\
+  650 Harry Road\\
+  San Jose, CA 95120-6099\\
+ \texttt{hafner@almaden.ibm.com}}
+ \date{Printed on \today}
+ \maketitle
+ \DocInput{foiltex.dtx}
+\end{document}
+%</driver>
+%
+% \fi
+% 
+% \CheckSum{3616}
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+%
+% \changes{v2}{\foiltexdate}
+%     {\FoilTeX\ version~\foiltexversion, for \LaTeXe.}
+%
+% \section*{Preface}
+% The original \FoilTeX\ was a \LaTeX-like system for typesetting foils
+% which used its own format file.  This new version has converged into a
+% \LaTeXe\ class package.  Its features include simplicity of use,
+% compatibility with \LaTeX, large sans serif font as default, extra
+% macros to start foils with bold headings and special mechanisms to
+% control the footer and header.  The primary enhancement, besides the
+% gain obtained by being just a class file for \LaTeXe, is the addition
+% of simple tools to rotate either the entire set of foils to landscape
+% mode or to rotate individual foils.  Because this is integrated with
+% \LaTeXe, the use of color and other fancy stuff comes automatically.
+% No additional utilities are required.
+% 
+% This document is the user guide for \FoilTeX\ and describes its basic
+% features and components.
+% 
+% There are restrictions on the use of \FoilTeX.  Please refer to
+% Section~\ref{sec:restrictions} for more information\footnote{Copyright
+% \copyright 1995,1997,1998,2002 by International Business Machines Corporation.}.
+% 
+% \TeX\ is a trademark of the American Mathematical Society.
+% \postscript\ is a trademark of Adobe Systems, Incorporated.  
+% 
+% \newpage
+% 
+% \tableofcontents\newpage
+% 
+% This document describes the \FoilTeX\ system (version~\foiltexversion)
+% for making foils (slides, transparencies, overheads, etc.).  In
+% contrast to the previous version which required its own format file,
+% this new version is fully integrated into \LaTeXe\ as a class package.
+% Like the earlier version, it is much simpler to use than \SliTeX\ (or
+% the \SliTeX\ class package), and should be very easy for typical
+% \LaTeX\ users to master.  This document tells you about the special
+% features it has and the extra macros that have been added.  It also
+% includes installation instructions which are now much easier than
+% version~1.0.1.  Other than some differences with font availability
+% (sizes not families), it should work under any
+% implementation of \LaTeXe.  It is assumed that you are already familiar
+% with \LaTeX.  If not, you should get the books \emph{\LaTeX: A
+% Document Preparation System} 2nd edition, by Leslie
+% Lamport~\cite{latexbook}, and \emph{The \LaTeX{} Companion}, by Michel
+% Goossens, Frank Mittelbach and Alexander Samarin~\cite{companion}.
+% 
+% \section{The \FoilTeX\ package} \label{sec:package}
+%  
+% The \FoilTeX\ package consists of the files listed in
+% Table~\ref{tab:package} on top of the basic implementation of \LaTeXe.
+% You will probably get it packaged with just the first three files.  The
+% others are generated by running \LaTeX\ on the \texttt{foiltex.ins}
+% file (see Section~\ref{sec:installation} for more details).
+% Documentation (both user guide and code description) can be obtained
+% by running \LaTeX\ on the \texttt{foiltex.dtx} file.  
+% 
+% \begin{table}[htb]
+% \caption{The files in the \FoilTeX\ package}\label{tab:package}
+% \begin{center}
+% \begin{tabular}{ll}
+%     \texttt{readme.flt}  & a simple readme file \\
+%     \texttt{foiltex.ins} & driver file for unpacking        \\
+%     \texttt{foiltex.dtx} & user guide and documented source \\
+%     \texttt{foils.cls}   & main class file                  \\
+%     \texttt{fltfonts.def}& font definition file             \\
+%     \texttt{foils.sty}   & compatibility mode style file    \\
+%     \texttt{foil17.clo}  & {17pt} class option file  \\
+%     \texttt{foil20.clo}  & {20pt} class option file  \\
+%     \texttt{foil25.clo}  & {25pt} class option file  \\
+%     \texttt{foil30.clo}  & {30pt} class option file  \\
+%     \texttt{foilshrt.clo}& {shortform} class option file (new in 2.1.3) \\
+%     \texttt{sampfoil.tex}& sample \FoilTeX\ file            
+% \end{tabular}
+% \end{center}
+% \end{table}
+% 
+%  
+% The main class file, \texttt{foils.cls}, together with
+% \texttt{fltfonts.def} form the heart of \FoilTeX.  The former defines
+% the basic set of macros that are used (and includes a request to input
+% the latter) and the latter defines all the fonts used by \FoilTeX.
+% Font selection is done via the \LaTeXe\ NFSS scheme.  The
+% \texttt{foils.sty} file is just a wrapper for \texttt{foils.cls} in
+% compatibility mode. 
+%  
+% The next group of files are the class option files that change the
+% default font sizes and some list spacing parameters. See
+% Sections~\ref{sec:starting} and~\ref{sec:fonts} for more information
+% about these files.
+% 
+% The last file is a relatively extensive sample file.  It demonstrates
+% some of the basic features and is self-documented.  If you don't like
+% reading documentation (like this) you can probably do pretty well with
+% \FoilTeX\ simply by browsing through the sample file and looking at
+% its output. To see its output (after installation), simply type
+% \begin{verbatim}
+%     latex sampfoil
+% \end{verbatim}
+% This creates the \verb|.dvi| and \verb|.aux| files.  You will need to
+% rerun this step to get the cross-referencing right.  You can then
+% preview or print this as you would any other \verb|.dvi| file.  
+% 
+% \subsection{Package differences with original \FoilTeX}
+% \label{sec:differences}
+% 
+% The original \FoilTeX\ package (version 1.0.1) contained a number of
+% similar files plus many more.  Because \FoilTeX\ is now integrated
+% with \LaTeX, the additional files are no longer necessary.  For
+% example, we no longer include the \texttt{colordvi.sty} files since
+% this is handled in a much cleaner and more integrated way with the
+% \texttt{color.sty} of the \texttt{graphics} package.  We also don't
+% include anything for \postscript\ fonts since that is nicely handled
+% with the PSNFSS packages.  Because we are integrated with \LaTeX,
+% you can even use the \texttt{t1enc.sty} package to access the EC
+% fonts (see below).  (This has not been extensively tested because
+% the author doesn't use them, but it did work on some smaller test
+% cases, e.g., \texttt{sampfoil.tex}.)  There are no more
+% system-specific files since that is handled directly by the \LaTeX\
+% installation.  Similarly, we don't need to include a file for using
+% the \AMSTeX\ fonts.  Finally, the ``This is \emph{not} \LaTeX''
+% warning has been removed as it is completely irrelevant now.
+% 
+% \subsection{Additional Features in Version~2.1}
+% \label{sec:newin2.1}
+%
+% There are very few new features in this version.  The biggest change
+% is the support for the new EC fonts (and backlevel support for the
+% DC fonts version~1.3 which was not included in version~2.0.1 of
+% \FoilTeX).  An alternative to the \texttt{t1enc.sty} package for
+% accessing the EC fonts (with the \texttt{T1} encoding) is via the line
+% \begin{verbatim}
+%    \usepackage[T1]{fontenc}
+% \end{verbatim}
+% in the preamble.  See Section~\ref{sec:newoptionsin2.1} for more
+% information about using these fonts.  Note, that we have no support
+% for the TC (\TeX{} Companion) fonts, since we don't understand how
+% they are used.
+%
+% The only other changes are either small bug fixes (most notably with
+% the footline --- thanks to Angelika Schneider for finding two!) and a
+% re-encoding of the \texttt{fltfonts.def} file so that it is smaller.
+% Version~2.1.1 has a small bug fix to the order of list environment 
+% definitions. 
+% 
+% \subsection{Additional Features in Version~2.1.3}
+% \label{sec:newin2.1.3}
+%
+% Version~2.1.2 probably never made it outside of IBM, but it included
+% a number of other bug fixes.  Version~2.1.3 has the following
+% additional features:
+% \begin{itemize}
+% \item Addition of a \verb|\captionfraction| command
+% to set the width of the captions as a fraction of the text width.
+% With these, we have deprecated \verb|\captionwidth|.  See
+% Section~\ref{sec:dimensions}.  This was found by John Wu.
+% \item Rotation support for DVIPSONE from Y\&Y, Inc.  My thanks to
+% them for passing on the necessary code changes. 
+% \item Addition of \texttt{shortform} class option, which can be used
+% to generate a document which takes up much less space (paper,
+% mostly).  This was added in response to some requests by Neal Beck
+% who asked for something like this over a year ago. 
+% \item Bug fix for the \texttt{figure*} and \texttt{table*} and
+% related environments (these were supposed to be unnumbered but
+% always had a number).  Thanks to Scott Berger for finding this
+% problem.
+% \item Bug fix for the \verb|\big| and related operators.  This bug
+% was reported by Hans-Peter Zehrfeld (thanks).
+% \item Additional support for other paper sizes, as provided by Owen
+% Kelly.  These new sizes are \texttt{ledgerpaper},
+% \texttt{legalpaper}, \texttt{a3paper}, \texttt{a2paper},
+% \texttt{a1paper}.  The second of these had been suppressed in
+% earlier versions.  It is restored here on request.
+% \end{itemize}
+%
+% \subsection{Additional Features in Version~2.1.4}
+% \label{sec:newin2.1.4}
+%
+% Version~2.1.4 has the following additional features and fixes:
+% \begin{itemize}
+% \item Patches to enable rotation with MicroPress' \VTeX, courtesy of
+% M.~Vulis and W.~Schmidt, from May~2000.
+% \item New paper (sort of) dimensions for screen display of foils,
+% provided by Stephen Sangwine. 
+% \item Enhancements to work with PDF\LaTeX.
+% \item Interoperability patches for \texttt{hyperref}. 
+% \item A simple mechanism (\texttt{fltfonts.cfg} configuration file) 
+% to allow for more user-customizable fonts.
+% \end{itemize}
+%
+% Many thanks to all who contributed these patches and fixes and 
+% suggestions and my apologies for taking so long to incorporate them.
+%
+% Version~2.1.4a fixes an interoperability problem between
+% \texttt{dvips} and Ghostview --- landscape foils are rotated so they
+% aren't upside down anymore!  
+%
+% \subsection{Related Packages on CTAN} \label{sec:otherstuff}
+%
+% A number of people have contributed to the \FoilTeX{} family (in
+% some ways indirectly).   For example, check out \texttt{epslatex.ps}
+% by Keith Reckdahl which describes a way to put a EPS Logo on
+% every page and still manage to keep the size of the reluting
+% PostScript file small (effectively only loading the real EPS logo
+% only once as a header file).  You can find this document in the
+% \texttt{info} directory on your favorite CTAN.
+%
+% Another package you can find on CTAN is the \textsf{FoilHTML}
+% package by Boris Veytsman.  It provides extensions to
+% \texttt{latex2html} to handle \FoilTeX's extra macross. 
+%
+% If you want to put multiple foils (reduced) on a single page, you
+% can use the \texttt{psnup} utility (found in most good \TeX{}
+% bundles). 
+%
+% \section{Getting started: the {\tt \bs documentclass} command}
+% \label{sec:starting}
+%  
+% \DescribeMacro{\documentclass\{foils\}}
+% To create a \FoilTeX\ document, you edit a
+% \LaTeX\ file.  Instead of the standard \LaTeX\ options specified in the
+% \verb|\documentclass| command, you should use
+% {\tt\begin{tabbing}
+% \phantom{xxxx}\=\bs documentclass[{\it opts}]\{foils\}
+% \end{tabbing}}
+% \noindent Here, the \textit{opts} list can include most of the
+% standard \LaTeX\ class file options plus a few more \FoilTeX-specific
+% ones that are documented in Section~\ref{sec:classoptions}.
+%  
+% \DescribeMacro{17pt,20pt,25pt,30pt}
+% \DescribeMacro{shortform}
+% By default, \texttt{foils.cls} loads \texttt{foil20.clo} and sets up
+% the normal size fonts at 20pt.  Analogous to \LaTeX's \texttt{11pt}
+% and \texttt{12pt} style options, \FoilTeX\ has \texttt{25pt},
+% \texttt{30pt} and \texttt{17pt} options.  For example, to make normal
+% size at 25pt the command
+% {\tt \begin{tabbing}
+% \phantom{xxxx}\=\bs documentclass[25pt,{\it opts}]\{foils\}
+% \end{tabbing}}
+% \noindent will do the trick.  The default
+% \texttt{20pt} \emph{is} an acceptable option, though it is redundant.
+% Besides the \texttt{pt}-type options, version~2.1.3 adds the
+% \texttt{shortform} option.  This can be used instead to create a
+% document which takes up much less space (paper?) and so is suitable
+% for redistribution.  The text is sized similar to the \texttt{12pt}
+% option of \texttt{article.cls}.
+%
+% Once you have created your \FoilTeX\ file, run \LaTeX\ on it to get
+% your \texttt{.dvi} file:
+% {\tt\begin{tabbing}
+% \phantom{xxxx}\= latex {\it filename}
+% \end{tabbing}}
+% 
+%  
+% \section{The basic features} \label{sec:basic1.0}
+% 
+% \FoilTeX\ has a number of (hopefully useful) built-in features.  The
+% first is that the basic fonts are in large size, approximately 20pt,
+% (so you do not need to do size changing to get large type).  The
+% default font is also \textsf{sans serif} as this (in the opinion of
+% many) looks better on foils than serif fonts like roman.  We have
+% implemented \LaTeX's font and font size changing commands relative to
+% this default.  More information about fonts and size changing can be
+% found in Section~\ref{sec:fonts}.
+% 
+% In spite of the fact that the basic font is sans serif, the numerals
+% and other symbols from the roman font when used in math mode are still
+% in the roman font.  Thus mathematics will look exactly the same as in
+% \LaTeX\ (only larger) but numerals in text will appear in sans serif.
+% This is one of its nicer features. 
+% 
+% In addition, almost all \LaTeX\ macros are available including
+% automatic referencing and citation, footnotes, and itemize (which will
+% probably be very popular for foils).  The user is not expected to have
+% to do anything to control font types or size changing, except as might
+% be expected in a typical \LaTeX\ document.
+% 
+% \DescribeMacro{sampfoil.tex}
+% The next subsections describe a number of additional macros and
+% features that have been defined to make foilmaking easier.  See the
+% \texttt{sampfoil.tex} file for a look at how some of these are used.
+% 
+% \subsection{The class options}\label{sec:classoptions}
+% 
+% The following standard \LaTeX\ class options are \emph{not} supported
+% in \FoilTeX\ because they don't make sense in this environment:
+% \begin{verbatim}
+%    a5paper, b5paper, executivepaper, 10pt, 11pt, 12pt, 
+%    oneside, twoside, openright, openany, titlepage, notitlepage, 
+%    onecolumn, twocolumn.
+% \end{verbatim}
+% These all default to no-ops and, with the exception of
+% \texttt{oneside}, \texttt{titlepage} and \texttt{onecolumn}, all give
+% a warning message.
+% 
+% \DescribeMacro{35mmSlide}
+% \DescribeMacro{Screen4to3|Screen16to9}
+% \DescribeMacro{headrule}
+% \DescribeMacro{footrule}
+% \DescribeMacro{dvips|dvipsone|vtex}
+% \DescribeMacro{magscalefonts}
+% \DescribeMacro{useDCfonts}
+% \DescribeMacro{*paper}
+% \DescribeMacro{landscape}
+% The following new options are supported in \FoilTeX.  
+% \begin{description}
+% \item[\texttt{35mmSlide}] This sets up the page layout for 7.33in.~by
+% 11in.~paper, which is about the same aspect ratio as a 35mm slide.  You
+% can use this if you plan to reproduce on this medium. 
+% \item[\texttt{Screen4to3|Screen16to9}] These set up page layout for
+% portrait display but in dimensions suitable for a computer display
+% (without rotation). 
+% \item[\texttt{headrule}] This places a rule below the header on every
+% page (except the title page).  
+% \item[\texttt{footrule}] This places a rule above the footer on every
+% page (except the title page).   These two items seemed to be in demand
+% and should preclude the use of \texttt{fancyheadings.sty} which can
+% collide with some of \FoilTeX's page layout (see
+% Section~\ref{sec:fancyhead} for additional information). 
+% \item[\texttt{dvips|dvipsone|vtex}] 
+% In order to support rotated foils and \texttt{landscape} in a clean
+% way, we need to issue \verb|\special|s which are driver dependent.
+% Since we only had access to one \postscript\ driver, namely,
+% Rokicki's \texttt{dvips}, we could only support these
+% \verb|\special|s for this one driver.  Declaring this option enables
+% this special code.  The folks a Y\&Y, Inc., have passed on the
+% necessary modifications to support their DVIPSONE driver.  Since I
+% can't test this, I don't support it, but it's included in case it
+% helps.  
+% \FoilTeX~2.1.4 can also generate \verb|\special|s appropriate for use
+% with \VTeX\ in PDF or \postscript\ mode. These can be accessed with
+% the \texttt{vtex} option, but that is \emph{not} required as \VTeX\ is
+% autodetected.  As with DVIPSONE, I have no way to test this, so it
+% is supplied unsupported (by me, anyway). 
+% See also Section~\ref{sec:acknowledgements} and 
+% Section~\ref{sec:newin2.1.4}.  
+% \item[\texttt{magscalefonts}]
+% When using the \texttt{T1} encoding, use mag-scaled versions of the
+% 10pt fonts (with some exceptions) rather than the large design sizes
+% of the EC (or DC) fonts.  This is new in version~2.1 (see
+% Section~\ref{sec:newoptionsin2.1}).
+% \item[\texttt{useDCfonts}]
+% \FoilTeX{} now supports the official EC fonts with the \texttt{T1}
+% encoding.  For legacy users, this option will revert back to the
+% last release of the DC fonts (version~1.3).  This is new in
+% version~2.1 (see Section~\ref{sec:newoptionsin2.1}).
+% \item[\texttt{*paper}]
+% We've added support for these other papers sizes for making
+% posters.  These are 
+%  \begin{itemize}
+%  \item[] \texttt{ledgerpaper} at 11in by 17in.
+%  \item[] \texttt{legalpaper} at 14in by 8.5in.
+%  \item[] \texttt{a3paper} at 420mm by 297mm.
+%  \item[] \texttt{a2paper} at 594mm by 420mm.
+%  \item[] \texttt{a1paper} at 840mm by 594mm.
+%  \end{itemize}
+% \item[\texttt{landscape}] 
+% This adjusts the page dimensions by essentially swapping height and
+% width.  Typically, it does not force the driver to do the necessary
+% rotation steps.  As mentioned, in \FoilTeX\ with the \texttt{dvips},
+% \texttt{dvipsone} or \texttt{vtex} option, both actions are handled
+% automatically. 
+% \end{description}
+%
+% \textbf{Note:} It is \emph{highly} recommended that users place most
+% of the class options in a \texttt{foiltex.cfg} file (see
+% Section~\ref{code:default-options}) instead of having
+% them specified in the source file itself (as a class option).  This
+% allows for better portability of documents.
+%
+% \subsubsection{Default options and \texttt{foiltex.cfg}} 
+% \label{code:default-options}
+% \DescribeMacro{foiltex.cfg}
+% The default options for \FoilTeX\ are \texttt{letterpaper,20pt,final}.  
+% However, you can have your own set of modified default options for
+% \FoilTeX\ simply by having in your inputs path a file called
+% \texttt{foiltex.cfg} with a line containing \verb|\ExecuteOptions|
+% statements.  E.g., to configure for \texttt{dvips} and
+% \texttt{landscape} and older DC fonts, your \texttt{foiltex.cfg}
+% file might look like 
+% \begin{verbatim}
+%    \ExecuteOptions{dvips,landscape,useDCfonts}
+% \end{verbatim}
+% This file is not required, but can help set things up either
+% system-wide or just for your personal use. 
+%  
+% \subsubsection{Default fonts and \texttt{fltfonts.cfg}}
+% \label{code:default-fonts}
+% \DescribeMacro{fltfonts.cfg}
+% The default fonts for \FoilTeX\ are based on CM or EC/DC fonts
+% and are loaded through the \texttt{fltfonts.def} file supplied in
+% the package. 
+% However, if you or your \TeX\ system are very clever, you can have
+% your own set of preferred fonts.  To do this, place a file called 
+% \texttt{fltfonts.cfg} in your inputs path. Include in this file
+% enough information (e.g., a modified \texttt{fltfonts.def} file or 
+% instructions to load other font definition files (e.g., \texttt{.fd}
+% extensions)) to configure the fonts you like.
+% The \texttt{fltfonts.cfg} file is not required, but can help set
+% things up either system-wide or just for your personal use.
+% Note, however, that this mechanism should be used with caution.
+% 
+% \subsubsection{New Options in Version~2.1} 
+% \label{sec:newoptionsin2.1}
+%
+% There are two options new to version~2.1.  The first is the
+% \texttt{magscalefonts}.  With the original \texttt{OT1} font
+% encoding, the large fonts are basically scaled versions of the 10pt
+% CM fonts (with a few exceptions).  Using the \texttt{T1} encoding,
+% the fonts are sized by changing the design point size, not scaling a
+% small font.  With the use of the EC fonts in this encoding, the
+% presentation of the foils is \emph{very} different, since scaled
+% versions of small fonts look very different from large point design
+% fonts.  The author personally found that these scaled EC fonts
+% looked thin and did not present themselves well.  Consequently,
+% declaring this option will replace the large design fonts with
+% scaled versions of the smaller fonts (e.g., the normal font
+% \texttt{ecss2074} is replaced by \texttt{ecss1000 scaled 2074}).  The
+% disadvantage of using this option is that you will need effectively
+% two sets of large EC fonts, the scaled small fonts and the large
+% design fonts.  I don't know any other way to deal with this problem.
+% This option has no effect when using the \texttt{OT1} encoding
+% (which is the default).
+%
+% The second additional option, \texttt{useDCfonts}, is probably
+% temporary (to be removed at a later date).  This option will use the
+% (now unsupported?) DC fonts version~1.3 instead of the default EC
+% fonts.  This is included as a courtesy for DC font users who are not
+% yet ready to move to the official EC fonts.  This also works in
+% conjuction with the \texttt{magscalefonts} option with the same
+% reasons and caveats as above.  This option has no effect
+% \emph{unless} you do something to change the font encoding to
+% \texttt{T1}.   
+%
+% You can add either or both of these options to your
+% \texttt{foiltex.cfg} file as desired (see above). 
+%
+% \subsubsection{New Options in Version~2.1.3} 
+% \label{sec:newoptionsin2.1.3}
+%
+% As mentioned in Section~\ref{sec:newin2.1.3}, the following options
+% are new in this version: \texttt{dvipsone}, \texttt{shortform}.
+% The first provides rotation support for Y\&Y, Inc.'s PostScript
+% driver.  This can be put in your \texttt{foiltex.cfg} file.  
+% The second, as described above, provides a method for
+% generating an output document which uses less paper.  This is
+% probably \emph{not} suitable for the configuration file.
+% Also, we've added support for more (larger) paper sizes.
+%
+% \subsubsection{New Options in Version~2.1.4} 
+% \label{sec:newoptionsin2.1.4}
+%
+% We've added the following new options (descibed elsewhere) to this
+% release: \texttt{Screen4to3}, \texttt{Screen16to9}, \texttt{vtex} (not
+% needed as this is auto-detected). 
+%
+% \subsection{The \texttt{\bs maketitle} command}\label{sec:maketitle}
+% 
+% \DescribeMacro{\maketitle}
+% \FoilTeX's \verb|\maketitle| command produces results similar to
+% \LaTeX's \texttt{titlepage} class option.  That is, it reads the
+% contents of \verb|\title{}|, \verb|\author{}|, etc., and produces a
+% titlepage, actually a title foil.  The title itself appears
+% horizontally centered
+% and down a small space from the top, in a \verb|\Large| bold sans
+% serif font.  The author's name with address and date appear under the
+% title, centered and in the \verb|\normalsize| font.  If desired, this
+% can be followed by a (necessarily short) abstract with the word
+% ``Abstract'' appearing in bold and centered above the text of the
+% abstract.  The footer of the title page will contain some special text
+% (see Section~\ref{sec:MyLogo} for more details).  The difference with
+% the \texttt{titlepage} class option is that the abstract appears on
+% the same page as the title/author information (provided \LaTeX\ didn't
+% force a page break).
+% 
+% \subsection{The \texttt{\bs foilhead} and \texttt{\bs rotatefoilhead}
+% macros}\label{sec:foilhead} 
+% 
+% \DescribeMacro{\foilhead}
+% \DescribeMacro{\rotatefoilhead}
+% You start new foils with either the \verb|\foilhead| or
+% \verb|\rotatefoilhead| macros.  Their use is described
+% by the following examples:
+% {\tt\begin{tabbing}
+% \phantom{xxxx}\= \bs foilhead\{{\it text}\} \\
+% \phantom{xxxx}\= \bs foilhead[{\it length}]\{{\it text}\} 
+% \end{tabbing}}
+% \noindent This starts a new page and puts \textit{text} in
+% \verb|\large| bold type at the top center of the new page.  After the
+% header, a vertical space is added providing
+% an automatic cushion between the header and the body of the foil.  You
+% can adjust this space either up or down by putting in the optional
+% argument a \TeX\ \textit{length}.  For example, if you want the body of your
+% foil to sit closer to the header, you could use the command
+% \begin{verbatim}
+%     \foilhead[-.5in]{This is the Header}
+% \end{verbatim}
+% The default spacing is equal to the sum of 
+% \begin{verbatim}
+%     \parskip + \baselineskip + \foilheadskip
+% \end{verbatim}
+% The dimension \verb|\foilheadskip| is new to \FoilTeX~v\foiltexversion\ 
+% and defaults to
+% \texttt{18pt plus 0pt minus 18pt} in normal mode and \texttt{.25in} in
+% compatibility mode.  You can reset this default using a
+% \verb|\setlength| command.
+% 
+% The new (to \FoilTeX~v\foiltexversion) macro \verb|\rotatefoilhead| can
+% be used just like the above.  If the \texttt{dvips} class option has
+% been declared, then it attempts to rotate the \emph{entire} foil 90
+% degrees from the default position.  This means a couple of things.
+% First, if the default position is potrait, then this foil will be
+% rotated to landscape.  If the default position is landscape (by use of
+% the \texttt{landscape} option), then it rotates to portrait.  A
+% similar thing happens if the \texttt{dvipsone} option is enabled.
+% 
+% Furthermore, if \LaTeX\ decides that it needs to split a rotated foil
+% into more than one page, each of these pages will also be rotated.
+% Normal orientation is recovered by the next invocation of
+% \verb|\foilhead|.  
+% 
+% The \texttt{lscape} and other package files that can be
+% used to rotate the contents of a page only rotate the page body but
+% leave the header and footer in their normal orientation.  This makes
+% sense in documents but not on foils.  Consequently, we have to support
+% rotation in a different way.  \verb|\rotatefoilhead| will rotate
+% everything on the page. 
+% 
+% These macros should be used to start any new foil, especially if a new
+% heading is needed.  If you try to put too much text on a single foil,
+% \FoilTeX\ will do its own page break.  This could cause some odd
+% vertical spacing since there is a fair amount of stretchability in
+% vertical glue, particularly in list environments.  This can easily be
+% fixed simply by forcing a page break with an empty \verb|\foilhead{}|
+% command or a \verb|\newpage| command.
+% 
+% \subsection{The \texttt{\bs MyLogo} and \texttt{\bs
+% Restriction} macros} \label{sec:MyLogo}
+% 
+% \DescribeMacro{\MyLogo}
+% \DescribeMacro{\Restriction}
+% Another pair of macros not in standard \LaTeX are \verb|\MyLogo| and
+% \verb|\Restriction|.  
+% Each takes a single argument and is used to control the
+% contents of part of the footline.  By design, the footline consists
+% of the contents of \verb|\MyLogo| followed by the contents of
+% \verb|\Restriction| all left justified, with the page number right
+% justified\footnote{For the title foil, there is no page number;
+% \texttt{\bs MyLogo} and \texttt{\bs Restriction} are centered and
+% appear in \texttt{\bs footnotesize} font.}.  On the main foils, the
+% default font size is \verb|\tiny|.  The contents of these macros can
+% be an empty box as well.  By default, \verb|\Restriction| is empty and
+% \verb|\MyLogo| is the phrase ``\textsf{-- Typeset by \FoilTeX\ --}''.
+% 
+% The declarations for these macros would normally be placed in the
+% preamble to the document, i.e., before the \verb|\begin{document}|
+% command.  However, these macros can be declared or redeclared at any
+% place in the document.  They (and all the other commands that control
+% the footer and header) are sensitive to \LaTeX's output routine.
+% Consequently, care must be taken in their placement to be sure they
+% act on the correct pages.  In the preamble or immediately after the
+% \verb|\foilhead| command are best.  In addition, there are macro
+% switches that can be used to easily turn on or off the logo, without
+% having to do any redeclarations.  See Section~\ref{sec:toggle} for
+% more information.
+% 
+% \verb|\MyLogo| is really intended for something idiosyncratic to the
+% speaker or his organization.  For example, if you use the
+% \texttt{graphics} or \texttt{graphicx} packages of \LaTeXe, you can
+% put an \verb|\includegraphics| macro in \verb|\MyLogo| to get some
+% graphic as the logo on every page:
+% \begin{verbatim}
+%    \MyLogo{\includegraphics[height=1in]{arclogo}}
+% \end{verbatim}
+% (together with a preamble command \verb|\usepackage{graphicx}|)
+% puts a one inch tall version of the IBM Almaden Research Center logo
+% (in EPS format) in the lower left corner of all the author's foils.
+% \verb|\Restriction| was included in case you want to have each foil
+% identified for a particular audience.  For example, at IBM, we have
+% the option of displaying the IBM logo and words like
+% ``Confidential''.  The defaults are set in \texttt{foils.cls}.
+% 
+% 
+% \subsubsection{Toggling the logo}\label{sec:toggle}
+% 
+% \DescribeMacro{\LogoOff}
+% \DescribeMacro{\LogoOn}
+% Users of an early IBM version of \FoilTeX\ requested an easier
+% mechanism (than undefining/redefining \verb|\MyLogo|) for inhibiting a
+% logo from appearing on selected foils or all foils.  We implemented
+% this feature with two switches.  These macros are \verb|\LogoOn| and
+% \verb|\LogoOff| and they do exactly what their names imply.  If
+% \verb|\LogoOff| appears before the footer is processed by the output
+% routine no logo will appear (as if \verb|\MyLogo{}| were declared).
+% This stays in effect until \verb|\LogoOn| is encountered, at which
+% point the contents of \verb|\MyLogo| are restored.
+%  
+% So, for example, if you do not want the logo to appear at all, you can
+% put the \verb|\LogoOff| command \emph{before} the
+% \verb|\begin{document}| command.  If you want the logo only on the
+% title page, then you can put this command \emph{after} the first
+% occurrence of \verb|\foilhead|.  You can then turn the logo back on by
+% putting the \verb|\LogoOn| command in a convenient place.
+%  
+% \subsection{The other three corners of the page} \label{sec:head-foot}
+%  
+% \DescribeMacro{\rightfooter}
+% \DescribeMacro{\leftheader}
+% \DescribeMacro{\rightheader}
+% Since the macros \verb|\Restriction| and \verb|\MyLogo| control the
+% bottom left corner of the page, there are other macros for putting
+% text in the other three corners.  These are, not surprisingly,
+% {\tt\begin{tabbing}
+% \phantom{xxxx}\= \bs rightfooter\{{\it text}\}  \\
+%               \> \bs leftheader\{{\it text}\}   \\
+%               \> \bs rightheader\{{\it text}\}
+% \end{tabbing}}
+% \noindent They each take one argument, the text you want to place in
+% the associated corner of the page.  These can also be redeclared
+% within the document with the appropriate attention paid to the
+% output routine.  See Section~\ref{sec:MyLogo}.
+%  
+% By default the headers are empty and the lower right footer is just
+% the page number:
+% \begin{verbatim}
+%     \rightheader{}
+%     \leftheader{}
+%     \rightfooter{\quad\textsf{\thepage}}
+% \end{verbatim}
+% except on the title page where they are all suppressed.  You can
+% easily suppress page numbering by declaring \verb|\rightfooter{}|.
+% Unless controlled by a font size changing command, text in these
+% regions appear in a \verb|\tiny| font.  These defaults are set in
+% \texttt{foils.cls}
+% 
+% \subsection{Header and footer rules and \texttt{fancyheadings.sty}}
+% \label{sec:fancyhead}
+% 
+% Many users requested a simple utility for putting rulers in the header
+% or footer.  As mentioned above in Section~\ref{sec:classoptions}, this is
+% now easily obtained with the \texttt{headrule} and \texttt{footrule}
+% class options.
+% 
+% \DescribeMacro{\headwidth}
+% Some users prefer to use the \texttt{fancyheadings.sty} package to
+% control their headers and footers.  This allows control of rules, as
+% well as centered text in these areas (which we thought was too much
+% clutter).  To get \texttt{fancyheadings.sty} to work correctly with
+% \FoilTeX's page rotation mechanism, add the following to your
+% preamble:
+% \begin{verbatim}
+%     \let\headwidth\textwidth
+% \end{verbatim}
+% 
+% \subsection{Predefined \texttt{Theorem} and \texttt{Proof} environments}
+% \label{sec:theorem}
+% 
+% \DescribeMacro{\newtheorem}
+% \DescribeMacro{Theorem}
+% \DescribeMacro{Lemma}
+% \DescribeMacro{Corollary}
+% \DescribeMacro{Proposition}
+% \DescribeMacro{Definition}
+% \DescribeMacro{Proof}
+% There are a number of (both starred and unstarred) \verb|\newtheorem|
+% environments built in.  These are for \texttt{Theorem}, \texttt{Lemma}, {\tt
+% Corollary}, \texttt{Proposition} and \texttt{Definition}.  Note the
+% uppercased first letter (to avoid possible collisions with
+% user-defined environments of this type).  Each must begin and end with
+% \verb|\begin{}| and \verb|\end{}| commands as usual.  Their text
+% begins with a bold sans serif label like \textsfb{Theorem} and the
+% content of each is typeset in \textsfi{slanted sans serif}.  The
+% unstarred forms are sequentially numbered and support automatic
+% referencing. The starred forms suppress the numbering and referencing.
+% 
+% All these environments also support an optional argument that can be
+% used for the inventor, common name of the theorem, etc.. 
+% Thus
+% \begin{verbatim}
+%    \begin{Theorem*}[Gauss] Quadratic reciprocity is true!
+%    \end{Theorem*}
+% \end{verbatim}
+% will produce (in large type)
+% \begin{quotation}
+%    \textsfb{Theorem. [Gauss]} \textsf{\textsl{ Quadratic
+% reciprocity is true!}} 
+% \end{quotation}
+% The unstarred form will be numbered.
+% 
+% To implement this, we added code to \LaTeX's \verb|\newtheorem| macro
+% which defines \emph{both} the starred and unstarred forms of these
+% environments at the same time.  In this way, users could easily add
+% their own versions of similar environments.  For example, 
+% \begin{verbatim}
+%   \newtheorem{Axiom}{Axiom}
+% \end{verbatim}
+% would define two environments \texttt{Axiom} and \texttt{Axiom*} that
+% behaved just like \texttt{Theorem} and \texttt{Theorem*}.  In all other
+% respects, e.g., numbering convention, \verb|\newtheorem| behaves just
+% as in \LaTeX.
+% 
+% Finally, there is a \verb|Proof| environment which opens with the word
+% \textsfb{Proof} and ends with a $\Box$.  The contents are 
+% printed in the
+% normal font.
+%  
+% \subsection{Mathematics in bold typeface}\label{sec:boldmath}
+% 
+% \DescribeMacro{\bm}
+% Because \FoilTeX\ is fully integrated into \LaTeX, getting bold math
+% is pretty much the same.  The only thing we did was to add some extra
+% facilities to get at it.  The first we add is the \verb|\bm| macro
+% which takes one argument:
+% {\tt\begin{tabbing}
+% \phantom{xxxx}\= \bs bm\{{\it formula}\}
+% \end{tabbing}}
+% \noindent This takes it argument (within mathematics mode) and
+% replaces it with it emboldened version.  This is different from the
+% \verb|\mathbf| command in that it emboldens everything including
+% symbols.  The new version of this (as opposed to \FoilTeX\ v~1.0.1) 
+% is much better.  It deals correctly with the current math
+% style and so should work even in superscripts! 
+% 
+% \DescribeMacro{boldequation}
+% The second method for getting bold mathematics is a pair of
+% environments:
+% {\tt\begin{tabbing}
+% \phantom{xxxx}\= \bs begin\{boldequation\} \\ 
+%     \> {\it formula} \\
+%     \> \bs end\{boldequation\} \\
+%     \> \\
+% \phantom{xxxx}\> \bs begin\{boldequation*\} \\
+%     \> {\it formula} \\
+%     \> \bs end\{boldequation*\} 
+% \end{tabbing}}
+% \noindent They both set \textit{formula} in bold (even  super- and
+% subscripts).  The unstarred form has automatic referencing and is
+% numbered; the starred form inhibits the numbering and referencing.
+% Essentially, they just do an automatic \verb|\boldmath| at the
+% beginning and an \verb|\unboldmath| at the end of the formula.
+% 
+% \subsection{Hyphenation and raggedright}\label{sec:ragged}
+% 
+% \DescribeMacro{\righthyphenmin}
+% \DescribeMacro{\lefthyphenmin}
+% \DescribeMacro{\raggedright}
+% \FoilTeX\ turns off hyphenation but allows a fair amount of horizontal
+% interword spacing.  Unfortunately, this can create some unpleasant
+% line breaks (at times).  This can be fixed with either a manual fill
+% and line break (I use \verb|\hfil\break| but that's very \TeX y) or by
+% inserting a discretionary hyphen (better to have them only when needed
+% than to have them happen unpredictably). 
+% 
+% Some users feel that \verb|\raggedright| is preferable for foils.  It
+% was decided not to make this the default (as this is not the author's
+% opinion), but to leave this to the user's discretion.  To get this
+% effect, simply put \verb|\raggedright| in the preamble to your
+% document.  This will also reduce the spacing problems.
+% 
+% We turned off hyphenation by setting \verb|\righthyphenmin| and
+% \verb|\lefthyphenmin| each to 100.  Resetting this to smaller numbers
+% (less than the length of typical words) will restart hyphenation.
+% (This is an improvement over version 1.0.1, where we didn't even load
+% the hyphenation tables into the format.)
+% 
+% \subsection{Non-floating floats}\label{sec:floats}
+% 
+% \DescribeMacro{figure}
+% \DescribeMacro{table}
+% Many people like to use figures and tables in their foils and
+% typically want to use them with the same interface as they do in
+% documents (namely, using the \texttt{figure} and \texttt{table}
+% environments).  Unfortunately, in standard \LaTeX\ these are
+% ``floats'' which means they can appear on some place other than their
+% current spot.  This, of course, makes no sense on foils.  To alleviate
+% this, we define these environments but as non-floats.  The user syntax
+% is identical to standard \LaTeX, but a couple of things happen.
+% First, the placement parameters are completely ignored.  Second, they
+% don't float (equivalent to \texttt{[H]} placement).  Third, there is no
+% ``List of Figures'' or ``List of Tables'' data generated.
+% The only other difference is that the starred forms of these
+% environments are unnumbered (as opposed to being one-column in a
+% two-column document). 
+% 
+% \DescribeMacro{\newnonfloat}
+% We have added a simple mechanism for the user to add their own version
+% of these non-floats.  This is done with the \verb|\newnonfloat|
+% mechanism.  For example, the \texttt{figure} and \texttt{figure*}
+% (unnumbered) environments of \FoilTeX\ are defined with:
+% \begin{verbatim}
+%     \newnonfloat{figure}{Figure}
+% \end{verbatim}
+%  
+% \subsection{User adjustable dimensions}\label{sec:dimensions}
+% 
+% \DescribeMacro{\foilheadskip}
+% \DescribeMacro{\abovefloatskip}
+% \DescribeMacro{\captionfraction}
+% \DescribeMacro{\abovetitleskip}
+% \DescribeMacro{\titleauthorskip}
+% \DescribeMacro{\authorauthorskip}
+% \DescribeMacro{\authordateskip}
+% \DescribeMacro{\dateabstractskip}
+% There are a number of new dimensions added to \FoilTeX\ which the user
+% can adjust as they desire.  One, \verb|\foilheadskip| has already been
+% mentioned. 
+% 
+% For controlling the space around floats there are a number of
+% dimensions.  First, there are the two predefined in \LaTeX, namely,
+% \verb|\abovecaptionskip| and \verb|\belowcaptionskip|.  Next, we
+% added one (\verb|\abovefloatskip|) for the space above the
+% non-float.  See the code for default settings for these skips.
+% Finally, in version~2.1.2 we added a \verb|\captionfraction| command
+% to set the width of the captions as a fraction of the text width.
+% Implementation is similar to \LaTeX's fractions for floats, so that
+% it should be reset with the \verb|\renewcommand|.  The default value
+% is $1.0$.  Releases of \FoilTeX\ before version~2.1.2 allowed the
+% user to set the caption width with the dimension
+% \verb|\captionwidth|.  This was buggy and behaved badly under
+% rotations and landscape and so has been deprecated.
+% 
+% For the titlepage, between every single vertical item there is some
+% extra space.  These spaces can take up a lot of room and if you have a
+% lot of authors or a long title or a long abstract and can't get
+% everything you want on the page, adjust these parameters as needed:
+% \begin{verbatim}
+%     \abovetitleskip, \titleauthorskip, \authorauthorskip, 
+%     \authordateskip, \dateabstractskip
+% \end{verbatim}
+% 
+% \DescribeMacro{\zerolistvertdimens}
+% Furthermore, there is a new declaration called \verb|\zerolistvertdimens|.
+% You can use this \emph{inside} a list environment to shrink all the
+% vertical spacing to a minimum. 
+% 
+% \subsection{Differences with \LaTeX}\label{sec:latex}
+% 
+% \DescribeMacro{\em}
+% \DescribeMacro{\emph}
+% One simple difference is that the \LaTeX\ commands \verb|\em| and
+% \verb|\emph| switch from any unslanted font to \textsfi{slanted sans
+% serif} and from any slanted font to \textsf{unslanted sans serif}, not
+% to \textit{text italics} and roman, respectively.
+%  
+% Unlike \TeX/\LaTeX, numerals in \FoilTeX\ look different when they are
+% in ordinary text from when they are in math-mode.  This means that
+% \texttt{12345} in text will print as \textsf{12345} and \verb|$12345$|
+% prints as $12345$.
+%  
+% \subsection{Future versions} \label{sec:future}
+% 
+% There are plans for two major additions to \FoilTeX.  These are
+% support for user comments (side notes) and for overlays.  There is no
+% time-table for these upgrades.  (As one can probably tell, this many
+% take a really long time to do. Or as history has shown, probably
+% won't ever come to be.)
+%  
+% In the meantime, you can play with the \texttt{comment} package for
+% side notes and the color package (using \texttt{white} to hide text)
+% for overlays.  For side notes, you can use the comment environment's
+% suppressed mode for the real foils.  Then use the \texttt{shortform}
+% option and enabled comments to generate the side note foils.  The
+% foils will layout very differently, but the content will be there.
+%
+% \FoilTeX\ should be able to handle rotation and landscape with other
+% dvi drivers.  This will be added only with user assistence because the
+% author has no way to test other drivers.
+% 
+% \section{Fonts and their sizes} \label{sec:fonts}
+%  
+% As noted earlier, the default font at \verb|\normalsize| is a
+% {\samphugesf sans serif} font at size 20pt, unless one of the
+% \texttt{[17pt]}, \texttt{[25pt]}, \texttt{[30pt]} or
+% \texttt{shortform} options have been 
+% declared in the \verb|\documentclass| command.  Table~\ref{tab:fonts}
+% shows the control sequences for other accessible text fonts and the
+% name of the font in a sample of its type.  These control sequences
+% give the font at the current size.  Font size changing commands for
+% each of the normal point size options are described by
+% Table~\ref{tab:sizes}.  Note that \verb|\bf| and \verb|\sl| yield sans
+% serif fonts, not the usual variations on roman.   
+%
+%
+% \begin{table}[htb]
+% \begin{center}
+% \caption{Available fonts and their names.}\label{tab:fonts}
+% \begin{tabular}{|l|c|}
+% \multicolumn{2}{l}{} \\[5pt]  \hline
+% command          & font names \tabfiller{13pt} \\[3pt] \hline
+% \texttt{\bs sf}  & \textsf{Sans Serif} \\ \hline
+% \texttt{\bs it}  & \textit{Text Italic} \\ \hline
+% \texttt{\bs sl}  & \textsfi{Slanted Sans Serif} \\ \hline
+% \texttt{\bs bf}  & \textsfb{Bold Sans Serif} \\ \hline
+% \texttt{\bs tt}  & \texttt{Typewriter} \\ \hline
+% \texttt{\bs rm}  & \textrm{Roman} \\ \hline
+% \texttt{\bs sc}  & \textsc{Small Caps} \\ \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
+% 
+% \begin{table}[htb]
+% \centering
+% \caption{Type sizes for \FoilTeX\ size-changing
+% commands for the different document style options.  In compatibility
+% mode, the largest size is 43pt.}\label{tab:sizes}  
+% \begin{tabular}{|l|c|c|c|c|c|}
+% \multicolumn{6}{l}{} \\ 
+%  \cline{2-6}
+% \multicolumn{1}{l}{}  & \multicolumn{5}{|c|}{doc-options} \\ \hline
+%  size \tabfiller{13pt} &  20pt  &  17pt  & 25pt  & 30pt & shortform\\[3pt] \hline
+% \verb|\tiny|         & 12pt & 12pt & 12pt & 14pt & 12pt\\ \hline
+% \verb|\scriptsize|   & 12pt & 12pt & 14pt & 17pt & 12pt\\ \hline
+% \verb|\footnotesize| & 14pt & 12pt & 17pt & 20pt & 12pt\\ \hline
+% \verb|\small|        & 17pt & 14pt & 20pt & 25pt & 12pt\\ \hline
+% \verb|\normalsize|   & 20pt & 17pt & 25pt & 30pt & 12pt\\ \hline
+% \verb|\large|        & 25pt & 20pt & 30pt & 36pt & 14pt\\ \hline
+% \verb|\Large|        & 30pt & 25pt & 36pt & 43pt & 17pt\\ \hline
+% \verb|\LARGE|        & 36pt & 30pt & 43pt & 51pt & 20pt\\ \hline
+% \verb|\huge|         & 43pt & 36pt & 51pt & 51pt & 25pt\\ \hline
+% \verb|\Huge|         & 51pt & 43pt & 51pt & 51pt & 25pt\\ \hline
+% \end{tabular}
+% \end{table}
+%  
+% \begin{table}[htb]
+% \centering
+% \caption{Mathematics type styles and their point sizes at \texttt{\bs
+% normalsize} for the different document style options.}\label{tab:scripts}
+% \begin{tabular}{|l|c|c|c|c|c|}
+% \multicolumn{6}{l}{} \\
+% \cline{2-6}
+%  \multicolumn{1}{l}{} & \multicolumn{5}{|c|}{doc-options} \\ \hline
+%  style  \tabfiller{13pt}         & 20pt & 17pt & 25pt & 30pt & shortform\\[3pt] \hline
+% \textsl{displaystyle,textstyle}  & 20pt & 17pt & 25pt & 30pt & 12pt\\ \hline
+% \textsl{scriptstyle}             & 14pt & 12pt & 17pt & 20pt & 12pt\\ \hline
+% \textsl{scriptscriptstyle}       & 12pt & 12pt & 14pt & 17pt & 12pt\\ \hline
+% \end{tabular}
+% \end{table}
+% 
+%  
+%  
+% 
+% There are also the corresponding \verb|\textsf| and related macros.
+% These will work as expected, namely they switch the corresponding font
+% characteristic based on the \emph{current} font. 
+%  
+% Mathematics is also automatically displayed at normal size unless
+% magnified by a size changing declaration.  Table~\ref{tab:scripts}
+% describes the font point sizes for \TeX's mathematics styles at each
+% of the normal point size options.  
+% 
+% In the previous version of \FoilTeX, we loaded the \LaTeX\ circle and
+% line fonts at \verb|\magstep4|.  This had the advantage that the
+% lines where thicker and some pictures would scale nicely to foils.
+% Unfortunately, this seems to have created as many problems as it
+% solved.  Consequently, in the new version, these fonts are not scaled
+% except in compatibility mode.   
+% 
+% 
+% \section{Making color foils} \label{sec:color}
+% 
+% Because color has now been integrated into \LaTeX\ itself, we don't
+% add much of anything for color support.  Users are encouraged to use
+% the \texttt{color} package of the \texttt{graphics} package.  We no
+% longer recommend the \texttt{colordvi} style file that came with the
+% old \FoilTeX\ and still comes as part of Rokicki's \texttt{dvips}.  In
+% general it will work OK, but there will be some minor problems that
+% crop up.
+% 
+% We have added just enough compatibility mode to the new \FoilTeX\ so
+% that old files which use \texttt{colordvi} should still run correctly.
+% 
+% \section{Using {\sc PostScript} fonts} \label{sec:postscript}
+% 
+% There is not much to say here since the PSNFSS packages do a nice job
+% of things.  The only thing to remember is that the default font family
+% is the \verb|\sfdefault| so that using a package that only changes the
+% \verb|\rmdefault| won't help you much.  Using a package like
+% \texttt{times.sty} will change the \verb|\sfdefault| to Helvetica and
+% \emph{not} to Times-Roman as you might expect.   To get your foils
+% (mostly) into Times-Roman, just say
+% \begin{verbatim}
+%     \renewcommand{\sfdefault}{ptm}
+% \end{verbatim}
+% somewhere in the preamble.
+% 
+% \section{Installing \FoilTeX} \label{sec:installation}
+% 
+% To install \FoilTeX, simply run \LaTeX\ on the \texttt{foiltex.ins}
+% file and then follow the instructions at the end.  Essentially, just
+% copy the generated files to the appropriate location in your
+% \TeX\ inputs, examples and doc trees.   
+% 
+% \section{Usage restrictions}\label{sec:restrictions}
+% 
+% \subsection{Experimental Software Disclaimer}
+% 
+% This program is provided free of charge on an ``AS IS'' basis without
+% warranty of any kind, either expressed or implied, including but not
+% limited to implied warranties of merchantability and fitness for a
+% particular purpose.  IBM does not warrant that the functions contained
+% in this program will meet the user's requirements or that the
+% operation of this program will be uninterrupted or error-free.  You
+% are solely responsible for determining the appropriateness of using
+% this program and assume all risks associated with its use, including
+% but not limited to the risks of program errors, damage to or the loss
+% of data, programs or equipment, and unavailability or interruption of
+% operations.
+% 	
+% Acceptance and use of this program constitutes the user's
+% understanding that he/she will have no recourse to IBM for any actual
+% or consequential damages, including, but not limited to, lost profits
+% or savings, arising out of the use or inability to use this program,
+% or any damages claimed by you based on a third party claim.  Even if
+% the user informs IBM of the possibility of such damages, IBM expects
+% the user of this program to accept the risk of any harm arising out of
+% the use of this program, or the user shall not attempt to use this
+% program for any purpose.
+%
+% \subsection{User Agreement}
+% 
+% BY ACCEPTANCE AND USE OF THIS  PROGRAM THE USER AGREES TO
+% THE FOLLOWING:
+% 
+% \begin{enumerate}\def\theenumi{\alph{enumi}} 
+% 
+% \item \label{itema} The user is granted permission to copy this
+% program to the extent 
+% reasonably required for such use.  This program may be redistributed
+% on a not-for-profit basis, as long as WARRANTY DISCLAIMER, this USER
+% AGREEMENT, and the copyright notice are included with the program.
+% 
+% \item All title, ownership and rights to this program and any copies
+% remain with IBM, irrespective of the ownership of the media on which
+% the program resides.
+% 
+% \item The user is permitted to create derivative works to this program.  
+% However, all copies of the program and its derivative works must
+% contain the IBM copyright notice, the WARRANTY DISCLAIMER and this
+% USER AGREEMENT.  Furthermore, the user must document and initial
+% within the program all changes he/she makes.
+% 
+% \item By furnishing this program to the user, IBM does \emph{not}
+% grant either 
+% directly or by implication, estoppel, or otherwise any license under
+% any patents, patent applications, trademarks, copyrights or other 
+% rights belonging to IBM or to any third party, except as expressly 
+% provided herein.
+% 
+% \item The user understands and agrees that this program, and any
+% derivative works made from this program, are not to be sold for profit
+% or commercially exploited in any manner.  However, this use
+% restriction shall not operate to deny the right to redistribute the
+% program on a not-for-profit basis, as provided in
+% paragraph~\ref{itema}, above.
+%
+% \item IBM requests that the user supply to IBM a copy of any changes,
+% enhancements, or derivative works which the user may create.  The user
+% grants to IBM and its subsidiaries an irrevocable, nonexclusive,
+% worldwide and royalty-free license to use, execute, reproduce,
+% display, perform, prepare derivative works based upon, and distribute,
+% (INTERNALLY AND EXTERNALLY) copies of any and all such materials and
+% derivative works thereof, and to sublicense others to do any, some or
+% all of the foregoing, (including supporting documentation).
+% 
+% \end{enumerate}
+% 
+% \section{Acknowledgements, requests and help}\label{sec:acknowledgements}
+% 
+% For the first release of \FoilTeX, we had the following
+% acknowledgement:
+% \begin{quote}
+% We would like to thank and acknowledge the following people in IBM for
+% their great assistance in helping to put \FoilTeX\ together: Katherine
+% Hitchcock, Myron Flickner, Ekkehard Blanz, Melanie Fulgham, Peter
+% Haas, Rocky Bernstein and the many users who contributed their
+% constructive comments on the early test versions within IBM.
+% 
+% A special thanks goes to Tomas Rokicki for implementing our color
+% setup in his driver and another to Sheri Gish of IBM for asking the
+% right (or was it wrong?) question that got this project started.
+% \end{quote}
+% 
+% We echo that acknowledgement again because there would not be a
+% version~2.0 or later without the first release and their help.  But, 
+% putting together this new release required a new team of helpers. 
+% Mostly, I want to thank the \LaTeX3 team for doing such a great job
+% with \LaTeXe.  Implementing much of \FoilTeX\ was greatly eased by the
+% way \LaTeXe\ is constructed and implemented.
+% 
+% Beyond this, the \LaTeXe\ team was very helpful in a number of
+% discussions about design issues for \FoilTeX, particularly on font
+% issues but also on a number of others.  Let me single out the
+% following for exceptional service beyond the call: David Carlisle,
+% Sebastian Rahtz, Frank Mittelbach and Alan Jeffrey.
+% 
+% I also want to thank all the many users who have expressed their
+% interest in \FoilTeX{} and who have made suggestions, comments,
+% pointed out the bugs and provided fixes.
+% 
+% A special thanks to the folks at Y\&Y, Inc., including Louis Vosloo,
+% for providing the stuff needed for landscaping with DVIPSONE.
+%
+% Similar special thanks to the folks at Micropress, Inc.,
+% specifically Michael Vulis and Walter Schmidt for the stuff needed to
+% work with \VTeX.
+%
+% The following contributed suggestions and code snippets that are if
+% not in fact at least in spirit including in this release: Hans Fredrik
+% Nordhaug, Heiko Oberdiek, Stephen Sangwine, Thomas Sailer, Drew
+% Ronnenberg.  Their contributions are gratefully acknowledged.
+%
+% \FoilTeX\ is intended to be easy to use, useful and to produce
+% beautiful foils.  Consequently, the author welcomes any comments or
+% suggestions.
+% 
+% The author also requests help in supporting landscape and rotation
+% with other drivers.   If you find a solution, please pass it back to
+% the author for incorporation in future updates of \FoilTeX.
+%
+% If you have a question that you can't answer by reading \textit{both}
+% this document and~\cite{latexbook,companion}, or by posting your
+% question to your local \TeX perts or to the usual forums, you can
+% contact the author.
+% 
+% 
+% \StopEventually{
+% \begin{thebibliography}{9}
+%
+% \bibitem{companion} Michel Goossens, Frank Mittelbach and Alexander 
+% Samarin, \textit{The \LaTeX{} Companion}, Addison-Wesley, Reading,
+% Massachusetts, 1994.
+%
+% \bibitem{texbook} Donald Knuth, \textit{The \TeX book}, Addison-Wesley,
+% Reading, Massachusetts, 1983, revised in 1993.
+%
+% \bibitem{latexbook} Leslie Lamport, \textit{\LaTeX: A Document
+% Preparation System}, 2nd ed., Addison-Wesley, Reading, Massachusetts,
+% 1994.
+%
+% \end{thebibliography}
+% } 
+% \section{A sample file} \label{sec:sample}
+% In this section we give a complete and self-annotated sample file.  We
+% try in this sample to demonstrate or comment on most of the basic
+% features and show how the fonts look in \FoilTeX.   More details can
+% be found in the sections above.
+%    \begin{macrocode}
+%<*sample>
+ %%%% Everything above this sentence is relevant only to this    %%%%%
+ %%%% sample and should not be included in your foils document.  %%%%%
+ % Start with a \documentclass declaration.  The [20pt] is optional 
+ % as that is the default.  The [dvips] option is supplied here even
+ % though it really belongs in the {foiltex.cfg} file for the site/user.
+\documentclass[20pt,dvips]{foils}
+ %
+ % An alternate uses smaller fonts, passes the draft mode to other 
+ % included packages (e.g., graphics packages) and does everything 
+ % in landscape mode. 
+ % \documentclass[17pt,draft,landscape]{foils}  
+ %
+ % This next version declares the setup for Rokicki's dvips so that we
+ % can support rotated foils and the use of color names. 
+ %\documentclass[20pt,dvips]{foils}
+ %
+ % Add other packages you might want to use here.  E.g., you can
+ % use the \usepackage{graphics} or \usepackage{graphicx} to include
+ % figures (e.g., postscript figures) or \usepackage{color} for color.
+ % See the \FoilTeX documentation for use of color.
+ % \usepackage{graphicx}
+ % \usepackage[usenames]{color}
+ % Use this package file for the special \LaTeX symbols.
+ % 
+\usepackage{latexsym}
+ %
+ % Declare the title, author and date as you would in regular \LaTeX.
+ %
+\title{A Sample Foils Document}
+ %
+\author{Jim Hafner\\
+        IBM Research Division\\
+        Almaden Research Center\\
+        \texttt{hafner@almaden.ibm.com}
+        }
+ % This is optional 
+\date{\today}
+ %
+ % We set up the header and footer information now.  \Restriction is 
+ % always placed next to \MyLogo on the bottom left corner of the
+ % page.  The other macros have their obvious placement.  If you want 
+ % nothing, leave the contents of these declarations empty.  Note that
+ % ``-- Typeset by FoilTeX --'' logo will print automatically, unless
+ % controlled by redefining \MyLogo or by using the switches \LogoOn 
+ % and \LogoOff. 
+ %
+ %\MyLogo{-- Typeset by \FoilTeX\ --}   % this is the default
+ %\rightfooter{quad\textsf{\thepage}}   % this is the default
+\leftheader{Jim Hafner}
+\rightheader{\foiltexdate}                % \foiltexdate is defined above
+\Restriction{Is this for a restricted audience?}
+ %
+\newcommand\bs{\char '134}   %  a backslash character for the \tt font
+ %
+ % Now we can begin the document.  The first thing is the title page  
+ % on which we might put a VERY short abstract.
+\begin{document}
+\maketitle
+ %
+\begin{abstract}
+This is where an abstract might go if you want one.  There is usually
+not a lot of room for much here.
+\end{abstract}
+ %
+ % Now we can begin to start the individual foils.  Note that we let
+ % \LaTeX split the pages and don't force each foil to be a separate
+ % page.   We use \foilhead to start a new foil or foil topic. 
+\foilhead{Colors}
+
+\FoilTeX\ (version 2) is fully integrated with \LaTeXe\ so that the
+supported \texttt{color} package (part of the \texttt{graphics}
+package) is the preferred way to use colors.   
+
+For examples, see the \texttt{graphics} package documentation.
+
+You can still use the old \texttt{colordvi} package that comes with
+Rokicki's \texttt{dvips}, but some things won't work exactly as
+expected (except in compatibility mode).
+
+\foilhead[-.5in]{Itemize}
+\LogoOff  % We decided to turn the logo off on this page.
+          % The rest of the footer and header will stay the same.
+ % This foil has a lot on it so we used the [-.5in] option to move the
+ % body of the foil closer to the foilhead.  We could move it down with
+ % a positive length.
+ %
+ % By default there is large item separation at the first level (equal
+ % to \parsep).  At the lower levels, it decreases to 0.  To change
+ % you can either try to redefine \@listii and \@listiii in a style
+ % file or you can change it internally to an item list.  See comment
+ % below at second level.
+ 
+\begin{itemize}
+\item
+This is the first level of an itemize.
+  \begin{itemize}     % \itemsep 20pt % this stretches the space
+                      % between items but only at this level. We leave
+                      % the default here. 
+  \item Here we jump to second level
+     \begin{itemize}  
+     \item Even third level (and there is a fourth level as well).
+     \item The second item at third level.
+     \end{itemize}
+  \item The second item at second level.
+  \item A third item at second level.
+  \end{itemize}
+\item The second item at first level.
+\item A third item at first level.
+\end{itemize}
+ 
+Note that we have turned off the logo on this page.  It returns on the
+next page.
+
+\foilhead{}
+\LogoOn
+ 
+This should be a \emph{new foil} with no header, followed by a quote:
+\begin{quote}
+\ldots it's a good idea to make your input file as easy to
+read as possible.
+\end{quote}
+and some enumerating:
+\begin{enumerate}
+\item this is enumerated
+\item this is also enumerated
+\end{enumerate}
+
+\begin{center}
+\framebox{\parbox{5.5in}{Above, we used \texttt{\bs emph\{new foil\}}
+instead of the old \texttt{\{\bs em new foil\bs/\}}!}} 
+\end{center}
+
+On the following page we decided to stop the headers from appearing
+and move the date to the footline.
+
+ % Here are more samples of font actions, particularly size changing.
+ % We retained the ability to get a true Roman font via \textrm.
+
+\foilhead{Fonts}
+\rightheader{}   % These cancel the headlines from now on
+\leftheader{}    %
+\rightfooter{\foiltexdate\quad\textsf{\thepage}}
+
+\begin{itemize}
+\item This shows \textit{italics}, \textsl{slanted}, \textbf{boldface},
+\texttt{typewriter}, \textrm{roman}, and \textsc{small caps}.
+\item Unslanted \emph{emphasize} and 
+      \textsl{slanted \emph{emphasize}}.
+\item \texttt{\bs textrm} means \textrm{roman and
+      \texttt{\bs textsf} means \textsf{sans serif}}.
+\item size changing from {\tiny tiny}, 
+      {\scriptsize scriptsize}, 
+      {\footnotesize footnotesize},
+      {\small small}, {\normalsize 
+      normalsize},\,{\large large},%
+      {\Large Large},\,{\LARGE LARGE},
+      {\huge huge}, and {\Huge Huge}.
+\item 12pt is the smallest preloaded.
+\item 43pt is the largest preloaded in compatibility mode.
+\item 51pt is the largest preloaded in normal mode.
+\end{itemize}
+ 
+\foilhead{Special Characters and Accents}
+ 
+\begin{itemize}
+\item Here is a list of accents: 
+  \begin{itemize}
+   \item \`{o}, \'{o}, \^{o}, \"{o}, \~{o}, \={o}, \.{o}, \u{o}, 
+         \v{o}, \H{o}, \t{oo}, \c{o}, \d{o}, \b{o}.
+  \end{itemize}
+\item First in paragraph mode (with \verb|\copyright|): 
+  \begin{itemize}
+  \item \dag, \ddag, \S, \P, \pounds, 0123456789, \copyright
+  \end{itemize}
+\item Then in math mode: (numerals are different!)
+  \begin{itemize}
+  \item $\dag$, $\ddag$, $\S$, $\P$, $\pounds$, 
+        $0123456789$
+  \end{itemize}
+\item Here are more non-english language symbols:  
+  \begin{itemize}
+  \item \oe, \OE, \ae, \AE, \aa,   \AA, \o, \O, \l, \L, \ss, ?`, !`
+  \end{itemize}
+\item \textrm{\TeX}'s special symbols: \#, \$, \%, \&, \_, \{, \}.
+\end{itemize}
+ 
+\foilhead{Some Mathematics}
+ 
+$$
+{\cal F}\cdots\frac{x+y}{1+\frac{y}{z+1}} =\sqrt{x+y}\times \sqrt[n]{2}
+$$
+ 
+Here are some funny math symbols (we needed the \texttt{latexsym}
+package for a couple of these):
+$$
+\forall\exists\flat\natural\sharp\partial\angle\Re\mho\jmath\aleph
+$$
+$$
+\infty\Diamond\clubsuit\diamondsuit\spadesuit\heartsuit\ell
+$$
+$$
+\bigcap\bigcup\bigvee\bigwedge\bigodot\bigotimes\bigoplus\biguplus
+\sum\prod\coprod\int\oint
+$$
+$$
+\sum_{i=1}^nx_i =\int_0^1 f[x]dx.
+$$
+and $\gcd(m,n)$ and $x\equiv y\pmod{a+b}$.
+ 
+\foilhead{More Math: arrays}
+ 
+$$
+\begin{array}{clcr}
+a+b+c & uv    & x-y & 27 \\
+a+b   & u+v   & z   & 134  \\
+a     & 3u+vw & xyz & 2,978
+\end{array}
+$$
+ 
+$$
+\left( \begin{array}{c}
+    \left| \begin{array}{cc}
+            x_{11} & x_{12} \\
+            x_{21} & x_{22}
+           \end{array}
+     \right| \\
+      y \\
+      z
+      \end{array}
+\right)
+$$
+ 
+$$
+x=\left\{ \begin{array}{ll}
+             y & \mbox{if $y>0$} \\
+             z+y & \mbox{otherwise}
+          \end{array}
+   \right.
+$$
+ 
+\foilhead{More Math: \texttt{equation} and \texttt{array} Numbering}
+ 
+Here is a numbered equation
+\begin{equation}
+  E=mc^2
+\end{equation}
+and a numbered array
+\begin{eqnarray}
+ x & = & 17y \\
+ y & > & a+b+c+d+e+f+\nonumber \\
+   &   & k+l+m+n+o+p
+\end{eqnarray}
+ 
+More math accents: $\hat{a}$, $\check{a}$, $\breve{a}$, $\acute{a}$,
+$\grave{a}$, $\tilde{a}$, $\bar{a}$, $\vec{a}$, $\dot{a}$, $\ddot{a}$.
+ 
+Over and underline:
+$$
+  \overline{\overline{x}^{2} + 1}
+\qquad
+\overbrace{a+\underbrace{b+c}_{25}+d}^{16\alpha}
+$$
+ 
+\foilhead{Bold Mathematics}
+ 
+The \verb|boldequation| environment, with
+numbering yields
+\begin{boldequation} \label{eq:bold}
+   2\sqrt{x} \Pi^y \sim\pi\times x
+\end{boldequation}
+and without numbering yields
+\begin{boldequation*}
+   2\sqrt{x} \Pi^y \sim\pi\times x
+\end{boldequation*}
+We can reference bold equations like (\ref{eq:bold}).
+ 
+There is also \verb|\mathbf| and \verb|\bm| in the middle of a formula,
+with \hfil\break \verb|\mathbf{a +} a + \bm{a+x\pi-\rho} -\rho|
+$$
+\mathbf{a +}a+\bm{a+x\pi-\rho} -\rho
+$$
+Note the difference between the two bold ``a'' in result. 
+ 
+\foilhead{Theorem and Proof Environments}
+
+\begin{Theorem}[TUG'92] 
+There are some \TeX\ tools that are easier to use than others.  This
+theorem is numbered and has an optional acknowledgement.
+\end{Theorem}
+
+\begin{Corollary*} 
+This obvious corollary is not numbered because it uses the *-form.
+\end{Corollary*}
+
+\begin{Proof}
+The details of the proof are left to the reader.  Note that the
+environment names are case sensitive.
+\end{Proof}
+
+We put a header back on the next foil to see that it is correctly
+rotated. 
+
+\rotatefoilhead{Rotated Foils}
+\leftheader{I'm rotated!}
+
+This entire page will (should?)~be rotated if we declared the
+\verb|\documentclass| option \texttt{dvips} or other supported driver
+option.  (For \texttt{pdflatex}, this works without giving any
+options!)  In the other cases, this is not supported and the user is
+warned.
+
+The next foil will return to normal.  Only foils that begin with
+\verb|\rotatefoilhead| will be rotated.  If \LaTeX\ needs to split a
+rotated foil into two foils, \emph{both} will be rotated.
+
+\foilhead{Tables and Figures}
+\leftheader{}
+
+Here is a short table:
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|c|r|} \hline
+First stuff & Second stuff & Third Stuff \\ \hline\hline
+foo & bar & bug \\ \hline
+foofoo & barbar & bugbug \\ \hline
+\end{tabular}
+\caption{\label{tab:one}This is the first table.}
+\end{center}
+\end{table}
+
+The above table is Table~\ref{tab:one}.  It is a ``nonfloat'', since
+it doesn't float at all, but appears right where it was placed in the
+document.  
+
+ % In the picture environment, we have put the fonts back to \LaTeX's
+ % normal size.  This may have been a mistake but ... 
+\foilhead{\texttt{picture} Environments}
+ 
+\begin{figure}
+\begin{center}
+\setlength{\unitlength}{.08in}
+\begin{picture}(50,50)(0,0)
+ %\thicklines         % don't know why it looks worse with this
+\put(10,35){\framebox(10,10){gnat}}
+\put(30,20){\circle{20}}
+\put(30,20){\vector(0,1){2}}
+\put(45,35){\circle*{5}}
+\put(30,20){\oval(20,30)}
+\end{picture}
+\end{center}
+\caption{Isn't this a pretty picture?}
+\end{figure}
+
+\verb|\thicklines| would be nice here but the picture doesn't look as
+good that way (why?).  We should use the \texttt{graphics} package to
+load our graphics pictures here.  Note that this Figure doesn't float!
+ 
+\foilhead{Marginal Notes, Footnotes and Citations}
+ 
+A marginal note\footnote{This is a footnote.}
+is made with the \verb|\marginpar| command, having the
+text as its argument.  The note\marginpar{This is a mar\-gin\-al note}
+is placed in the margin, its first line even with the line of the text
+containing the command\footnote{This is a second footnote.}.
+ 
+This is shows \fbox{frameboxes} at work. We can even cite references
+like \cite{rocky} and \cite{bullwinkle}.
+
+ % We can use any bibliography mechanism, including BibTeX. 
+\begin{thebibliography}{99}
+ 
+\bibitem{rocky} Rocky and Bullwinkle, Open problems, in \textsl{Mr.
+Know-it-all's Rock Encyclopedia}.
+ 
+\bibitem{bullwinkle} Bullwinkle, Getting things out of hats,
+\textsl{Annals} \textbf{1} (1990BC), 1--2.
+ 
+\end{thebibliography}
+ 
+\foilhead{Other Features}
+\raggedright
+
+\begin{itemize}
+\item \verb|\raggedright| can be used in the preamble to get this
+      effect throughout as we did on this page.
+\item Access to the AMS Fonts symbols and Euler fonts can easily be
+      obtained with the \texttt{amsmath} packages.  You might not get
+      fonts at the largest sizes however. 
+\item \textsc{PostScript} fonts can used just by adding any of the
+      package files from the PSNFSS package.   
+\end{itemize}
+
+\end{document}
+%</sample>
+%    \end{macrocode}
+%
+% \section{Description of the code in the \FoilTeX\ package}
+% \label{code:description}
+% 
+% In this section we describe the macros used in the package.  This is
+% broken up into a number of parts.  In the first part we describe the
+% code that sets up and implements the option parsing.  This includes
+% the loading of the font definition information and the size option
+% file.  Details of the font data itself can be found in
+% Section~\ref{code:fonts}.  In the second subsection, we define the
+% basic macros used in \FoilTeX.
+% Subsections~\ref{code:lists-spacing}-\ref{code:lists-struct} have the
+% code for list spacing and list structures.  Page layout is described
+% in Subsections~\ref{code:page}-\ref{code:page-style}.  The next
+% subsections cover bibliographies (\ref{code:biblio}), non-floating
+% floats (\ref{code:floats}), foil heads~(\ref{code:foil-title}), new
+% theorem environments~(\ref{code:theorems}), and bold
+% mathematics~(\ref{code:boldmath}).
+% 
+% \subsection{The package options} \label{code:options}
+% \begin{macro}{\if@openbib}
+% \begin{macro}{\if@landscape}
+% \begin{macro}{\if@dvips}
+% \begin{macro}{\if@dvipsone}
+% \begin{macro}{\if@vtex}
+% \begin{macro}{\if@header@rule}
+% \begin{macro}{\if@footer@rule}
+% \begin{macro}{\if@magscaleECfonts} 
+% \begin{macro}{\if@useDCfonts} 
+% \begin{macro}{\if@pdftex} 
+% To setup some of the mechanisms for parsing the package options, we
+% need a few conditionals.  The first and second conditionals are
+% related to standard \LaTeX\ document class options.  The
+% \verb|\if@dvips|, \verb|if@dvipsone| and \verb|if@vtex|
+% conditionals, if true, sets up the necessary
+% \verb|\special|s for page rotation and the like.  These are only
+% supported for Rokicki's \texttt{dvips} and provided for Y\&Y, Inc's,
+% \texttt{dvipsone} amd MicroPress' \VTeX.  The two rule conditionals
+% determine if a rule is set in the header and footer, respectively.
+% By default, all of these conditionals are false.  The next two deal
+% with how \texttt{T1} encoded fonts are used.   The last is for
+% \texttt{pdftex} detection. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+%<*package> 
+\newif\if@openbib \@openbibfalse
+\newif\if@landscape \@landscapefalse
+\newif\if@dvips \@dvipsfalse
+\newif\if@dvipsone \@dvipsonefalse
+\newif\if@vtex \@vtexfalse
+\ifx\VTeXversion\undefined\else\@vtextrue\fi % autodetect
+\newif\if@header@rule \@header@rulefalse
+\newif\if@footer@rule \@footer@rulefalse
+\newif\if@pdftex \@pdftexfalse
+\newif\if@magscaleECfonts \@magscaleECfontsfalse
+\newif\if@useDCfonts \@useDCfontsfalse
+%    \end{macrocode}
+% \begin{macro}{a4paper}
+% \begin{macro}{letterpaper}
+% \begin{macro}{35mmSlide}
+% \begin{macro}{Screen4to3}
+% \begin{macro}{Screen16to9}
+% \begin{macro}{landscape}
+% \begin{macro}{ledgerpaper}
+% \begin{macro}{legalpaper}
+% \begin{macro}{a3paper}
+% \begin{macro}{a2paper}
+% \begin{macro}{a1paper}
+% These document class options are used to set the paper layout.
+% Most of these are standard \LaTeX, but a few, namely
+% \texttt{35mmSlide}, \texttt{Screen4to3} and \texttt{Screen16to9}, 
+% are new to \FoilTeX.   The first sets the paper
+% dimesions in the aspect ratio for 35mm film, namely, $2\times 3$ and
+% just big enough to fit on US letter paper (I'd have picked A4 paper,
+% but I'm US centric!).   The next two, set them to relative
+% dimensions for full screen displays at rations 4x3 and 16x9.  These
+% are already rotated for displays so \texttt{landscape} is not
+% required!  (Thanks to Stephen Sangwine for this contribution which I
+% included unchanged and which explains the metric units.)
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\DeclareOption{a4paper}
+   {\setlength\paperheight {297mm}%
+    \setlength\paperwidth  {210mm}}
+\DeclareOption{letterpaper}
+   {\setlength\paperheight {11in}%
+    \setlength\paperwidth  {8.5in}}
+\DeclareOption{ledgerpaper}
+   {\setlength\paperheight {11in}%
+    \setlength\paperwidth  {7.33in}}
+\DeclareOption{legalpaper}
+   {\setlength\paperheight {14in}%
+    \setlength\paperwidth  {8.5in}}
+\DeclareOption{a3paper}
+   {\setlength\paperheight {420mm}%
+    \setlength\paperwidth  {297mm}}
+\DeclareOption{a2paper}
+   {\setlength\paperheight {594mm}%
+    \setlength\paperwidth  {420mm}}
+\DeclareOption{a1paper}
+   {\setlength\paperheight {840mm}%
+    \setlength\paperwidth  {594mm}}
+\DeclareOption{35mmSlide}
+   {\setlength\paperheight {11in}%
+    \setlength\paperwidth  {7.33in}}
+\DeclareOption{Screen4to3}
+   {\setlength\paperwidth {297mm}%
+    \setlength\paperheight  {0.75\paperwidth}}
+\DeclareOption{Screen16to9}
+   {\setlength\paperwidth {297mm}%
+    \setlength\paperheight  {0.5625\paperwidth}}
+\DeclareOption{landscape}
+   {\setlength\@tempdima   {\paperheight}%
+    \setlength\paperheight {\paperwidth}%
+    \setlength\paperwidth  {\@tempdima}%
+    \@landscapetrue}
+%    \end{macrocode}
+% \begin{macro}{\@ptsize}
+% As in the standard \LaTeX\ classes, this macro holds the point size of
+% the normal font.   The available options here are
+% \texttt{17pt}, \texttt{20pt}, \texttt{25pt}, \texttt{30pt} with 
+% \texttt{20pt} being the default.  There is also a special option
+% \texttt{shortform} which compresses the full large pages into a
+% shorter form.  In this form, text is smaller (generally 12pt), new
+% foils do not cause a page break, only a vertical skip.  This is
+% useful for making either hard or soft copy for redistribution (to
+% save paper). 
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\@ptsize{}
+\DeclareOption{shortform}{\renewcommand\@ptsize{shrt}}
+\DeclareOption{17pt}{\renewcommand\@ptsize{17}}
+\DeclareOption{20pt}{\renewcommand\@ptsize{20}}
+\DeclareOption{25pt}{\renewcommand\@ptsize{25}}
+\DeclareOption{30pt}{\renewcommand\@ptsize{30}}
+%    \end{macrocode}
+% The next few options are standard \LaTeX: \texttt{leqno}, \texttt{fleqn},
+% \texttt{draft}, \texttt{final}, \texttt{openbib}. 
+%    \begin{macrocode}
+\DeclareOption{leqno}{\input{leqno.clo}}
+\DeclareOption{fleqn}{\input{fleqn.clo}}
+\DeclareOption{draft}{\setlength\overfullrule{5pt}}
+\DeclareOption{final}{\setlength\overfullrule{0pt}}
+\DeclareOption{openbib}{\@openbibtrue}
+%    \end{macrocode}
+% \begin{macro}{headrule}
+% \begin{macro}{footrule}
+% The ``rule'' options enable rules in the header and footer. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\DeclareOption{headrule}{\@header@ruletrue}
+\DeclareOption{footrule}{\@footer@ruletrue}
+%    \end{macrocode}
+% \begin{macro}{dvips|dvipsone|vtex}
+% One of the \texttt{dvips}, \texttt{dvipsone} or \texttt{vtex} option
+% are \emph{required} for the rotation of
+% individual foils.  We also use this together with the
+% \texttt{landscape} option to issue the \verb|\special{landscape}|
+% required to rotate the whole document.  This just saves the user from
+% doing it. 
+% \end{macro}
+%    \begin{macrocode}
+\DeclareOption{dvips}{\@dvipstrue}
+\DeclareOption{dvipsone}{\@dvipsonetrue}
+\DeclareOption{vtex}{\@vtextrue}
+%    \end{macrocode}
+% \begin{macro}{magscalefonts}
+% \begin{macro}{useDCfonts}
+% These two options control the conditionals which trigger changes in
+% the use of the \texttt{T1} encoding.  See
+% Section~\ref{sec:newoptionsin2.1} for more details.
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\DeclareOption{magscalefonts}{\@magscaleECfontstrue}
+\DeclareOption{useDCfonts}{\@useDCfontstrue}
+%    \end{macrocode}
+% Because a number of standard \LaTeX\ options don't make sense in
+% \FoilTeX, we have disabled them.  These options are \texttt{a5paper},
+% \texttt{b5paper},\texttt{executivepaper},
+% \texttt{10pt}, \texttt{11pt}, \texttt{12pt}, \texttt{oneside},
+% \texttt{twoside}, \texttt{openright}, \texttt{openany},
+% \texttt{titlepage}, \texttt{notitlepage}, \texttt{onecolumn},
+% \texttt{twocolumn}. With the exceptions of \texttt{oneside},
+% \texttt{titlepage}, \texttt{onecolumn}, they all return a warning to
+% the user.  In the case of point size options, suggestions are given to
+% the user to try the official \FoilTeX\ size options.  (Note, in
+% versions prior to~2.1.3, \texttt{legalpaper} was not available.)
+%    \begin{macrocode}
+\DeclareOption{a5paper}{%
+    \ClassWarningNoLine{FoilTeX}{No 'a5paper' option for foils.}}
+\DeclareOption{b5paper}{%
+    \ClassWarningNoLine{FoilTeX}{No 'b5paper' option for foils.}}
+\DeclareOption{executivepaper}{%
+    \ClassWarningNoLine{FoilTeX}{No 'executivepaper' option for foils.}}
+\DeclareOption{10pt}{%
+    \ClassWarningNoLine{FoilTeX}{No '10pt' foils option, try shortform,
+    17pt, 20pt, 25pt or 30pt (defaulting to 20pt).}}
+\DeclareOption{11pt}{%
+    \ClassWarningNoLine{FoilTeX}{No '11pt' foils option, try shortform,
+    17pt, 20pt, 25pt or 30pt (defaulting to 20pt).}}
+\DeclareOption{12pt}{%
+    \ClassWarningNoLine{FoilTeX}{No '12pt' foils option, try shortform,
+    17pt, 20pt, 25pt or 30pt (defaulting to 20pt).}}
+\DeclareOption{oneside}{}
+\DeclareOption{twoside}{%
+    \ClassWarningNoLine{FoilTeX}{No 'twoside' option for foils.}}
+\DeclareOption{openright}{%
+    \ClassWarningNoLine{FoilTeX}{No 'openright' option for foils.}}
+\DeclareOption{openany}{%
+    \ClassWarningNoLine{FoilTeX}{No 'openany' option for foils.}}
+\DeclareOption{titlepage}{}
+\DeclareOption{notitlepage}{%
+    \ClassWarningNoLine{FoilTeX}{No 'notitlepage' option for foils.}}
+\DeclareOption{onecolumn}{}
+\DeclareOption{twocolumn}{%
+    \ClassWarningNoLine{FoilTeX}{No 'twocolumn' layout for foils.}}
+%    \end{macrocode}
+% Here we execute the default options and do the processing of the
+% document class option list and what is specified in the
+% \texttt{foiltex.cfg} file if one exists.
+%
+% When \VTeX\ is autodetected the \texttt{vtex} option is not required
+% and the \texttt{dvips} and \texttt{dvipsone} options are disabled. 
+% Version~2.1.4 adds PDF\LaTeX\ auto-detection. This code was supplied
+% by Hans Fredrik Nordhaug, which he claims was borrowed from Heiko
+% Oberdiek \texttt{ifpdf} package.  It also suppressed the other 
+% driver options (except the \texttt{vtex} as I don't know how this
+% integrates with \VTeX.) 
+%    \begin{macrocode}
+\ExecuteOptions{letterpaper,20pt,final}
+\InputIfFileExists{foiltex.cfg}{}{}
+\ProcessOptions
+\ifx\pdfoutput\undefined
+\else
+  \ifx\pdfoutput\relax
+  \else
+    \ifcase\pdfoutput
+    \else
+      \@pdftextrue
+    \fi
+  \fi
+\fi
+\if@vtex
+  \if@dvips
+  \ClassWarningNoLine{FoilTeX}{%
+      Option 'dvips' is ignored when running vtex}
+  \fi
+  \if@dvipsone
+  \ClassWarningNoLine{FoilTeX}{%
+      Option 'dvipsone' is ignored when running vtex}
+  \fi
+  \@dvipsfalse\@dvipsonefalse
+\fi
+\if@pdftex
+  \if@dvips
+  \ClassWarningNoLine{FoilTeX}{%
+      Option 'dvips' is ignored when running pdflatex}
+  \fi
+  \if@dvipsone
+  \ClassWarningNoLine{FoilTeX}{%
+      Option 'dvipsone' is ignored when running pdflatex}
+  \fi
+  \@dvipsfalse\@dvipsonefalse
+\fi
+\if@landscape
+%    \end{macrocode}
+% \texttt{dvips} will recognize the paper format to be landscape
+% and rotate the page contents appropriately to fit on portrait paper.
+% Additionally, we instruct \texttt{dvips} to rotate counter-clockwise 
+% rather than clockwise, so as to match Ghostscript.  
+% With \texttt{dvipsone}, the `landscape' \verb|\special| is issued.
+%    \begin{macrocode}
+  \if@dvips\AtBeginDvi{\special{! /landplus90 true store}}\else%
+  \if@dvipsone{\special{landscape}}%
+%    \end{macrocode}
+% With \VTeX, landscape mode is handled in different ways in PDF and
+% PostScript mode:
+% \begin{itemize}
+% \item In PDF mode, the MediaSize is determined from the landscape
+%   paper size, as usual.  
+% \item In PS mode, the BoundingBox is set to the corresponding 
+%   \emph{portrait} paper size, and the page contents is rotated, 
+%   so that the foils can easily be printed on portrait-oriented paper.
+% \end{itemize}
+%    \begin{macrocode}
+  \else\if@vtex\ifnum\OpMode=2{%
+     \immediate\special{landscape}%
+     \AtBeginDocument{\mediaheight=\paperwidth\mediawidth=\paperheight}%
+  }\fi 
+  \fi\fi\fi
+\fi
+%    \end{macrocode}
+% Finally we are ready to load the other \FoilTeX\ external files
+% required.  The first checks to see if there is a \texttt{ftlfonts.cfg}
+% file which contains local alternative font definitions.  If not, then
+% we load the default font definition information.  (This was changed in
+% version~2.1.4 to accommodate systems like \VTeX\ which might want to
+% customize font usage without modifying the default files.) The
+% default font definitions include font shape data usually stored in
+% \texttt{.fd} files; we put them together for simplicity and to reduce
+% the number of files loaded.  The second is the file used for the size
+% option.
+%    \begin{macrocode}
+\InputIfFileExists{fltfonts.cfg}{}{\input{fltfonts.def}}
+\input{foil\@ptsize.clo}
+%    \end{macrocode}
+%
+% \subsection{Some basic macros}\label{code:basic-macros}
+% \begin{macro}{\FoilTeX}
+% Of course, we have to define the \FoilTeX\ logo.  As is done for the
+% \LaTeX\ logos, We use the new \verb|\DeclareRobustCommand|.  Note
+% that, in contrast with the other logos, we force the \FoilTeX\ logo to
+% always appear in the same font family, shape and series with only the
+% size varying.  
+% \end{macro}
+%    \begin{macrocode}
+\DeclareRobustCommand\FoilTeX{{\normalfont%
+   {\sffamily Foil}\kern-.03em{\rmfamily\TeX}}}
+%    \end{macrocode}
+% \begin{macro}{underscore}
+% The underscore in \LaTeX\ is too thin, in fact it has fixed thickness
+% independent of the font size.  This makes some sense if the font sizes
+% aren't allowed to vary that much.   We fix it here so that it varies
+% with font size always. 
+% \end{macro}
+%    \begin{macrocode}
+\renewcommand\_{\leavevmode\kern.06em\vbox{\hrule width.4em height.12ex}}
+%    \end{macrocode} 
+% \begin{macro}{\footnoterule}
+% \begin{macro}{\@makefntext}
+% \begin{macro}{\@makefnmark}
+% The default \LaTeX\ footnote rule is to short (2in) on foils so we make
+% it longer.  Note that the thickness of the rule is still the same
+% (.4pt).   The macro for making the footnote text is not part of the
+% default format but is defined in class files like
+% \texttt{article.cls}.  We steal that definition and put it here. 
+% Curiously, the macro for making the footnote mark \emph{is} defined in
+% the format (\texttt{latex.ltx}), but we fix it here so that it gets
+% sans serif numerals.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\renewcommand\footnoterule{\kern-3\p@\hrule width.4\textwidth\kern2.6\p@}
+\newcommand\@makefntext[1]{\parindent 1em\noindent
+ \hbox to 1.8em{\hss\@makefnmark}#1}
+\def\@makefnmark{\hbox{$^{\mathsf{\@thefnmark}}\m@th$}}
+%    \end{macrocode} 
+% \begin{macro}{\marginpar}
+% \begin{macro}{\@oldmarginpar}
+% \begin{macro}{\@foilmarginpar}
+% \begin{macro}{\@foilmarginparR}
+% \begin{macro}{\@foilmarginparRL}
+% The default definition of \verb|\marginpar| doesn't work well in
+% \FoilTeX\ because of the lack of hyphenation, the large size of the
+% fonts and the very narrow space for these items.  So, we fix it a
+% little by forcing it to be \verb|\raggedright| (for right margin
+% paragraphs) and \verb|\raggedleft| (for left margin paragraphs).  We
+% cheat here so that we don't need to worry about what is happening in
+% \LaTeX's innards in this context.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\let\@oldmarginpar\marginpar
+\def\@marginragged{\if@reversemargin\raggedleft\else\raggedright\fi}
+\def\@foilmarginpar{\@ifnextchar[{\@foilmarginparRL}{\@foilmarginparR}}
+\def\@foilmarginparRL[#1]#2{%
+  \@oldmarginpar[{\@marginragged #1\par}]{{\@marginragged #2\par}}}
+\def\@foilmarginparR#1{\@oldmarginpar{\@marginragged #1\par}}
+\let\marginpar\@foilmarginpar
+%    \end{macrocode}
+% \begin{macro}{\Black}
+% \begin{macro}{\globalColor}
+% Stricly speaking, we probably shouldn't define these and they
+% shouldn't be part of a \FoilTeX\ class file, since they are not
+% completely compatible with the color package.  However, we still
+% define them and use them for two purposes.  First is backward
+% compatibility with old \FoilTeX\ documents, and second, so that things
+% still work reasonably well with the old \texttt{colordvi} style file. 
+% They are both defined as no-ops.
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\def\Black#1{#1}
+\def\globalColor#1{#1} 
+%    \end{macrocode}
+% \begin{macro}{\today}
+% Since this one isn't defined by default, we define it. 
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\today{\ifcase\month\or
+ January\or February\or March\or April\or May\or June\or
+ July\or August\or September\or October\or November\or December\fi
+ \space\number\day, \number\year}
+%    \end{macrocode}
+% \begin{macro}{\lineskip}
+% \begin{macro}{\normallineskip}
+% \begin{macro}{\baselinestretch}
+% \begin{macro}{\parskip}
+% \begin{macro}{\parindent}
+% \begin{macro}{\jot}
+% Next, we set a few of the basic space parameters.  Note that we
+% have increased the \verb|\parindent| in the new version but retained
+% the old value in compatibility mode for old versions of \FoilTeX\
+% files.  The value for baseline stretch is not strictly needed since
+% that is the default.  We put it here for completeness.  We adjust
+% the spacing set by \verb|\jot| in the new mode, since we found we used
+% this a lot in practice.  We left it as the default in compatibility
+% mode. 
+% \end{macro} 
+% \end{macro} 
+% \end{macro} 
+% \end{macro} 
+% \end{macro} 
+% \end{macro} 
+%    \begin{macrocode}
+\setlength\lineskip{1\p@}
+\setlength\normallineskip{1\p@}
+\renewcommand\baselinestretch{1}
+\setlength\parskip{18\p@ \@plus 4\p@ \@minus 4\p@}
+\if@compatibility
+ \setlength\parindent{15\p@}
+ \setlength\jot{3\p@}    
+\else
+ \setlength\parindent{30\p@}
+ \setlength\jot{10\p@}    
+\fi
+%    \end{macrocode}
+% \begin{macro}{\righthyphenmin}
+% \begin{macro}{\lefthyphenmin}
+% We set these minimum hyphenation values to some large value so that we
+% can disable hyphenation.  This is unlike \FoilTeX~v1.0.1, where we turned
+% off hyphenation by disabling the hyphenation tables.   This is more or
+% less essential here since the tables are already loaded by the \LaTeX\
+% format.  It does have the additional advantage in that the user can
+% re-enable it simply by resetting these values. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\righthyphenmin=100
+\lefthyphenmin=100
+%    \end{macrocode}
+% \begin{macro}{\@eqnnum}
+% \begin{macro}{\theequation}
+% We set the equation number in the default sans serif font (don't
+% exactly know why this is necessary --- maybe it is not!) and place it
+% in arabic numerals. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\def\@eqnnum{\hbox{\reset@font\sffamily (\theequation)}} 
+\renewcommand\theequation{\arabic{equation}}
+%    \end{macrocode}
+% \begin{macro}{titlepage}
+% \begin{macro}{\@pnumwidth}
+% \begin{macro}{@tocrmarg}
+% \begin{macro}{\@dotsep}
+% We leave the next set of macros here, even though they are either 
+% irrelevant or taken care of by other things (like \verb|\maketitle|), 
+% just in case someone wants to use them.  They are not supported except
+% in compatibility mode.  The parameter settings are used only in the
+% table of contents (which we don't have on foils), so these are
+% irrelevant. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\if@compatibility
+  \newenvironment{titlepage}{%
+    \@restonecolfalse \newpage \thispagestyle{empty}
+      \setcounter{page}{0}}{\newpage}
+ \newcommand\@pnumwidth{1.55em}
+ \newcommand\@tocrmarg {2.55em}
+ \newcommand\@dotsep{4.5}
+\fi
+%    \end{macrocode}
+% \begin{macro}{\sloppyfoils}
+% We can be really sloppy with tolerances and fuzz on foils, so we set
+% the parameters for this and invoke (probably could just avoid the
+% definition all together).
+% \end{macro}
+%    \begin{macrocode}
+\def\sloppyfoils{\tolerance 9000 \hfuzz 2\p@ \vfuzz 2\p@ \hbadness 2000}
+\sloppyfoils
+%    \end{macrocode}
+% \subsection{List environments: spacing}\label{code:lists-spacing}
+% In this subsection, we set up all the code needed for list
+% environments spacing.  Most of this is extracted in some form or
+% another from the basic \LaTeX\ classes like \texttt{article} with some
+% modifications for use in foils.
+% \begin{macro}{\leftmargin*}
+% We begin with the list margin indentation parameters.
+% \end{macro}
+%
+%    \begin{macrocode}
+\setlength\leftmargini{25\p@}
+\setlength\leftmarginii{22\p@} 
+\setlength\leftmarginiii{18.7\p@}
+\setlength\leftmarginiv{17\p@}
+\setlength\leftmarginv{10\p@}
+\setlength\leftmarginvi{10\p@}
+\setlength\leftmargin\leftmargini
+%    \end{macrocode}
+% \begin{macro}{\labelwidth}
+% \begin{macro}{\labelsep}
+% We need to set the label width and label separation parameters.
+% Unfortunately, they were done in the wrong order in the old \FoilTeX,
+% so here we do it right but under compatibility mode, do it the old way
+% so things don't change.
+% \end{macro}
+% \end{macro}
+%     \begin{macrocode}
+\if@compatibility
+  \setlength\labelwidth\leftmargini\advance\labelwidth-\labelsep
+  \setlength\labelsep{.5em}
+\else
+  \setlength\labelsep{10\p@}
+  \setlength\labelwidth\leftmargini\advance\labelwidth-\labelsep
+\fi 
+%    \end{macrocode}
+% \begin{macro}{\partopsep}
+% This is set fairly small, no reason to be too spacious.
+% \end{macro}
+%    \begin{macrocode}
+\setlength\partopsep{2\p@ \@plus 1\p@ \@minus 1\p@}
+%    \end{macrocode}
+% \begin{macro}{\@listIa}
+% \begin{macro}{\@listIb}
+% \begin{macro}{\@listIc}
+% \begin{macro}{\@listId}
+% These macros define the spacing for top level list environments.  We
+% define four default sets of parameters and overlap their usage in the
+% various point size class option files.  
+% Table~\ref{tab:listI} shows the usage of each with respect to font
+% size.  (This table is somewhat different in
+% compatibility mode, particularly for small relative font sizes in the
+% larger class options.  See Section~\ref{code:clo} for the details.)
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{table}
+% \begin{center}
+% \begin{tabular}{|l|l|l|} \hline
+% $\ge$20pt & {\tt \listi a} \\ \hline
+% 17pt & {\tt \listi b} \\ \hline
+% 14pt & {\tt \listi c} \\ \hline
+% 12pt, shortform & {\tt \listi d} \\ \hline
+% \end{tabular}
+% \end{center}
+% \caption{\label{tab:listI}Usage of \texttt{\bs\at listI*} styles
+% versus font size in \LaTeX2e\ mode.}  
+% \end{table}
+%    \begin{macrocode}
+\newcommand\@listIa{\leftmargin\leftmargini
+\topsep 14\p@ \@plus 2\p@ \@minus 4\p@
+\parsep 14\p@ \@plus 4\p@ \@minus 4\p@
+\itemsep 14\p@ \@plus 4\p@ \@minus 2\p@}
+\newcommand\@listIb{\leftmargin\leftmargini
+\topsep 8\p@ \@plus 2\p@ \@minus 2\p@      
+\parsep 2\p@ \@plus 1\p@ \@minus 1\p@      
+\itemsep \parsep}
+\newcommand\@listIc{\leftmargin\leftmargini
+\topsep 6\p@ \@plus 1\p@ \@minus 1\p@      
+\parsep 2\p@ \@plus 1\p@ \@minus 1\p@
+\itemsep \parsep}
+\newcommand\@listId{\leftmargin\leftmargini
+\topsep 4\p@ \@plus 1\p@ \@minus 1\p@
+\parsep 2\p@ \@plus 1\p@ \@minus 1\p@
+\itemsep \parsep}
+%    \end{macrocode}
+% \begin{macro}{\@listi*}
+% Now we set the parameters for lower level lists.  These are fixed
+% throughout all the point sizes.  Essentially, there is very little
+% additional space here except the indentation.  We allowed a fair
+% amount of space in the top level, however.  We close this section
+% with a call to \verb|\normalsize| to make sure that all the internal
+% list macros are defined appropriately.  This call is also done in
+% each of the \texttt{foil*.clo} files but before the above parameters
+% sets are defined.  This caused a problem by delaying the definition
+% of \verb|\@listi|.  This is new in version~2.1.1. (Alternatively, we
+% could move all this stuff \emph{before} we load these \texttt{.clo}
+% files but that seemed to be too much of a change.)
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\@listii{\leftmargin\leftmarginii
+ \labelwidth\leftmarginii\advance\labelwidth-\labelsep
+ \topsep \z@  
+ \parsep \z@ 
+ \itemsep \parsep}
+\newcommand\@listiii{\leftmargin\leftmarginiii
+ \labelwidth\leftmarginiii\advance\labelwidth-\labelsep
+ \partopsep 1\p@ \@plus 0\p@ \@minus 1\p@ 
+ \topsep \z@ 
+ \parsep \z@ 
+ \itemsep \topsep}
+\newcommand\@listiv{\leftmargin\leftmarginiv
+ \labelwidth\leftmarginiv\advance\labelwidth-\labelsep}
+\newcommand\@listv{\leftmargin\leftmarginv
+ \labelwidth\leftmarginv\advance\labelwidth-\labelsep}
+\newcommand\@listvi{\leftmargin\leftmarginvi
+ \labelwidth\leftmarginvi\advance\labelwidth-\labelsep}
+\normalsize
+%    \end{macrocode}
+% \begin{macro}{\zerolistvertdimens}
+% We define this macro in the new version so we have a simple mechanism
+% for shrinking as much as possible all the vertical space in list
+% environments. 
+% \end{macro}
+%    \begin{macrocode}
+\if@compatibility
+ \let\zerolistvertdimens\relax
+\else
+ \def\zerolistvertdimens{\parskip0pt\topsep0pt\partopsep0pt%
+    \parsep0pt\itemsep0pt}
+\fi
+%    \end{macrocode}
+% \subsection{List environments: structure} 
+% \label{code:lists-struct}
+% Here we take up the structure of list environments including the
+% standard environments like \texttt{verse} and \texttt{description}
+% \begin{macro}{\@item}
+% We start by redefining \verb|\@item| in
+% compatibility mode to get the effect we had before for protecting the
+% item label from spurious color corruption.   This of course will only
+% work with the \texttt{colordvi} style.  As mentioned above, this is
+% not the recommended way to do color in the new \LaTeX.   This code
+% is mostly taken from the new \LaTeX\ and modified to fit the old
+% needs.  The only real change is in the addition of the
+% \verb|\globalColor| macro surrounding the \verb|\makelabel|.
+% \end{macro}
+%    \begin{macrocode}
+\if@compatibility
+ \def\@item[#1]{%
+   \if@noparitem 
+     \@donoparitem
+   \else 
+     \if@inlabel \indent \par \fi
+     \ifhmode \unskip\unskip \par \fi 
+     \if@newlist 
+       \if@nobreak 
+         \@nbitem 
+       \else
+         \addpenalty\@beginparpenalty
+         \addvspace\@topsep \addvspace{-\parskip}
+       \fi
+     \else 
+       \addpenalty\@itempenalty \addvspace\itemsep 
+     \fi 
+     \global\@inlabeltrue 
+   \fi
+ \everypar{\global\@minipagefalse\global\@newlistfalse 
+   \if@inlabel
+     \global\@inlabelfalse \hskip -\parindent \box\@labels \penalty\z@ 
+   \fi
+   \everypar{}}
+ \global\@nobreakfalse
+ \if@noitemarg \@noitemargfalse 
+   \if@nmbrlist \refstepcounter{\@listctr}\fi 
+ \fi
+ \sbox\@tempboxa{\globalColor{\makelabel{#1}}} \global\setbox\@labels
+ \hbox{\unhbox\@labels \hskip \itemindent
+   \hskip -\labelwidth \hskip -\labelsep 
+   \ifdim 
+     \wd\@tempboxa >\labelwidth \box\@tempboxa
+   \else 
+     \hbox to\labelwidth {\unhbox\@tempboxa}
+   \fi
+   \hskip \labelsep}
+ \ignorespaces
+ }
+\fi
+%    \end{macrocode}
+% \begin{macro}{\theenum*}
+% \begin{macro}{\labelenum*}
+% \begin{macro}{\labelitem*}
+% We set up the default format for the enumeration list numbers at the
+% four default levels.  Similarly, we default the tags for the itemized
+% lists.  
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\renewcommand\theenumi{\arabic{enumi}}
+\renewcommand\theenumii{\alph{enumii}}
+\renewcommand\theenumiii{\roman{enumiii}}
+\renewcommand\theenumiv{\Alph{enumiv}}
+\renewcommand\p@enumii{\theenumi}
+\renewcommand\p@enumiii{\theenumi(\theenumii)}
+\renewcommand\p@enumiv{\p@enumiii\theenumiii}
+\newcommand\labelenumi{\theenumi.}
+\newcommand\labelenumii{(\theenumii)}
+\newcommand\labelenumiii{\theenumiii.}
+\newcommand\labelenumiv{\theenumiv.}
+\newcommand\labelitemi{$\m@th\bullet$}
+\newcommand\labelitemii{{\normalfont\bfseries --}}
+\newcommand\labelitemiii{$\m@th\ast$}
+\newcommand\labelitemiv{$\m@th\cdot$}
+%    \end{macrocode}
+% \begin{macro}{\descriptionlabel}
+% \begin{macro}{description}
+% \begin{macro}{verse}
+% \begin{macro}{quotation}
+% \begin{macro}{quote}
+% Finally, we predefine the standard environments which are built from
+% the list environment.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\descriptionlabel[1]{\hspace\labelsep \normalfont\bfseries #1}
+\newenvironment{description}{\list{}{\labelwidth\z@ 
+  \itemindent-\leftmargin \let\makelabel\descriptionlabel}}{\endlist}
+\newenvironment{verse}{\let\\=\@centercr
+ \list{}{\itemsep\z@ \itemindent -1.5em\listparindent \itemindent
+ \rightmargin\leftmargin\advance\leftmargin 1.5em}\item[]}{\endlist}
+\newenvironment{quotation}{\list{}{\listparindent 1.5em
+ \itemindent\listparindent
+ \rightmargin\leftmargin \parsep 0\p@ \@plus 1\p@}\item[]}{\endlist}
+\newenvironment{quote}{\list{}{\rightmargin\leftmargin}\item[]}{\endlist}
+%    \end{macrocode}
+% \subsection{Page layout parameters}\label{code:page} 
+% In this section we setup the parameters that adjust the page layout,
+% including margins, text height and width, etc.  
+% \begin{macro}{\oddsidemargin}
+% \begin{macro}{\evensidemargin}
+% \begin{macro}{\topmargin}
+% \begin{macro}{\headsep}
+% \begin{macro}{\headheight}
+% \begin{macro}{\footskip}
+% \begin{macro}{\head@footskip}
+% \begin{macro}{\footnotesep}
+% \begin{macro}{\footins}
+% \begin{macro}{\@mpfootins}
+% We start with the margin settings and the header settings.  Some
+% things change a little in the new version so we keep the old versions
+% in compatibility mode.  This is mostly for the footer stuff.  Of
+% course, the \verb|\footheight|, \verb|@maxsep| and
+% \verb|\@dblmaxsep|
+% are no-ops in all cases but is only
+% defined in compatibility mode.  In the default mode (i.e.,
+% non-compatibility) the \verb|\head@footskip| length contains the sum
+% of the vertical space taken by the header and footer.  The description
+% of this is given below.  Initially it is set to one inch and the
+% \verb|\footskip| is calculated from this.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\setlength\oddsidemargin{0\p@}
+\setlength\evensidemargin{0\p@}
+\setlength\topmargin{0\p@}
+\setlength\headsep{14\p@}
+\setlength\headheight{15\p@}
+\if@compatibility
+ \setlength\footheight{25\p@}  
+ \setlength\footskip{45\p@}
+ \setlength\@maxsep{20\p@}
+ \setlength\@dblmaxsep{20\p@}
+\else
+ \newdimen\head@footskip
+ \setlength\head@footskip{1in}  
+ \setlength\footskip{\head@footskip}
+ \addtolength\footskip{-\headsep}
+ \addtolength\footskip{-\headheight}
+\fi
+\setlength\footnotesep{10\p@}
+\setlength{\skip\footins}{9\p@ \@plus 4\p@ \@minus 2\p@}
+\skip\@mpfootins = \skip\footins
+%    \end{macrocode}
+% \begin{macro}{\marginparwidth}
+% \begin{macro}{\marginparsep}
+% \begin{macro}{\marginparpush}
+% Here we set up the dimensions for margin paragraphs.  We base these
+% on one inch margins, so if the user choses to shrink these margins and
+% plans to use margin paragraphs, they should be careful about these
+% dimensions. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\setlength\marginparwidth{54\p@}
+\setlength\marginparsep{10\p@}
+\setlength\marginparpush{5\p@}
+%    \end{macrocode}
+% \begin{macro}{\textheight}
+% \begin{macro}{\textwidth}
+% \begin{macro}{\@foilheight}
+% \begin{macro}{\@foilwidth}
+% \begin{macro}{\@rotdimens}
+% \begin{macro}{\@defaultdimens}
+% \begin{macro}{\@rotdimens@pdf}
+% \begin{macro}{\@defaultdimens@pdf}
+% \begin{macro}{\setp@gelayoutdimens}
+% We have added in the new version a \verb|\@foilheight| and
+% \verb|\@foilwidth| which are internal dimensions of the printable area
+% of the page (excluding margin paragraphs and the like).  They are
+% setup initially as the paper dimensions less two inches (each) since
+% we set the default top margin and side margins to zero.  This leaves
+% exactly a one inch margin all the way around in all supported paper
+% sizes.  At the \verb|\begin{document}| we invoke a macro
+% (\verb|\setp@gelayoutdimens|) that adjusts these dimensions to account
+% for user settings for page layout.  Furthermore, it defines the
+% internal commands \verb|\@rotdimens| and \verb|\@defaultdimens| which
+% are used to perform the rotation of individual pages (including header
+% and footer).  Set up this way, the macros can take into account the
+% rotation of the whole document done by a \texttt{landscape} class
+% option (since this is based only on the paper dimensions).
+% 
+% In compatibility mode, we use the parameter settings of \FoilTeX~v1.0.1
+% for text height but in the new version we let the text height expand
+% to its largest possible subject to space for header and margins.  Also
+% in this mode, we disable the \verb|\@rotdimens| and
+% \verb|\@defaultdimens| since we didn't support this in the old
+% version.
+%
+% Note: I understand the \texttt{dvips} can set the paper sizes
+% automatically with a \verb|\special| command. However, I've chosen not
+% to use that here because (a) limitations in my testing environment and
+% (b) possible incompatibilities with other drivers. 
+%
+% We've included some additional code to deal with another
+% incompatibility with \texttt{hyperref}.  This again is provided by Heiko
+% Oberdiek via Hans Fredrik Nordhaug.
+%
+% Finally, version~2.1.4 provides additional page dimension
+% manipulations for PDF\LaTeX.  This was provided by in a number of
+% similar forms by a few people.  See Section~\ref{sec:acknowledgements}. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\if@compatibility
+ \setlength\textheight{7.6in}  
+ \setlength\textwidth{6.5in}
+ \let\@rotdimens\relax         
+ \let\@defaultdimens\relax     
+\else
+ \newdimen\@foilheight
+ \newdimen\@foilwidth
+ \setlength\textheight{\paperheight}
+ \addtolength\textheight{-2in}
+ \addtolength\textheight{-\head@footskip}
+ \setlength\textwidth{\paperwidth}
+ \addtolength\textwidth{-2in}
+ \def\setp@gelayoutdimens{%
+  \setlength\head@footskip{\footskip}
+  \addtolength\head@footskip{\headsep}
+  \addtolength\head@footskip{\headheight}
+  \setlength\@foilheight{\textheight}
+  \addtolength\@foilheight{\head@footskip}
+  \setlength\@foilwidth{\textwidth}
+  \def\@rotdimens{\textheight\@foilwidth \textwidth\@foilheight 
+        \addtolength\textheight{-\head@footskip}
+        \vsize\textheight \hsize\textwidth \linewidth\textwidth
+        \columnwidth\textwidth \@colroom\textheight \@colht\textheight}
+  \def\@rotdimens@pdf{%
+        \setlength{\pdfpagewidth}{\strip@pt\paperheight truept}%
+        \setlength{\pdfpageheight}{\strip@pt\paperwidth truept}}
+  \def\@defaultdimens{\textheight\@foilheight \textwidth\@foilwidth
+        \addtolength\textheight{-\head@footskip}
+        \vsize\textheight \hsize\textwidth \linewidth\textwidth
+        \columnwidth\textwidth \@colroom\textheight \@colht\textheight}
+   \def\@defaultdimens@pdf{%
+        \setlength{\pdfpagewidth}{\strip@pt\paperwidth truept}%
+        \setlength{\pdfpageheight}{\strip@pt\paperheight truept}}
+   \@defaultdimens
+   \if@pdftex\@defaultdimens@pdf\fi}   % end of \def\setp@gelayoutdimens
+\fi
+\AtBeginDocument{\if@compatibility\else\setp@gelayoutdimens\fi
+% For \texttt{dvips} we pass the paper size to the driver (so user's
+% don't have to invoke \texttt{dvips} with the \texttt{-t papersize}
+% option; thanks to Hans Fredrik Nordhaug for this fix.). This may also
+% be usable with \texttt{dvipsone} but we have no way to test that.
+% With VTeX this isn't necessary.
+  \if@dvips
+    \AtBeginDvi{\special{%
+    papersize=\the\paperwidth,\the\paperheight}}%
+  \fi
+  \@ifpackageloaded{hyperref}{%
+  \def\@begindvi{\foil@begindvi \unvbox \@begindvibox
+                 \ifHy@pageanchor \@hyperfixhead 
+      \gdef\@begindvi{\foil@begindvi\@hyperfixhead}%
+    \else
+      \gdef\@begindvi{\foil@begindvi\HyPL@EveryPage}% 
+    \fi}}{}%
+}
+%    \end{macrocode}
+% \begin{macro}{\@*penalty}
+% A number of parameters for float separation and the like are set to
+% the defaults in \LaTeX\ (both old and new versions) so we leave out
+% settings for these in this class file.  We do set up the penalty
+% values (not really knowing what they do) to values consistent with
+% other class files and old style files. 
+% \end{macro}
+%    \begin{macrocode}
+\@lowpenalty   51
+\@medpenalty  151
+\@highpenalty 301
+\@beginparpenalty -\@lowpenalty
+\@endparpenalty -\@lowpenalty
+\@itempenalty -\@lowpenalty
+%    \end{macrocode}
+% \begin{macro}{\arraycolsep}
+% \begin{macro}{\tabcolsep}
+% \begin{macro}{\arrayrulewidth}
+% \begin{macro}{\doublerulesep}
+% \begin{macro}{\tabbingsep}
+% Here are some settings for space in tables and tabbing environments.
+% These aren't terribly critical but something has to be set. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\setlength\arraycolsep{10\p@}
+\setlength\tabcolsep{12\p@}
+\setlength\arrayrulewidth{1\p@}
+\setlength\doublerulesep{3\p@}
+\setlength\tabbingsep\labelsep
+%    \end{macrocode}
+% \begin{macro}{\fboxsep}
+% \begin{macro}{\fboxrule}
+% And finally some settings for the frame box rule and separation.  We
+% make the separation a bit bigger to compensate for the larger fonts.   
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\if@compatibility
+ \setlength\fboxsep{6\p@}
+\else
+ \setlength\fboxsep{10\p@}
+\fi
+\setlength\fboxrule{1\p@}
+%    \end{macrocode}
+% \subsection{The title page}\label{code:titlepage}
+% In this section we describe the construction of the title page macros.
+% 
+% \begin{macro}{\abovetitleskip}
+% \begin{macro}{\titleauthorskip}
+% \begin{macro}{\authorauthorskip}
+% \begin{macro}{\authordateskip}
+% \begin{macro}{\dateabstractskip}
+% I'm a big fan of letting the user easily adjust spacing in lots of
+% different contexts, so we set all the vertical spacing parameters as
+% adjustable lengths instead of hardcoding their values.  This may take
+% too many \TeX\ resources but hopefully not (I'm sure I'll get messages
+% about this if it does).   Each of these dimensions adjust vertical
+% space on the title page.  Each name indicates where the space is,
+% so the user can easily shrink or stretch space as necessary.  The
+% default values are as in the old \FoilTeX~v1.0.1, so this should cause no
+% additional confusion. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newlength\abovetitleskip
+\newlength\titleauthorskip
+\newlength\authorauthorskip
+\newlength\authordateskip
+\newlength\dateabstractskip
+\setlength\abovetitleskip{2em}
+\setlength\titleauthorskip{1.5em}
+\setlength\authorauthorskip{.5em}
+\setlength\authordateskip{1em} 
+\setlength\dateabstractskip{1em}
+%    \end{macrocode}
+% \begin{macro}{\maketitle}
+% \begin{macro}{\@maketitle}
+% We don't do too much that is not in \texttt{article.cls} for defining
+% the \verb|\maketitle| and \verb|\@maketitle| commands.  About the only
+% differences are the addition of these adjustable spacing parameters.
+% (By changing the way footnote marks are done overall, we no longer
+% need to change the definitions within the \verb|\maketitle| as in the
+% old \FoilTeX.)  This fixed a bug when the user tried to redefine the
+% footnote mark in terms of the footnote symbols. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\def\maketitle{\par 
+  \begingroup 
+    \setcounter{page}{0}
+    \def\thefootnote{\fnsymbol{footnote}} \newpage 
+    \@maketitle
+    \thispagestyle{foilheadings} 
+    \@thanks 
+  \endgroup
+  \setcounter{footnote}{0}
+  \let\maketitle\relax \let\@maketitle\relax
+  \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\let\thanks\relax%
+}
+%    \end{macrocode}
+% Note that in \verb|\@maketitle| we use the \verb|\zerolistvertdimens| to
+% get all the list spacing shrunk to zero so we can control it
+% explicitly with the above parameters. 
+%    \begin{macrocode}
+\def\@maketitle{\newpage
+  \zerolistvertdimens
+  \if@compatibility\else
+    \advance\abovetitleskip -\baselineskip % \null adds this space
+  \fi
+  \null\vskip\abovetitleskip
+  \begin{center}
+     {\Large\bfseries \@title \par} 
+     \vskip\titleauthorskip
+     {\lineskip \authorauthorskip
+       \begin{tabular}[t]{c}\@author\end{tabular}
+       \par}
+     \vskip\authordateskip {\@date}
+  \end{center}    
+  \par\vfil
+}
+%    \end{macrocode}
+% \begin{macro}{\abstractname}
+% \begin{macro}{abstract}
+% To complete the title page, we add the code for the abstract
+% environment, if desired by the user.   We define the
+% \verb|\abstractname| so the user can do this in their favorite
+% language.  We then construct the environment using the new parameters
+% and still try to simulate the old layout.  
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\abstractname{Abstract}
+\newenvironment{abstract}{%
+  \if@compatibility
+    \dateabstractskip\parskip
+    \advance\dateabstractskip\topsep
+    \advance\dateabstractskip\baselineskip
+  \fi
+  \vskip\dateabstractskip
+  \centerline{\reset@font\bfseries\abstractname}
+  \if@compatibility\vspace{-.5em}\vspace{0\p@}\fi
+  \list{}{\listparindent 1.5em
+          \itemindent\listparindent \rightmargin\leftmargin
+          \zerolistvertdimens
+         }\item[]%
+  }{\endlist\vfill}
+%    \end{macrocode}
+% \subsection{Page style}\label{code:page-style}
+% We have now arrived at the part of the code that deals with the page
+% style, headers, footers, etc. 
+% \begin{macro}{\leftheader}
+% \begin{macro}{\rightheader}
+% \begin{macro}{\rightfooter}
+% \begin{macro}{\@leftheader}
+% \begin{macro}{\@rightheader}
+% \begin{macro}{\@rightfooter}
+% We start with three corners of the page (all but the bottom left
+% corner).  These are simply controlled using the next set of
+% declaration macros.  They each define internal macros which are placed
+% in the appropriate place in the header and footer.  The default
+% definitions for the header is empty and for the right footer is the
+% page number.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\leftheader[1]{\gdef\@leftheader{#1}}
+\newcommand\rightheader[1]{\gdef\@rightheader{#1}}
+\newcommand\rightfooter[1]{\gdef\@rightfooter{#1}}
+\leftheader{}
+\rightheader{}
+\rightfooter{\quad\textsf{\thepage}}
+%    \end{macrocode}
+% \begin{macro}{\ifLogo}
+% \begin{macro}{\LogoOff}
+% \begin{macro}{\LogoOn}
+% \begin{macro}{\Restriction}
+% \begin{macro}{\MyLogo}
+% The left footer is a combination of two macros, \verb|\MyLogo| and
+% \verb|\Restriction|.  By default, the logo appears and is set to be
+% the string ``Typeset by \FoilTeX''.  The \verb|\Restriction| is empty,
+% but can be used for things like ``Confidential'' or perhaps for
+% something that is aimed to the intended audience.  The \verb|\LogoOff| and
+% \verb|\LogoOn| declarations are conditional toggles that turn on or
+% off the setting of the logo.  The conditional they set is tested by 
+% \verb|\ifLogo|, which defaults to true.  This gives a simple mechanism 
+% for turning it off completely, or perhaps on individual pages as
+% necessary. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newif\ifLogo \Logotrue
+\newcommand\LogoOff{\Logofalse}
+\newcommand\LogoOn{\Logotrue}
+\newcommand\Restriction[1]{\gdef\@Restriction{#1}}
+\Restriction{}
+\newcommand\MyLogo[1]{\gdef\@MyLogo{\ifLogo{#1}\else\fi}}
+\MyLogo{-- Typeset by \FoilTeX\ --}
+%    \end{macrocode}
+% \begin{macro}{\ps@foilheadings}
+% Now that we have the code so the user can easily set up the contents
+% of the page style, we need to use these to construct the page style. 
+% We have added some extras to this new version.  In particular, we now
+% support a rule below the header and a rule above the footer (much as
+% is available with \texttt{fancyheadings.sty}).   We still wrap
+% everything in the \verb|\Black| macro for backwards compatibility and
+% just in case the user decides to use \texttt{colordvi.sty}, though we
+% don't recommend it or really support it.  Note that these headings are
+% different on the title page.  We also clean this up abit from the old
+% version by using \verb|\let| to do the even pages. 
+%
+% We made changes here to fix a problem with the footrule being placed
+% over a graphic in the footer if the graphic was too tall. 
+% \end{macro}
+%    \begin{macrocode}
+\newsavebox\@tempfootbox
+\newdimen\@tempfootht
+\newcommand\ps@foilheadings{\let\@mkboth\@gobbletwo
+  \def\@oddhead{%
+    \ifnum \c@page>0 
+      {\Black{%
+      \if@header@rule\hbox to\z@{\rule[-5\p@]{\textwidth}{1\p@}\hss}\fi
+      \reset@font\tiny
+      \@leftheader\hfil\@rightheader}}%
+    \else
+      \hfill
+    \fi}%
+  \def\@oddfoot{%
+    \ifnum \c@page>0 
+      {\Black{%
+      \sbox\@tempfootbox{\tiny\@MyLogo\ \@Restriction\hfil\@rightfooter}%
+      \@tempfootht\ht\@tempfootbox
+      \advance\@tempfootht 5.66666\p@
+      \if@footer@rule%
+      \hbox to\z@{\rule[\@tempfootht]{\textwidth}{1\p@}\hss}%
+      \fi%
+      \reset@font\tiny
+     \@MyLogo\ \@Restriction\hfil\@rightfooter}}%
+    \else 
+      {\Black{\hfil\reset@font\footnotesize%
+       \@MyLogo\ \@Restriction\hfil}}%
+    \fi}%
+  \let\@evenhead\@oddhead%
+  \let\@evenfoot\@oddfoot%
+}
+\ps@foilheadings 
+%    \end{macrocode}
+% \begin{macro}{\pagenumbering}
+% \begin{macro}{\onecolumn}
+% \begin{macro}{\mark}
+% Finally, we set the page numbering style, force this to one column
+% (who'd want two column foils anyway) and fill the \verb|\mark| with
+% empty stuff just to cover our bases (this is irrelevant on foils).
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\pagenumbering{arabic}
+\onecolumn
+\mark{{}{}}
+%    \end{macrocode}
+% \subsection{Bibliography or References} \label{code:biblio}
+% \begin{macro}{\refname}
+% \begin{macro}{\bibindent}
+% \begin{macro}{\newblock}
+% \begin{macro}{thebibliography}
+% Though they may not be used very much, we do support a bibliography
+% environment.   This is a modified version of that from
+% \texttt{article.cls}.  The essential changes are the deletion of
+% anything that adjusts the header (e.g., \verb|\@mkboth|)
+% since this is irrelevant for foils and the replacement of a sectioning
+% macro with just the placement of the \verb|\refname|, which is defined
+% first. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\refname{References}
+\newdimen\bibindent
+\setlength\bibindent{1.5em}
+\newcommand\newblock{}
+\newenvironment{thebibliography}[1]{
+ \vskip 3.5ex \@plus -1ex \@minus -.2ex 
+ \noindent{\large\bfseries\refname}
+ \vskip 2.3ex \@plus .2ex 
+ \list{\@biblabel{\arabic{enumiv}}}%
+ {\settowidth\labelwidth{\@biblabel{#1}}%
+ \leftmargin\labelwidth
+ \advance\leftmargin\labelsep
+ \if@openbib
+   \advance\leftmargin\bibindent
+   \itemindent -\bibindent
+   \listparindent \itemindent
+   \parsep \z@
+ \fi
+ \usecounter{enumiv}%
+ \let\p@enumiv\@empty
+ \renewcommand\theenumiv{\arabic{enumiv}}}
+ \if@openbib
+   \renewcommand\newblock{\par}
+ \else 
+   \renewcommand\newblock{\hskip .11em \@plus .33em \@minus -.07em}
+ \fi
+ \sloppy\clubpenalty4000\widowpenalty4000%
+ \sfcode`\.=\@m\relax}%
+ {\def\@noitemerr{\@latex@warning{Empty `thebibliography' environment}}%
+ \endlist}
+%    \end{macrocode}
+% \subsection{Non-floating floats}\label{code:floats}
+% In this section we construct new definitions for float-type
+% environments that don't actually float!   They will look to the user
+% like any other float environment but will act as if given the
+% \texttt{[H]} (put it HERE!) placement.
+% 
+% \begin{macro}{\abovecaptionskip}
+% \begin{macro}{\belowcaptionskip}
+% \begin{macro}{\abovefloatskip}
+% \begin{macro}{\captionfraction}
+% First we set up some parameters that control the spacing around and
+% within floats.  They have obvious meanings based on their names.  The
+% default values for these spaces are as in standard \LaTeX\ where most
+% of them are hardcoded.  Here we let the user set them.  
+%
+% Many users want the caption to have different width than the text
+% width, so here it can be set by the user.  The old \FoilTeX\ method
+% was to set the dimension \verb|\captionwidth|.  This actually
+% introduced a bug when combined with \verb|\rotatefoilhead|.  In this
+% new version of \FoilTeX, we do two things.  First, we fix the bug,
+% but we also introduce an alternative (and preferred) method for
+% adjusting the caption width with \verb|\captionfraction|.  As with
+% other \LaTeX\ fractions (for floats), this is reset with the
+% \verb|\renewcommand|.  The default value is $1.0$.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newlength\abovecaptionskip
+\newlength\belowcaptionskip
+\newlength\@captionwidth
+\newlength\captionwidth
+\newcommand\captionfraction{1.0}
+\newlength\abovefloatskip
+\setlength\abovecaptionskip{15\p@ \@plus 5\p@ \@minus 5\p@}
+\setlength\belowcaptionskip{0\p@}
+\setlength\captionwidth\z@
+\setlength\abovefloatskip{20\p@ \@plus 5\p@ \@minus 10\p@}
+%    \end{macrocode}
+% \begin{macro}{\ext@table}
+% \begin{macro}{\ext@table}
+% These two are defined only to fill an incompatibility between the
+% \texttt{hyperref} package (which shouldn't need it as of version 6.66j
+% of that package), but we include it here just in case it might be
+% needed for some other package (pdflatex?). 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\providecommand*\ext@table{lot}%
+\providecommand*\ext@figure{lof}%
+%    \end{macrocode}
+% \begin{macro}{\@makecaption}
+% \begin{macro}{\@caption}
+% \begin{macro}{\caption}
+% For non-floating environments like ``figure'' and ``table'', we are
+% going to provide a \verb|*|-form which is unnumbered.  To enable
+% that in an easy way, we make a conditional which can be used to
+% determine whether we are to include counter or not in the caption.
+% This requires some modifications to a couple of macros.  Other
+% changes are noted below.
+% We modify the standard definition for \verb|\@makecaption| so
+% that it uses the \verb|\captionwidth| parameter (old method) or the
+% \verb|\captionfraction| (new method).  Then we modify the
+% \verb|\@caption| macro, removing all the extraneous stuff that added
+% things to the table of contents and the like.  Any text in the
+% optional argument to a \verb|\caption| command is just swallowed.
+% Finally we modify the definition of \verb|\caption| to skip
+% incrementing a counter in \emph{starmode} (since there isn't one!).
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newif\if@starmode\@starmodefalse
+\newcommand\@makecaption[2]{%
+%    \end{macrocode}
+% To set the internal \verb|\@captionwidth| we first check for the old
+% method. If \verb|\captionwidth| was set by the user, then we take
+% the minimum of this value and \verb|\hsize|.   If not, then the new
+% method sets the caption width by taking the fraction of the
+% \verb|\hsize| in all cases.
+%    \begin{macrocode}
+ \ifdim\captionwidth>\z@
+   \ifdim\captionwidth>\hsize
+     \setlength\@captionwidth\hsize
+   \else
+     \setlength\@captionwidth\captionwidth
+   \fi
+ \else
+   \setlength\@captionwidth{\captionfraction\hsize}
+ \fi
+%    \end{macrocode}
+% Now we layout the caption itself in something no bigger than the
+% above dimension, but ignoring the counter in \verb|*|-mode.
+%    \begin{macrocode}
+ \vskip \abovecaptionskip
+ \if@starmode\sbox\@tempboxa{#2}\else\sbox\@tempboxa{#1: #2}\fi%
+ \ifdim \wd\@tempboxa >\@captionwidth 
+   \centering\parbox[t]{\@captionwidth}{\unhbox\@tempboxa\par} 
+ \else 
+   \hbox to\hsize{\hfil\box\@tempboxa\hfil}
+ \fi
+ \vskip\belowcaptionskip}
+\long\def\@caption#1[#2]#3{\par \begingroup \@parboxrestore \normalsize
+ \@makecaption{\csname fnum@#1\endcsname}{\ignorespaces #3}\par
+ \endgroup}
+\def\caption{\if@starmode\else\refstepcounter\@captype\fi%
+ \@dblarg{\@caption\@captype}}
+%    \end{macrocode}
+% \begin{macro}{\@xfloat}
+% To construct non-floating floats, we need to do a couple of things.
+% First, we take out anything from the \verb|\@xfloat| that refers to
+% placement, since these don't move.  We also take out all the float
+% penalty code and anything that saves this stuff in the float list
+% since that is now irrelevant. This cleans up this code considerably.
+% Basically, all it does now is build a box with the appropriate
+% grouping and wrapping.  Note that this starts a couple of groups
+% which have to be closed later (at the end of the environment). 
+% \end{macro}
+%    \begin{macrocode}
+\def\@xfloat#1[#2]{%
+   \def \@captype {#1}%
+   \ifhmode \@bsphack \fi \vskip\abovefloatskip
+   \vbox\bgroup \color@begingroup \normalcolor
+   \hsize\columnwidth \@parboxrestore
+   \if@nobreak
+     \def\outer@nobreak{\global\@nobreaktrue}\global\@nobreakfalse
+   \fi}
+%    \end{macrocode}
+% \begin{macro}{\end@nonfloat}
+% This macro is used to close the non-float environments.   We could
+% have modified the \verb|\end@float| and used that but it seemed like
+% this was simpler.
+% \end{macro}
+%    \begin{macrocode}
+\def\end@nonfloat{\par\vskip\z@skip 
+   \color@endgroup
+   \outer@nobreak
+   \egroup}
+%    \end{macrocode}
+% \begin{macro}{\newnonfloat}
+% This new macro is a general mechanism for defining or creating
+% non-floating environments.   It is probably similar to what can be
+% found in \texttt{float.sty}, but we didn't check that for our
+% purposes.  Each invocation of this macro will create \emph{two}
+% environments, a non-starred version and a starred version.  The
+% starred version is not numbered (and so non-reference-able). 
+% The first thing this macro does is define the \emph{name} of the
+% environment, i.e., the non-float type used in the caption.   It next
+% defines a counter for the non-starred version of the environment. 
+% It sets the style of the counter to arabic (this can probably be
+% overriden by the user, but we haven't tested this).  Next it sets the
+% style for the caption structure just as in standard \LaTeX.   Finally,
+% it defines the actual environments in terms of \verb|\@float| and
+% \verb|\end@nonfloat|.   The former is defined within \LaTeX\ in terms
+% of \verb|\@xfloat| (modified above).  
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\newnonfloat[2]{%
+  \expandafter\newcommand\csname#1name\endcsname{#2}%
+  \expandafter\newcounter{#1}%
+  \expandafter\renewcommand\csname the#1\endcsname
+        {\@arabic\csname c@#1\endcsname}%
+  \expandafter\newcommand\csname fnum@#1\endcsname
+    {\csname#1name\endcsname~\csname the#1\endcsname}%
+  \expandafter\newenvironment{#1}{\@float{#1}}{\end@nonfloat}%
+  \expandafter\newenvironment{#1*}{\@float{#1}\@starmodetrue}%
+                                  {\end@nonfloat}%
+}
+%    \end{macrocode}
+% \begin{macro}{table}
+% \begin{macro}{figure}
+% \begin{macro}{\figurename}
+% \begin{macro}{\tablename}
+% Finally, we use the above constructor to give definitions for the
+% standard \texttt{table}, \texttt{table*}, \texttt{figure}, and
+% \texttt{figure*} environments.   Note that the starred forms mean
+% unnumbered versions and \emph{not} two column versions.  The
+% \verb|\newnonfloat| automatically defines a ``name'' macro for the
+% non-float.  So, for example, the following declarations define
+% \verb|\tablename| and \verb|\figurename| to ``Table'' and ``Figure'',
+% respectively. 
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newnonfloat{table}{Table}
+\newnonfloat{figure}{Figure}
+%    \end{macrocode}
+% \subsection{The foil title macros and foil rotation} \label{code:foil-title}
+% We next describe the macros for starting new foils.   There are some
+% enhancements to the old version here.  In particular, we now have a
+% simple way to support rotated foils.
+% \begin{macro}{\foilheadskip}
+% Of course, we have a length parameter that we use to set the vertical
+% spacing around the foil title (called \verb|\foilhead|, perhaps in
+% error).   This is set to a new value in the new \FoilTeX, with much
+% more shrinkability.  We hope this reduces the amount of manual
+% fiddling usually needed to squeeze that extra bit of stuff on a single
+% foil.   The default space between the foil title and the text below it
+% is set as \texttt{\bs parskip+\bs baselineskip+\bs foilheadskip+[option]}
+% where the \texttt{[option]} comes from the optional argument in the
+% \verb|\foilhead| macro. 
+% \end{macro}
+%    \begin{macrocode}
+\newlength\foilheadskip
+\if@compatibility
+  \setlength\foilheadskip{.25in}
+\else 
+  \setlength\foilheadskip{18\p@ \@plus 0\p@ \@minus 18\p@}  
+\fi
+%    \end{macrocode}
+% \begin{macro}{\foil@rot@start}
+% This macro is used exclusively for individual foil rotation and is
+% only called if one of the \texttt{dvips}, \texttt{dvipsone} or
+% \texttt{vtex} options is in
+% place.  In effect, this 
+% issues a \postscript\ call to translate vertically by the
+% current \verb|\@foilheight| (or in the case
+% of \VTeX\ horizontally by \verb|\@foilwidth|) and 
+% then do the necessary rotation.  We
+% don't need to do any graphics save or restore in this process since it
+% is only invoked at the very beginning of a page where this has just
+% happened.   This is disables (mostly) for PDF\LaTeX. 
+% \end{macro}
+%    \begin{macrocode}
+\if@dvips
+\def\foil@rot@start{\special{ps: 
+  0 \strip@pt\@foilheight\space 72.27 div Resolution mul translate 
+  90 neg rotate}}%
+\else\if@dvipsone
+\def\foil@rot@start{\special{ps: 
+  0 \strip@pt\@foilheight\space 72.27 mul 65536 mul rmoveto
+  90 rotate}}%
+\else\if@vtex
+\def\foil@rot@start{\special{pS:
+  \strip@pt\@foilwidth\space 72.27 div 72 mul 0 translate
+  90 neg rotate}}%
+\else\if@pdftex
+\def\foil@rot@start{}%
+\fi\fi\fi\fi
+%    \end{macrocode}
+% \begin{macro}{\ifcur@rot@state}
+% \begin{macro}{\ifnew@rot@state}
+% We need some mechanism to test the current state of rotation so we
+% know whether we should issue the rotation call again if there are two
+% invocations of rotated foils in a row.   We capture this in these
+% conditionals. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newif\ifcur@rot@state
+\newif\ifnew@rot@state
+%    \end{macrocode}
+% \begin{macro}{\foilhead}
+% \begin{macro}{\rotatefoilhead}
+% We can now define the macros used for starting new foils, both in
+% standard orientation and rotated.  (Note that standard is not by
+% default portrait if the \texttt{landscape} class option is set.)
+% These are both defined in terms of \verb|\@foilhead| which is used to
+% parse the optional argument for vertical space adjustment.   
+% \verb|\foilhead| sets the state of the ``new'' foil to non-rotated,
+% then happily goes off to \verb|\@foilhead|.   \verb|\rotatefoilhead|
+% is not supported in compatibility mode so it isn't even defined there.
+% Rotation is not supported unless one of the \texttt{dvips}, 
+% \texttt{dvipsone} or \texttt{vtex} class options is
+% declared but we only issue a warning in this case and set the ``new''
+% state to non-rotated.   If all the pieces are in place, it sets the
+% ``new'' state to rotated.  Finally, it goes off to \verb|\@foilhead|. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newcommand\foilhead{\new@rot@statefalse%        set state for the page
+   \@ifnextchar[{\@foilhead}{\@foilhead[0\p@]}}
+\if@compatibility
+\else 
+  \newcommand\rotatefoilhead{%
+    \if@dvips
+      \new@rot@statetrue
+    \else\if@dvipsone
+      \new@rot@statetrue
+    \else\if@vtex
+      \new@rot@statetrue
+    \else\if@pdftex
+      \new@rot@statetrue
+    \else
+      \ClassWarningNoLine{FoilTex}{%
+       Without the 'dvips', 'dvipsone' or 'vtex' option \MessageBreak
+       (when running LaTeX), rotation is not supported} 
+      \new@rot@statefalse
+    \fi\fi\fi\fi
+    \@ifnextchar[{\@foilhead}{\@foilhead[0\p@]}}
+\fi
+%    \end{macrocode}
+% \begin{macro}{\@foilhead}
+% The new version of the \verb|\@foilhead| macro now has more work to
+% do.  First, it clears the previous page so we start fresh on a new
+% page.  Next, it checks if we are supposed to rotate this page.  If so,
+% it sets the current page state to rotated and establishes the
+% dimensions for the rotated page (\verb|\@rotdimens|, see
+% Section~\ref{code:page}).  If not, it sets the current page state to
+% non-rotated and establishes the non-rotated page dimensions
+% (\verb|\@defaultdimens|, see Section~\ref{code:page}).   Then it sets
+% the font in large boldface, centers the title and adjusts
+% the vertical spacing.   We also wrap this header in a color group and 
+% reset to normal color so it doesn't get corrupted by other things.
+% \end{macro}
+%    \begin{macrocode}
+\def\@foilhead[#1]#2{\vfill\eject
+  \ifnew@rot@state
+    \cur@rot@statetrue\@rotdimens
+    \if@pdftex\@rotdimens@pdf\fi % add this if pdftex
+  \else
+    \cur@rot@statefalse\@defaultdimens
+    \if@pdftex\@defaultdimens@pdf\fi % add this if pdftex
+  \fi
+  {\color@begingroup\normalcolor
+   \reset@font\large\bfseries\centering#2\par\null\color@endgroup}%
+  \advance\foilheadskip by #1 \vspace{\foilheadskip}
+  \advance\foilheadskip by -#1}
+%    \end{macrocode}
+% \begin{macro}{\@shipoutsetup}
+% We do some trickery here to get the right things to happen at shipout
+% to enable rotation.  Namely, before we do any shipout, if rotation is
+% in effect, we issue the \verb|\foil@rot@start| (handled by
+% \texttt{dvips}) and then do the shipout.  This enables us to interact
+% with perhaps other utilities that muck with these internals and make
+% sure that the rotation stuff happens at exactly the right point.
+% The trickery is standard stuff, save the old definition, and merge the
+% saved defintion with the new stuff added.
+% \end{macro}
+%    \begin{macrocode}
+ %\let\old@shipoutsetup\@shipoutsetup
+ %\def\@shipoutsetup{%
+ %  \ifcur@rot@state\foil@rot@start\fi  
+ %  \old@shipoutsetup}
+%    \end{macrocode}
+%\begin{macro}{\@begindvi} 
+%\begin{macro}{\foil@begindvi} 
+% Unfortunately, They changed the output routine so this old stuff above
+% didn't work anymore, which is why it is commented out. Below is a
+% hack that resolves the problem but some of Them (the \LaTeX3 team) 
+% didn't like it because it misuses the command \verb|\@begindvi|. We
+% use it anyway.  First check to see if They change things again in
+% the future with \verb|\CheckCommand*|.  If so, this will warn the
+% user (and so me).  Next we hack in something to get the rotation
+% effects we need.  This is hacked further in~2.1.4 for
+% \texttt{hyperref} interactions. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\CheckCommand*\@begindvi{%
+  \unvbox \@begindvibox
+ \global\let \@begindvi \@empty}
+ % the old definitions
+ %\def \@begindvi{%
+ %  \ifcur@rot@state\foil@rot@start\fi
+ %  \unvbox \@begindvibox
+ % %\global\let \@begindvi \@empty
+ %  \gdef\@begindvi{\ifcur@rot@state\foil@rot@start\fi\@empty}
+ %}
+\def\foil@begindvi{%
+  \ifcur@rot@state\foil@rot@start\fi
+}
+\def\@begindvi{%
+  \foil@begindvi
+  \unvbox \@begindvibox
+  \gdef\@begindvi{\foil@begindvi\@empty}
+}
+%    \end{macrocode}
+% \begin{macro}{\@outputpage} 
+% The more recommended fix follows.  It really isn't very robust but it
+% is what They recommended.  Essentially, I check the old definition of
+% \verb|\@outputpage| (the one from \LaTeXe, 1995/06/01 patch level~3)
+% and see if this has changed at all.  If it has, then the user gets a
+% warning to this effect.  I then simply redefine it the way I want it
+% based on this definition.  All this does is provide some warning in
+% case the official definition changed when I wasn't looking. 
+% \end{macro}
+%    \begin{macrocode}
+ %\CheckCommand*\@outputpage{%
+ %\begingroup
+ % \set@typeset@protect
+ % \@shipoutsetup
+ % \let \protect \noexpand
+ % \shipout \vbox{%
+ %   \set@typeset@protect
+ %   \aftergroup\set@typeset@protect
+ %   \@begindvi
+ %   \vskip \topmargin
+ %   \moveright\@themargin \vbox {%
+ %     \setbox\@tempboxa \vbox to\headheight{%
+ %       \vfil
+ %       \color@hbox
+ %         \normalcolor
+ %         \hb@xt@\textwidth {%
+ %           \let \label \@gobble
+ %           \let \index \@gobble
+ %           \let \glossary \@gobble %% 21 Jun 91
+ %           \@thehead
+ %           }%
+ %       \color@endbox
+ %       }%                        %% 22 Feb 87
+ %     \dp\@tempboxa \z@
+ %     \box\@tempboxa
+ %     \vskip \headsep
+ %     \box\@outputbox
+ %     \baselineskip \footskip
+ %     \color@hbox
+ %       \normalcolor
+ %       \hb@xt@\textwidth{%
+ %         \let \label \@gobble
+ %         \let \index \@gobble      %% 22 Feb 87
+ %         \let \glossary \@gobble   %% 21 Jun 91
+ %         \@thefoot
+ %         }%
+ %     \color@endbox
+ %     }%
+ %   }%
+ % \endgroup
+ % \global \@colht \textheight
+ % \stepcounter{page}%
+ % \let\firstmark\botmark
+ %}
+ %\def\@outputpage{%
+ %\begingroup
+ % \set@typeset@protect
+ % \@shipoutsetup
+ % \let \protect \noexpand
+ % \shipout \vbox{%
+ %   \set@typeset@protect
+ %  \aftergroup\set@typeset@protect
+ %   \@begindvi
+ % \ifcur@rot@state\foil@rot@start\fi  %% added by for foils.cls   
+ %   \vskip \topmargin
+ %   \moveright\@themargin \vbox {%
+ %     \setbox\@tempboxa \vbox to\headheight{%
+ %       \vfil
+ %       \color@hbox
+ %         \normalcolor
+ %         \hb@xt@\textwidth {%
+ %           \let \label \@gobble
+ %           \let \index \@gobble
+ %           \let \glossary \@gobble %% 21 Jun 91
+ %           \@thehead
+ %           }%
+ %       \color@endbox
+ %       }%                        %% 22 Feb 87
+ %     \dp\@tempboxa \z@
+ %     \box\@tempboxa
+ %     \vskip \headsep
+ %     \box\@outputbox
+ %     \baselineskip \footskip
+ %     \color@hbox
+ %       \normalcolor
+ %       \hb@xt@\textwidth{%
+ %         \let \label \@gobble
+ %         \let \index \@gobble      %% 22 Feb 87
+ %         \let \glossary \@gobble   %% 21 Jun 91
+ %         \@thefoot
+ %         }%
+ %     \color@endbox
+ %     }%
+ %   }%
+ % \endgroup
+ % \global \@colht \textheight
+ % \stepcounter{page}%
+ % \let\firstmark\botmark
+ %}
+%    \end{macrocode} 
+% \subsection{Theorem-like environments}\label{code:theorems}
+% The next few macros set up special environments for theorem-like
+% structures.  The unstarred forms are numbered; the starred
+% forms are unnumbered.  We use slanted fonts for all of these.
+% User's can easily change this if they wish.  Both the starred and
+% unstarred are created with one simple \verb|\newtheorem| declaration
+% (similar to the non-floats of Section~\ref{code:floats}).
+% We try to use as much of the default \LaTeX\ stuff as possible here.
+% 
+% \begin{macro}{\newtheorem}
+% \begin{macro}{\@Othm}
+% \begin{macro}{\@Nthm}
+% \begin{macro}{\@Sthm}
+% \begin{macro}{\@starthm}
+% \begin{macro}{\@xstarthm}
+% \begin{macro}{\@ystarthm}
+% As in the standard definition, we have to deal with optional
+% arguments to the \verb|\newtheorem| declaration.  We set this up an
+% extra level deep by intercepting the default arguments with
+% \verb|\@Othm| and \verb|\@Nthm| and then passing the arguments down
+% one level simultaneously to the new \verb|\@Sthm| and the old
+% \verb|\@othm| and \verb|\@nthm|.   The \verb|\@Sthm| defines the
+% starred name and the environment in terms of the \verb|\@starthm|,
+% which again recursively calls subconstructs to deal with the second
+% optional argument and which do the actual environment construction.
+% This is very parallel to standard \LaTeX.   Notice that we put
+% everything in slanted text.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\def\newtheorem#1{\@ifnextchar[{\@Othm{#1}}{\@Nthm{#1}}}
+\def\@Othm#1[#2]#3{\@Sthm{#1}{#3}\@othm{#1}[#2]{#3}}
+\def\@Nthm#1#2{\@Sthm{#1}{#2}\@nthm{#1}{#2}}
+\def\@Sthm#1#2{{{\global\@namedef{#1*}{\@starthm{#2}}
+   \global\@namedef{end#1*}{\@endtheorem}}}}
+\def\@starthm#1{\@ifnextchar[{\@ystarthm{#1}}{\@xstarthm{#1}}}
+\def\@xstarthm#1{\@beginstartheorem{#1} \ignorespaces} 
+\def\@ystarthm#1[#2]{\@opargbeginstartheorem{#1}{#2}\ignorespaces}
+\def\@begintheorem#1#2{\trivlist 
+      \item[\hskip\labelsep{\bfseries #1\ #2. }]\slshape}
+\def\@opargbegintheorem#1#2#3{\trivlist 
+      \item[\hskip\labelsep{\bfseries #1\ #2.\ [#3] }]\slshape}
+\def\@beginstartheorem#1{\trivlist
+      \item[\hskip\labelsep{\bfseries #1. }]\slshape}
+\def\@opargbeginstartheorem#1#2{\trivlist 
+      \item[\hskip\labelsep{\bfseries #1.\ [#2] }]\slshape}
+%    \end{macrocode}
+% \begin{macro}{Theorem}
+% \begin{macro}{Lemma}
+% \begin{macro}{Corollary}
+% \begin{macro}{Proposition}
+% \begin{macro}{Definition}
+% For convenience, we predefine a few of the more standard environments.
+% We use up token space here so perhaps this will have to be disabled so
+% the user can do this for themselves.   Note that the names are
+% UpperCased to avoid some conflicts with user definitions that might
+% already be in place.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newtheorem{Theorem}{Theorem}
+\newtheorem{Lemma}{Lemma}
+\newtheorem{Corollary}{Corollary}
+\newtheorem{Proposition}{Proposition}
+\newtheorem{Definition}{Definition}
+%    \end{macrocode}
+% \begin{macro}{Proof}
+% \begin{macro}{\ProofBox}
+% Finally, we set up a default \texttt{Proof} environment, with a nifty
+% little square box at the end (this typically would come from the
+% \texttt{latexsym} package but we steal just what we need for this to
+% work here. 
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\newenvironment{Proof}{\begin{trivlist}\item[] {\bfseries Proof.}}{%
+  \ifhmode\nolinebreak[4]~$\ProofBox$\else$\ProofBox$\fi \end{trivlist}}
+\DeclareMathSymbol\ProofBox{0}{flasy}{"32}
+%    \end{macrocode}
+% \subsection{Boldface mathematics}\label{code:boldmath}
+% \begin{macro}{\bm}
+% \begin{macro}{\bmstyle}
+% \begin{macro}{boldequation*}
+% \begin{macro}{boldequation}
+% Happily, in the new \LaTeX, this is all done much better,
+% particularly, with font selection.  What we do here is just define a
+% simple macro for setting small pieces of mathematics in bold (italics)
+% and entire equations.  This is mostly for backward compatibility.
+% Note that the \verb|\bm| macro is now much more robust.  It uses the
+% \verb|\mathpalette| to set the style of its contents in the style of
+% its surrounding environment rather than in just \verb|\textstyle| as
+% was done in the earlier \FoilTeX.  There are two bold equation
+% environments, a starred (unnumbered) form and the unstarred (numbered)
+% form.   These environments have their macros constructed explicitly,
+% rather than with the \verb|\newenvironment| declaration.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+\def\bm#1{\mathpalette\bmstyle{#1}}
+\def\bmstyle#1#2{\mbox{\boldmath$#1#2$}}
+\@namedef{boldequation*}{\boldmath$$}
+\@namedef{endboldequation*}{$$\global\@ignoretrue\unboldmath}
+\def\boldequation{\boldmath$$\refstepcounter{equation}}
+\def\endboldequation{\eqno\@eqnnum%
+    $$\global\@ignoretrue\unboldmath}
+%</package>
+%    \end{macrocode}
+% \section{The class option files} \label{code:clo}
+% In these subsections we simply do a dump of the code for the size
+% class option files.   There is nothing deep here going on.  Mostly we
+% set the font sizes for the different relative font scaling, and adjust
+% some of the basic settings in each level for display skips and for top
+% level lists.   There are two things to note here.  First,  we have 
+% added some larger fonts (51pt) over what was directly available in the
+% old version.   Second, the list setting parameters are set differently
+% in the new version but act exactly as they did before in compatibility
+% mode. 
+%
+% New here in version~2.1.3 are definitions for the \verb|\big| and
+% related operators which are now scaled according to the default font
+% size (with the exception of \texttt{shortform} where this is not
+% needed).  In base \LaTeX{}, these are handled the same across the
+% different point sizes (because those sizes varied so little).  The
+% numbers here are basically computed from the values in the base
+% \LaTeX.  An alternative approach to this is the \texttt{exscale}
+% package.
+%
+% \subsection{The \texttt{17pt} option} \label{code:17pt}
+%    \begin{macrocode}
+%<*17pt>
+\def\normalsize{\@setfontsize\normalsize\@xviipt{22}%
+\abovedisplayskip 20\p@ \@plus 3\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 2\p@
+\belowdisplayshortskip 4\p@ \@plus 2\p@ \@minus 2\p@
+\let\@listi\@listIb}
+\normalsize
+
+\def\small{\@setfontsize\small\@xivpt{18}%
+\abovedisplayskip 16\p@ \@plus 2\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 1\p@
+\belowdisplayshortskip 3\p@ \@plus 1\p@ \@minus 2\p@
+\let\@listi\@listIc}
+ 
+\def\footnotesize{\@setfontsize\footnotesize\@xiipt{15}%
+\abovedisplayskip 13\p@ \@plus 2\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 1\p@
+\belowdisplayshortskip 2\p@ \@plus 1\p@ \@minus 1\p@
+\let\@listi\@listId}
+ 
+\def\large{\@setfontsize\large\@xxpt\@xxvpt
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\let\@listi\@listIa}
+ 
+\let\scriptsize=\footnotesize
+\let\tiny=\footnotesize
+\def\Large{\@setfontsize\Large\@xxvpt{32}\let\@listi\@listIa}
+\def\LARGE{\@setfontsize\LARGE\@xxxpt{38}\let\@listi\@listIa}
+\def\huge{\@setfontsize\huge\@xxxvipt{45}\let\@listi\@listIa}
+\def\Huge{\@setfontsize\Huge\@xliiipt{54}\let\@listi\@listIa}
+
+\def\big#1{{\hbox{$\left#1\vbox to14.5\p@{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to19.5\p@{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to24.5\p@{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to30\p@{}\right.\n@space$}}}
+%</17pt>
+%    \end{macrocode}
+% \subsection{The \texttt{20pt} option} \label{code:20pt}
+%    \begin{macrocode}
+%<*20pt>
+\def\normalsize{\@setfontsize\normalsize\@xxpt\@xxvpt
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@ 
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\let\@listi\@listIa}
+\normalsize
+ 
+\def\small{\@setfontsize\small\@xviipt{22}%
+\abovedisplayskip 20\p@ \@plus 3\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 2\p@
+\belowdisplayshortskip 4\p@ \@plus 2\p@ \@minus 2\p@
+\let\@listi\@listIb}
+ 
+\def\footnotesize{\@setfontsize\footnotesize\@xivpt{18}%
+\abovedisplayskip 16\p@ \@plus 2\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 1\p@
+\belowdisplayshortskip 3\p@ \@plus 1\p@ \@minus 2\p@
+\let\@listi\@listIc}
+ 
+\def\scriptsize{\@setfontsize\scriptsize\@xiipt{15}%
+ \if@compatibility\else\let\@listi\@listId\fi}
+\let\tiny=\scriptsize
+\def\large{\@setfontsize\large\@xxvpt{32}}
+\def\Large{\@setfontsize\Large\@xxxpt{38}}
+\def\LARGE{\@setfontsize\LARGE\@xxxvipt{45}}
+\def\huge{\@setfontsize\huge\@xliiipt{54}}
+\if@compatibility
+  \let\Huge=\huge
+\else
+  \def\Huge{\@setfontsize\huge\@lipt{62}}
+\fi
+
+\def\big#1{{\hbox{$\left#1\vbox to17\p@{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to23\p@{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to27\p@{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to35\p@{}\right.\n@space$}}}
+%</20pt>
+%    \end{macrocode}
+% \subsection{The \texttt{25pt} option} \label{code:25pt}
+%    \begin{macrocode}
+%<*25pt>
+\def\normalsize{\@setfontsize\normalsize\@xxvpt{32}%
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\let\@listi\@listIa}
+\normalsize 
+
+\def\small{\@setfontsize\small\@xxpt\@xxvpt
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\if@compatibility
+ \let\@listi\@listIb
+\else
+ \let\@listi\@listIa\fi
+}
+ 
+\def\footnotesize{\@setfontsize\footnotesize\@xviipt{22}%
+\abovedisplayskip 20\p@ \@plus 3\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 2\p@
+\belowdisplayshortskip 4\p@ \@plus 2\p@ \@minus 2\p@
+\let\@listi\@listIb}
+ 
+\def\scriptsize{\@setfontsize\scriptsize\@xivpt{18}%
+ \if@compatibility\else\let\@listi\@listIc\fi}
+\def\tiny{\@setfontsize\tiny\@xiipt{15}%
+ \if@compatibility\else\let\@listi\@listId\fi}
+\def\large{\@setfontsize\large\@xxxpt{38}}
+\def\Large{\@setfontsize\Large\@xxxvipt{45}}
+\def\LARGE{\@setfontsize\LARGE\@xliiipt{54}}
+\if@compatibility
+  \let\huge=\LARGE
+  \let\Huge=\LARGE
+\else
+  \def\huge{\@setfontsize\huge\@lipt{62}}
+  \let\Huge=\huge
+\fi
+
+\def\big#1{{\hbox{$\left#1\vbox to21\p@{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to29\p@{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to36\p@{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to44\p@{}\right.\n@space$}}}
+%</25pt>
+%    \end{macrocode}
+% \subsection{The \texttt{30pt} option} \label{code:30pt}
+%    \begin{macrocode}
+%<*30pt>
+\def\normalsize{\@setfontsize\normalsize\@xxxpt{38}%
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\let\@listi\@listIa}
+\normalsize
+
+\def\small{\@setfontsize\small\@xxvpt{32}%
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\if@compatibility
+ \let\@listi\@listIb
+\else
+ \let\@listi\@listIa\fi
+}
+ 
+\def\footnotesize{\@setfontsize\footnotesize\@xxpt\@xxvpt
+\abovedisplayskip 30\p@ \@plus 3\p@ \@minus 9\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 3\p@
+\belowdisplayshortskip 7\p@ \@plus 3\p@ \@minus 4\p@
+\if@compatibility
+ \let\@listi\@listIb
+\else
+ \let\@listi\@listIa\fi
+}
+ 
+\def\scriptsize{\@setfontsize\scriptsize\@xviipt{22}%
+ \if@compatibility\else\let\@listi\@listIb\fi}
+\def\tiny{\@setfontsize\tiny\@xivpt{18}%
+ \if@compatibility\else\let\@listi\@listIc\fi}
+\def\large{\@setfontsize\large\@xxxvipt{45}}
+\def\Large{\@setfontsize\Large\@xliiipt{54}}
+\if@compatibility
+  \let\LARGE=\Large
+  \let\huge=\Large
+  \let\Huge=\Large
+\else
+  \def\LARGE{\@setfontsize\LARGE\@lipt{62}}
+  \let\huge=\LARGE
+  \let\Huge=\LARGE
+\fi
+
+\def\big#1{{\hbox{$\left#1\vbox to25.5\p@{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to34.5\p@{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to43.5\p@{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to52.5\p@{}\right.\n@space$}}}
+%</30pt>
+%    \end{macrocode}
+% \subsection{The \texttt{shortform} option} \label{code:short}
+% In this version, we set \verb|\normalsize| and hang all smaller
+% sizes off of this.  For larger sizes, we take a simple short cut.
+% We are making no attempt to optimize most of this, just to scale
+% the fonts to a much smaller relative size.  
+%
+% Finally, because we want to change \verb|\foilhead| so that it
+% doesn't force a page break, we redefine \verb|\@foilhead| in a much
+% more simple manner.  This is done in \verb|\AtBeginDocument| since
+% this file is read before the definitions in \texttt{foils.cls}.  (We
+% also make a change to \verb|\parskip| so that paragraphs are less
+% separated.)
+%    \begin{macrocode}
+%<*short>
+\def\normalsize{\@setfontsize\normalsize\@xiipt{15}
+\abovedisplayskip 12\p@ \@plus 3\p@ \@minus 4\p@
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ \@plus 2\p@
+\belowdisplayshortskip 4\p@ \@plus 2\p@ \@minus 2\p@
+\let\@listi\@listId}
+\normalsize
+
+\let\small\normalsize
+\let\footnotesize\normalsize
+\let\scriptsize=\footnotesize
+\let\tiny=\footnotesize
+
+\def\large{\@setfontsize\large\@xivpt{18}\let\@listi\@listId}
+\def\Large{\@setfontsize\Large\@xviipt{22}\let\@listi\@listId}
+\def\LARGE{\@setfontsize\LARGE\@xxpt{25}\let\@listi\@listId}
+\def\huge{\@setfontsize\huge\@xxvpt{30}\let\@listi\@listId}
+\let\Huge\huge
+
+\AtBeginDocument{
+\def\@foilhead[#1]#2{{\vspace{2em}\pagebreak[1]%
+     \color@begingroup\normalcolor
+     \reset@font\large\bfseries\centering#2\nopagebreak[4]%
+     \par\null\color@endgroup}}%
+\setlength\parskip{4\p@ \@plus 4\p@ \@minus 4\p@}
+}
+%</short>
+%    \end{macrocode}
+% \section{Compatibility mode}\label{code:compatibility}
+% We include here the code for generating the compatibilty mode style
+% file.   This is modelled after the \LaTeX\ \texttt{article.sty}.
+%    \begin{macrocode}
+%<*oldstyle>
+\@obsoletefile{foils.cls}{foils.sty}
+\LoadClass{foils}
+%</oldstyle>
+%    \end{macrocode}
+% \section{Font definitions}\label{code:fonts}
+% Here starts everything that sets up font information.   For almost
+% everything we use a new font family.  These names are essentially
+% the standard names with an \texttt{f} prefix.  We could probably get
+% away with just overriding the standard ones but we don't really know
+% what we're doing here and this seems to work.
+% We begin with a short section that sets up the default font
+% characteristics.  We absolutely need to do the family definition (and
+% at this early stage) to make sure that the default \LaTeX\ stuff is not
+% loaded.  (The \verb|\normalsize| declaration in the
+% \verb|foil\@ptsize.clo| files think these are the \LaTeX\ defaults of
+% \verb|{OT1}{cmr}{m}{n}| and these don't come in a large enough
+% size!). The other lines are not strictly needed but we add them for
+% completeness. 
+%    \begin{macrocode}
+%<*fonts>
+\def\f@encoding{OT1}
+\def\f@family{fcmss}
+\def\f@series{m}
+\def\f@shape{n}
+%    \end{macrocode}
+% \subsection{Font macro utilities}
+% \label{code:fontmacros}
+% Here we add a couple of short hand macros for declaring font shapes.
+% These are blazenly borrowed from a recent \LaTeXe{} release (clever
+% of those people to come up with such nice shorthand).  Note that we
+% have to wrap this in some special category code changes (in a group)
+% to get the parsing correct).  We have two versions of the general
+% font shape definition, one for \texttt{OT1} encoding and one for the
+% \texttt{T1} encoding.  We have another version for math families,
+% one for substition and a special \emph{odd} one because CMR is used
+% in both math and text mode (sometimes). The last conditional test
+% just makes it easier to implement the EC to DC font switch.
+%    \begin{macrocode}
+\begingroup
+\nfss@catcodes
+\providecommand{\flt@family}[5]{%
+  \DeclareFontShape{#1}{#2}{#3}{#4}
+  {<12><14.4><17.28><20.74><24.88><29.86>
+   <35.83><43.00><51.60> #5 }{}}
+\providecommand{\fltodd@family}[6]{%
+  \DeclareFontShape{#1}{#2}{#3}{#4}
+  {<12.1><14.5><17.38> #5
+   <12><14.4><17.28><20.74><24.88><29.86><35.83><43.00><51.60> #6}{}}
+\providecommand{\flt@subfamily}[5]{%
+  \DeclareFontShape{#1}{#2}{#3}{#4}{<->ssub * #5}{}}
+\providecommand{\fltEC@family}[5]{%
+  \DeclareFontShape{#1}{#2}{#3}{#4}
+  {<12><14.4><17.28><20.74><24.88><29.86>
+   <35.83><43.00><51.60> genb * #5}{}}
+\providecommand{\fltmath@family}[6]{%
+  \DeclareFontShape{#1}{#2}{#3}{#4}
+  {<12.1><14.5><17.38> #5
+   <20.74><24.88><29.86><35.83><43.00><51.60> #6}{}}
+\if@useDCfonts
+\def\EC{dc}
+\def\ECrm{dcr}
+\def\ECrb{dcb}
+\def\ECui{dcu}
+\else
+\def\EC{ec}
+\def\ECrm{ecrm}
+\def\ECrb{ecrb}
+\def\ECui{ecui}
+\fi
+%    \end{macrocode}
+%
+% \subsection{The font family and shape declarations: \texttt{OT1}}
+% \label{code:fontshapeOT1} 
+% Mostly we just set up only large versions of the fonts.  We had to
+% do some non-obvious things here in the smaller versions.  See
+% Subsection~\ref{code:mathfonts} for more information (this will
+% explain the 12.1, 14.5 and 17.38 sizes below instead of the expected
+% 12.0, 14.4 and 17.28).   We first load the font family and shape
+% information for the standard Computer Modern text fonts.  We start
+% with Roman (family \texttt{fcmr}).
+%    \begin{macrocode}
+\DeclareFontFamily{OT1}{fcmr}{}
+%    \end{macrocode}
+% First we make a shape declaration for medium/normal. Note that we are a
+% bit redundant here on the smaller point sizes.
+% That is so that the math sizes and the scaled text sizes can work
+% together without generating too many error messages.  See also
+% Subsection~\ref{code:mathfonts}.  
+%    \begin{macrocode}
+ \fltodd@family{OT1}{fcmr}{m}{n}   {cmr7}{cmr10}
+%    \end{macrocode}
+% Then we make one for medium/italics. (Slanted is handled by a
+% substitution given later to the default family \texttt{fcmss}.)
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmr}{m}{it}     {cmti10}
+%    \end{macrocode}
+% We really should have a small caps version of cmss, but no such font
+% is default, so we leave it as is. 
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmr}{m}{sc}     {cmcsc10}
+%    \end{macrocode}
+% Now, we add one for bold-extended.
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmr}{bx}{n}     {cmbx10}
+%    \end{macrocode}
+% Next, we add some for bold-extended in italics and slanted.  We
+% don't expect these to get called directly, but as substitution fonts
+% for sans serif versions. 
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmr}{bx}{sl}    {cmbxsl10}
+%    \end{macrocode}
+% As in the standard \LaTeX, we use the upright shape font,
+% essentially only for the \verb|\pounds| symbol.
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmr}{m}{ui}     {cmu10}
+% Finally, we fill in a few missing gaps with substition fonts.
+ \flt@subfamily{OT1}{fcmr}{m}{sl}  {fcmss/m/sl}
+ \flt@subfamily{OT1}{fcmr}{b}{n}   {fcmr/bx/n}
+ \flt@subfamily{OT1}{fcmr}{bx}{it} {fcmr/bx/sl}
+%    \end{macrocode}
+% Now we set up the essential stuff for the default family, San Serif
+% (\texttt{fcmss}).   Please consult pages~201--202 of~\cite{companion}
+% for more information about the use of \verb|\fontdimen| stuff here.
+% Essentially, we are allowing more inter-word space stretching, to 
+% compensate for the lack of hyphenation. 
+%    \begin{macrocode}
+\DeclareFontFamily{OT1}{fcmss}{\fontdimen3\font=1.7\fontdimen3\font}
+%    \end{macrocode}
+% First we make a shape declaration for medium/normal.
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmss}{m}{n}     {cmss10}
+%    \end{macrocode}
+% Here is the slanted version.
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmss}{m}{sl}    {cmssi10}
+%    \end{macrocode}
+% I don't know why this is here, but it is analogous to what is in the
+% standard sets so we leave it in, just rescale the sizes.  This is
+% semi-bold condensed (or is that demi-bold condensed?).
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmss}{sbc}{n}   {cmssdc10}
+%    \end{macrocode}
+% Finally, we get to the bold versions.   There really is a bold
+% extended sans serif so we point off to that.  
+%    \begin{macrocode}
+ \flt@family{OT1}{fcmss}{bx}{n}    {cmssbx10}
+%    \end{macrocode}
+% Here are all the substitution fonts.  
+% Sans serif italics is not a standard font so
+% we substitute roman italics.  That's OK, because we will use slanted for
+% emphasize anyway and I think user's expect roman italics.
+%    \begin{macrocode}
+ \flt@subfamily{OT1}{fcmss}{m}{it} {fcmr/m/it}
+%    \end{macrocode}
+% For small-caps, we substitute the roman small caps, which is what I
+% think most users will expect and because we don't really have a
+% small caps, sans serif. 
+%    \begin{macrocode}
+ \flt@subfamily{OT1}{fcmss}{m}{sc} {fcmr/m/sc}
+%    \end{macrocode}
+% We again use the roman upright for the \verb|\pounds| symbol. 
+%    \begin{macrocode}
+ \flt@subfamily{OT1}{fcmss}{m}{ui} {fcmr/m/ui}
+%    \end{macrocode}
+% There is no plain bold, consequently, we substitute the bold
+% extended.  Finally, if someone asks for slanted or italics in bold
+% extended, since we don't have either of these we substitute the
+% roman counter parts.  It seemed that if the user was in either bold
+% extended (or italics) and wanted to italicize (or embolden), then
+% they should see some change.  From above, the \verb|fcmr/bx/it| is
+% replaced by \verb|fcmr/bx/sl| so this becomes our complete
+% substitute for bold italics sans serif.  We do these latter
+% substitutions with a warning, so the user knows what happens and it
+% doesn't come as a complete surprise.
+%    \begin{macrocode}
+ \flt@subfamily{OT1}{fcmss}{b}{n}  {fcmss/bx/n}
+ \flt@subfamily{OT1}{fcmss}{bx}{sl}{fcmr/bx/sl}
+ \flt@subfamily{OT1}{fcmss}{bx}{it}{fcmr/bx/it}
+%    \end{macrocode}
+% Next we add the typewriter font (\texttt{fcmtt}).   This is short and
+% sweet.  We set up for medium normal and slanted and everything else is
+% a substitution. 
+%    \begin{macrocode}
+\DeclareFontFamily{OT1}{fcmtt}{\hyphenchar\font\m@ne}
+ \flt@family{OT1}{fcmtt}{m}{n}     {cmtt10}
+ \flt@family{OT1}{fcmtt}{m}{sl}    {cmsltt10}
+ \flt@subfamily{OT1}{fcmtt}{m}{it} {fcmtt/m/sl}
+ \flt@subfamily{OT1}{fcmtt}{bx}{n} {fcmtt/m/n}
+ \flt@subfamily{OT1}{fcmtt}{bx}{it}{fcmtt/m/it}
+ \flt@subfamily{OT1}{fcmtt}{bx}{sl}{fcmtt/m/sl}
+%    \end{macrocode}
+%
+%
+% \subsection{The font family and shape declarations: \texttt{T1}}
+% \label{code:fontshapeT1} 
+%
+% Now we do the same for the EC font encoding.  This is a bit tricky
+% since we want to support choices between large design sizes and
+% scaled fonts and choices between EC and old DC fonts. This has not
+% been extensively tested but it seems to work and is logically
+% consistent with the stuff from the LaTeX distribution, up to some
+% changes to be consistent with how \FoilTeX{} dealt with the old
+% versions of DC fonts.  Where different, I've left \LaTeXe's model as
+% a comment.  Feel free to switch if you want.  We make no additional
+% comments throughout the rest of these part.
+%    \begin{macrocode}
+\DeclareFontFamily{T1}{fcmr}{}
+ \if@magscaleECfonts
+  \flt@family{T1}{fcmr}{m}{n}      {\ECrm 1000}
+  \flt@family{T1}{fcmr}{m}{it}     {\EC ti1000}
+  \flt@family{T1}{fcmr}{m}{sc}     {\EC cc1000}
+  \flt@family{T1}{fcmr}{bx}{n}     {\EC bx1000}
+  \flt@family{T1}{fcmr}{bx}{sl}    {\EC bl1000}
+  \flt@family{T1}{fcmr}{m}{ui}     {\ECui 1000}
+ \else
+  \fltEC@family{T1}{fcmr}{m}{n}    {\ECrm}
+  \fltEC@family{T1}{fcmr}{m}{it}   {\EC ti}
+  \fltEC@family{T1}{fcmr}{m}{sc}   {\EC cc}
+  \fltEC@family{T1}{fcmr}{bx}{n}   {\EC bx}
+  \fltEC@family{T1}{fcmr}{bx}{sl}  {\EC bl}
+  \fltEC@family{T1}{fcmr}{m}{ui}   {\ECui}
+ \fi
+ \flt@subfamily{T1}{fcmr}{m}{sl}   {fcmss/m/sl}
+ %\if@magscaleECfonts
+ % \flt@family{T1}{fcmr}{m}{sl}    {\EC sl1000}
+ %\else
+ % \fltEC@family{T1}{fcmr}{m}{sl}  {\EC sl}
+ %\fi
+ \flt@subfamily{T1}{fcmr}{b}{n}    {fcmr/bx/n}
+ \flt@subfamily{T1}{fcmr}{bx}{it}  {fcmr/bx/sl}
+\DeclareFontFamily{T1}{fcmss}{\fontdimen3\font=1.7\fontdimen3\font}
+ \if@magscaleECfonts
+  \flt@family{T1}{fcmss}{m}{n}     {\EC ss1000}
+  \flt@family{T1}{fcmss}{m}{sl}    {\EC si1000}
+  \flt@family{T1}{fcmss}{bx}{n}    {\EC sx1000}
+ \else
+  \fltEC@family{T1}{fcmss}{m}{n}   {\EC ss}
+  \fltEC@family{T1}{fcmss}{m}{sl}  {\EC si}
+  \fltEC@family{T1}{fcmss}{bx}{n}  {\EC sx}
+ \fi
+ \flt@family{T1}{fcmss}{sbc}{n}    {\EC ssdc10}
+ \flt@subfamily{T1}{fcmss}{m}{it}  {fcmr/m/it}
+ %\if@magscaleECfonts
+ % \flt@family{T1}{fcmss}{m}{it}   {\EC si1000}
+ %\else
+ % \fltEC@family{T1}{fcmss}{m}{it} {\EC si}
+ %\fi
+ \flt@subfamily{T1}{fcmss}{m}{sc}  {fcmr/m/sc}
+ \flt@subfamily{T1}{fcmss}{m}{ui}  {fcmr/m/ui}
+ \flt@subfamily{T1}{fcmss}{b}{n}   {fcmss/bx/n}
+ \flt@subfamily{T1}{fcmss}{bx}{it} {fcmr/bx/it}
+ %\if@magscaleECfonts
+ % \flt@family{T1}{fcmss}{bx}{it}  {\EC so1000}
+ %\else
+ % \fltEC@family{T1}{fcmss}{bx}{it}{\EC so}
+ %\fi
+ \flt@subfamily{T1}{fcmss}{bx}{sl} {fcmr/bx/sl}
+ %\if@magscaleECfonts
+ % \flt@family{T1}{fcmss}{bx}{sl}  {\EC so1000}
+ %\else
+ % \fltEC@family{T1}{fcmss}{bx}{sl}{\EC so}
+ %\fi
+\DeclareFontFamily{T1}{fcmtt}{\hyphenchar\font\m@ne}
+ \if@magscaleECfonts
+  \flt@family{T1}{fcmtt}{m}{n}     {\EC tt1000}
+  \flt@family{T1}{fcmtt}{m}{sl}    {\EC st1000}
+ \else
+  \fltEC@family{T1}{fcmtt}{m}{n}   {\EC tt}
+  \fltEC@family{T1}{fcmtt}{m}{sl}  {\EC st}
+ \fi
+ \flt@subfamily{T1}{fcmtt}{m}{it}  {fcmtt/m/sl}
+ %\if@magscaleECfonts
+ % \flt@family{T1}{fcmtt}{m}{it}   {\EC it1000}
+ %\else
+ % \fltEC@family{T1}{fcmtt}{m}{it} {\EC it}
+ %\fi
+ \flt@subfamily{T1}{fcmtt}{bx}{n}  {fcmtt/m/n}
+ \flt@subfamily{T1}{fcmtt}{bx}{it} {fcmtt/m/it}
+ \flt@subfamily{T1}{fcmtt}{bx}{sl} {fcmtt/m/sl}
+% %%%%%% DO WE NEED TO DO THE TS1 COMPANION FONTS???? %%%%%%%%%%%%%
+%    \end{macrocode}
+% \subsection{The font family and shape declarations: \texttt{OM*}}
+% \label{code:fontshapeOM*} 
+% Of course, we still haven't dealt directly with any of the math fonts.
+% We start with math italics.  Note again the strange point sizes in the
+% smaller fonts. 
+%    \begin{macrocode}
+\DeclareFontFamily{OML}{fcmm}{\skewchar\font'177}
+ \fltmath@family{OML}{fcmm}{m}{it} {cmmi7}{cmmi10}
+ \fltmath@family{OML}{fcmm}{b}{it} {cmmib7}{cmmib10}
+ \flt@subfamily{OML}{fcmm}{bx}{it} {fcmm/b/it}
+%    \end{macrocode}
+% Next we add the standard symbol fonts in normal and bold.
+%    \begin{macrocode}
+\DeclareFontFamily{OMS}{fcmsy}{\skewchar\font'60}
+ \fltmath@family{OMS}{fcmsy}{m}{n} {cmsy7}{cmsy10}
+ \fltmath@family{OMS}{fcmsy}{b}{n} {cmbsy7}{cmbsy10}
+ \flt@subfamily{OMS}{fcmsy}{bx}{n} {fcmsy/b/n}
+%    \end{macrocode}
+% The December 1994 release added stuff for cmr math symbols, so we
+% have to do the same here to avoid warning messages.  We add a few
+% more than what is in the standard \LaTeX\ because we don't like these
+% warning messages.
+%    \begin{macrocode}
+\DeclareFontFamily{OML}{fcmss}{\skewchar\font'177}
+ \flt@subfamily{OML}{fcmss}{m}{n}  {fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{m}{it} {fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{m}{sl} {fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{m}{sc} {fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{bx}{n} {fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{b}{n}  {fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{bx}{sl}{fcmm/m/it}
+ \flt@subfamily{OML}{fcmss}{bx}{it}{fcmm/m/it}
+\DeclareFontFamily{OMS}{fcmss}{\skewchar\font'60}
+ \flt@subfamily{OMS}{fcmss}{m}{n}  {fcmsy/m/n}
+ \flt@subfamily{OMS}{fcmss}{m}{it} {fcmsy/m/n}
+ \flt@subfamily{OMS}{fcmss}{m}{sl} {fcmsy/m/n}
+ \flt@subfamily{OMS}{fcmss}{m}{sc} {fcmsy/m/n}
+ \flt@subfamily{OMS}{fcmss}{bx}{n} {fcmsy/b/n}
+ \flt@subfamily{OMS}{fcmss}{b}{n}  {fcmsy/b/n}
+ \flt@subfamily{OMS}{fcmss}{bx}{sl}{fcmsy/b/n}
+ \flt@subfamily{OMS}{fcmss}{bx}{it}{fcmsy/b/n}
+\DeclareFontFamily{OML}{fcmr}{\skewchar\font'177}
+ \flt@subfamily{OML}{fcmr}{m}{n}   {fcmm/m/it}
+\DeclareFontFamily{OML}{fcmtt}{\skewchar\font'177}
+ \flt@subfamily{OML}{fcmtt}{m}{n}  {fcmm/m/it}
+\DeclareFontFamily{OMS}{fcmr}{\skewchar\font'60}
+ \flt@subfamily{OMS}{fcmr}{m}{n}   {fcmsy/m/n}
+\DeclareFontFamily{OMS}{fcmtt}{\skewchar\font'60}
+ \flt@subfamily{OMS}{fcmtt}{m}{n}  {fcmsy/m/n}
+%    \end{macrocode}
+% Don't forget the extended symbol font for delimiters and the like.
+%    \begin{macrocode}
+\DeclareFontFamily{OMX}{fcmex}{}{}
+ \fltmath@family{OMX}{fcmex}{m}{n} {cmex7}{cmex10}
+%    \end{macrocode}
+% We were going to add one for a new \FoilTeX-\LaTeX\ symbol font
+% (\texttt{flasy}) but decided that was a bit much.  Instead, we just
+% set up the \texttt{lasy} font family and modify its parameters here.
+% In this way, if the user specifies \verb|\usepackage{latexsym}| the default
+% Ulasy.fd is \emph{not} loaded and the sizes don't get overrun.  Also,
+% we avoid having to expressly define all the required symbols.  We do
+% define a symbol font (\texttt{flasy}) however so we can use it for
+% the closing box at the end of proofs.
+%    \begin{macrocode}
+\DeclareFontFamily{U}{lasy}{}
+ \fltmath@family{U}{lasy}{m}{n}    {lasy7}{lasy10}
+ \flt@family{U}{lasy}{b}{n}        {lasyb10}
+\endgroup  % end of nfss@catcodes group
+\DeclareSymbolFont{flasy}{U}{lasy}{m}{n}
+%    \end{macrocode}
+% \subsection{The font selection mechanisms} \label{code:fontsel}
+% We've got all the font family and shape declaration tables set up.
+% Now we configure the font selection mechanism for \FoilTeX.  First we
+% define the defaults.
+%    \begin{macrocode}
+\def\rmdefault{fcmr}
+\def\sfdefault{fcmss}
+\def\ttdefault{fcmtt}
+\def\itdefault{it}
+\def\sldefault{sl}
+\def\bfdefault{bx}
+%    \end{macrocode}
+% This next definition finally sets up the sans serif as the default
+% family. 
+%    \begin{macrocode}
+\renewcommand\familydefault{\sfdefault}
+%    \end{macrocode}
+% Next we set up the old font changing commands and the ones used in
+% math (except small caps and slanted which are prohibited in math). 
+% Notice here that (in contrast to \SliTeX) the \verb|\rm| is still
+% roman!  Also, we replace the \verb|\em| declaration so that it
+% switches between the upright shape and the \textsl{slanted} shape.
+%    \begin{macrocode}
+\DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm} 
+\DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf} 
+\DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt} 
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf} 
+\DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit} 
+\DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl} 
+\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc} 
+\DeclareRobustCommand\em{\@nomath\em \ifdim \fontdimen\@ne\font >\z@
+     \upshape \else \slshape \fi}
+%    \end{macrocode}
+% \subsection{Math and symbol fonts}\label{code:mathfonts}
+% We need to replace all the standard symbol, operator, letter and large
+% symbol fonts with our new font families as declared above in
+% Subsection~\ref{code:fontshapeOM*}.   We do this for both normal and
+% bold equations. 
+%    \begin{macrocode}
+\SetSymbolFont{operators}{normal}{OT1}{fcmr}{m}{n}
+\SetSymbolFont{letters}{normal}{OML}{fcmm}{m}{it}
+\SetSymbolFont{symbols}{normal}{OMS}{fcmsy}{m}{n}
+\SetSymbolFont{largesymbols}{normal}{OMX}{fcmex}{m}{n}
+\SetSymbolFont{operators}{bold}{OT1}{fcmr}{bx}{n}
+\SetSymbolFont{letters}{bold}{OML}{fcmm}{b}{it}
+\SetSymbolFont{symbols}{bold}{OMS}{fcmsy}{b}{n}
+\SetSymbolFont{largesymbols}{bold}{OMX}{fcmex}{m}{n}
+%    \end{macrocode}
+% We also need to set up the math alphabets for the font change commands
+% and declarations in math mode.  Note that we expressly set the math
+% fonts to roman unless expressly asked for with \verb|\mathsf| or
+% \verb|\mathtt|.  All the others (\verb|\mathbf| and \verb|\mathit|,
+% along with \verb|\mathrm|) yield the roman (serif) counterpart.  This is
+% in constrast to what we do in text. 
+%    \begin{macrocode}
+\DeclareMathAlphabet{\mathrm}{OT1}{fcmr}{m}{n}
+\DeclareMathAlphabet{\mathbf}{OT1}{fcmr}{bx}{n}
+\DeclareMathAlphabet{\mathsf}{OT1}{fcmss}{m}{n}
+\DeclareMathAlphabet{\mathit}{OT1}{fcmr}{m}{it}
+\DeclareMathAlphabet{\mathtt}{OT1}{fcmtt}{m}{n}
+%    \end{macrocode}
+% Here are a few commands for caligraphic and math italics fonts: 
+%    \begin{macrocode}
+\DeclareRobustCommand*\cal{\@fontswitch{\relax}{\mathcal}}
+\DeclareRobustCommand*\mit{\@fontswitch{\relax}{\mathnormal}}
+%    \end{macrocode}
+% Now we get to the nub of the subtle issue of font point sizes.  The
+% natural thing to want to do (and was easy to do in OFSS) was the
+% following.  First determine the font (with natural point size) you want,
+% determine mag-scaling needed to get this to the approximate point size
+% desired and hard-code this as exactly equal.   So, we could say that 
+% a 12pt version of a 7pt font was just scaled by magstep~3.  This was
+% in spite of the fact that this was more likely to be a 12.1pt font. 
+% In NFSS, the desired point size and the design size are used to
+% compute the scaling desired so a declaration like 12pt scaling of 7pt
+% font would require a non-standard magnification (and so drivers would
+% either have to generate a whole new library of fonts, or scale
+% existing fonts or \LaTeX\ would have to scream out error messages
+% about font substitutions.   
+% 
+% This could be avoided if we simply used scaled versions of just 10pt
+% fonts, but we found in the earlier \FoilTeX\ that it looked much
+% better in math mode to try to maintain as much of the relative scaling
+% of fonts as was in Knuth's original design, namely 10pt (design-size)
+% font should have a 7pt (design-size) exponent and 5pt super-exponent.
+% In \FoilTeX, we compromise a little on this and try to force (as can
+% be seen from the font shape declarations above) scaled versions of 7pt
+% fonts for exponents and smaller scaled versions of 7pt for
+% super-exponents.  But of course, this means that the math size for
+% this needs to reflect this as much as possible (hence the 12.1pt
+% version of 7pt fonts).   On the other hand, some text fonts that also
+% play a role in math mode (like roman) need to have their corresponding
+% 12pt text versions (in \verb|\tiny|, for example).  That's why some of
+% these fonts have size information for 12.1pt (cmr7) and 12pt (cmr10). 
+% 
+% Consequently, we declare some tokens for the small math sizes as 12.1,
+% 14.5 and 17.38 and then set the math sizes for the various point
+% sizes.  We also stick to the principle that no font should be smaller
+% than 12pt so this limits what we can do in exponents and the like. 
+% We add one for really big fonts but only if we are not running in
+% compatibility mode.  Somewhere at sometime I wanted these really big
+% stuff and so here it is now.
+%    \begin{macrocode}
+\newcommand\@xii@ipt{12.1}
+\newcommand\@xiv@vpt{14.5}
+\newcommand\@xvii@iiipt{17.38}
+\newcommand\@xxxpt{29.86}
+\newcommand\@xxxvipt{35.83}
+\newcommand\@xliiipt{43}
+\newcommand\@lipt{51.60}
+\DeclareMathSizes{\@xiipt}{\@xii@ipt}{\@xii@ipt}{\@xii@ipt}
+\DeclareMathSizes{\@xivpt}{\@xiv@vpt}{\@xii@ipt}{\@xii@ipt}
+\DeclareMathSizes{\@xviipt}{\@xvii@iiipt}{\@xii@ipt}{\@xii@ipt}
+\DeclareMathSizes{\@xxpt}{\@xxpt}{\@xiv@vpt}{\@xii@ipt}
+\DeclareMathSizes{\@xxvpt}{\@xxvpt}{\@xvii@iiipt}{\@xiv@vpt}
+\DeclareMathSizes{\@xxxpt}{\@xxxpt}{\@xxpt}{\@xvii@iiipt}
+\DeclareMathSizes{\@xxxvipt}{\@xxxvipt}{\@xxvpt}{\@xxpt}
+\DeclareMathSizes{\@xliiipt}{\@xliiipt}{\@xxxpt}{\@xxvpt}
+\if@compatibility\else
+  \DeclareMathSizes{\@lipt}{\@lipt}{\@xxxvipt}{\@xxxpt}
+\fi
+%    \end{macrocode}
+% Finally, we have to deal with the picture environment fonts (circle
+% and line).  These seem to be broken no matter what I do.  I liked the
+% fatter lines that I got with the magscaled versions in the old
+% \FoilTeX, but it seemed to be very hard to convert user's pictures
+% from \LaTeX\ to \FoilTeX.  So, in the new version we don't scale and
+% in compatibility mode, we do scale.   In either case, it's easy to
+% generate pictures that just don't work!  
+%    \begin{macrocode}
+\if@compatibility   
+  \font\tencirc=lcircle10 scaled \magstep4 
+  \font\tencircw=lcirclew10 scaled \magstep4
+  \font\tenln=line10 scaled \magstep4
+  \font\tenlnw=linew10 scaled \magstep4
+\else 
+  \font\tencirc=lcircle10
+  \font\tencircw=lcirclew10
+  \font\tenln=line10
+  \font\tenlnw=linew10
+\fi
+%</fonts>
+%    \end{macrocode}
+%
+%
+% \Finale  
+%
+\endinput
+%%%%% A template for option file inclusion %%%%%%%%%%%%%%%
+%    \begin{macrocode}
+%<*option>
+%</option>
+%    \end{macrocode}

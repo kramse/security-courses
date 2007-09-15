@@ -1,0 +1,221 @@
+\documentclass[18pt,landscape,a4paper]{foils}
+\usepackage{sec6slides}
+
+\begin{document}
+
+\mytitlepage{OpenBSD Packages\\\small - The Best Package Management Ever}
+{EuroBSDCon2007 deathmatch}
+
+\hlkimage{4cm}{openbsd-logo.png}
+
+\slide{What is OpenBSD}
+
+\hlkimage{15cm}{images/puffy41}
+
+\begin{quote}
+The OpenBSD project produces a {\bf FREE}, multi-platform 4.4BSD-based
+UNIX-like operating system. Our efforts emphasize portability,
+standardization, correctness, proactive security and integrated
+cryptography. OpenBSD supports binary emulation of most programs from
+SVR4 (Solaris), FreeBSD, Linux, BSD/OS, SunOS and HP-UX. 
+\end{quote}
+
+You can download for free but only get stickers when you buy, so go to
+Wim and buy some :-)
+
+\slide{OpenBSD packages and ports}
+
+\begin{list1}
+\item What is OpenBSD packages
+\item OpenBSD packages are ready-to-install binary packages
+\item These packages contain third party applications 
+which can be installed, upgraded and uninstalled on OpenBSD
+\item Source for most of this presentation is experience and:\\
+15 - The OpenBSD packages and ports system\\
+\link{http://www.openbsd.org/faq/faq15.html}
+The OpenBSD ports tree is based on a concept originally borrowed from
+FreeBSD - but improved of course :-)
+\item A lot of packages are announced with other OpenBSD news at:\\
+\link{http://undeadly.org}
+\end{list1}
+
+\slide{Binary Packages are the product}
+
+\begin{list1}
+\item Most packages are ready-to-install binary packages and this is
+  the considered end-user product
+\item The goal of the developers are not to make a great ports-tree,
+  but to make great packages
+\item The patches and packaging of packages are not meant for
+  end-users, but some packages need special consideration
+\item Don't waste your time building packages again and again, like Gentoo
+\item Of course as a result the ports tree is great too :-)
+\end{list1}
+
+\slide{Building packages}
+
+\begin{list1}
+\item Sometime a few packages need to be built:
+\item Java - due to license issues with sourcecode, requires download
+  with click-through license  
+\item Flavors, sometimes you want an application configured exactly
+  like you like it. Not all flavors are built by the OpenBSD project
+\end{list1}
+
+\slide{Package administration}
+
+\begin{alltt}
+hlk@pumba:all$ pwd
+/userdata/OpenBSD/packages/amd64/all
+hlk@pumba:all$ sudo pkg_add nsping-0.8.tgz
+nsping-0.8: complete               
+\end{alltt}
+
+\begin{list1}
+\item Main commands are:
+\begin{list2}
+\item \verb+pkg_add+ install packages
+\item \verb+pkg_delete+ remove installed packages
+\item \verb+pkg_info+ display information about installed packages   
+\end{list2}
+\item Deleting all packages can be done with:\\ 
+\verb+pkg_delete -q /var/db/pkg/*+
+\end{list1}
+
+\slide{Easy distribution}
+
+\begin{list1}
+\item Getting the packages installed requires access to the package
+  file
+\item \verb+pkg_add+ command understand URL notation, so you don't
+  need to copy all package files to a server!
+\item The command can be used with files or URL referring to other
+  locations such as:
+\begin{list2}
+\item FTP good ole File Transfer Protocol
+\item HTTP Hyper Text Transfer Protocol - easy distribution
+\item HTTPS or Secure Copy Protocol (SCP) - secure distribution
+\end{list2}
+\item Valid commands:
+\end{list1}
+\begin{alltt}
+\small
+pkg_add -v ftp://ftp.openbsd.org/pub/OpenBSD/2.7/packages/i386/m4-1.4.tgz
+pkg_add -v scp://login@host/usr/ports/packages/sparc/all/tcl-8.4.7.tgz  
+\end{alltt}
+
+
+\slide{Adding packages from URL}
+\begin{alltt}
+\small
+hlk@pumba:hlk$ sudo pkg_add \verb+\+
+ftp://ftp.se.openbsd.org/pub/OpenBSD/4.1/packages/amd64/zsh-4.2.6p2.tgz
+Shell /usr/local/bin/zsh appended to /etc/shells
+zsh-4.2.6p2|*****************************************       | 81%
+
+\emph{then a few seconds more and:}
+Shell /usr/local/bin/zsh appended to /etc/shells
+zsh-4.2.6p2: complete  
+\end{alltt}
+%$
+
+\slide{Package upgrading}
+
+\begin{alltt}
+\small
+PKG_ADD(1)                 OpenBSD Reference Manual                 PKG_ADD(1)
+
+NAME
+     pkg_add - install software package distributions
+...
+ -i       Switch on interactive mode.  pkg_add may ask questions to the
+          user if faced with difficult decisions.
+...
+ -u       Update the given pkgname(s), and anything it depends upon.  If
+          no pkgname is given, pkg_add will update all installed packages.
+          This relies on PKG_PATH to figure out the new package names.  
+\end{alltt}
+
+\begin{list1}
+\item New option -u for package upgrades
+\item Just go into a directory with new package files and upgrade
+\end{list1}
+
+\slide{}
+
+\begin{alltt}
+\small
+hlk@pumba:all$ pwd              
+/userdata/OpenBSD/packages/amd64/all
+hlk@pumba:all$ sudo pkg_add -ui 
+
+\end{alltt}
+
+\slide{Stable Packages}
+
+\begin{list1}
+\item OpenBSD has three flavors for the Base Operating System:
+\begin{list2}
+\item -release: The version of OpenBSD shipped every six months on CD.
+\item -stable: Release, plus patches considered critical to security and reliability.
+\item  -current: Where new development work is presently being done,
+    and eventually, it will turn into the next release. 
+\end{list2}
+\item But OpenBSD also extends this to the packages, so OpenBSD has
+\begin{list2}
+\item -stable packages
+\item -current packages
+\end{list2}
+\item So if you want to run a stable and secure server you can follow
+  the stable branch for ports!
+\item For the i386 and amd64 architectures you can also find updatede
+  packages at:\\
+\link{http://www.openbsd.org/pkg-stable.html}  
+\end{list1}
+
+\slide{Complete OpenBSD server upgrade}
+
+\begin{list1}
+\item No matter if you want to run -stable or snapshots of -current
+  (or build OS and ports yourself) you can upgrade a server easily:
+\item 1) Upload files to your server
+\item 2) Replace kernel /bsd 
+\item 3) Reboot
+\item 4) Upgrade system
+\item 5) Upgrade packages 
+\item 6) Drink beer!
+\end{list1}
+
+If files are placed on a server the upgrade can be done in
+about 1 hour - including packages!
+
+\slide{OpenBSD Release Cycle}
+
+\begin{list1}
+\item A new OpenBSD version is released twice a year
+\item Next one is The OpenBSD 4.2 Release\\
+To be released Nov 1, 2007  
+\item Last two releases are supported with security fixes, so you can
+  decide to upgrade once a year or twice a year
+\item I recommend upgrading with each new release, since they always
+  include a lot of great new stuff!
+\item See more on: \link{http://www.openbsd.org/42.html}
+\end{list1}
+\slide{Summary}
+
+\hlkimage{10cm}{images/unix_plate-med.jpg}
+
+\begin{list1}
+\item Remember:\\
+\item OpenBSD provides a secure foundation for your applications
+\item OpenBSD packages makes it easy to install applications
+\item OpenBSD has a predictable release cycle
+\item OpenBSD has the easiest upgrade for both base and packages
+\item Theo is always right and OpenBSD is free :-)
+\end{list1}
+
+
+\myquestionspage
+
+
+\end{document}

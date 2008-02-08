@@ -1,0 +1,33 @@
+#! /bin/sh
+# Tomcat stop start script
+# Usage: ./tomcat {stop|start|restart}
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin:/usr/local/sbin:/usr/local/bin
+
+TARGET=$1
+
+# Cataline_home is linked from command line to the real version
+export CATALINA_HOME=/userdata/tomcat/apache-tomcat
+export LANG=en_US.UTF8
+export JAVA_HOME=/usr/local/jdk-1.5.0
+
+export JAVA_OPTS="-Xmx256M -Djavax.net.ssl.trustStore=cacerts -Dfile.encoding=UTF-8"
+
+cd $CATALINA_HOME
+
+# start and stop tomcat server
+case $1 in
+        start) 
+        echo Starting tomcat
+        ${CATALINA_HOME}/bin/startup.sh
+        ;;
+        stop)
+        echo Stopping tomcat
+        ${CATALINA_HOME}/bin/shutdown.sh
+        ;;
+        restart)
+        $0 stop
+        sleep 10
+        $0 start        
+        ;;
+        *) echo "$0 unknown parameter $1"; exit 127;;
+esac

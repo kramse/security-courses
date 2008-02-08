@@ -1,0 +1,2016 @@
+\slide{Dag 3 Dynamiske protokoller og services}
+
+\hlkimage{20cm}{openbgpd-network-2.pdf}
+
+% 802.11 start
+%input fra wireless kursus, wireless præsentationer, wireless foredrag pentest III
+%Husk WDS og bridging
+
+\slide{Trådløse teknologier 802.11}
+
+\begin{list1}
+\item 802.11 er arbejdsgruppen under IEEE 
+\item De mest kendte standarder idag indenfor trådløse teknologier:
+\begin{list2}
+\item 802.11b 11Mbps versionen
+\item 802.11g 54Mbps versionen
+\end{list2}
+\item Der er proprietære versioner 22Mbps og den slags\\
+- det anbefales IKKE at benytte disse da det giver vendor lock-in -
+man bliver låst fast
+\end{list1}
+
+Kilde: \link{http://grouper.ieee.org/groups/802/11/index.html}
+
+\slide{802.11 modes og frekvenser}
+
+\begin{list1}
+\item Access point kører typisk i \emph{access point mode} også kaldet
+  infrastructure mode - al trafik går via AP
+\item Alternativt kan wireless kort oprette ad-hoc netværk - hvor
+  trafikken går direkte mellem netkort
+\item Frekvenser op til kanal 11 og 12+13 i DK/EU
+\item Helst 2 kanaler spring for 802.11b AP der placeres indenfor rækkevidde
+\item Helst 4 kanaler spring for 802.11g AP der placeres indenfor rækkevidde
+\end{list1}
+
+\slide{Eksempel på netværk med flere AP'er}
+
+\hlkimage{20cm}{images/wireless-multi-ap.pdf}
+
+\slide{Eksempel på netværk med flere AP'er}
+
+\hlkimage{20cm}{images/wireless-multi-ap-2.pdf}
+
+
+\slide{Wireless Distribution System WDS}
+
+\hlkimage{18cm}{images/wireless-multi-ap-wds.pdf}
+
+\begin{list1}
+\item Se også:
+\link{http://en.wikipedia.org/wiki/Wireless_Distribution_System}
+\end{list1}
+
+
+\slide{\hskip 1 cm Er trådløse netværk interessante?}
+
+\begin{list1}
+\item Sikkerhedsproblemer i de trådløse netværk er mange
+  \begin{list2}
+  \item Fra lavt niveau - eksempelvis ARP, 802.11
+  \item dårlige sikringsmekanismer - WEP
+  \item dårligt udstyr - mange fejl
+  \item usikkkerhed om implementering og overvågning
+  \end{list2}
+\item Trådløst udstyr er blevet meget billigt!
+\item Det er et krav fra brugerne - trådløst er lækkert
+\end{list1}
+
+
+\slide{Konsekvenserne}
+
+\hlkimage{10cm}{images/wireless-daekning.pdf}
+
+\begin{list2}
+\item Værre end Internetangreb - anonymt
+\item Kræver ikke fysisk adgang til lokationer
+%\emph{spioneres imod}
+\item Konsekvenserne ved sikkerhedsbrud er generelt større
+\item Typisk får man direkte LAN eller Internet adgang!
+\end{list2}
+
+\slide{Værktøjer}
+
+\begin{list1}
+\item Alle bruger nogenlunde de samme værktøjer, måske forskellige
+  mærker
+\begin{list2}
+\item Wirelessscanner - Kismet og netstumbler
+\item Wireless Injection - typisk på Linux
+\item ...
+\item Aircrack-ng
+\end{list2}
+\item Jeg anbefaler Auditor Security Collection og BackTrack boot CD'erne
+\end{list1}
+
+
+\slide{Konsulentens udstyr wireless}
+
+\begin{list1}
+\item Laptop med PC-CARD slot
+\item Trådløse kort Atheros, de indbyggede er ofte ringe ;-)
+\item Access Points - jeg anbefaler Airport Express
+\item Antenner hvis man har lyst
+\item Bøger: 
+\begin{list2}
+\item \emph{Real 802.11 security}
+\item Se oversigter over bøger og værktøjer igennem præsentationen:
+\end{list2}
+\item Internetressourcer:
+\begin{list2}
+\item Auditor Security Collection - CD image med Linux+værktøjer    
+\item Packetstorm wireless tools
+\link{http://packetstormsecurity.org/wireless/}
+\item \emph{Beginner's Guide to Wireless Auditing}
+David Maynor 
+\link{http://www.securityfocus.com/infocus/1877?ref=rss}
+\end{list2}
+\end{list1}
+
+
+\slide{Typisk brug af 802.11 udstyr}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=20cm]{images/wlan-accesspoint-1.pdf}}
+\end{center}
+
+\centerline{\hlkbig et access point - forbindes til netværket}
+
+\slide{Basal konfiguration}
+
+\begin{list1}
+\item Når man tager fat på udstyr til trådløse netværk opdager man:
+\item SSID - nettet skal have et navn
+\item frekvens / kanal - man skal vælge en kanal, eller udstyret
+  vælger en automatisk
+\item der er nogle forskellige metoder til sikkerhed  
+\end{list1}
+
+\slide{Trådløs sikkerhed}
+
+\hlkimage{14cm}{images/apple-wireless-security.png}
+
+\begin{list2}
+\item Trådløs sikkerhed - WPA og WPA2
+\item Nem konfiguration
+\item Nem konfiguration af Access Point  
+\end{list2}
+
+\slide{Wireless networking sikkerhed i 802.11b}
+
+\hlkimage{10cm}{images/wlan-accesspoint-1.pdf}
+
+\begin{list1}
+\item Sikkerheden er baseret på nogle få forudsætninger 
+  \begin{list2}
+  \item SSID - netnavnet
+  \item WEP \emph{kryptering} - Wired Equivalent Privacy
+  \item måske MAC flitrering, kun bestemte kort må tilgå accesspoint 
+  \end{list2}
+\item Til gengæld er disse forudsætninger ofte ikke tilstrækkelige ... 
+%\item Hvorfor hader du WEP?
+  \begin{list2}
+  \item WEP er måske \emph{ok} til visse små hjemmenetværk
+  \item WEP er baseret på en DELT hemmelighed som alle stationer kender
+  \item nøglen ændres sjældent, og det er svært at distribuere en ny
+  \end{list2}
+  
+\end{list1}
+
+
+\slide{Forudsætninger}
+
+\begin{list1}
+\item Til gengæld er disse forudsætninger ofte ikke tilstrækkelige ... 
+\item Hvad skal man beskytte?
+\item Hvordan kan sikkerheden omgås?
+\item Mange firmaer og virksomheder stille forskellige krav til
+  sikkerheden - der er ikke en sikkerhedsmekanisme der passer til alle
+\end{list1}
+
+\slide{SSID - netnavnet}
+
+\begin{list1}
+\item Service Set Identifier (SSID) - netnavnet
+\item 32 ASCII tegn eller 64 hexadecimale cifre
+\item Udstyr leveres typisk med et standard netnavn
+\begin{list2}
+\item Cisco - tsunami
+\item Linksys udstyr - linksys
+\item Apple Airport, 3Com m.fl. - det er nemt at genkende dem  
+\end{list2}
+\item SSID kaldes også for NWID - network id
+\item SSID broadcast - udstyr leveres oftest med broadcast af SSID
+\end{list1}
+
+
+%wardriving her
+\slide{Demo: wardriving med stumbler programmer}
+
+\hlkimage{17cm}{images/macstumbler.png}  
+
+\begin{list1}
+\item man tager et trådløst netkort og en bærbar computer og noget software:
+\begin{list2}
+\item Netstumbler - Windows \link{http://www.netstumbler.com}
+\item dstumbler - UNIX \link{http://www.dachb0den.com/projects/dstumbler.html}
+\item iStumbler - Mac \link{http://www.istumbler.net/}
+\item Kismet ... mange andre
+  \end{list2}
+\end{list1}
+
+\slide{Start på demo - wardriving}
+
+\hlkimage{15cm}{images/server-client-wlan.pdf}
+
+\begin{list2}
+\item Almindelige laptops bruges til demo
+\item Der startes et \emph{access point}
+\end{list2}
+
+\slide{MAC filtrering}
+
+\begin{list1}
+\item De fleste netkort tillader at man udskifter sin MAC adresse
+\item MAC adressen på kortene er med i alle pakker der sendes
+\item MAC adressen er aldrig krypteret, for hvordan skulle pakken så
+  nå frem?
+\item MAC adressen kan derfor overtages, når en af de tilladte
+  stationer forlader området ...
+\end{list1}
+
+\slide{Resultater af wardriving}
+
+\begin{list1}
+\item Hvad opdager man ved wardriving?
+\begin{list2}
+\item at WEP IKKE krypterer hele pakken
+\item at alle pakker indeholder MAC adressen
+\item WEP nøglen skifter sjældent
+\item ca. 2/3 af de netværk man finder har ikke WEP slået til - og der
+  er fri og uhindret adgang til Internet
+\end{list2}
+\item {\color{red}
+Man kan altså lytte med på et netværk med WEP, genbruge en anden
+maskines MAC adresse - og måske endda bryde WEP krypteringen.}
+\item 
+Medmindre man kender virksomheden og WEP nøglen ikke er skiftet ...
+det er besværligt at skifte den, idet alle stationer skal opdateres.
+\end{list1}
+
+%\slide{Storkøbenhavn}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=23cm]{images/20030830-kbh.png}}  
+\end{center}
+
+
+
+\slide{Informationsindsamling}
+
+\begin{list1}
+\item Det vi har udført er informationsindsamling
+\item Indsamlingen kan være aktiv eller passiv indsamling i forhold
+  til målet for angrebet
+\item passiv kunne være at lytte med på trafik eller søge i databaser
+  på Internet
+\item aktiv indsamling er eksempelvis at sende ICMP pakker og
+  registrere hvad man får af svar
+\end{list1}
+
+\slide{WEP kryptering} 
+
+%\begin{center}
+%\colorbox{white}{\includegraphics[width=12cm]{images/airsnort.pdf}}  
+%\end{center}
+\begin{list1}
+\item WEP \emph{kryptering} - med nøgler der specificeres som tekst
+  eller hexadecimale cifre
+\item typisk 40-bit, svarende til 5 ASCII tegn eller 10 hexadecimale
+  cifre eller 104-bit 13 ASCII tegn eller 26 hexadecimale cifre
+\item WEP er baseret på RC4 algoritmen der er en \emph{stream cipher}
+  lavet af Ron Rivest for RSA Data Security
+\end{list1}
+
+
+\slide{De første fejl ved WEP}
+\begin{list1}
+\item Oprindeligt en dårlig implementation i mange Access Points
+\item Fejl i krypteringen - rettet i nyere firmware
+\item WEP er baseret på en DELT hemmelighed som alle stationer kender
+\item Nøglen ændres sjældent, og det er svært at distribuere en ny
+\end{list1}
+
+\slide{WEP som sikkerhed}
+
+\hlkimage{6cm}{images/no-wep.pdf}
+\begin{list1}
+\item WEP er \emph{ok} til et privat hjemmenetværk
+\item WEP er for simpel til et større netværk - eksempelvis 20 brugere
+\item Firmaer bør efter min mening bruge andre
+  sikkerhedsforanstaltninger 
+\item Hvordan udelukker man en bestemt bruger?
+\end{list1}
+
+\slide{WEP sikkerhed}
+
+\hlkimage{12cm}{images/airsnort.pdf}  
+
+\begin{quote}
+AirSnort is a wireless LAN (WLAN) tool which recovers encryption
+keys. AirSnort operates by passively monitoring transmissions,
+computing the encryption key when enough packets have been gathered.  
+
+802.11b, using the Wired Equivalent Protocol (WEP), is crippled with
+numerous security flaws. Most damning of these is the weakness
+described in " Weaknesses in the Key Scheduling Algorithm of RC4 "
+by Scott Fluhrer, Itsik Mantin and Adi Shamir. Adam Stubblefield
+was the first to implement this attack, but he has not made his
+software public. AirSnort, along with WEPCrack, which was released
+about the same time as AirSnort, are the first publicly available
+implementaions of this attack.  \link{http://airsnort.shmoo.com/}
+\end{quote}
+
+%\begin{list1}
+%\item i dag er firmware opdateret hos de fleste producenter
+%\item men sikkerheden baseres stadig på een delt hemmelighed
+%\end{list1}
+
+\slide{major cryptographic errors}
+
+\begin{list1}
+\item weak keying - 24 bit er allerede kendt - 128-bit = 104 bit i praksis
+\item small IV - med kun 24 bit vil hver IV blive genbrugt oftere
+\item CRC-32 som intergritetscheck er ikke \emph{stærkt} nok
+  kryptografisk set
+\item Authentication gives pad - giver fuld adgang - hvis der bare
+  opdages \emph{encryption pad} for en bestemt IV. Denne IV kan så
+  bruges til al fremtidig kommunikation
+\end{list1}
+
+{\hlkbig Konklusion: Kryptografi er svært}
+
+\slide{WEP cracking - airodump og aircrack}
+
+\hlkimage{3cm}{images/no-wep.pdf}
+
+\begin{list1}
+\item airodump - opsamling af krypterede pakker
+\item aircrack - statistisk analyse og forsøg på at finde WEP nøglen
+\item Med disse værktøjer er det muligt at knække \emph{128-bit nøgler}!
+\item Blandt andet fordi det reelt er 104-bit nøgler \smiley
+\item tommelfingerregel - der skal opsamles mange pakker ca. 500.000
+  er godt
+\item Links:\\
+\link{http://www.cr0.net:8040/code/network/aircrack/} aircrack\\
+\link{http://www.securityfocus.com/infocus/1814} WEP: Dead Again
+\end{list1}
+
+\slide{airodump afvikling}
+
+\begin{list1}
+\item Når airodump kører opsamles pakkerne
+\item samtidig vises antal initialisationsvektorer IV's:
+\end{list1}
+
+\vskip 1 cm
+
+\begin{alltt}
+\hlktiny
+   BSSID              CH  MB  ENC  PWR  Packets   LAN IP / # IVs   ESSID
+
+   00:03:93:ED:DD:8D   6  11       209   {\bf 801963                  540180}   wanlan    
+\end{alltt}
+
+\vskip 2 cm
+
+\begin{list1}
+\item NB: dataopsamlingen er foretaget på 100\% opdateret Mac udstyr
+\end{list1}
+
+
+\slide{aircrack - WEP cracker}
+
+\begin{alltt}
+\hlktiny
+   $ aircrack -n 128 -f 2 aftendump-128.cap
+                                 aircrack 2.1
+   * Got  540196! unique IVs | fudge factor = 2
+   * Elapsed time [00:00:22] | tried 12 keys at 32 k/m
+   KB    depth   votes
+    0    0/  1   CE(  45) A1(  20) 7E(  15) 98(  15) 72(  12) 82(  12) 
+    1    0/  2   62(  43) 1D(  24) 29(  15) 67(  13) 94(  13) F7(  13) 
+    2    0/  1   B6( 499) E7(  18) 8F(  15) 14(  13) 1D(  12) E5(  10) 
+    3    0/  1   4E( 157) EE(  40) 29(  39) 15(  30) 7D(  28) 61(  20) 
+    4    0/  1   93( 136) B1(  28) 0C(  15) 28(  15) 76(  15) D6(  15) 
+    5    0/  2   E1(  75) CC(  45) 39(  31) 3B(  30) 4F(  16) 49(  13) 
+    6    0/  2   3B(  65) 51(  42) 2D(  24) 14(  21) 5E(  15) FC(  15) 
+    7    0/  2   6A( 144) 0C(  96) CF(  34) 14(  33) 16(  33) 18(  27) 
+    8    0/  1   3A( 152) 73(  41) 97(  35) 57(  28) 5A(  27) 9D(  27) 
+    9    0/  1   F1(  93) 2D(  45) 51(  29) 57(  27) 59(  27) 16(  26) 
+   10    2/  3   5B(  40) 53(  30) 59(  24) 2D(  15) 67(  15) 71(  12) 
+   11    0/  2   F5(  53) C6(  51) F0(  21) FB(  21) 17(  15) 77(  15) 
+   12    0/  2   E6(  88) F7(  81) D3(  36) E2(  32) E1(  29) D8(  27) 
+         {\color{red}\bf KEY FOUND! [ CE62B64E93E13B6A3AF15BF5E6 ]}
+\end{alltt}
+%$
+
+
+\slide{Hvor lang tid tager det?}
+
+\begin{list1}
+\item Opsamling a data - ca. en halv time på 802.11b ved optimale forhold
+\item Tiden for kørsel af aircrack fra auditor CD 
+på en Dell CPi 366MHz Pentium II laptop:
+\end{list1}
+\begin{alltt}
+
+   $ time aircrack -n 128 -f 2 aftendump-128.cap
+   ...
+   real    5m44.180s   user  0m5.902s     sys  1m42.745s
+   \end{alltt}
+   %$
+
+\pause
+\begin{list1}
+\item Tiden for kørsel af aircrack på en moderne 1.6GHz CPU med
+  almindelig laptop disk tager typisk mindre end 60 sekunder
+\end{list1}
+
+\slide{Erstatning for WEP- WPA}
+
+\begin{list1}
+\item Det anbefales at bruge:
+%\begin{list2}
+\item Kendte VPN teknologier eller WPA
+\item baseret på troværdige algoritmer
+\item implementeret i professionelt udstyr
+\item fra troværdige leverandører
+\item udstyr der vedligeholdes og opdateres
+%\end{list2}
+\item Man kan måske endda bruge de eksisterende løsninger - fra
+  hjemmepc adgang, mobil adgang m.v.
+\end{list1}
+
+
+\slide{RADIUS}
+\begin{list1}
+\item RADIUS er en protokol til autentificering af brugere op mod en
+  fælles server 
+\item Remote Authentication Dial In User Service (RADIUS)
+\item RADIUS er beskrevet i RFC-2865
+\item RADIUS kan være en fordel i større netværk med 
+\begin{list2}
+\item dial-in
+\item administration af netværksudstyr
+\item trådløse netværk
+\item andre RADIUS kompatible applikationer
+\end{list2}
+\end{list1}
+
+
+\slide{Erstatninger for WEP}
+\begin{list1}
+\item Der findes idag andre metoder til sikring af trådløse netværk
+\item 802.1x Port Based Network Access Control 
+\item WPA - Wi-Fi Protected Access)\\
+WPA = 802.1X + EAP + TKIP + MIC
+\item nu WPA2
+\begin{quote}
+WPA2 is based on the final IEEE 802.11i amendment to the 802.11
+standard and is eligible for FIPS 140-2 compliance.
+\end{quote}
+\item Kilde: 
+\href{http://www.wifialliance.org/OpenSection/protected_access.asp}
+{http://www.wifialliance.org/OpenSection/protected\_access.asp}
+\end{list1}
+
+\slide{WPA eller WPA2?}
+
+\begin{quote}
+WPA2 is based upon the Institute for Electrical and Electronics
+Engineers (IEEE) 802.11i amendment to the 802.11 standard, which was
+ratified on July 29, 2004.  
+\end{quote}
+
+\begin{quote}
+Q: How are WPA and WPA2 similar?\\
+A: Both WPA and WPA2 offer a high level of assurance for end-users and network
+administrators that their data will remain private and access to their
+network restricted to authorized users.
+Both utilize 802.1X and Extensible Authentication Protocol (EAP) for
+authentication. Both have Personal and Enterprise modes of operation
+that meet the distinct needs of the two different consumer and
+enterprise market segments. 
+
+Q: How are WPA and WPA2 different?\\
+A: WPA2 provides a {\bf stronger encryption mechanism} through {\bf
+  Advanced Encryption Standard (AES)}, which is a requirement for some
+corporate and government users. 
+\end{quote}
+
+\centerline{Kilde: http://www.wifialliance.org WPA2 Q and A}
+
+\slide{WPA Personal eller Enterprise}
+
+\begin{list1}
+\item Personal - en delt hemmelighed, preshared key
+\item Enterprise - brugere valideres op mod fælles server
+\item Hvorfor er det bedre?
+\begin{list2}
+\item Flere valgmuligheder - passer til store og små
+\item WPA skifter den faktiske krypteringsnøgle jævnligt - TKIP 
+\item Initialisationsvektoren (IV) fordobles 24 til 48 bit   
+\item Imødekommer alle kendte problemer med WEP!
+\item Integrerer godt med andre teknologier - RADIUS
+
+\vskip 1 cm
+\item EAP - Extensible Authentication Protocol - individuel autentifikation
+\item TKIP - Temporal Key Integrity Protocol - nøgleskift og integritet
+\item MIC - Message Integrity Code - Michael, ny algoritme til integritet
+\end{list2}
+
+\end{list1}
+
+
+\slide{WPA cracking}
+
+\begin{list1}
+\item Nu skifter vi så til WPA og alt er vel så godt?  
+\pause
+\item Desværre ikke!
+\item Du skal vælge en laaaaang passphrase, ellers kan man sniffe WPA
+  handshake når en computer går ind på netværket!
+\item Med et handshake kan man med aircrack igen lave off-line
+  bruteforce angreb!
+\end{list1}
+
+\slide{WPA cracking demo}
+
+\begin{list1}
+\item Vi konfigurerer AP med Henrik42 som WPA-PSK/passhrase  
+\item Vi finder netværk kismet eller airodump
+\item Vi starter airodump mod specifik kanal
+\item Vi spoofer deauth og opsamler WPA handshake
+\item Vi knækker WPA :-)
+\end{list1}
+
+\centerline{Brug manualsiderne for programmerne i aircrack-ng pakken!}
+
+\slide{WPA cracking med aircrack - start}
+
+\begin{alltt}
+\small
+slax ~ # aircrack-ng -w dict wlan-test.cap
+Opening wlan-test.cap
+Read 1082 packets.
+
+#  BSSID              ESSID           Encryption
+
+1  00:11:24:0C:DF:97  wlan            WPA (1 handshake)
+2  00:13:5F:26:68:D0  Noea            No data - WEP or WPA
+3  00:13:5F:26:64:80  Noea            No data - WEP or WPA
+4  00:00:00:00:00:00                  Unknown
+
+Index number of target network ? {\bf 1}
+\end{alltt}
+
+\slide{WPA cracking med aircrack - start}
+
+\begin{alltt}
+\small
+          [00:00:00] 0 keys tested (0.00 k/s)
+
+                    KEY FOUND! [ Henrik42 ]
+
+Master Key     : 8E 61 AB A2 C5 25 4D 3F 4B 33 E6 AD 2D 55 6F 76
+                 6E 88 AC DA EF A3 DE 30 AF D8 99 DB F5 8F 4D BD
+Transcient Key : C5 BB 27 DE EA 34 8F E4 81 E7 AA 52 C7 B4 F4 56
+                 F2 FC 30 B4 66 99 26 35 08 52 98 26 AE 49 5E D7
+                 9F 28 98 AF 02 CA 29 8A 53 11 EB 24 0C B0 1A 0D
+                 64 75 72 BF 8D AA 17 8B 9D 94 A9 31 DC FB 0C ED
+
+EAPOL HMAC     : 27 4E 6D 90 55 8F 0C EB E1 AE C8 93 E6 AC A5 1F
+
+\end{alltt}
+
+\vskip 1 cm
+
+\centerline{Min Thinkpad X31 med 1.6GHz Pentium M knækker ca. 150 Keys/sekund}
+
+\slide{Tools man bør kende}
+
+\begin{list2}
+\item BSD Airtools \link{http://www.dachb0den.com/projects/bsd-airtools.html}
+\item Kismet \link{http://www.kismetwireless.net/}
+\item Airsnort \link{http://airsnort.shmoo.com/} læs pakkerne med WEP
+  kryptering  
+\item wepcrack \link{http://wepcrack.sourceforge.net/} - knæk
+  krypteringen i WEP
+\item Airsnarf \link{http://airsnarf.shmoo.com/} - lav dit eget AP
+  parallelt med det rigtige og snif hemmeligheder
+\item Wireless Scanner \link{http://www.iss.net/} - kommercielt 
+\item Dette er et lille uddrag af programmer\\
+Se også \link{http://packetstormsecurity.org/wireless/}
+\end{list2}
+
+\slide{Når adgangen er skabt}
+
+\begin{list1}
+\item Så går man igang med de almindelige værktøjer
+\item Fyodor Top 100 Network Security Tools \link{http://www.sectools.org}  
+\end{list1}
+\vskip 2 cm
+
+\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
+
+\slide{Infrastrukturændringer}
+
+\begin{center}
+\colorbox{white}{\includegraphics[height=11cm]{images/wlan-accesspoint-2.pdf}}
+\end{center}
+
+\centerline{\hlkbig Sådan bør et access point forbindes til netværket}
+
+
+\slide{Anbefalinger mht. trådløse netværk}
+
+\begin{minipage}{10cm}
+\includegraphics[width=10cm]{images/wlan-accesspoint-2.pdf}
+\end{minipage}
+\begin{minipage}{\linewidth-10cm}
+\begin{list2}
+\item Brug noget tilfældigt som SSID - netnavnet
+\item Brug ikke WEP til virksomhedens netværk\\
+- men istedet en VPN løsning med individuel
+  autentificering eller WPA
+\item NB: WPA Personal/PSK kræver passphrase på +40 tegn!
+\item Placer de trådløse adgangspunkter hensigtsmæssigt i netværket -
+  så de kan overvåges
+\item Lav et sæt regler for brugen af trådløse netværk - hvor må 
+  medarbejdere bruge det?
+\item Se eventuelt pjecerne \emph{Beskyt dit trådløse Netværk} fra
+Ministeriet for Videnskab, Teknologi og Udvikling \\
+\link{http://www.videnskabsministeriet.dk/}
+\end{list2}
+\end{minipage} 
+
+
+\slide{Hjemmenetværk for nørder}
+
+\begin{list1}
+\item Lad være med at bruge et wireless-kort i en PC til at lave AP, brug et AP
+\item Husk et AP kan være en router, men den kan ofte også blot være en bro
+\item Brug WPA og overvej at lave en decideret DMZ til WLAN
+\item Placer AP hensigtsmæddigt og gerne højt, oppe på et skab eller lignende
+\end{list1}
+
+\exercise{ex:AirPort-AP}
+
+\exercise{ex:wardriving-windows}
+\exercise{ex:wardriving-kismet}
+
+\slide{Dynamisk routing} 
+
+\begin{list1}
+\item Når netværkene vokser bliver det administrativt svært at vedligeholde
+\item Det skalerer dårligt med statiske routes til netværk
+\item Samtidig vil man gerne have redundante forbindelser
+\item Til dette brug har man STP på switch niveau og dynamisk routing på IP niveau
+\end{list1}
+
+
+
+% OpenBGPD
+
+\slide{BGP Border Gateway Protocol}
+
+\begin{list1}
+\item Er en dynamisk routing protocol som benyttes eksternt
+\item Netværk defineret med AS numre annoncerer hvilke netværk de er forbundet til
+\item Autonomous System (AS) er en samling netværk
+\item BGP version 4 er beskrevet i RFC-4271
+\item BGP routere forbinder sig til andre BGP routere og snakker sammen, \emph{peering}
+\item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
+\item Vores setup svarer til dette:
+\item \link{http://www.kramse.dk/projects/network/openbgpd-basic_en.html}
+\end{list1}
+
+\slide{RIP Routing Information Protocol} 
+
+\begin{list1}
+\item Gammel routingprotokol som ikke benyttes mere
+\item RIP er en distance vector routing protokol, tæller antal hops
+\item \link{http://en.wikipedia.org/wiki/Routing_Information_Protocol}
+\end{list1}
+
+
+% OpenOSPFD
+
+\slide{OSPF Open Shortest Path First}
+
+\begin{list1}
+\item Er en dynamisk routing protocol som benyttes til intern routing
+\item OSPF version 3 er beskrevet i RFC-2740
+\item OSPF bruger hverken TCP eller UDP, men sin egen protocol med ID 89
+\item OSPF bruger en metric/cost pr link for at udregne smart routing 
+\item \link{http://en.wikipedia.org/wiki/Open_Shortest_Path_First}
+\item Vores setup svarer til OpenBGPD setup, blot med OpenOSPFD
+\end{list1}
+
+
+\slide{EIGRP}
+
+\begin{list1}
+\item Cisco protokol til intern routing, hvis man udelukkende har Cisco udstyr
+\item \link{http://www.cisco.com}
+\end{list1}
+
+\slide{Stop - vi gennemgår og tester vores dynamiske routing}
+
+\begin{list1}
+\item Vi gennemgår hvordan vores setup ser ud
+\item Vi laver traceroute før og efter:
+\item Vi fjerner en ledning \emph{link down}
+\item Vi stoper en router og ser de annoncerede netværk forsvinder
+\item Vi booter en router og ser de annoncerede netværk igen
+\end{list1}
+
+\slide{Båndbreddestyring og policy based routing}
+
+\begin{list1}
+\item Mange routere og firewalls idag kan lave båndbredde allokering til
+  protokoller, porte og derved bestemte services
+\item Mest kendte er i Open Source:
+\begin{list2}
+\item ALTQ bruges på OpenBSD - integreret i PF
+%  \link{http://www.csl.sony.co.jp/person/kjc/kjc/software.html}
+\item FreeBSD har dummynet
+\item Linux har tilsvarende\\
+ADSL-Bandwidth-Management-HOWTO, ADSL Bandwidth Management HOWTO\\
+Adv-Routing-HOWTO, Linux Advanced Routing \& Traffic Control HOWTO\\
+\link{http://www.knowplace.org/shaper/resources.html} Linux resources
+\end{list2}
+\item Det kaldes også traffic shaping
+\end{list1}
+
+
+\slide{Routingproblemer, angreb}
+
+\begin{list1}
+  \item falske routing updates til protokollerne
+\item sende redirect til maskiner
+\item source routing - mulighed for at specificere en ønsket vej for
+  pakken 
+\item Der findes (igen) specialiserede programmer til at teste og
+  forfalske routing updates, svarende til icmpush programmet
+\item Det anbefales at sikre routere bedst muligt - eksempelvis 
+Secure IOS template der findes på adressen:\\
+{\small \link{http://www.cymru.com/Documents/secure-ios-template.html}}
+\item Med UNIX systemer generelt anbefales opdaterede systemer og netværkstuning
+\end{list1}
+
+
+\slide{Source routing}
+
+\begin{list1}
+\item Hvis en angriber kan fortælle hvilken vej en pakke skal følge
+  kan det give anledning til sikkerhedsproblemer
+\item maskiner idag bør ikke lytte til source routing, evt. skal de
+  droppe pakkerne
+\end{list1}
+
+
+\slide{Formålet med resten af dagen }
+
+\hlkimage{15cm}{unix-servers.png}
+
+\centerline{Vi skal gennemgå gængse internet-serverfunktioner}
+
+\slide{Network Services}
+
+\begin{list1}
+\item Flere UNIX varianter har fået mere moderne strukturer til at
+  starte services
+\item SystemV start/stop af services er stadig meget udbredt rc.d
+  katalogstrukturer 
+\item Solaris: Service Management Facility SMF
+\item AIX: Subsystem Ressource Controller  
+\item Mac OS X: launchd
+\item Windows: services, net stop/start m.fl.
+\end{list1}
+
+\slide{daemoner}
+
+%chuckie billede
+%\hlkimage{}{}
+
+\begin{list1}
+\item Hjælper med til at køre systemet
+\item udfører jobs
+\item typiske daemoner er:
+  \begin{list2}
+  \item ftpd - FTP daemonen giver FTP adgang til filoverførsler
+\item Telnetd - giver login adgang - NB: ukrypteret!
+\item tftpd - Trivial file transfer protocol daemon, bruges til boot
+  og opgradering af netværksudstyr - kræver ikke password
+\item pop3d - POP3 post office protocol, elektronisk post
+\item sshd - SSH protokol daemonen giver adgang til login via SSH
+  \end{list2}
+\end{list1}
+
+\slide{inetd en super server}
+
+\begin{list1}
+  \item inetd har mange funktioner
+\item istedet for at have 10 programmer der lytter på diverse porte
+  kan inetd lytte på en hel masse, og så give forbindelsen videre til
+  programmerne når der er brug for det:
+\item \verb+/etc/inetd.conf+
+\end{list1}
+
+\begin{alltt}
+\small
+finger stream  tcp     nowait  nobody  /usr/libexec/tcpd fingerd -s
+ftp    stream  tcp     nowait  root    /usr/libexec/tcpd ftpd -l
+login  stream  tcp     nowait  root    /usr/libexec/tcpd rlogind
+nntp   stream  tcp     nowait  usenet  /usr/libexec/tcpd nntpd
+ntalk  dgram   udp     wait    root    /usr/libexec/tcpd ntalkd
+shell  stream  tcp     nowait  root    /usr/libexec/tcpd rshd
+telnet stream  tcp     nowait  root    /usr/libexec/tcpd telnetd
+uucpd  stream  tcp     nowait  root    /usr/libexec/tcpd uucpd
+comsat dgram   udp     wait    root    /usr/libexec/tcpd comsat
+tftp   dgram   udp     wait    nobody  /usr/libexec/tcpd tftpd /tftpboot
+\end{alltt}
+
+\slide{xinetd}
+
+\begin{list1}
+\item konfigureres med separate filer pr service i kataloget
+\verb+/etc/xinetd.d+ eksempelvis: \verb+/etc/xinetd.d/cups-lpd+:
+\end{list1}
+
+\begin{alltt}
+service printer
+\{
+        socket_type = stream
+        protocol    = tcp
+        wait        = no
+        user        = lp
+        server      = /usr/lib/cups/daemon/cups-lpd
+        disable     = yes
+\}  
+\end{alltt}
+
+\slide{UNIX Print systemer}
+
+\hlkimage{6cm}{images/cups-happy.pdf}
+
+\begin{list1}
+\item De fleste benytter idag standard kommandoerne:
+\begin{list2}
+\item \verb+lp+ og \verb+lpr+ - print files
+\item \verb+lpq+ - show printer queue status
+\item \verb+lprm+ - cancel print jobs
+\item Mange bruger softwaren Common UNIX Printing System fra
+  \link{http://www.cups.org} 
+\item Gamle UNIX systemer bruger stadig konfiguration via
+  \verb+/etc/printcap+ 
+\item remote print sker gennem Line Printer Daemon LPD protokollen port 515/tcp
+\item nyere printere understøtter Internet Printing Protocol IPP port 80/tcp
+\end{list2}
+\end{list1}
+
+Kilde: billede er fra CUPS
+
+
+\slide{TFTP Trivial File Transfer Protocol}
+
+\begin{list1}
+\item Trivial File Transfer Protocol - uautentificerede filoverførsler
+\item De bruges især til:
+  \begin{list2}
+\item TFTP bruges til boot af netværksklienter uden egen harddisk
+\item TFTP benytter UDP og er derfor ikke garanteret at data overføres korrekt
+  \end{list2}
+\item TFTP sender alt i klartekst, hverken password \\ 
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord} 
+\end{list1}
+
+
+\slide{FTP File Transfer Protocol}
+
+\begin{list1}
+\item File Transfer Protocol - filoverførsler
+\item Bruges især til:
+  \begin{list2}
+    \item FTP - drivere, dokumenter, rettelser - Windows Update? er
+    enten HTTP eller FTP
+  \end{list2}
+\item FTP sender i klartekst\\ 
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord} 
+\item Der findes varianter som tillader kryptering, men brug istedet SCP/SFTP over Secure Shell protokollen
+\end{list1}
+
+
+\slide{FTP Daemon konfiguration}
+
+\begin{list1}
+\item Meget forskelligt!
+\item WU-FTPD er meget udbredt
+\item BSD FTPD ligeså meget anvendt
+\item \emph{anonym ftp} er når man tillader alle at logge ind\\
+men husk så ikke at tillade upload af filer!
+\item På BSD oprettes blot en bruger med navnet \verb+ftp+ så er der åbent!
+\end{list1}
+
+
+\slide{NTP Network Time Protocol}
+
+\begin{list1}
+\item NTP opsætning
+\item foregår typisk i \verb+/etc/ntp.conf+ eller \verb+/etc/ntpd.conf+   
+\item det vigtigste er navnet på den server man vil bruge som tidskilde
+\item Brug enten en NTP server hos din udbyder eller en fra \link{http://www.pool.ntp.org/}
+\item Eksempelvis:
+\end{list1}
+
+\begin{alltt}
+server ntp.cybercity.dk
+
+server 0.dk.pool.ntp.org
+server 0.europe.pool.ntp.org
+server 3.europe.pool.ntp.org
+
+\end{alltt}
+
+\slide{What time is it?}
+
+\hlkimage{8cm}{images/xclock.pdf}
+
+\begin{list1}
+\item Hvad er klokken?
+\item Hvad betydning har det for sikkerheden?
+\item Brug NTP Network Time Protocol på produktionssystemer
+\end{list1}
+
+
+\slide{What time is it? - spørg ICMP}
+
+\vskip 1 cm
+
+\begin{list1}
+  \item ICMP timestamp option - request/reply
+\item hvad er klokken på en server
+\item Slayer icmpush - er installeret på server
+\item viser tidstempel
+\end{list1}
+
+\begin{alltt}
+# {\bfseries icmpush -v -tstamp 10.0.0.12}
+ICMP Timestamp Request packet sent to 10.0.0.12 (10.0.0.12)
+
+Receiving ICMP replies ...
+fischer         -> 21:27:17
+icmpush: Program finished OK
+\end{alltt}
+
+\slide{Stop - NTP Konfigurationseksempler}
+
+\hlkimage{12cm}{osx-ntp.png}
+
+\begin{list1}
+\item Vi har en masse udstyr, de meste kan NTP, men hvordan
+\item Vi gennemgår, eller I undersøger selv:
+\begin{list2}
+\item Airport
+\item Switche (managed)
+\item Mac OS X
+\item OpenBSD - check \verb+man rdate+ og \verb+man ntpd+
+\end{list2}
+\end{list1}
+
+\slide{BIND DNS server}
+
+\begin{list1}
+\item Berkeley Internet Name Daemon server
+\item Mange bruger BIND fra Internet Systems Consortium
+   - altså Open Source
+\item konfigureres gennem \verb+named.conf+
+\item det anbefales at bruge BIND version 9
+\end{list1}
+
+\begin{list2}
+\item \emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 4th
+  edition Maj 2001 
+\item \emph{DNS and BIND cookbook}, Cricket Liu, O'Reilly, 4th
+  edition Oktober 2002 
+\end{list2}
+
+Kilde: \link{http://www.isc.org}
+
+
+
+
+\slide{BIND konfiguration - et udgangspunkt}
+
+\begin{alltt}
+\small 
+acl internals \{ 127.0.0.1; ::1; 10.0.0.0/24; \};
+options \{
+        // the random device depends on the OS !
+        random-device "/dev/random"; directory "/namedb";
+        port 53; version "Dont know"; allow-query \{ any; \};
+\};
+view "internal" \{
+   match-clients \{ internals; \};
+   recursion yes;
+   zone "." \{
+       type hint;   file "root.cache"; \};
+   // localhost forward lookup
+   zone "localhost." \{
+        type master; file "internal/db.localhost";   \};
+   // localhost reverse lookup from IPv4 address
+   zone "0.0.127.in-addr.arpa" \{
+        type master; file "internal/db.127.0.0"; notify no;   \};
+...
+\}
+\end{alltt}
+
+\exercise{ex:bind-version}
+
+\exercise{ex:bind-config}
+
+\exercise{ex:bind-dnszone}
+
+\slide{Små DNS tools bind-version - Shell script}
+
+\begin{alltt}\small
+#! /bin/sh
+# Try to get version info from BIND server
+PROGRAM=`basename $0`
+. `dirname $0`/functions.sh
+if [ $# -ne 1 ]; then
+   echo "get name server version, need a target! "
+   echo "Usage: $0 target"
+   echo "example $0 10.1.2.3"
+   exit 0
+fi
+TARGET=$1
+# using dig 
+start_time
+dig @$1 version.bind chaos txt
+echo Authors BIND er i versionerne 9.1 og 9.2 - måske ...
+dig @$1 authors.bind chaos txt
+stop_time
+\end{alltt}
+\centerline{\link{http://www.kramse.dk/files/tools/dns/bind-version}}
+
+\slide{Små DNS tools dns-timecheck - Perl script}
+
+\begin{alltt}\small
+#!/usr/bin/perl
+# modified from original by Henrik Kramshøj, hlk@kramse.dk
+# 2004-08-19
+#
+# Original from: http://www.rfc.se/fpdns/timecheck.html
+use Net::DNS;
+
+my $resolver = Net::DNS::Resolver->new;
+$resolver->nameservers($ARGV[0]);
+
+my $query = Net::DNS::Packet->new;
+$query->sign_tsig("n","test");
+
+my $response = $resolver->send($query);
+foreach my $rr ($response->additional) {
+  print "localtime vs nameserver $ARGV[0] time difference: ";
+  print$rr->time_signed - time() if $rr->type eq "TSIG";
+}  
+\end{alltt}
+% inserting stupid $ to stop EMACS from
+\centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
+
+
+\slide{DHCPD server}
+
+\begin{list1}
+\item Dynamic Host Configuration Protocol Server
+\item Mange bruger DHCPD fra Internet Systems Consortium\\
+  \link{http://www.isc.org} - altså Open Source
+\item konfigureres gennem \verb+dhcpd.conf+ - næsten samme syntaks som BIND 
+\item DHCP er en efterfølger til BOOTP protokollen
+\end{list1}
+
+\begin{alltt}
+\small
+ddns-update-style ad-hoc;
+
+shared-network LOCAL-NET \{
+    option  domain-name "security6.net";
+    option  domain-name-servers 212.242.40.3, 212.242.40.51;
+    subnet 10.0.42.0 netmask 255.255.255.0 \{
+            option routers 10.0.42.1;
+            range 10.0.42.32 10.0.42.127;
+    \}
+\}  
+\end{alltt}
+
+\exercise{ex:dhcpd-config}
+
+
+
+
+
+\slide{Logfiler}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler giver mulighed for statistik
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:  
+\begin{list2}
+\item routere
+\item firewalls
+\item webservere
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales 
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+% apache HTTPD
+
+\slide{World Wide Web fødes}
+
+\hlkimage{15cm}{images/tim-berners-lee-2001-europaeum-eighth.jpg}
+
+\begin{list1}
+\item Tim Berners-Lee opfinder WWW 1989 og den første webbrowser og
+  server i 1990 mens han arbejder for CERN
+\end{list1}
+
+Kilde:
+\link{http://www.w3.org/People/Berners-Lee/}
+
+\slide{World Wide Web udviklingen}
+
+\hlkimage{20cm}{images/Count_WWW.png}
+
+\begin{list1}
+\item Udviklingen på world wide web bliver en stor kommerciel success
+\end{list1}
+
+Kilde: Hobbes Internet time-line\\
+\link{http://www.zakon.org/robert/internet/timeline/}
+
+\slide{Nogle HTTP og webrelaterede RFC'er}
+
+\begin{list2}
+\item[1945] Hypertext Transfer Protocol -- HTTP/1.0. T. Berners-Lee, R.
+     Fielding, H. Frystyk. May 1996.
+\item[2068] Hypertext Transfer Protocol -- HTTP/1.1. R. Fielding, J. Gettys,
+     J. Mogul, H. Frystyk, T. Berners-Lee. January 1997. (Obsoleted by
+     RFC2616)
+\item[2069] An Extension to HTTP : Digest Access Authentication. J. Franks,
+     P. Hallam-Baker, J. Hostetler, P. Leach, A. Luotonen, E. Sink, L.
+     Stewart. January 1997. (Obsoleted by
+     RFC2617)
+\item[2145] Use and Interpretation of HTTP Version Numbers. J. C. Mogul, R.
+     Fielding, J. Gettys, H. Frystyk. May 1997. 
+\item[2518] HTTP Extensions for Distributed Authoring -- WEBDAV. Y. Goland,
+     E. Whitehead, A. Faizi, S. Carter, D. Jensen. February 1999.
+\item[2616] Hypertext Transfer Protocol -- HTTP/1.1. R. Fielding, J. Gettys,
+     J. Mogul, H. Frystyk, L. Masinter, P. Leach, T. Berners-Lee. June
+     1999. (Obsoletes
+     RFC2068) (Updated by RFC2817)
+\item[2818] HTTP Over TLS. E. Rescorla. May 2000. 
+\end{list2}
+
+\begin{quote}
+HTTP er basalt set en sessionsløs protokol bestående at individuelle
+HTTP forespørgsler via TCP forbindelser  
+\end{quote}
+
+\slide{Infokager og state management}
+\begin{list2}
+\item[2109] HTTP State Management Mechanism. D. Kristol, L. Montulli.
+     February 1997. (Format: TXT=43469 bytes) (Obsoleted by RFC2965)
+     (Status: PROPOSED STANDARD)
+\item[2965] HTTP State Management Mechanism. D. Kristol, L. Montulli. October
+     2000. (Format: TXT=56176 bytes) (Obsoletes RFC2109) (Status: PROPOSED
+     STANDARD)
+\end{list2}
+\begin{quote}
+1.  ABSTRACT
+   This document specifies a way to create a stateful session with HTTP
+   requests and responses.  It describes two new headers, Cookie and
+   Set-Cookie, which carry state information between participating
+   origin servers and user agents.  The method described here differs
+   from Netscape's Cookie proposal, but it can interoperate with
+   HTTP/1.0 user agents that use Netscape's method.  (See the HISTORICAL
+   section.)
+\end{quote}
+
+(Citatet er fra RFC-2109)
+
+\slide{Apache HTTP serveren}
+
+\hlkimage{14cm}{images/httpd_logo_wide.pdf}
+\vskip 1 cm
+{\hlkbig Hvorfor skrive Apache HTTP server?}
+
+\vskip 1 cm
+\begin{quote}
+Fordi Apache idag er en organisation med mange delprojekter - hvoraf
+mange relateres til web og webløsninger  
+\end{quote}
+
+\slide{Er Apache HTTP server interessant?}
+
+\hlkimage{20cm}{images/netcraft-2004.pdf}
+
+\begin{list1}
+\item Apache HTTP server er iflg. netcraft og andre den mest benyttede
+  HTTP server på Internet!
+\item Apache er grand old man i Internet sammenhæng - bygget udfra
+  NCSA HTTP serveren
+\item Mange løsninger bygges på Apache
+\end{list1}
+
+Kilde: \link{http://www.netcraft.com}
+
+\slide{Hvad er Apache?}
+
+\hlkimage{8cm}{images/apache_pb.png}
+
+\begin{quote}
+The Apache HTTP Server Project is an effort to develop and maintain an
+open-source HTTP server for modern operating systems including UNIX
+and Windows NT. The goal of this project is to provide a secure,
+efficient and extensible server that provides HTTP services in sync
+with the current HTTP standards.   
+\end{quote}
+
+Kilde: Apache HTTPD FAQ \link{http://httpd.apache.org}
+
+
+\slide{Fordele ved Apache HTTPD}
+
+\begin{list1}
+\item En HTTP webserver oprindeligt baseret på NCSA webserveren,
+(National Center for Supercomputing Applications)\\
+- Apache is "A PAtCHy server" 
+\item Konfigurerbar og fleksibel
+\item Understøtter moduler
+\item Open Source og kildeteksten er tilgængelig med en fri licens
+\item Understøtter HTTP/1.1
+\item allestedsnærværende - UNIX: Linux, IBM AIX, BSD, Sun Solaris...
+\end{list1}
+
+Kilde: Apache HTTPD FAQ \link{http://httpd.apache.org}
+
+\slide{Men Apache er også ...}
+\begin{list1}
+\item Apache Software Foundation med mange andre spændende projekter
+\begin{list2}
+\item Cocoon som er et komponentbaseret \emph{web development framework} 
+\item Apache Tomcat som er en servlet container der bruges som den officielle
+referenceimplementation for Java Servlet og JavaServer Pages
+teknologierne
+\item Apache-SSL SSL delen af webserveren
+\item FOP print formatter drevet af XSL formatting objects (XSL-FO)
+\item Xerces XML parser
+\item Xalan XSLT processor
+\end{list2}
+\item XML og Web services er buzz-words idag
+\end{list1}
+
+
+\slide{Apache varianter}
+
+\begin{list2}
+\item Stronghold - sælges ikke mere\\
+\link{http://www.redhat.com/software/stronghold/} 
+\item IBM HTTP server\\
+\link{http://www-306.ibm.com/software/webservers/httpservers/}  
+\item Oracle HTTP Server
+\item HP Secure Web Server for OpenVMS Alpha (based on Apache)
+\item findes sikkert flere 
+\end{list2}
+
+\slide{Brug dokumentationen }
+\hlkimage{14cm}{images/apache-docs.pdf}
+\centerline{\link{http://httpd.apache.org/docs-2.0/}}
+
+
+\slide{Apache kogebogen}
+
+\hlkimage{6cm}{images/apacheckbk.png}
+
+\begin{list2}
+\item Vi bruger bogen Apache cookbook på kurset
+\item Både som opgavehæfte og opslagsværk
+\item \emph{Apache Cookbook} af Ken Coar, Rich Bowen, November 2003,
+ISBN: 0-596-00191-6
+\end{list2}
+
+\slide{Apache Security bogen}
+
+\hlkimage{6cm}{images/apachesc.png}
+
+\begin{list2}
+\item Vi bruger bogen Apache Security bogen på kurset
+\item Primært som opslagsværk
+\item \emph{Apache Security} af Ivan Ristic, February 2005,ISBN: 0-596-00724-8
+\end{list2}
+
+\slide{Start og stop af apache}
+
+\begin{list1}
+\item Apache bruger programmet \verb+apachectl+  
+\item Dette program kan bruges til flere formål:
+\begin{list2}
+\item \verb+apachectl start+ - opstart af apache    
+\item \verb+apachectl stop+ - stop af apache
+\item \verb+apachectl restart+ - genstart af apache    
+\item \verb+apachectl configtest+ - test af apache konfigurationen - syntaks!
+\end{list2}
+\item husk at der kan være flere versioner af apache på systemet!
+\item Det kan være en fordel enten at lave et alias eller ændre PATH i
+  jeres SHELL profil!\\
+\verb+alias apachectl="/home/hlk/apache2/bin/apachectl"+ 
+\end{list1}
+
+\slide{ServerAdmin, ServerRoot, DocumentRoot}
+
+\begin{alltt}\small
+ServerAdmin webmaster@security6.net
+ServerRoot "/usr/local/apache2"
+DocumentRoot "/userdata/sites" 
+User www
+Group www
+ServerName fluffy:80
+\end{alltt}
+
+\begin{list2}
+%\item Nogle basale indstillinger for en Apache server
+\item Indsættes i \verb+httpd.conf+
+\item ServerAdmin - administratoren for denne webserver, bør sættes
+  til eksempelvis webmaster@security6.net
+\item ServerRoot - roden af serveren, mange andre referencer sker
+  relativt til denne
+\item DocumentRoot - den primære placering for filer der skal serveres
+  fra denne server 
+\item User og Group - hvilket brugerid skal serveren afvikles under,
+  efter opstarten som root
+\item Servername - hvad hedder denne server
+\end{list2}
+
+
+\slide{Apache Logfiler, konfiguration af logfiler}
+
+\begin{verbatim}
+LogLevel warn 
+ErrorLog /usr/local/apache2/logs/error_log 
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" 
+    %\"%{User-Agent}i\"" combined
+CustomLog /usr/local/apache2/logs/access_log combined   
+\end{verbatim}
+
+\begin{list1}
+\item Logning i Apache styres med log-direktiver til to slags - access
+  og error 
+\item De vigtigste direktiver i httpd.conf er:
+\begin{list2}
+\item LogLevel - hvad skal logges af beskeder i error log, fra emerg til debug
+\item ErrorLog - default fejlbeskeder fra Apache 
+\item LogFormat - hvordan skal access log se ud
+\item CustomLog - hvor skal access log gemmes - default    
+\end{list2}
+\end{list1}
+
+\slide{Tuning af Apache opstartsparametre}
+
+\begin{list1}
+\item Det anbefales at indstille Apache opstarten som noget af det
+  første
+\item UNIX bruger som standard prefork modellen hvor Apache starter et
+  antal processer der forventes at være nogenlunde OK til den
+  forventede belastning 
+\end{list1}
+
+\begin{alltt}
+\small
+# prefork MPM
+# StartServers: number of server processes to start
+# MinSpareServers: minimum number of server processes which are kept spare
+# MaxSpareServers: maximum number of server processes which are kept spare
+# MaxClients: maximum number of server processes allowed to start
+# MaxRequestsPerChild: maximum number of requests a server process serves
+<IfModule prefork.c>
+StartServers         5
+MinSpareServers      5
+MaxSpareServers     10
+MaxClients         150
+MaxRequestsPerChild  0
+</IfModule>
+\end{alltt}
+
+\slide{Virtuelle hosts}
+
+\begin{alltt}
+<VirtualHost *:80>
+    ServerAdmin webmaster@security6.net
+    ServerName www.security6.net
+    ServerAlias security6.net
+    ServerAlias www.security6.dk
+    DocumentRoot /userdata/sites/security6.net
+    ErrorLog logs/security6.net-error_log
+    CustomLog logs/security6.net-access_log combined
+...
+</VirtualHost>
+\end{alltt}
+
+\begin{list1}
+\item Apache HTTPD tillader at man benytter virtuelle hosts
+\item Bemærk at det er klienten der overfører hostnavnet i HTTP request
+\end{list1}
+
+\exercise{ex:apache-httpd.conf}
+\exercise{ex:apache-virtual}
+
+
+\slide{Grundlæggende Apache CGI}
+
+\begin{list1}
+\item Common Gateway Interface - standard metode til programmer
+\item \verb+ScriptAlias+ er det direktiv der angiver at CGI må
+ afvikles
+\item Der følger to eksempler med Apache 2 i ServerRoot/cgi-bin:
+\begin{list2}
+\item printenv - viser en del information om serveren
+\item test-cgi - viser hvordan man kan bruge parametre  
+\end{list2}
+\item {\bf NB: husk at fjerne x-bit efter test!}
+\end{list1}
+
+\begin{verbatim}
+ScriptAlias /cgi-bin/ "/usr/local/apache2/cgi-bin/"
+<Directory "/usr/local/apache2/cgi-bin">
+        AllowOverride None
+        Options None
+        Order allow,deny
+        Allow from all
+</Directory>
+\end{verbatim}
+
+\slide{Hello World CGI - Insecure programming}
+
+\vskip 2 cm
+
+\begin{list1}
+\item Problem:\\
+Ønsker et simpelt CGI program, en web udgave af finger
+\item Formål:\\
+Vise oplysningerne om brugere på systemet
+\end{list1}
+
+\slide{review af nogle muligheder}
+
+\begin{list1}
+\item ASP
+\begin{list2}
+\item server scripting, meget generelt - man kan alt
+\end{list2}
+
+\item SQL
+\begin{list2}
+\item databasesprog - meget kraftfuldt
+\item mange databasesystemer giver mulighed for specifik tildeling af
+  privilegier "grant" 
+  \end{list2}
+\item JAVA
+\begin{list2}
+\item generelt programmeringssprog
+\item bytecode verifikation
+\item indbygget sandbox funktionalitet 
+\end{list2}
+\item Perl og andre generelle programmeringssprog
+\item Pas på shell escapes!!!
+\end{list1}
+
+\slide{Hello world of insecure web CGI}
+
+\begin{list1}
+\item Demo af et sårbart system - badfinger
+\item Løsning:
+\begin{list2}
+\item Kalde finger kommandoen
+\item et Perl script
+\item afvikles som CGI 
+\item standard Apache HTTPD 1.3 server
+\end{list2}
+\end{list1}
+
+\slide{De vitale - og usikre dele}
+
+{\small
+\begin{verbatim}
+print "Content-type: text/html\n\n<html>";
+print "<body bgcolor=#666666 leftmargin=20 topmargin=20"; 
+print "marginwidth=20 marginheight=20>";
+print <<XX;
+<h1>Bad finger command!</h1>
+<HR COLOR=#000>
+<form method="post" action="bad_finger.cgi">
+Enter userid: <input type="text" size="40" name="command">
+</form>
+<HR COLOR=#000>
+XX
+if(&ReadForm(*input)){
+    print "<pre>\n";
+    print "will execute:\n/usr/bin/finger $input{'command'}\n";
+    print "<HR COLOR=#000>\n";
+    print `/usr/bin/finger $input{'command'}`;
+    print "<pre>\n";
+}
+\end{verbatim}}
+
+\slide{Almindelige problemer}
+
+\begin{list1}
+\item validering af forms
+\item validering på klient er godt\\
+- godt for brugervenligheden, hurtigt feedback
+\item validering på clientside gør intet for sikkerheden
+\item serverside validering er nødvendigt
+\item generelt er input validering det største problem!
+\end{list1}
+
+Brug \emph{Open Web Application Security
+Project} \link{http://www.owasp.org}
+
+\slide{Apache HTTPD sikkerhedshuller}
+
+\begin{list1}
+\item En Apache installation er ikke bare en HTTPD server
+\item ofte inkluderes:
+  \begin{list2}
+  \item OpenSSL til SSL, dvs HTTPS forbindelser
+  \item PHP - et web programmeringssprog
+  \item Perl - et programmeringssprog som ofte benyttes til web
+  \end{list2}
+\item Hver eneste komponent kan have sikkerhedsproblemer!
+\end{list1}
+
+
+\slide{Web løsninger før}
+
+\hlkimage{15cm}{images/web-static.png}
+
+\begin{list1}
+\item Statiske hjemmesider i HTML
+\item Overskueligt
+\item Få regler i firewall
+\item Ikke behov for adgang til data indenfor firewall
+\end{list1}
+
+
+\slide{Web løsninger idag}
+
+\hlkimage{18cm}{images/web-dynamic.png}
+
+\slide{Web løsninger idag}
+
+\vskip 2 cm
+
+\begin{list1}
+\item Dynamiske hjemmesider - ASP, PHP m.fl.
+\item Høj kompleksitet - flere muligheder for fejl
+\item Mange regler i firewall - flere DMZ områder/net
+\item Behov for adgang til ordredata m.v. indenfor firewall
+\end{list1}
+
+
+\slide{Gode Råd til dynamiske webmiljøer}
+
+\vskip 2 cm
+
+\begin{list1}
+\item Brug databaser - der er gode muligheder for finmasket adgangskontrol
+\item Brug versionsstyring - hvem lavede hvilket program, hvornår
+\item Brug ressourcer på opdatering af medarbejdere
+\item Lav retningslinier for webudvikling
+\item Overvåg alle systemerne!
+\end{list1}
+
+\slide{Typisk fejl på webservere}
+
+\begin{list1}
+\item De mest alvorlige:
+  \begin{list2}  
+\item Ingen hærdning
+\item Ingen opdatering efter idriftsættelse
+\end{list2}
+\item Medium eller kritiske
+  \begin{list2}
+  \item Adgang til eksempel-programmer (eng: sample programs)
+    - kan til tider være meget kritisk!
+  \end{list2}
+\item De mindre alvorlige
+  \begin{list2}
+  \item Informationsindsamling
+  \item Netmaske - \emph{icmpush -mask}
+  \item Navne på udviklere, firmaer, datoer
+  \end{list2}
+\end{list1}
+
+
+\slide{chroot og jails}
+
+\begin{list1}
+  \item Chroot står for change root, og betyder at processen som
+  kalder chroot systemkaldet udskifter sin \emph{filsystemsrod-/} med
+  et andet katalog på systemet
+\item Oprindeligt blev denne funktion lavet til at teste nye UNIX
+  releases uden at overskrive det oprindelige miljø man havde på
+  systemet
+\item men det kan bruges til at give mere sikkerhed
+\item En daemon eller service der kører chroot'ed er sværere at
+  udnytte - simpelthen fordi den kun har adgang til en lille del af
+  systemet
+\item FreeBSD har en endnu mere avanceret version af chroot som giver
+  endnu mere kontrol over det miljø som programmerne ser
+\end{list1}
+
+\slide{brug af chroot}
+
+\begin{list1}
+\item De services man typisk vil chroot'e er BIND, Apache og andre
+  udsatte services
+\item Der findes heldigvis udførlige beskrivelser af hvordan man
+chroote de mest almindelige services 
+\item NB: husk at løsninger med Apache ofte kræver PHP, Perl,
+  databaser osv. 
+\end{list1}
+
+\slide{Gennemgang af chroot konceptet}
+
+\hlkimage{15cm}{images/named-pipe.pdf}
+\centerline{named pipes og chroot}
+
+\begin{list2}
+\item Husk: Apachedelen kan være i chroot, mens databasesystem er udenfor -
+forbindelser via TCP-sockets til localhost
+\end{list2}
+
+
+\slide{Produktionsmodning af miljøer}
+
+\begin{list1}
+\item Tænk på det miljø som servere og services skal udsættes for
+\item Sørg for hærdning
+\end{list1}
+
+\slide{BIND sikring}
+\begin{list1}
+  \item Nedenstående kan bruges mod andre typer servere!
+\item Sikringsforanstaltninger:
+  \begin{list2}
+  \item Opdateret software - ingen kendte sikkerhedshuller eller
+  sårbarheder
+\item fjern {\bfseries single points of failure} - er man afhængig af
+  en ressource skal man ofte have en backup mulighed, redundant strøm
+  eller lignende
+\item adskilte servere - interne og eksterne til forskellige formål\\
+Eksempelvis den interne postserver hvor alle e-mail opbevares og en
+DMZ-postserver hvor ekstern post opbevares kortvarigt
+\item lav filtre på netværket, eller på data - firewalls og proxy
+  funktioner 
+\item begræns adgangen til at læse information
+\item begræns adgangen til at skrive information - dynamic updates på
+  BIND, men samme princip til webløsninger og opdatering af databaser
+\item {\bfseries least privileges} - sørg for at programmer og brugere
+  kun har de nødvendige rettigheder til at kunne udføre opgaver
+\item følg med på områderne der har relevans for virksomheden og
+  \emph{jeres} installation - Windows, UNIX, BIND, Oracle, ...
+  \end{list2}
+\end{list1}
+
+\slide{Change management}
+
+\begin{list1}
+\item Er der tilstrækkeligt med fokus på software i produktion
+\item Kan en vilkårlig server nemt reetableres
+\item Foretages rettelser direkte på produktionssystemer
+\item Er der fall-back plan
+\item Burde være god systemadministrator praksis
+\end{list1}
+
+
+
+\slide{Fundamentet skal være iorden}
+
+\begin{list1}
+\item Sørg for at den infrastruktur som I bygger på er sikker:
+\begin{list2}
+ \item redundans
+       \item opdateret
+        \item dokumenteret
+        \item nem at vedligeholde
+\end{list2}
+
+\item  Husk tilgængelighed er også en sikkerhedsparameter
+\end{list1}
+
+\slide{CVS til konfigurationsfiler}
+
+\begin{list1}
+\item Det anbefales at bruge versionsstyring som eksempelvis CVS til
+  konfigurationsfiler 
+\item Det kan eksempelvis gøres på følgende måde:
+\begin{list2}
+\item \verb+mkdirhier /security6.net/cvshome /security6.net/etc+
+\item \verb+export CVSROOT=/security6.net/cvshome+
+\item \verb+cvs init+ - for at initialisere CVS repository
+\item derefter kan man tilføje filer og lave CVS checkin og checkout
+\item CVS bruger standard filrettigheder - så opret eventuelt en
+  speciel gruppe til CVS brugere
+\end{list2}
+\item Læs mere om CVS eksempelvis på:\\
+\link{http://cvsbook.red-bean.com/cvsbook.html}
+\end{list1}
+
+\slide{CVS eksempel med /etc/fstab}
+\begin{alltt}
+\small
+# cd /security6.net/etc
+# cvs import -m "initial CVS af etc" etc hlk start
+# cd ..;rm -rf etc
+# cvs co etc
+cvs checkout: Updating etc
+# cp /etc/fstab etc
+# cvs add etc/fstab 
+cvs add: scheduling file `fstab' for addition
+cvs add: use 'cvs commit' to add this file permanently
+# cvs commit -m "fstab initial"
+cvs commit: Examining .
+RCS file: /security6.net/cvshome/etc/fstab,v
+done
+Checking in fstab;
+/security6.net/cvshome/etc/fstab,v  <--  fstab
+initial revision: 1.1
+done
+\end{alltt}
+
+\centerline{filer i /etc bør ikke flyttes, andre kan flyttes og sym-linkes}
+
+\slide{individuel autentificering!}
+
+\hlkimage{7cm}{images/ssh-root.pdf}
+
+\begin{list1}
+\item Mange UNIX systemer administreres fejlagtigt ved brug af
+  root-login
+\item Undgå direkte root-login
+\item Insister på \verb+sudo+ eller \verb+su+  
+\item Hvorfor?
+\begin{list2}
+\item Sporbarheden mistes hvis brugere logger direkte ind som root
+\item Hvis et kodeord til root gættes er der direkte adgang til alt!    
+\end{list2}
+\end{list1}
+
+\slide{SMTP Simple Mail Transfer Protocol}
+
+\begin{alltt}\tiny
+hlk@bigfoot:hlk$ telnet mail.kramse.dk 25
+Connected to sunny.
+220 sunny.kramse.dk ESMTP Postfix
+HELO bigfoot
+250 sunny.kramse.dk
+MAIL FROM: Henrik
+250 Ok
+RCPT TO: hlk@kramse.dk
+250 Ok
+DATA
+354 End data with <CR><LF>.<CR><LF>
+hejsa
+.
+250 Ok: queued as 749193BD2
+QUIT
+221 Bye
+\end{alltt}
+
+\begin{list1}
+\item RFC-821 SMTP Simple Mail Transfer Protocol fra 1982
+\item RFC-2821 fra 2001 og flere andre er idag gældende 
+\item \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
+\item Vedhæftede filer kodes i MIME Multipurpose Internet Mail Extensions
+\item Bemærk at MIME encoding forøger størrelsen med ca. 30\%!
+%\item Lad VÆRE med at sende store filer, dvs over 7-8MB via e-mail
+\end{list1}
+
+\slide{e-mail servere}
+
+\begin{list1}
+  \item Sendmail, qmail og postfix
+\item Tre meget brugte e-mail systemer
+  \begin{list2}
+    \item Sendmail - den ældste og mest benyttede
+\item Postfix en modulært og sikkerhedsmæssigt god e-mail server\\
+er ligeledes nem at konfigurere
+\item Qmail - en underlig mailserver lavet af Dan J Bernstein, med en
+  speciel licens - ligesom programmøren
+  \end{list2}
+\item Dertil kommer diverse andre mailservere:
+\item Microsoft Exchange på Windows servere
+\item Jeg anbefaler at man har en postserver mod internet, der kun sender og modtager ekstern post, og en intern postserver der opbevarer al posten
+\end{list1}
+
+
+\slide{Sendmail postserveren}
+
+\begin{alltt}\small
+# "Smart" relay host (may be null)
+DS
+...
+# strip group: syntax (not inside angle brackets!) and trailing semicolon
+R$*                     $: $1 <@>                    mark addresses
+R$* < $* > $* <@>       $: $1 < $2 > $3              unmark <addr>
+R@ $* <@>               $: @ $1                      unmark @host:...
+R$* [ IPv6 : $+ ] <@>   $: $1 [ IPv6 : $2 ]          unmark IPv6 addr
+R$* :: $* <@>           $: $1 :: $2                  unmark node::addr
+R:include: $* <@>       $: :include: $1              unmark :include:...
+R$* : $* [ $* ]         $: $1 : $2 [ $3 ] <@>        remark if leading colon
+R$* : $* <@>            $: $2                        strip colon if marked
+\end{alltt}
+
+\begin{list1}
+\item mange konfigurerer Sendmail med \verb+sendmail.cf+ - det er
+  {\color{red} forkert} 
+\item man bør bruge M4 konfigurationen
+\item  - desværre følger M4 filerne sjældent med :-(  
+\item Sendmail er oprindeligt lavet af Eric Allman 
+\end{list1}
+
+
+\slide{Postfix postserveren}
+
+\hlkimage{6cm}{postfix-mouse.png}
+
+\begin{list1}
+\item Lavet af Wietse Venema for IBM
+\item Nem at konfigurere og sikker
+\item \verb+main.cf+ findes typisk i kataloget \verb+/etc/postfix+  
+\end{list1}
+
+\slide{Audit af postservere}
+
+\begin{list1}
+\item Typisk findes konfigurationsfilerne til postservere under
+  \verb+/etc+
+\begin{list2}
+\item \verb+/etc/mail+
+\item \verb+/etc/postfix+    
+\end{list2}
+\item Det vigtigste er at den er opdateret og IKKE tillader relaying
+\item Der findes diverse test-scripts til relaycheck på internet
+\item Husk også at checke domæne records, MX og A
+\end{list1}
+
+\slide{Test af e-mail server}
+
+\begin{alltt}
+[hlk]$ {\bfseries telnet localhost 25} 
+Connected.
+Escape character is '^]'.
+220 server ESMTP Postfix
+{\bfseries helo test}
+250 server
+{\bfseries mail from: postmaster@pentest.dk}
+250 Ok
+{\bfseries rcpt to: root@pentest.dk}
+250 Ok
+{\bfseries data}
+354 End data with <CR><LF>.<CR><LF>
+{\bfseries skriv en kort besked}
+.
+250 Ok: queued as 91AA34D18
+{\bfseries quit}
+\end{alltt}
+%$
+\exercise{ex:email-server-config}
+
+\slide{Postservere til klienter}
+
+\begin{list1}
+\item SMTP  som vi har gennemgået er til at sende mail mellem servere
+\item Når vi skal hente post sker det typisk med POP3 eller IMAP
+\begin{list2}
+\item POP3 Post Office Protocol version 3 RFC-1939
+\item Internet Message Access Protocol (typisk IMAPv4) RFC-3501
+\end{list2}
+\item Forskellen mellem de to er at man typisk med POP3 henter posten, hvor man med IMAP lader den ligge på serveren
+\item POP3 er bedst hvis kun en klient skal hente
+\item IMAP er bedst hvis du vil tilgå din post fra flere systemer
+\item Jeg bruger selv IMAPS, IMAP over SSL kryptering - idet kodeord ellers sendes i klartekst
+\end{list1}
+
+
+\slide{POP3 i Danmark}
+
+\hlkimage{15cm}{images/pop3-1.pdf}
+
+\begin{list1}
+\item Man har tillid til sin ISP - der administrerer såvel net som server
+\end{list1}
+
+\slide{POP3 i Danmark - trådløst}
+
+\hlkimage{13cm}{images/pop3-wlan.pdf}
+\begin{list1}
+\item Har man tillid til andre ISP'er? Alle ISP'er?
+\item Deler man et netværksmedium med andre?
+\item {\color{green}Brug de rigtige protokoller!}
+\end{list1}
+
+\slide{Normal WLAN brug}
+
+\hlkimage{22cm}{images/wlan-airpwn-1.pdf}
+
+\slide{Packet injection - airpwn}
+
+\hlkimage{22cm}{images/wlan-airpwn-2.pdf}
+
+\slide{Airpwn teknikker}
+
+\begin{list1}
+\item Klienten sender forespørgsel
+\item Hackerens program airpwn lytter og sender så falske pakker
+\item Hvordan kan det lade sig gøre?
+\begin{list2}
+\item Normal forespørgsel og svar på Internet tager 50ms
+\item Airpwn kan svare på omkring 1ms angives det
+\item Airpwn har alle informationer til rådighed      
+\end{list2}
+\item Airpwn på Defcon 2004 - findes på Sourceforge\\
+\link{http://airpwn.sourceforge.net/}
+\item NB: Airpwn som demonstreret er begrænset til TCP og ukrypterede
+  forbindelser 
+\end{list1}
+
+
+\slide{Dovenskab er en dyd}
+
+\hlkimage{19cm}{images/unix-dovenskab.pdf}
+
+\slide{Distribuerede filsystemer}
+
+\begin{list1}
+\item Til lokalnetværk:
+  \begin{list2}
+\item Windows filesharing - tidligere et stort sikkerhedshul
+\item UNIX NFS - ikke beregnet til nutidens usikre netværk
+\end{list2}
+\item Over Internet: 
+\item AFS - Andrew filesystem\\
+  \link{http://www-2.cs.cmu.edu/afs/andrew.cmu.edu/usr/shadow/www/afs.html} 
+\item CODA \link{http://www.coda.cs.cmu.edu/}
+\item Tænk på de forudsætninger som et program har og forventer er til
+  stede! 
+\end{list1}
+
+
+\slide{NFS - netværksfilsystem}
+
+\begin{alltt}
+ # sample /etc/exports file
+ /               master(rw) trusty(rw,no_root_squash)
+ /projects       proj*.local.domain(rw)
+ /usr            *.local.domain(ro) @trusted(rw)
+ /home/joe       pc001(rw,all_squash,anonuid=150,anongid=100)
+ /pub            (ro,insecure,all_squash)  
+\end{alltt}
+
+\begin{list2}
+\item UNIX NFS er netværksfilsystemet som alle UNIX varianter understøtter
+\item Adgangen styres ved brug af \verb+/etc/exports+, eksempel fra
+  manualen på Red Hat
+\item De fleste bruger version 3 over UDP eller TCP selvom version 4
+  burde have bedre sikkerhed 
+\item Adgangen gives pr IP-adresse! IP adressebaseret autentifikation
+  er pr definition dårlig!
+\item Pas på - det er nemt at give root-adgang til andre maskiner!
+\end{list2}
+
+\exercise{ex:unix-rpcinfo}
+\exercise{ex:unix-nfsinfo}
+
+\slide{Samba og SMB/CIFS}
+
+\begin{list1}
+\item Microsoft Server Message Block bruges til netværksdrev og netværksprint i Windows miljøer
+\item Samba er en open source implementation, som altid halter bagefter MS
+\item De gamle implementationer overfører password i en uheldig version, som kan knækkes 7 tegn ad gangen - hurtigt
+\item Microsoft har gennem tiden opdateret protokollen
+\item Idag forsøger man at gøre det til en standard som Common Internet File System Protocol CIFS
+\item Man kan læse om Samba på hjemmesiden \link{http://www.samba.org/}
+\end{list1}
+

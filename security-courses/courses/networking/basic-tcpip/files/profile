@@ -1,0 +1,310 @@
+#!/bin/ksh
+
+# Korn shell profile
+
+# Inspired by http://m.mongers.org/pub/dotfiles/profile
+# which includes a lot of copyright information:
+# BSD-LICENSE {{{
+# 
+# Original: http://m.mongers.org/pub/profile
+#
+# This program was written by Morten Liebach <m@mongers.org> and is
+# distributed under the terms of the BSD License.
+# 
+# Redistribution and use, with or without modification, are permitted
+# provided that the following conditions are met:
+# 
+# Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+# NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+# TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# I've used significant parts from the OpenBSD /etc/ksh.kshrc:
+
+#   $OpenBSD: ksh.kshrc,v 1.11 2002/12/08 22:40:45 marc Exp $
+#
+#   ksh.kshrc - global initialization for ksh
+
+# Which in turn come from pdksh:
+
+# RCSid:
+#   $From: ksh.kshrc,v 1.4 1992/12/05 13:14:48 sjg Exp $
+#
+#   @(#)Copyright (c) 1991 Simon J. Gerraty
+#
+#   This file is provided in the hope that it will
+#   be of use.  There is absolutely NO WARRANTY.
+#   Permission to copy, redistribute or otherwise
+#   use this file is hereby granted provided that
+#   the above copyright notice and this notice are
+#   left intact.
+
+# Done!  And thank you very much. :-)
+
+# }}}
+
+# easy PATH setup, just make it the way you want it
+#PATH=$PATH:~/bin
+
+# more advanced
+# Setup PATH and a few other important vars
+umask 022
+
+export HOME TERM
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"  # Always there.
+[[ -d "${HOME}/bin" ]] && PATH="${HOME}/bin:${PATH}"
+for directory in \
+	/usr/local/sbin \
+	/usr/local/bin \
+	/usr/pkg/sbin \
+	/usr/pkg/bin \
+	/usr/X11R6/bin
+do
+	[[ -d "${directory}" ]] && PATH="${PATH}:${directory}"
+done
+export PATH
+
+# OS specific aliases and variables {{{
+
+OS=${OS:-`uname -s`}  # Get operating system name.
+case $OS in
+		HP-UX)
+		alias ls="ls -CF"
+		;;
+		OpenBSD)
+		alias df="df -h"
+		alias du="du -h"
+		alias nvi="/usr/bin/vi"  # The built in vi(1), nicer some times.
+		;;
+		NetBSD)
+		alias df="df -k"
+		alias du="du -k"
+		alias nvi="/usr/bin/vi"
+		;;
+		FreeBSD)
+		alias df="df -h"
+		alias du="du -h"
+		alias ls="ls -GF"  # Use colors.
+		alias nvi="/usr/bin/vi"
+		#export THREADS_FLAG="native"  # Experimental Java HotSpot threading.
+		;;
+		Linux)
+		if [[ -r "${HOME}/.dircolors" ]]; then
+			eval $(dircolors ${HOME}/.dircolors)
+			alias redircol='eval $(dircolors ${HOME}/.dircolors)'
+		fi
+		alias ls="ls -F --color=auto"
+		alias df="df -h"
+		alias du="du -h"
+		;;
+esac
+
+# Set up EDITOR.
+	_editors='vi vim'  # List from least to most preferred editor.
+	for _edit in ${_editors}; do
+		[[ -x "$(whence ${_edit})" ]] \
+		&& export EDITOR="$(whence ${_edit})" \
+		&& export VISUAL="${EDITOR}"
+	done
+
+case ${EDITOR} in
+		*vim)
+		[[ -d ${HOME}/.vim ]] && export VIM="${HOME}/.vim"  # Often the default.
+		[[ -d ${HOME}/dotfiles/vim ]] && export VIM="${HOME}/dotfiles/vim"
+		case ${OS} in
+			FreeBSD|OpenBSD)
+			[[ -d "/usr/local/share/vim/vim61" ]] \
+			&& export VIMRUNTIME="/usr/local/share/vim/vim61"
+			[[ -d "/usr/local/share/vim/vim62" ]] \
+			&& export VIMRUNTIME="/usr/local/share/vim/vim62"
+			;;
+			NetBSD)
+			[[ -d "/usr/pkg/share/vim/vim61" ]] \
+			&& export VIMRUNTIME="/usr/pkg/share/vim/vim61"
+			[[ -d "/usr/pkg/share/vim/vim62" ]] \
+			&& export VIMRUNTIME="/usr/pkg/share/vim/vim62"
+			;;
+			Linux)
+			[[ -d "/usr/share/vim/vim61" ]] \
+			&& export VIMRUNTIME="/usr/share/vim/vim61"
+			[[ -d "/usr/share/vim/vim62" ]] \
+			&& export VIMRUNTIME="/usr/share/vim/vim62"
+			;;
+		esac
+		;;
+esac
+	
+	
+case "$-" in
+  *i*)	
+########################################################################
+# Interactive setup
+########################################################################
+	USER=`whoami 2>/dev/null`
+	USER=${USER:-`id | sed 's/^[^(]*(\([^)]*\)).*/\1/'`}
+	UID=`id -u`
+	case $UID in
+	  0) PS1S='# ';;
+	esac
+	PS1S=${PS1S:-'$ '}
+	HOSTNAME=${HOSTNAME:-`uname -n`}
+	HOST=${HOSTNAME%%.*}
+	# Set prompt
+	PS1='$USER@$HOST:${PWD##*/}$PS1S'
+	PS2=">> "
+	PS3="#? "
+	PS4="+ "
+
+	# What tty are we logged on to?
+	tty=`tty`
+	tty=`basename $tty`
+	TTY=${TTY:-$tty}
+
+	set -o emacs
+	# the following command does not work with the real Korn Shell!
+	# it binds the TAB to tab-complete
+	bind ^I='complete-list'
+
+	case "$TERM" in
+	  xterm*)
+	    ILS='\033]1;'; ILE='\007'
+	    WLS='\033]2;'; WLE='\007'
+	    parent="`ps -ax 2>/dev/null | grep $PPID | grep -v grep`"
+
+	    case "$parent" in
+	      *telnet*)
+	        export TERM=xterms;;
+	    esac
+	    ;;
+	  *)  
+	    set_title () {}
+	    ;;
+	esac
+
+	# --- Prompts and window title setup ---
+	if [ "$ILS" ]; then # We have ILS set, so we assume we can do this
+	    set_titleI () 
+	    {
+		print -n "${ILS}$*${ILE}">/dev/tty;
+	    }
+	    
+	    set_titleW ()
+	    { 
+		print -n "${WLS}$*${WLE}">/dev/tty;
+	    }
+
+	    alias stripe='set_titleW "${USER}@${HOST} - ${PWD}"'
+	    alias istripe='set_titleW "${USER}@${HOST}"'
+
+	    # Redefine some commands to get them nice
+	    wscreen () 
+	    {
+		set_titleW "screen: ${USER}@${HOST}:${PWD} (${tty})"
+		"screen" $*
+		eval istripe
+		eval stripe
+	    }
+	    alias screen="wscreen"
+
+	    wcd ()
+	    {
+		\cd "$@" && eval stripe;
+	    }
+	    alias cd="wcd"
+
+	    wssh ()
+	    {
+		"ssh" "$@"
+		eval istripe
+		eval stripe
+	    }
+	    alias ssh="wssh"
+
+	    wrlogin ()
+	    {
+		"rlogin" "$@"
+		eval istripe
+		eval stripe
+	    }
+	    alias rlogin="wrlogin"
+            export CVS_RSH=ssh
+            export RSYNC_RSH=ssh
+	    export LC_CTYPE=da_DK.UTF-8
+	fi
+########################################################################
+# Environment
+######################################################################## 
+
+
+# My environment
+export ENSCRIPT="-2r -M A4"
+export EDITOR=emacs
+export CVS_RSH=ssh
+export RSYNC_RSH=ssh
+
+########################################################################
+# Aliases
+######################################################################## 
+
+	# --- Name directories
+	alias ls='ls -CF'
+	alias ll='ls -l'
+	alias la='ls -a'
+	
+	alias h='fc -l'
+	alias p='ps -l'
+	alias j=jobs
+	alias o='fg %-'
+	alias r='fc -e -'
+	alias re='fc -e vi'
+	alias e='ls -CF'
+	alias ee='ls -al'
+	alias st="set_titleW"
+	alias laura="ssh -L 8080:127.0.0.1:8080 laura"
+	alias fluffy="ssh fluffy"
+	alias hobbes="ssh hobbes.bsd-dk.dk"
+	alias signkey="gpg --sign-key "
+	alias fingerprint="gpg --fingerprint "
+	alias rmtilde="rm *~ .??*~"
+	alias pwgen="pwgen -s 10"
+
+########################################################################
+# Functions
+########################################################################
+
+
+########################################################################
+# When we start up
+########################################################################
+
+	if [ "$ILS" ]; then
+	    eval istripe
+	    eval stripe
+	fi
+
+	set -o bgnice # Things in background are niced
+	set -o nohup  # Things in background should not be sent SIGHUP 
+	              #   when we exit
+	
+
+########################################################################
+# History
+########################################################################
+
+	HISTFILE=$HOME/.ksh_history.$HOST
+	export HISTFILE
+	;;
+
+esac
+
+
+

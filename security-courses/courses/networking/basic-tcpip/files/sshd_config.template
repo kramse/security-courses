@@ -1,0 +1,74 @@
+# Standard SSHD configuration file template
+# 
+# Keywords: Protocol version 2 only, pubkey authentication, no passwords
+# allowed, nothing rhost-like, SFTP, TCP port forwarding and X11 enabled,
+# no root logins, tuned for large enterprise network with possibly borked
+# DNS zones which might need Business Use pre-login message
+# 
+# History:
+# Input from Jesper James 2003
+# Modified by Henrik Lund Kramshøj, hlk@security6.net 2007
+# Default settings are NOT listed as comments, rather these settings are
+# mostly recommended changes from default and allow for easy configuration
+# by grouping options and listing with multiple choice
+
+# Basic sshd configuration, could change port on high security hosts
+Port                    22
+Protocol                2
+HostKey                 /etc/ssh/ssh_host_rsa_key
+HostKey                 /etc/ssh/ssh_host_dsa_key
+UsePrivilegeSeparation  yes
+
+# Authentication methods and crypto
+KeyRegenerationInterval 1h
+ServerKeyBits			1024
+PubkeyAuthentication    yes
+StrictModes             yes
+# If users should not update their own authorized_keys uncomment this
+# and change StrictModes as users should NOT own their authorized_keys files
+#AuthorizedKeysFile      /etc/ssh/auth/%u_authorized_keys
+
+# Policy compliance requirements
+RSAAuthentication       no
+HostbasedAuthentication no
+
+# Password authentication is disabled, Note: BOTH must be set to "no"
+PasswordAuthentication  no
+ChallengeResponseAuthentication no
+
+# User controls, never allow root login with passwords, but perhaps
+# allow settings like "without-password" or "forced-commands-only"
+# for daily backup jobs etc.
+PermitRootLogin         no
+PermitUserEnvironment   no
+PermitEmptyPasswords    no
+
+# Fine grained user controls, choose negative or positive list
+# If specified, login is allowed ONLY for these groups/users
+#AllowGroups             admguy oper secadmin dbagroup
+#AllowUsers				admguy oper secadmin dba dba2
+# If specified, login is disallowed for these groups/users
+#DenyGroups				postfix qmail
+#DenyUsers               root db2inst1 db2fenc1 oracle
+
+# Logging and tuning
+SyslogFacility          LOCAL4
+LogLevel                VERBOSE
+MaxStartups             30
+LoginGraceTime          60
+TCPKeepAlive               yes
+ClientAliveInterval     30
+ClientAliveCountMax     4
+UseDNS                  no
+
+# functionality, choose according to your security policy
+PrintMotd               yes
+PrintLastLog            yes
+#Banner                 /some/path/businessuseonlymotd
+AllowTcpForwarding      yes
+PermitTunnel            no
+X11Forwarding           yes
+X11DisplayOffset        10
+X11UseLocalhost         yes
+
+Subsystem       sftp    /usr/libexec/sftp-server

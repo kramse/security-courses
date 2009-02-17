@@ -36,6 +36,6 @@ exercises:
 	open $(TARGET)-exercises.pdf
 
 clean:
-	rm -f  $(TARGET).log $(TARGET).aux $(TARGET).out 
-	rm -f  $(TARGET)-exercises.log $(TARGET)-exercises.aux $(TARGET)-exercises.out 
+	rm -f  $(TARGET).log $(TARGET).aux $(TARGET).out $(TARGET).idx $(TARGET).toc
+	rm -f  $(TARGET)-exercises.log $(TARGET)-exercises.aux $(TARGET)-exercises.out  $(TARGET)-exercises.idx $(TARGET)-exercises.toc
 

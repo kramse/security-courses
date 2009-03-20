@@ -1,0 +1,512 @@
+\documentclass[20pt,landscape,a4paper]{foils}
+\usepackage{sec6slides}
+
+\begin{document}
+
+\mytitlepage{Security Tools\\in Software Development}
+{FOSS Aalborg}
+
+%Software quality is strongly connected to the security of production quality applications. In this presentation a %number of tools that can improve overall software quality and security are presented. The presentation will start by %listing categories of security tools for development and then move into examples of tools that have helped actual %applications.
+
+%The goal for this presentation is to inspire developers to produce higher quality software.
+
+%The last line of defense which is runtime protection is also presented with examples from Java Virtual Machine, %OpenBSD string functions and Mac OS X sandboxing.
+
+\vskip 2cm
+\centerline{\footnotesize Slides are available as PDF and are in Danish only, sorry}
+
+\slide{Formål}
+
+\hlkimage{18cm}{software.pdf}
+\centerline{Lære om værktøjer der kan forbedre sikkerhed for produktionssystemer}
+
+\slide{Matrix style hacking anno 2003}
+
+\hlkimage{17cm}{trinity-hacking-hd-cropscale-302x250.jpg}
+
+\slide{Trinity breaking in}
+
+\hlkimage{20cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+\link{http://nmap.org/movies.html}\\
+Meget realistisk \link{http://www.youtube.com/watch?v=Zy5_gYu_isg}
+
+\slide{buffer overflows et C problem}
+
+\begin{list1}
+\item {\bfseries Et buffer overflow}
+er det der sker når man skriver flere data end der er afsat plads til
+i en buffer, et dataområde. Typisk vil programmet gå ned, men i visse
+tilfælde kan en angriber overskrive returadresser for funktionskald og
+overtage kontrollen. 
+\item {\bfseries Stack protection} 
+er et udtryk for de systemer der ved hjælp af operativsystemer,
+programbiblioteker og lign. beskytter stakken med returadresser og
+andre variable mod overskrivning gennem buffer overflows. StackGuard
+og Propolice er nogle af de mest kendte.
+\end{list1}
+
+\slide{Buffer og stacks}
+
+\hlkimage{20cm}{buffer-overflow-1.pdf}
+
+\begin{alltt}
+main(int argc, char **argv)
+\{      char buf[200];
+        strcpy(buf, argv[1]); 
+        printf("%s\textbackslash{}n",buf);
+\}
+\end{alltt}
+
+\slide{Internet - Here be dragons}
+
+\vskip 2cm
+\hlkimage{24cm}{dragon-drawing-6.jpg}
+
+\slide{Overflow - segmentation fault }
+
+\hlkimage{20cm}{buffer-overflow-2.pdf}
+
+
+\begin{list1}
+\item Bad function overwrites return value!
+\item Control return address
+\item Run shellcode from buffer, or from other place
+\end{list1}
+
+
+\slide{Exploits}
+
+\vskip 1 cm
+
+\begin{alltt}
+$buffer = ""; 
+$null = "\textbackslash{}x00"; \pause
+$nop = "\textbackslash{}x90"; 
+$nopsize = 1; \pause
+$len = 201; // what is needed to overflow, maybe 201, maybe more!
+$the_shell_pointer = 0xdeadbeef; // address where shellcode is 
+# Fill buffer
+for ($i = 1; $i < $len;$i += $nopsize) \{
+    $buffer .= $nop;
+\}\pause
+$address = pack('l', $the_shell_pointer);
+$buffer .= $address;\pause
+exec "$program", "$buffer";
+\end{alltt}
+\vskip 1 cm
+\centerline{Demo exploit in Perl}
+
+\slide{Hvordan laves et buffer overflow?}
+
+\begin{list1}
+\item Black box testing
+\item Closed source reverse engineering
+\item Findes ved at prøve sig frem - fuzzing
+\item Open source betyder man kan læse og analysere koden 
+\item Exploits virker typisk mod specifikke versioner af software
+\end{list1}
+\slide{Forudsætninger}
+
+\begin{list1}
+\item Bemærk: alle angreb har forudsætninger for at virke
+\item Et angreb mod Telnet virker kun hvis du bruger Telnet
+\item Et angreb mod Apache HTTPD virker ikke mod Microsoft IIS
+\item Kan du bryde kæden af forudsætninger har du vundet!
+\end{list1}
+
+\slide{Eksempler på forudsætninger}
+
+\vskip 3cm 
+
+\centerline{\color{security6blue}\LARGE \bf alle programmer har fejl}
+
+\begin{list1}
+\item Computeren skal være tændt
+\item Funktionen der misbruges skal være slået til
+\item Executable stack
+\item Executable heap
+\item Fejl i programmet
+\end{list1}
+
+
+\slide{Part 1 Low hanging fruits - easy }
+
+%billede af nogle frugter
+\hlkimage{10cm}{38-line-drawing-of-a-pare-fruit.png}
+
+\slide{Part 2 More work Design for security}
+
+\hlkimage{17cm}{johnny_automatic_blueprints.png}
+
+\slide{}
+Sikkerhed er mere effektivt hvis det tænkes ind i design
+
+\slide{Part 3 Testing}
+
+% noget QA relateret, måske logo fra Hudson?
+%checkmark
+\hlkimage{15cm}{testing.pdf}
+
+
+
+\slide{}
+continous building and testing
+
+\slide{Part 4 Analysis}
+
+%\hlkimage{10cm}{Magnifying_Glass.png}
+\hlkimage{14cm}{buffer-overflow-3.pdf}
+
+
+\slide{}
+PMD
+RATS
+Flawfinder
+...
+
+\slide{Part 5 Enhance and secure environment}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{20cm}{medieval-clipart-5}
+%\centerline{Picture from: http://karenswhimsy.com/public-domain-images}
+
+\slide{Gode operativsystemer}
+
+\begin{list1}
+\item Nyere versioner af Microsoft Windows, Mac OS X og Linux distributionerne inkluderer:
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item OpenBSD er nok nået længst og et godt eksempel\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\slide{Part 6 Break it}
+
+Use fuzzer, hackertools, improve security by breaking it
+
+\slide{Hackerværktøjer}
+
+\begin{list1}
+\item Dan Farmer og Wietse Venema skrev i 1993 artiklen\\
+\emph{Improving the Security of Your Site by Breaking Into it}
+\item Senere i 1995 udgav de så en softwarepakke med navnet SATAN
+\emph{Security Administrator Tool for Analyzing Networks}
+ Pakken vagte
+ en del furore, idet man jo gav alle på internet mulighed for at hacke
+\begin{quote}
+We realize that SATAN is a two-edged sword - like
+many tools, it can be used for good and for evil
+purposes. We also realize that intruders (including
+wannabees) have much more capable (read intrusive)
+tools than offered with SATAN. 
+\end{quote}
+\item SATAN og ideerne med automatiseret scanning efter sårbarheder
+  blev siden ført videre i programmer som Saint, SARA og idag findes
+  mange hackerværktøjer og automatiserede scannere: 
+\begin{list2}
+\item Nessus, ISS scanner, Fyodor Nmap, Typhoon, ORAscan
+\end{list2}
+\end{list1}
+Kilde:
+\link{http://www.fish.com/security/admin-guide-to-cracking.html}
+
+\centerline{\link{http://sectools.org}}
+
+
+
+
+\slide{Informationssikkerhed}
+
+\begin{list1}
+\item Husk følgende:
+\item Sikkerhed kommer fra langsigtede intiativer
+\item Hvad er informationssikkerhed?
+\item Data på elektronisk form
+\item Data på fysisk form
+\item Social engineering - \emph{The Art of Deception: 
+Controlling the Human Element of Security}
+af Kevin D. Mitnick, William L. Simon, Steve Wozniak
+\end{list1}
+
+\vskip 1cm 
+
+\centerline{\hlkbig\color{titlecolor}
+\bfseries Informationssikkerhed er en proces}
+
+\slide{Spørgsmål?}
+
+
+\vskip 4cm
+
+\begin{center}
+\hlkbig 
+
+\myname
+
+\myweb
+\vskip 2 cm
+
+I er altid velkomne til at sende spørgsmål på e-mail
+\end{center}
+
+\slide{FreeScan.dk - gratis portscanning}
+
+\hlkimage{23cm}{freescan-reklame.png}
+\vskip 1cm 
+\centerline{\link{http://www.freescan.dk}}
+
+
+
+\slide{Buffer overflows}
+
+\hlkimage{3cm}{images/shellcoders-handbook.jpg}
+
+\begin{list1}
+\item Hvis man vil lære at lave buffer overflows og exploit programmer
+  er følgende dokumenter et godt sted at starte
+\item \emph{Smashing The Stack For Fun And Profit} Aleph One
+\item \emph{Writing Buffer Overflow Exploits with Perl - anno 2000}
+\item Følgende bog kan ligeledes anbefales:
+\emph{The Shellcoder's Handbook : Discovering and Exploiting Security Holes} 
+af Chris Anley, John Heasman, Felix  Lindner, Gerardo Richarte 
+2nd Edition , John Wiley \& Sons, august 2007 
+\item NB: bogen er avanceret og således IKKE for begyndere! 
+\end{list1}
+
+
+
+\slide{milw0rm - dagens buffer overflow}
+
+\hlkimage{20cm}{milw0rm.png}
+
+\link{http://milw0rm.com/}
+
+\slide{Metasploit}
+
+\hlkimage{20cm}{metasploit-about.png}
+
+\begin{list1}
+\item Trinity brugte et exploit program \smiley
+\item Idag findes der samlinger af exploits som milw0rm
+\item Udviklingsværktøjerne til exploits er idag meget raffinerede!
+\item \link{http://www.metasploit.com/}
+\end{list1}
+
+
+
+\slide{Reklamer: kursusafholdelse}
+
+\begin{list1}
+\item Følgende kurser afholdes med mig som underviser
+\begin{list2}
+\item IPv6 workshop - 1 dag\\
+ Introduktion til Internetprotokollerne og forberedelse til
+  implementering i egne netværk. 
+\item Wireless teknologier og sikkerhed workshop - 2 dage\\
+En dag med fokus på netværksdesign og fornuftig implementation af
+trådløse netværk, samt integration med hjemmepc og
+wirksomhedsnetværk. 
+\item Hacker workshop 2 dage\\
+Workshop med detaljeret gennemgang af hackermetoderne angreb over
+netværk, exploitprogrammer, portscanning, Nessus m.fl.
+\item Forensics workshop 2 dage\\
+Med fokus på tilgængelige open source værktøjer gennemgås metoder og
+praksis af undersøgelse af diskimages og spor på computer systemer
+\item Moderne Firewalls og Internetsikkerhed 2 dage\\
+Informere om trusler og aktivitet på Internet, samt give et bud
+på hvorledes en avanceret moderne firewall idag kunne konfigureres.
+\end{list2}
+\end{list1}
+
+Se mere på \link{http://www.security6.net/courses.html}
+
+\slide{Network Security Tools}
+
+\hlkimage{5cm}{images/network-security-tool-ora.jpg}
+\begin{list1}
+\item \emph{Network Security Tools : Writing, Hacking, and Modifying
+    Security Tools} Nitesh Dhanjani, Justin Clarke, O'Reilly 2005, ISBN:
+    0596007949 
+ \end{list1}
+
+\slide{}
+
+\hlkimage{5cm}{images/freebsd-openbsd-security-tools-ora.jpg}
+\begin{list1}
+\item \emph{Mastering FreeBSD and OpenBSD Security} Yanek Korff, Paco
+  Hope, Bruce Potter, O'Reilly, 2005, ISBN: 0596006268
+\end{list1}
+
+\slide{Hackers Challenge}
+
+\begin{center}
+\colorbox{white}{
+\includegraphics[width=32mm]{images/hackers-challenge.jpg}
+\includegraphics[width=33mm]{images/hackers-challenge2.jpg}
+\includegraphics[width=33mm]{images/hackers-challenge-3.jpg}
+}
+\end{center}
+
+\begin{list1}
+%\item Hændelseshåndtering - øvelse som I kigger på i weekenden
+%\item Opgaverne er kopieret fra bogen 
+\item \emph{Hacker's Challenge : Test Your Incident Response Skills Using 20 Scenarios}
+ af Mike Schiffman McGraw-Hill Osborne Media; (October 18, 2001) ISBN:
+ 0072193840
+\item \emph{Hacker's Challenge II : Test Your Network Security and
+ Forensics Skills}
+ af Mike Schiffman McGraw-Hill Osborne Media, 2003 ISBN: 0072226307
+
+\item \emph{Hacker's Challenge 3: 20 Brand New Forensic Scenarios And Solutions } 
+  David Pollino et al ISBN-10: 0072263040
+McGraw-Hill Osborne Media; 3 edition (April 25, 2006)
+\item Bøgerne indeholder scenarier i første halvdel, og løsninger i
+  anden halvdel - med fokus på relevante logfiler og sårbarheder  
+\end{list1}
+
+
+\slide{Network Security Assessment}
+
+\begin{center}
+\colorbox{white}{
+\includegraphics[width=6cm]{images/oreilly-networksa.png}}
+\end{center}
+
+\begin{list1}
+%\item Hændelseshåndtering - øvelse som I kigger på i weekenden
+%\item Opgaverne er kopieret fra bogen 
+\item \emph{Network Security Assessment 
+Know Your Network}
+ af Chris McNab, O'Reilly Marts 2004 ISBN: 0-596-00611-X
+\item Bogen er anbefalelsesværdig
+\item Der kan hentes kapitel 4 som PDF - \emph{IP Network Scanning}
+\end{list1}
+
+\slide{Counter Hack}
+
+\hlkimage{6cm}{images/counter-hack-reloaded.jpg}
+
+\begin{list1}
+\item \emph{Counter Hack Reloaded: A Step-by-Step Guide to Computer Attacks and Effective Defenses (2nd Edition)}, Ed Skoudis, Prentice Hall PTR, 2nd ed. 2006
+\item Bogen er anbefalelsesværdig og er kommet i anden udgave
+\item Minder mig om et universitetskursus i opbygningen
+\item \link{http://www.counterhack.net}
+\end{list1}
+
+
+\slide{Referencer}
+
+\begin{list1}
+\item Anbefalede bøger:
+\begin{list2}
+\item \emph{Computer Forensics: Incident Response Essentials}, Warren
+  G. Kruse II og Jay G. Heiser, Addison-Wesley, 2002.
+\item \emph{Incident Response}, E. Eugene Schultz og Russel Shumway,
+  New Riders, 2002
+\item \emph{CISSP All-in-One Certification Exam Guide}, Shon Harris 
+McGraw-Hill/Osborne, 2002
+\item \emph{Network Intrusion Detection}, Stephen Northcutt og Judy Novak, New
+  Riders, 2nd edition, 2001
+\item \emph{Intrusion Signatures and Analysis}, Stephen Northcutt et al, New
+  Riders, 2001
+\item \emph{Practical UNIX and Internet Security}, Simson Garfinkel og
+  Gene Spafford, 2nd edition
+\item \emph{Firewalls and Internet Security},  Cheswick,
+  Bellovin og Rubin, Addison-Wesley, 2nd edition, 2003
+\item \emph{Hacking Exposed}, Scambray et al, 4th edition, Osborne, 2003 
+  - tror der er en nyere  
+  \item \emph{Building Open Source Network Security Tools}, Mike
+  D. Schiffman, Wiley 2003 
+\item \emph{Gray Hat Hacking : The Ethical Hacker's Handbook} Shon
+  Harris, Allen  Harper, Chris  Eagle, Jonathan  Ness,
+  Michael Lester, McGraw-Hill Osborne Media 2004, ISBN: 0072257091
+\end{list2}
+\end{list1}
+
+
+\slide{Referencer}
+
+\begin{list1}
+\item Internet
+  \begin{list2}
+  \item \link{http://www.project.honeynet.org} - diverse honeynet projekter
+  information om pakker og IP netværk. Har flere forensics challenges
+  hvor man kan hente images og foretage sin egen analyse
+  \item \link{http://www.packetfactory.net} - diverse projekter
+  relateret til pakker og IP netværk eksempelvis libnet
+
+\item \link{http://www.isecom.org/} - Open Source Security Testing
+  Methodology Manual - Hvordan laver man struktureret test! 
+
+\end{list2}
+\item Mailinglists
+  \begin{list2}
+    \item securityfocus m.fl. - de fleste producenter og væktøjer
+    har mailinglister tilknyttet
+  \end{list2}
+\item Papers - der findes MANGE dokumenter på Internet
+\begin{list2}
+\item \emph{Security Problems in the TCP/IP Protocol Suite},
+  S.M. Bellovin, 1989 og fremefter
+\end{list2}
+\end{list1}
+
+\slide{Packet factory projects}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=20cm]{images/packetfactory-header.jpg}}
+\end{center}
+
+\begin{list2}
+\item Projects (udvalgte):
+\item firewalk [gateway ACL scanner]
+\item firestorm (in development) [next 
+  generation scanner]
+\item ISIC [IP stack integrity checker]
+\item libnet [network packet assembly/injection library]     
+\item libradiate [802.11b frame assembly/injection library]     
+\item nemesis [command line IP stack]     
+\item ngrep [GNU grep for the network]     
+\item packit [tool to monitor, and inject customized IPv4 traffic]     
+\item Billede og information fra \link{http://www.packetfactory.net}
+\end{list2}
+
+
+
+\slide{CISSP fra ISC2}
+
+\hlkimage{16cm}{images/cissp-logo.png}
+
+\begin{list1}
+\item Primære website: \link{http://www.isc2.org}
+\item Vigtigt link \link{http://www.cccure.org/}
+\item Den kræver mindst 3 års erfaring indenfor et relevant fagområde
+\item Multiple choice 6 timer 250 spørgsmål - kan tages i Danmark
+\end{list1}
+
+\slide{CEH}
+
+\hlkimage{10cm}{CEH-logo.png}
+\begin{list1}
+\item Certified Ethical Hacker
+\item Certified Ethical Hacker exam 312-50
+\item Bogen \emph{CEH: Official Certified Ethical Hacker Review Guide: Exam 312-50} af Kimberly Graves kan anbefales
+\item Primære website: \link{http://eccouncil.org/ceh.htm}
+\end{list1}
+
+\slide{GIAC GSEC}
+
+\hlkimage{4cm}{images/SANS-logo.png}
+
+\begin{list1}
+\item Security Essentials - basal sikkerhed
+\item Krav om en \emph{Practical assignment} - mindst 8 sider, 15
+  sider i gennemsnit
+\item multiple choice eksamen
+\item Primære website: \link{http://www.giac.org}
+\item Reading room: \link{http://www.sans.org/rr/}
+\end{list1}
+\end{document}

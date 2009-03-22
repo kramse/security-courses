@@ -20,6 +20,11 @@
 \hlkimage{18cm}{software.pdf}
 \centerline{Lære om værktøjer der kan forbedre sikkerhed for produktionssystemer}
 
+\slide{Internet - Here be dragons}
+
+\vskip 2cm
+\hlkimage{24cm}{dragon-drawing-6.jpg}
+
 \slide{Matrix style hacking anno 2003}
 
 \hlkimage{17cm}{trinity-hacking-hd-cropscale-302x250.jpg}
@@ -57,10 +62,6 @@ main(int argc, char **argv)
 \}
 \end{alltt}
 
-\slide{Internet - Here be dragons}
-
-\vskip 2cm
-\hlkimage{24cm}{dragon-drawing-6.jpg}
 
 \slide{Overflow - segmentation fault }
 
@@ -96,13 +97,15 @@ exec "$program", "$buffer";
 \vskip 1 cm
 \centerline{Demo exploit in Perl}
 
-\slide{Hvordan laves et buffer overflow?}
+\slide{Hvordan finder man buffer overflow, og andre fejl}
 
 \begin{list1}
 \item Black box testing
 \item Closed source reverse engineering
-\item Findes ved at prøve sig frem - fuzzing
+\item White box testing
 \item Open source betyder man kan læse og analysere koden 
+\item Source code review - automatisk eller manuelt
+\item Fejl kan findes ved at prøve sig frem - fuzzing
 \item Exploits virker typisk mod specifikke versioner af software
 \end{list1}
 \slide{Forudsætninger}
@@ -116,9 +119,6 @@ exec "$program", "$buffer";
 
 \slide{Eksempler på forudsætninger}
 
-\vskip 3cm 
-
-\centerline{\color{security6blue}\LARGE \bf alle programmer har fejl}
 
 \begin{list1}
 \item Computeren skal være tændt
@@ -127,6 +127,10 @@ exec "$program", "$buffer";
 \item Executable heap
 \item Fejl i programmet
 \end{list1}
+\pause
+\vskip 2cm 
+
+\centerline{\color{security6blue}\LARGE \bf alle programmer har fejl}
 
 
 \slide{Software udvikling er nemt}
@@ -134,14 +138,15 @@ exec "$program", "$buffer";
 \vskip 2 cm
 \centerline{\color{security6blue}\bf\LARGE Software udvikling er nemt}
 \pause
+\vskip 1 cm
 \centerline{\color{security6blue}\bf\LARGE Du skal blot skrive perfekt kode første gang :-)}
 \vskip 1cm
 \pause
 \centerline{\bf\LARGE Sikkerhed er svært}
 
 \begin{list1}
-\item Det er svært at skrive perfekt kode, aka umuligt
-\item så vi vil snakke om værktøjer til at forbedre situationen
+\item Det er svært at skrive perfekt kode, om ikke umuligt
+\item Så nu vil vi snakke om værktøjer til at forbedre situationen
 \end{list1}
 
 \slide{Part 1 Low hanging fruits - easy }
@@ -151,25 +156,205 @@ exec "$program", "$buffer";
 
 \centerline{Højere kvalitet er mere sikkert}
 
-\slide{Coding standards}
+\slide{Coding standards - style}
 
-\slide{Compiler warnings}
+\begin{quote}
+This file specifies the preferred style for kernel source files in the
+OpenBSD source tree.  It is also a guide for preferred user land code
+style.  These guidelines should be followed for all new code.  In general, 
+code can be considered ``new code'' when it makes up about 50% or
+more of the file(s) involved. ...\\
+Use queue(3) macros rather than rolling your own lists, whenever possible.  
+Thus, the previous example would be better written:
+\end{quote}
+
+\begin{verbatim}
+    #include <sys/queue.h>
+    struct  foo {
+    LIST_ENTRY(foo) link;  /* Queue macro glue for foo lists */
+               struct  mumble amumble; /* Comment for mumble */
+               int     bar;
+    };
+    LIST_HEAD(, foo) foohead;     /* Head of global foo list */
+\end{verbatim}
+
+
+OpenBSD style(9)
+
+\slide{Coding standards functions}
+
+\begin{quote}
+The following copies as many characters from input to buf as will fit and
+NUL terminates the result.  Because strncpy() does not guarantee to NUL
+terminate the string itself, it must be done by hand.
+\end{quote}
+
+\begin{verbatim}
+        char buf[BUFSIZ];
+
+        (void)strncpy(buf, input, sizeof(buf) - 1);
+        buf[sizeof(buf) - 1] = '\0';
+\end{verbatim}
+\begin{quote}
+Note that strlcpy(3) is a better choice for this kind of operation.  The
+equivalent using strlcpy(3) is simply:
+\end{quote}
+\begin{verbatim}
+        (void)strlcpy(buf, input, sizeof(buf));
+\end{verbatim}
+
+OpenBSD strcpy(9)
+
+\slide{Compiler warnings - gcc -Wall}
+
+\begin{verbatim}
+$ gcc -o demo demo.c
+demo.c: In function main:
+demo.c:4: warning: incompatible implicit declaration of built-in 
+function strcpy
+\end{verbatim}
+
+\begin{verbatim}
+$ gcc -Wall -o demo demo.c
+demo.c:2: warning: return type defaults to int
+demo.c: In function main:
+demo.c:4: warning: implicit declaration of function strcpy
+demo.c:4: warning: incompatible implicit declaration of built-in 
+function strcpy
+demo.c:5: warning: control reaches end of non-void function
+\end{verbatim}
+
+\vskip 15mm
+\centerline{\bf\LARGE\color{security6blue}Easy to do!}
+
+\slide{No warnings = no errors?}
+
+{\Large
+\begin{verbatim}
+$ cat demo2.c
+#include <strings.h>
+int main(int argc, char **argv)
+{
+    char buf[200];
+    strcpy(buf, argv[1]); 
+    return 0;
+}
+$ gcc -Wall -o demo2 demo2.c 
+\end{verbatim}
+}
+\pause\centerline{\bf\LARGE\color{security6blue}Der er stadig alvorlige fejl!}
+
+
+%\slide{OpenBSD gcc}
+
+%\begin{verbatim}
+%hlk@sunny:hlk$ gcc -o demo demo.c
+%/tmp//ccq29959.o(.text+0x2a): In function `main':
+%: warning: strcpy() is almost always misused, please use strlcpy()
+%\end{verbatim}
 
 \slide{Version control}
-Evt. hooks til at checke før commit tillades
+
+\begin{list1}
+\item Versionsstyring og configuration management har mange fordele
+\item Hvem ændrede, hvornår og hvad
+\item Hvorfor blev der foretaget en ændring
+\item Med versionsstyring kan pre-commit hooks implementeres
+\end{list1}
+
+\slide{Subversion sample hooks scripts}
+
+\begin{list1}
+\item  pre-commit - check
+\begin{list2}
+\item case-insensitive.py
+\item check-mime-type.pl
+\item commit-access-control.pl
+\item commit-block-joke.py
+\item detect-merge-conflicts.sh
+\item enforcer
+\item log-police.py
+\item pre-commit-check.py
+\item svnperms.py
+\item verify-po.py
+\end{list2}
+\item \link{http://subversion.tigris.org/tools_contrib.html}
+\item \link{http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/}
+\end{list1}
+
+\slide{Eksempel Enforcer}
+
+\begin{alltt}
+In a Java project I work on, we use log4j extensively.  Use of
+System.out.println() bypasses the control that we get from log4j,
+so we would like to discourage the addition of println calls in 
+our code.
+
+We want to deny any commits that add a println into the code.
+The world being full of exceptions, we do need a way to allow 
+some uses of println, so we will allow it if the line of code
+that calls println ends in a comment that says it is ok:
+
+   System.out.println("No log4j here"); // (authorized)
+\end{alltt}
+
+{\small \link{http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/enforcer/enforcer}}
 
 
 
-\slide{Part 2 More work Design for security}
+\slide{Eksempel verify-po.py}
+
+\begin{verbatim}
+#!/usr/bin/env python
+"""This is a pre-commit hook that checks whether the contents
+of PO files committed to the repository are encoded in UTF-8.
+"""
+\end{verbatim}
+
+{\small \link{http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/verify-po.py}}
+
+
+\slide{Part 2 Design for security - more work}
 
 \hlkimage{17cm}{johnny_automatic_blueprints.png}
 \centerline{Sikkerhed er mere effektivt hvis det tænkes ind i design}
 
 
-\slide{}
+\slide{Secure Coding begynder med design}
+
+%\hlkimage{5cm}{secure_coding.png}
+
+\vskip 2cm
+\hlkrightimage{5cm}{secure_coding.png}
+{\emph{Secure Coding: Principles and Practices} af Mark G. Graff, Kenneth R. Van Wyk 2003}
 
 
-\slide{Part 3 Testing}
+
+\begin{list1}
+\item Architecture/design while you are thinking about the application
+\item Implementation while you are writing the application
+\item Operations After the application is in production
+\item Ca. 200 sider, men tætpakket med information.
+\end{list1}
+
+
+\slide{Sins in Software Security}
+
+\hlkrightimage{5cm}{19-deadly-sins.jpg}
+{\emph{19 Deadly Sins of Software Security} af Michael Howard, David Leblanc, John Viega 2005}
+
+\begin{list1}
+\item {\bf Obligatorisk læsning for alle udviklere}
+\item Forfatterne har skrevet mange gode bøger både før og efter
+\item Denne bog er præcis og giver overblik
+\item Ca. 270 sider, let at læse.
+\item Buffer Overruns, Format String Problems, Integer Overflows, SQL Injection, Command Injection,
+Failing to Handle Errors, Cross-Site Scripting, Failing to Protect Network Traffic, Magic URLs Hidden Form Fields,
+Improper Use of SSL and TLS, Weak Password-Based Systems, Failing to Store and Protect Data Securely, Information
+Leakage, Improper File Access, Trusting Network Name Resolution, Race Conditions, Unauthenticated Key Exchange, Cryptographically Strong Random Numbers, Poor Usability 
+\end{list1}
+
+\slide{Part 3 Testing - more work now, less work in the long run}
 
 % noget QA relateret, måske logo fra Hudson?
 %checkmark
@@ -179,14 +364,44 @@ Evt. hooks til at checke før commit tillades
 
 \slide{Hvorfor teste}
 
-Finde fejl under udviklingen
+\begin{list1}
+\item Finde fejl under udviklingen af software
+\item Sikre at software overholder krav til kvalitet
+\item Finde fejl senere!
+\item Undgå at gamle fejl optræder igen!
+\item Test ofte
+\end{list1}
 
-Finde fejl senere!
+\slide{Unit testing - laveste niveau}
 
+\begin{verbatim}
+public class TestAdder {
+    public void testSum() {
+        Adder adder = new AdderImpl();
+        assert(adder.add(1, 1) == 2);
+        assert(adder.add(1, 2) == 3);
+        assert(adder.add(2, 2) == 4);
+        assert(adder.add(0, 0) == 0);
+        assert(adder.add(-1, -2) == -3);
+        assert(adder.add(-1, 1) == 0);
+        assert(adder.add(1234, 988) == 2222);
+    }
+}
+\end{verbatim}
 
+\begin{list1}
+\item Kan bruges til at teste enkelte dele af en applikation
+\item Eksempel fra \link{http://en.wikipedia.org/wiki/Unit_testing}
+\end{list1}
 
 \slide{Hudson and friends}
-continous building and testing
+
+\hlkimage{20cm}{hudson-dashboard.png}
+
+\begin{list1}
+\item Continous building and testing
+\item Finder løbende fejl - hurtig feedback
+\end{list1}
 
 
 \slide{Part 4 Analysis}
@@ -196,15 +411,29 @@ continous building and testing
 
 \centerline{Brug al den hjælp du kan til at finde fejl}
 
-...
-
 \slide{Static analysis}
 \begin{list1}
-\item PMD
-\item RATS
-\item Flawfinder
-\item ITS
+\item PMD static ruleset based Java 
+\item RATS Rough Auditing Tool for Security, C, C++, Perl, PHP and Python
+\item Flawfinder \link{http://www.dwheeler.com/flawfinder/}
+\item \link{http://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis}
 \end{list1}
+
+
+\slide{A Fool with a Tool is still a Fool}
+
+\begin{list1}
+\item 1. Run tool
+\item 2. Fix problems
+\item 3. Rinse repeat
+\end{list1}
+
+Fixing problems?\\
+\begin{verbatim}
+   char tmp[256]; /* Flawfinder: ignore */
+   strcpy(tmp, pScreenSize); /* Flawfinder: ignore */
+\end{verbatim}
+Eksempel fra \link{http://www.dwheeler.com/flawfinder/}
 
 \slide{PMD static ruleset based Java source code analyzer }
 \hlkimage{26cm}{pmd-description.png}
@@ -217,6 +446,13 @@ continous building and testing
 \slide{Dynamic analysis}
 
 %http://www.onjava.com/pub/a/onjava/2003/02/12/static_analysis.html
+
+\begin{list1}
+
+\item compile time vs. at run time nogle fejl kan ikke findes på compile-time
+\item Oversæt og kør programmet på OpenBSD ;-)
+\end{list1}
+
 
 \slide{Hard to do -  manual analysis}
 
@@ -242,7 +478,30 @@ Michael Howard, David LeBlanc, John Viega + deres andre bøger
 
 \slide{Part 5 Break it}
 
-Use fuzzer, hackertools, improve security by breaking it
+
+
+\hlkimage{15cm}{300px-Fozziecurtain.JPG}
+
+\centerline{Use fuzzers, hackertools, improve security by breaking it}
+
+\slide{Simple fuzzer}
+
+\begin{alltt}
+$ for i in 10 20 30 40 50
+>> do
+>> ./demo `perl -e "print 'A'x$i"`
+>> done
+AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault 
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault 
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault 
+\end{alltt}
+
+\centerline{Memory fault/segmentation fault - juicy!}
 
 
 \slide{Fuzz Revisited: A Re-examination of the Reliability }
@@ -268,6 +527,8 @@ that we tested in this way.
 
 
 \slide{Fuzzers}
+
+\hlkimage{25cm}{fuzzer.pdf}
 
 \begin{list1}
 \item Et program der kan give forskelligt fejlbehæftet input som måske kan identificere fejl
@@ -307,20 +568,6 @@ tools than offered with SATAN.
 
 \centerline{Sidste chance er på afviklingstidspunktet}
 
-\slide{Gode operativsystemer}
-
-\begin{list1}
-\item Nyere versioner af Microsoft Windows, Mac OS X og Linux distributionerne inkluderer:
-\begin{list2}
-\item Buffer overflow protection
-\item Stack protection, non-executable stack
-\item Heap protection, non-executable heap
-\item \emph{Randomization of parameters} stack gap m.v.
-\end{list2}
-\item OpenBSD er nok nået længst og et godt eksempel\\ \link{http://www.openbsd.org/papers/}
-\item NB: meget af dette kræver relativt ny CPU og Memory Management Unit
-\item NB: meget få embedded systemer eller operativsystemer til samme har beskyttelse!
-\end{list1}
 
 
 \slide{Chroot, Jails and }
@@ -381,7 +628,7 @@ grant \{
 
 
 
-\slide{Apple Sandbox named generic rules} 
+\slide{Apple sandbox named generic rules} 
 
 \begin{alltt}\small 
 ;; named - sandbox profile
@@ -425,12 +672,22 @@ grant \{
 \item Eksempel fra \verb+/usr/share/sandbox+ på Mac OS X
 \end{list1}
 
-\slide{OpenBSD String functions}
 
-strlcpy
+\slide{Gode operativsystemer}
 
-%\slide{Can you trust your CPU}
-%Link til SMM artiklerne :-)
+\begin{list1}
+\item Nyere versioner af Microsoft Windows, Mac OS X og Linux distributionerne inkluderer:
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item OpenBSD er nok nået længst og et godt eksempel\\ \link{http://www.openbsd.org/papers/}
+\item NB: meget af dette kræver relativt ny CPU og Memory Management Unit
+\item NB: meget få embedded systemer eller operativsystemer til samme har beskyttelse!
+\end{list1}
+
 
 \slide{Informationssikkerhed}
 
@@ -509,8 +766,6 @@ af Chris Anley, John Heasman, Felix  Lindner, Gerardo Richarte
 \item \link{http://www.metasploit.com/}
 \end{list1}
 
-
-
 \slide{Reklamer: kursusafholdelse}
 
 \begin{list1}
@@ -537,190 +792,5 @@ på hvorledes en avanceret moderne firewall idag kunne konfigureres.
 
 Se mere på \link{http://www.security6.net/courses.html}
 
-\slide{Network Security Tools}
 
-\hlkimage{5cm}{images/network-security-tool-ora.jpg}
-\begin{list1}
-\item \emph{Network Security Tools : Writing, Hacking, and Modifying
-    Security Tools} Nitesh Dhanjani, Justin Clarke, O'Reilly 2005, ISBN:
-    0596007949 
- \end{list1}
-
-\slide{}
-
-\hlkimage{5cm}{images/freebsd-openbsd-security-tools-ora.jpg}
-\begin{list1}
-\item \emph{Mastering FreeBSD and OpenBSD Security} Yanek Korff, Paco
-  Hope, Bruce Potter, O'Reilly, 2005, ISBN: 0596006268
-\end{list1}
-
-\slide{Hackers Challenge}
-
-\begin{center}
-\colorbox{white}{
-\includegraphics[width=32mm]{images/hackers-challenge.jpg}
-\includegraphics[width=33mm]{images/hackers-challenge2.jpg}
-\includegraphics[width=33mm]{images/hackers-challenge-3.jpg}
-}
-\end{center}
-
-\begin{list1}
-%\item Hændelseshåndtering - øvelse som I kigger på i weekenden
-%\item Opgaverne er kopieret fra bogen 
-\item \emph{Hacker's Challenge : Test Your Incident Response Skills Using 20 Scenarios}
- af Mike Schiffman McGraw-Hill Osborne Media; (October 18, 2001) ISBN:
- 0072193840
-\item \emph{Hacker's Challenge II : Test Your Network Security and
- Forensics Skills}
- af Mike Schiffman McGraw-Hill Osborne Media, 2003 ISBN: 0072226307
-
-\item \emph{Hacker's Challenge 3: 20 Brand New Forensic Scenarios And Solutions } 
-  David Pollino et al ISBN-10: 0072263040
-McGraw-Hill Osborne Media; 3 edition (April 25, 2006)
-\item Bøgerne indeholder scenarier i første halvdel, og løsninger i
-  anden halvdel - med fokus på relevante logfiler og sårbarheder  
-\end{list1}
-
-
-\slide{Network Security Assessment}
-
-\begin{center}
-\colorbox{white}{
-\includegraphics[width=6cm]{images/oreilly-networksa.png}}
-\end{center}
-
-\begin{list1}
-%\item Hændelseshåndtering - øvelse som I kigger på i weekenden
-%\item Opgaverne er kopieret fra bogen 
-\item \emph{Network Security Assessment 
-Know Your Network}
- af Chris McNab, O'Reilly Marts 2004 ISBN: 0-596-00611-X
-\item Bogen er anbefalelsesværdig
-\item Der kan hentes kapitel 4 som PDF - \emph{IP Network Scanning}
-\end{list1}
-
-\slide{Counter Hack}
-
-\hlkimage{6cm}{images/counter-hack-reloaded.jpg}
-
-\begin{list1}
-\item \emph{Counter Hack Reloaded: A Step-by-Step Guide to Computer Attacks and Effective Defenses (2nd Edition)}, Ed Skoudis, Prentice Hall PTR, 2nd ed. 2006
-\item Bogen er anbefalelsesværdig og er kommet i anden udgave
-\item Minder mig om et universitetskursus i opbygningen
-\item \link{http://www.counterhack.net}
-\end{list1}
-
-
-\slide{Referencer}
-
-\begin{list1}
-\item Anbefalede bøger:
-\begin{list2}
-\item \emph{Computer Forensics: Incident Response Essentials}, Warren
-  G. Kruse II og Jay G. Heiser, Addison-Wesley, 2002.
-\item \emph{Incident Response}, E. Eugene Schultz og Russel Shumway,
-  New Riders, 2002
-\item \emph{CISSP All-in-One Certification Exam Guide}, Shon Harris 
-McGraw-Hill/Osborne, 2002
-\item \emph{Network Intrusion Detection}, Stephen Northcutt og Judy Novak, New
-  Riders, 2nd edition, 2001
-\item \emph{Intrusion Signatures and Analysis}, Stephen Northcutt et al, New
-  Riders, 2001
-\item \emph{Practical UNIX and Internet Security}, Simson Garfinkel og
-  Gene Spafford, 2nd edition
-\item \emph{Firewalls and Internet Security},  Cheswick,
-  Bellovin og Rubin, Addison-Wesley, 2nd edition, 2003
-\item \emph{Hacking Exposed}, Scambray et al, 4th edition, Osborne, 2003 
-  - tror der er en nyere  
-  \item \emph{Building Open Source Network Security Tools}, Mike
-  D. Schiffman, Wiley 2003 
-\item \emph{Gray Hat Hacking : The Ethical Hacker's Handbook} Shon
-  Harris, Allen  Harper, Chris  Eagle, Jonathan  Ness,
-  Michael Lester, McGraw-Hill Osborne Media 2004, ISBN: 0072257091
-\end{list2}
-\end{list1}
-
-
-\slide{Referencer}
-
-\begin{list1}
-\item Internet
-  \begin{list2}
-  \item \link{http://www.project.honeynet.org} - diverse honeynet projekter
-  information om pakker og IP netværk. Har flere forensics challenges
-  hvor man kan hente images og foretage sin egen analyse
-  \item \link{http://www.packetfactory.net} - diverse projekter
-  relateret til pakker og IP netværk eksempelvis libnet
-
-\item \link{http://www.isecom.org/} - Open Source Security Testing
-  Methodology Manual - Hvordan laver man struktureret test! 
-
-\end{list2}
-\item Mailinglists
-  \begin{list2}
-    \item securityfocus m.fl. - de fleste producenter og væktøjer
-    har mailinglister tilknyttet
-  \end{list2}
-\item Papers - der findes MANGE dokumenter på Internet
-\begin{list2}
-\item \emph{Security Problems in the TCP/IP Protocol Suite},
-  S.M. Bellovin, 1989 og fremefter
-\end{list2}
-\end{list1}
-
-\slide{Packet factory projects}
-
-\begin{center}
-\colorbox{white}{\includegraphics[width=20cm]{images/packetfactory-header.jpg}}
-\end{center}
-
-\begin{list2}
-\item Projects (udvalgte):
-\item firewalk [gateway ACL scanner]
-\item firestorm (in development) [next 
-  generation scanner]
-\item ISIC [IP stack integrity checker]
-\item libnet [network packet assembly/injection library]     
-\item libradiate [802.11b frame assembly/injection library]     
-\item nemesis [command line IP stack]     
-\item ngrep [GNU grep for the network]     
-\item packit [tool to monitor, and inject customized IPv4 traffic]     
-\item Billede og information fra \link{http://www.packetfactory.net}
-\end{list2}
-
-
-
-\slide{CISSP fra ISC2}
-
-\hlkimage{16cm}{images/cissp-logo.png}
-
-\begin{list1}
-\item Primære website: \link{http://www.isc2.org}
-\item Vigtigt link \link{http://www.cccure.org/}
-\item Den kræver mindst 3 års erfaring indenfor et relevant fagområde
-\item Multiple choice 6 timer 250 spørgsmål - kan tages i Danmark
-\end{list1}
-
-\slide{CEH}
-
-\hlkimage{10cm}{CEH-logo.png}
-\begin{list1}
-\item Certified Ethical Hacker
-\item Certified Ethical Hacker exam 312-50
-\item Bogen \emph{CEH: Official Certified Ethical Hacker Review Guide: Exam 312-50} af Kimberly Graves kan anbefales
-\item Primære website: \link{http://eccouncil.org/ceh.htm}
-\end{list1}
-
-\slide{GIAC GSEC}
-
-\hlkimage{4cm}{images/SANS-logo.png}
-
-\begin{list1}
-\item Security Essentials - basal sikkerhed
-\item Krav om en \emph{Practical assignment} - mindst 8 sider, 15
-  sider i gennemsnit
-\item multiple choice eksamen
-\item Primære website: \link{http://www.giac.org}
-\item Reading room: \link{http://www.sans.org/rr/}
-\end{list1}
 \end{document}

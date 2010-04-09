@@ -1,7 +1,7 @@
 % ^^A        Metacomments 
 % \iffalse
 %
-% foiltex.dtx Copyright (C) 1995,1997,1998,2002 IBM Corporation
+% foiltex.dtx Copyright (C) 1995,1997,1998,2002,2008 IBM Corporation
 %
 %%
 %% These files are updated versions of the FoilTeX package for use with
@@ -11,8 +11,8 @@
 %% of this suite of files.
 %% ********************************************************************
 % 
-%<package|sample|17pt|20pt|25pt|30pt|short|fonts|oldstyle>\def\foiltexdate{2002/10/29}
-%<package|sample|17pt|20pt|25pt|30pt|short|fonts|oldstyle>\def\foiltexversion{2.1.4a}
+%<package|sample|17pt|20pt|25pt|30pt|short|fonts|oldstyle>\def\foiltexdate{2008/01/28}
+%<package|sample|17pt|20pt|25pt|30pt|short|fonts|oldstyle>\def\foiltexversion{2.1.4b}
 %<package|fonts>\NeedsTeXFormat{LaTeX2e}[1996/12/01]
 %<sample|17pt|20pt|25pt|30pt|short|oldstyle>\NeedsTeXFormat{LaTeX2e}
 %<package>\ProvidesClass{foils}
@@ -25,16 +25,16 @@
 %<sample>\ProvidesFile{sampfoil.tex}
 %<oldstyle>\ProvidesFile{foils.sty}
 %<*driver>
-\def\foiltexdate{2002/10/29}
-\def\foiltexversion{2.1.4a}
+\def\foiltexdate{2008/01/28}
+\def\foiltexversion{2.1.4b}
 \ProvidesFile{foiltex.drv}
 %</driver>
        [\foiltexdate\space v\foiltexversion\space
-%<package>        FoilTeX Class File, Copyright IBM 1995,1997,1998,2002]
-%<17pt|20pt|25pt|30pt|short>        FoilTeX file (size option), Copyright IBM 1995,1997,1998,2002]
-%<fonts>        FoilTeX font definition file, Copyright IBM 1995,1997,1998,2002]
-%<sample>        Sample FoilTeX file, Copyright IBM 1995,1997,1998,2002]
-%<oldstyle>        FoilTeX Compatibility Style File, Copyright IBM 1995,1997,1998,2002]
+%<package>        FoilTeX Class File, Copyright IBM 1995,1997,1998,2002,2008]
+%<17pt|20pt|25pt|30pt|short>        FoilTeX file (size option), Copyright IBM 1995,1997,1998,2002,2008]
+%<fonts>        FoilTeX font definition file, Copyright IBM 1995,1997,1998,2002,2008]
+%<sample>        Sample FoilTeX file, Copyright IBM 1995,1997,1998,2002,2008]
+%<oldstyle>        FoilTeX Compatibility Style File, Copyright IBM 1995,1997,1998,2002,2008]
 %<*driver>
 ]
 \documentclass[draft]{ltxdoc}
@@ -80,7 +80,7 @@
 %
 % \fi
 % 
-% \CheckSum{3616}
+% \CheckSum{3618}
 %% \CharacterTable
 %%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
 %%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
@@ -119,7 +119,7 @@
 % 
 % There are restrictions on the use of \FoilTeX.  Please refer to
 % Section~\ref{sec:restrictions} for more information\footnote{Copyright
-% \copyright 1995,1997,1998,2002 by International Business Machines Corporation.}.
+% \copyright 1995,1997,1998,2002,2008 by International Business Machines Corporation.}.
 % 
 % \TeX\ is a trademark of the American Mathematical Society.
 % \postscript\ is a trademark of Adobe Systems, Incorporated.  
@@ -294,6 +294,10 @@
 % Version~2.1.4a fixes an interoperability problem between
 % \texttt{dvips} and Ghostview --- landscape foils are rotated so they
 % aren't upside down anymore!  
+%
+% Version~2.1.4b includes another fix provided by Heiko Oberdiek
+% directly to repair another incompatibility with \texttt{hyperref}
+% versions after 2007/10/29. 
 %
 % \subsection{Related Packages on CTAN} \label{sec:otherstuff}
 %
@@ -2499,7 +2503,7 @@ Know-it-all's Rock Encyclopedia}.
 %
 % We've included some additional code to deal with another
 % incompatibility with \texttt{hyperref}.  This again is provided by Heiko
-% Oberdiek via Hans Fredrik Nordhaug.
+% Oberdiek both directly and indirectly via Hans Fredrik Nordhaug.
 %
 % Finally, version~2.1.4 provides additional page dimension
 % manipulations for PDF\LaTeX.  This was provided by in a number of
@@ -2556,18 +2560,21 @@ Know-it-all's Rock Encyclopedia}.
 % don't have to invoke \texttt{dvips} with the \texttt{-t papersize}
 % option; thanks to Hans Fredrik Nordhaug for this fix.). This may also
 % be usable with \texttt{dvipsone} but we have no way to test that.
-% With VTeX this isn't necessary.
+% With VTeX this isn't necessary.  The extra conditional (provided
+% by Heiko Oberdiek) on \texttt{hyperref} version avoids a
+% incompatibility with the more recent releases of that package.
   \if@dvips
     \AtBeginDvi{\special{%
     papersize=\the\paperwidth,\the\paperheight}}%
   \fi
   \@ifpackageloaded{hyperref}{%
-  \def\@begindvi{\foil@begindvi \unvbox \@begindvibox
-                 \ifHy@pageanchor \@hyperfixhead 
-      \gdef\@begindvi{\foil@begindvi\@hyperfixhead}%
-    \else
-      \gdef\@begindvi{\foil@begindvi\HyPL@EveryPage}% 
-    \fi}}{}%
+    \@ifpackagelater{hyperref}{2007/10/29}{}{%
+      \def\@begindvi{\foil@begindvi \unvbox \@begindvibox
+        \ifHy@pageanchor \@hyperfixhead 
+           \gdef\@begindvi{\foil@begindvi\@hyperfixhead}%
+        \else
+           \gdef\@begindvi{\foil@begindvi\HyPL@EveryPage}% 
+        \fi}}}{}%
 }
 %    \end{macrocode}
 % \begin{macro}{\@*penalty}

@@ -1,0 +1,590 @@
+\documentclass[28pt,landscape,a4paper,footrule]{foils}
+\usepackage{solido-network-slides}
+
+
+%Network and Internet is an integral part of our everyday lives, but how does one ensure that the network works perfectly. This lecture will review a hitlist of the many good network management tools that we use in Solido Networks to monitor the network.
+
+%Contents of the presentation will be based on a review of an ISP / network service providers with walk through of the many places where Open Source has a critical role. Much of these are old acquaintances as MRTG and RRDtool, but the purpose is to show how Open Source, or primarily open source, can be used in a commercial business to create value for us.
+
+%The many tools we tie together so that we in the company result in a virtual NOC (Network Operations Center) and support to customers with a flexibility that no single commercial system can give us. The purpose of this lecture is to clarify how to create and use open source, and it will show that open source within network management is essential and mission critical.
+
+%We also use the example application Observium - which is a very exciting new network management tool, the tool use discovery and therefore requires much less configuration than traditional tools, and has a lot of unique features, including BGP monitoring that very few other tools have.
+
+%Examples of other tools included are: console server (conserver), Weather Maps from MRTG data, Observium, Rancid, syslog, grep, Perl, PHP, NetFlow, and proprietary scripting.
+
+
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{Network Management \\using Mostly Open Source}
+
+
+\vskip 2cm
+\centerline{\footnotesize Slides are available as PDF}
+
+% default font size
+\large
+
+\slide{Goal}
+
+\begin{quote}
+\it Network and Internet is an integral part of our everyday lives, \\but how does one ensure that the network works perfectly.
+\end{quote}
+
+\vskip 2cm
+\begin{slidelist}
+\item Introduce essential tools for network management
+\item Prove that open source is critical for network management
+\item Present resources for others to follow
+\end{slidelist}
+
+\vskip 2cm
+
+\centerline{Expect you to be administrators of IP networks, in some way}
+
+
+\slide{Scenario}
+
+
+Presentation is based on the experience from an ISP viewpoint
+
+Walk through of the essential tools and skills you need to acquire
+
+
+\vskip 2cm
+\begin{list1}
+\item {\bf Contents}
+\item The problem: what is network management
+\item Components of a solution
+\item The solution embrace, extend and proliferate :-)
+\end{list1}
+
+
+\slide{The problem: what is network management}
+
+%\hlkimage{5cm}{}
+\hlkimage{20cm}{switch-1.pdf}
+
+
+\slide{Growing}
+
+\hlkimage{15cm}{router-redundancy-1.pdf}
+
+
+
+\slide{Solido Networks AS12617}
+
+\begin{slidelist}
+\item Core routers at Interxion in Ballerup
+\item Second major site in Luxembourg
+\item Internet connections multiple 10Gbit at each site
+\item New servers - every week, new switches - every month
+\item Support systems, APC ATS, APC PDU, routers, switches, jump hosts, monitoring, logging servers, support system, ...
+%\item About 10 employees - including developers!
+%\item Customers beginning to deploy in all regions of the world
+\end{slidelist}
+\vskip 1cm
+\centerline{\bf Scheduled down time or outages is not an option anymore}
+
+\slide{AS12617 - high level BGP}
+
+\hlkimage{15cm}{as12617-ipv4.png}
+
+\centerline{Source: \link{http://bgp.he.net/AS12617}}
+
+
+
+\slide{Step 1: configure devices properly}
+
+\begin{slidelist}
+\item You should always configure your devices properly
+\item Turn on SNMP, probably SNMPv2
+\item Turn on LLDP Link Layer Discovery Protocol, \\
+like CDP but vendor-neutral\\
+{\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
+\vskip 1 cm
+\item Syslog - you know this, nuff said
+\item And updated firmware, HTTPS and SSH only etc. the usual stuff
+\end{slidelist}
+
+
+\slide{Config example: SNMP}
+
+\begin{alltt}
+snmp \{
+    description "Solido Networks SRX-CPH-02";
+    location "Interxion, Ballerup, Denmark";
+    contact "noc@solido.net";
+    community yourcommunitynotmine \{
+        authorization read-only;
+        clients \{
+            10.1.1.1/32;
+            10.1.2.2/32;
+        \}
+    \}
+\}
+\end{alltt}
+
+\slide{Location, location, location}
+
+\hlkimage{26cm}{images/snmp-location.png}
+
+\centerline{Observium picks up the location from SNMP :-)}
+
+\slide{Config example: LLDP}
+%\hlkrightimage{8cm}{images/lldp-dell-8024f.png}
+
+Dell 8024F switch LLDP
+\hlkimage{10cm}{images/lldp-dell-8024f.png}
+
+
+\begin{alltt}\small
+interface ethernet 1/xg17
+mtu 9216
+lldp transmit-tlv port-desc sys-name sys-desc sys-cap
+lldp transmit-mgmt
+exit
+\end{alltt}
+
+\slide{LLDP spaghetti?}
+\hlkimage{\textwidth}{images/lldp-mess-censor.png}
+
+\centerline{LLDP is needed!}
+
+\slide{LLDP trick using tcpdump}
+
+\begin{alltt}\footnotesize
+[hlk@ljh ~]$ sudo tcpdump -i eth0 ether proto 0x88cc
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+.... wait for it ....
+11:03:55.395064 00:1c:23:80:49:ff (oui Unknown) > 01:80:c2:00:00:0e (oui Unknown),
+ethertype Unknown (0x88cc), length 60: 
+	0x0000:  0207 0400 1c23 8049 fd04 0705 312f 302f  .....#.I....{\bf{}1/0/}
+	0x0010:  3331 0602 0078 0000 0000 0000 0000 0000  {\bf 31}...x..........
+	0x0020:  0000 0000 0000 0000 0000 0000 0000       ..............
+
+1 packets captured
+3 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+\vskip 2 cm
+\centerline{I know {\bf for sure} that this server is in Unit 1 port 31!}
+
+\slide{Components of a solution}
+
+\begin{quote}
+\it The internet is a collaborative experiment, hippies connecting their routers and liberally exchanging information
+- sometime money is exchanged also :-)
+\end{quote}
+
+\vskip 2cm
+\begin{slidelist}
+\item Main points
+\item Configure your network equipment
+\item Monitor your network
+\item Control your network, react to events
+\item Troubleshoot your network
+\end{slidelist}
+
+
+\slide{Learn the basics}
+
+\begin{slidelist}
+\item Before running in production, and when troubleshooting
+\item Ping traceroute - you know these, but remember that Unix traceroute can do both ICMP and UDP
+\item Nping, Nmap, Mtr, TCP traceroute, hping, icmpush ...
+\item Download Backtrack Linux now, it is your network toolbox\\
+Huge number of goodies on Backtrack for network management!\\
+% jmeter, tcp traceroute, hping, scapy, icmpush, ... 300 security and network tools!
+\link{http://backtrack-linux.org/}
+\item Learn Unix - yes, Linux/Unix is needed when working with networks\\
+You need skills in sed/awk, cut, {\bf expect}, grep, sort, Perl/Python/Ruby at least one scripting language  
+\end{slidelist}
+
+\slide{Basic stuff - consoles}
+
+\begin{quote}
+\it Conserver is an application that allows multiple users to watch a serial console at the same time. It can log the data, allows users to take write-access of a console (one at a time), and has a variety of bells and whistles to accentuate that basic functionality. 
+\end{quote}
+
+\begin{slidelist}
+\item Watch the console!
+\item A network device rebooted - what happened?
+\item I accidently the whole network, what now?
+\item Serial consoles are not dead, and still very useful
+\item \link{http://www.conserver.com/}
+\end{slidelist}
+
+\slide{Hardware and software}
+
+\hlkimage{17cm}{images/soekris-siig-4S-3.jpg}
+
+\centerline{Soekris, 4-port serial card EUR59 / 430DKK + OpenBSD + conserver}
+
+\slide{Conserver is easy}
+\footnotesize
+\begin{verbatim}
+### set the defaults for all the consoles
+# these get applied before anything else
+default * {
+        # The '&' character is substituted with the console name
+        logfile /var/consoles/&;
+        # timestamps every hour with activity and break logging
+        timestamp 1hab;
+        # include the 'full' default
+        include full;
+        # master server is localhost
+        master localhost;
+}
+...
+console portS1 {
+        type device;
+        device /dev/cua02; parity none; baud 57600;
+        idlestring "#";
+        idletimeout 5m;         # send a '#' every 5 minutes of idle
+        timestamp "";           # no timestamps on this console
+}
+\end{verbatim}
+\normalsize
+
+\centerline{You will actually be able to say what happened at that device}
+
+\slide{Monitor your network}
+
+\begin{slidelist}
+\item MRTG The Multi Router Traffic Grapher - simple, great, fast\\
+\link{http://oss.oetiker.ch/mrtg/}
+\item Smokeping Network Latency measurements - network quality\\
+ \link{http://oss.oetiker.ch/smokeping/}
+\item NFsen Netflow monitoring - turn on at selected routers/switches
+\item Manual tools, my traceroute, Nping
+\end{slidelist}
+
+\slide{MRTG SNMP monitoring made easy}
+
+\hlkimage{17cm}{images/mrtg-small.png}
+
+\centerline{Run configmaker, indexmaker - almost done}
+
+\slide{Smokeping packet loss}
+
+\hlkimage{16cm}{images/smokeping-packet-loss1}
+
+\slide{Smokeping latency changed}
+
+\hlkimage{16cm}{images/smokeping-latency-change.png}
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data shares the links
+\item Accounting is important
+\item Detecting DoS/DDoS and error is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic 
+\item We use mostly NFSen, but are looking at various software packages
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+\slide{Netflow}
+
+\hlkimage{16cm}{images/nfsen-overview.png}
+
+
+
+\slide{Netflow Processing from the web interface}
+
+\hlkimage{16cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+\slide{My Traceroute}
+
+
+\begin{alltt}\footnotesize
+                                               My traceroute  [v0.74]
+pumba.kramse.dk (::)                                           Fri Mar  4 10:22:08 2011
+Keys:  Help   Display mode   Restart statistics   Order of fields   quit
+                                                    Packets               Pings
+ Host                                             Loss%   Snt   Last   Avg  Best  Wrst StDev
+ 1. 2001:16d8:dd0e:1::100                          0.0%     7    0.1   0.1   0.1   0.1   0.0
+ 2. gw-26.cph-01.dk.sixxs.net                      0.0%     6   13.7  13.7  13.6  13.9   0.1
+ 3. 3229-sixxs.cr0-r72.gbl-cph.dk.ip6.p80.net      0.0%     6   14.3  14.3  14.3  14.4   0.0
+ 4. te4-3-r72.cr0-r70.tc2-ams.nl.ip6.p80.net       0.0%     6   25.4  51.0  25.3 178.6  62.5
+ 5. 20gigabitethernet1-3.core1.ams1.ipv6.he.net    0.0%     6   25.8  26.5  25.7  29.9   1.7
+ 6. ge-0.ams-ix.amstnl02.nl.bb.gin.ntt.net         0.0%     6   26.3  32.0  26.3  60.2  13.8
+ 7. as-0.r25.tokyjp01.jp.bb.gin.ntt.net            0.0%     6  284.1 306.1 283.6 372.8  37.1
+ 8. po-2.a15.tokyjp01.jp.ra.gin.ntt.net            0.0%     6  298.4 298.3 298.1 298.5   0.2
+ 9. ge-8-2.a15.tokyjp01.jp.ra.gin.ntt.net          0.0%     6  301.2 301.2 300.9 301.7   0.3
+10. ve44.foundry6.otemachi.wide.ad.jp              0.0%     6  300.9 300.9 300.8 301.0   0.1
+11. ve42.foundry4.nezu.wide.ad.jp                  0.0%     6  301.0 301.0 300.9 301.3   0.2
+12. cloud-net1.wide.ad.jp                          0.0%     6  301.1 301.0 300.9 301.1   0.1
+13. 2001:200:dff:fff1:216:3eff:feb1:44d7           0.0%     6  301.3 301.2 301.0 301.3   0.1
+\end{alltt}
+
+\slide{Nping new kid on the block}
+
+\begin{alltt}\footnotesize
+hlk@pumba:nmap-5.51$ nping www.solidonetworks.com
+
+Starting Nping 0.5.51 ( http://nmap.org/nping ) at 2011-03-04 10:18 CET
+SENT (0.0059s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (0.0067s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (1.0093s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (1.0105s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (2.0193s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (2.0201s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (3.0293s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (3.0302s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (4.0393s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (4.0402s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+ 
+Max rtt: 1.193ms | Min rtt: 0.781ms | Avg rtt: 0.932ms
+TCP connection attempts: 5 | Successful connections: 5 | Failed: 0 (0.00%)
+Tx time: 4.03457s | Tx bytes/s: 99.14 | Tx pkts/s: 1.24
+Rx time: 4.03550s | Rx bytes/s: 49.56 | Rx pkts/s: 1.24
+Nping done: 1 IP address pinged in 4.04 seconds
+\end{alltt}
+
+\slide{Nping is sexy too}
+
+\begin{alltt}\footnotesize
+hlk@pumba:nmap-5.51$ nping -6  www.solidonetworks.com 
+
+Starting Nping 0.5.51 ( http://nmap.org/nping ) at 2011-03-04 10:18 CET
+SENT (0.0061s) Starting TCP Handshake > 2a02:9d0:10::9:80
+RECV (0.0224s) Handshake with 2a02:9d0:10::9:80 completed
+SENT (1.0213s) Starting TCP Handshake > 2a02:9d0:10::9:80
+RECV (1.0376s) Handshake with 2a02:9d0:10::9:80 completed
+SENT (2.0313s) Starting TCP Handshake > 2a02:9d0:10::9:80
+RECV (2.0476s) Handshake with 2a02:9d0:10::9:80 completed
+SENT (3.0413s) Starting TCP Handshake > 2a02:9d0:10::9:80
+RECV (3.0576s) Handshake with 2a02:9d0:10::9:80 completed
+SENT (4.0513s) Starting TCP Handshake > 2a02:9d0:10::9:80
+RECV (4.0678s) Handshake with 2a02:9d0:10::9:80 completed
+ 
+Max rtt: 16.402ms | Min rtt: 16.249ms | Avg rtt: 16.318ms
+TCP connection attempts: 5 | Successful connections: 5 | Failed: 0 (0.00%)
+Tx time: 4.04653s | Tx bytes/s: 98.85 | Tx pkts/s: 1.24
+Rx time: 4.06292s | Rx bytes/s: 49.23 | Rx pkts/s: 1.23
+Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+Are you running IPv6?\\
+Please do not buy devices or connections without asking for IPv6!
+\slide{Control your network}
+
+\begin{slidelist}
+\item RANCID - Really Awesome New Cisco confIg Differ\\
++ Juniper, Dell, ... \link{http://www.shrubbery.net/rancid/}
+\item Expect, script etc. great for installing devices with common settings\\
+\link{http://expect.sourceforge.net/} the expect home page
+\item Self discovering: Observium, new and not perfect, but very useful
+\end{slidelist}
+
+
+\slide{RANCID}
+
+\begin{alltt}\footnotesize
+[rancid@ljh routers]$ cat router.db 
+mx-lux-01:juniper:up
+mx-lux-02:juniper:up
+...
+[rancid@ljh routers]$ crontab -l
+# run config differ hourly
+07 0-23/2 * * * /usr/local/rancid/bin/rancid-run
+# clean out config differ logs
+50 23 * * * /usr/bin/find /usr/local/rancid/var/logs -type f -mtime +2 -exec rm \{\} 
+\end{alltt}
+
+\slide{RANCID hints}
+
+\hlkimage{20cm}{images/rancid-websvn.png}
+
+\begin{slidelist}
+\item Hints:
+\item Use rancid user on server and devices, preferably read-only
+\item Use SSH keys to avoid clear text passwords in \verb+~rancid/.cloginrc+
+\item Expose the Subversion to others in the organization using websvn
+\end{slidelist}
+
+
+\slide{Expect}
+
+\begin{quote}
+\it Me: Why does it take that long to change this setting?\\
+Them: Because we log into each router manually
+\end{quote}
+
+\vskip 1cm
+\begin{slidelist}
+\item RANCID uses Expect, for example in the clogin script
+\item Using the clogin script it is possible to perform a command on - say
+60 routers in less than 10 minutes ...
+\item Sure, you should watch over the process, but typing your loooong and complex network password 60 times?!
+\end{slidelist}
+\centerline{\bf Are you fucking mental?!}
+
+\slide{Expect example}
+
+\footnotesize
+\begin{verbatim}
+    expect {
+        -re "(Connection refused|Secure connection \[^\n\r]+ refused)" {
+            catch {close}; catch {wait};
+            if !$progs {
+                send_user "\nError: Connection Refused ($prog): $router\n"
+                return 1
+            }
+        }
+        -re "(Connection closed by|Connection to \[^\n\r]+ closed)" {
+            catch {close}; catch {wait};
+            if !$progs {
+                send_user "\nError: Connection closed ($prog): $router\n"
+                return 1
+            }
+        }
+        -re "(Host key not found |The authenticity of host .* be established).*\(yes\/no\)\?" {
+            send "yes\r"
+            send_user "\nHost $router added to the list of known hosts.\n"
+            exp_continue
+        }
+\end{verbatim}
+\normalsize
+
+
+\slide{Observium}
+
+\begin{quote}
+\it Observium is an autodiscovering PHP/MySQL based network monitoring system focused primarily on Cisco and Linux networks but includes support for a wide range of network hardware and operating systems.
+\end{quote}
+
+\begin{slidelist}
+\item Tested it at The Camp summer 2010 not ready
+\item Tested it again Fall 2010, not finished, but useful enough
+\item \link{http://observium.org/}
+\item Easy up and running\\
+\link{http://www.observium.org/wiki/CentOS_SVN_Installation}
+\end{slidelist}
+
+\slide{Why makes Observium great?}
+
+\hlkimage{12cm}{observium-logo.png}
+
+\begin{alltt}
+[root@wiseguy observium]# ./addhost.php 
+Add Host Tool
+Usage: ./addhost.php <hostname> [community] [v1|v2c] [port]
+\end{alltt}
+
+\begin{slidelist}
+\item Configure your devices in a consistent way
+\item Add host and discover the rest using Observium - done
+\item Surf your network data, including BGP sessions
+\end{slidelist}
+
+\slide{Observium example router overview}
+
+\hlkimage{24cm}{srx-cph-02-ipv6.png}
+
+\centerline{More useful information than default vendor interface! (flash)}
+
+
+\slide{Sort customers and transit}
+
+\begin{alltt}	
+--- JUNOS 9.6R2.11 built 2009-10-06 20:09:34 UTC
+hlk@ ...> show configuration interfaces 
+...
+xe-2/0/0 \{
+    description "Transit: Netgroup (AS16245)";
+...
+ge-4/0/0 \{
+    description "Cust: xxx (200Mbit contract)";
+
+Another router:
+ge-1/0/1 \{
+    unit 0 \{
+        description "Peering: LU-CIX Exchange";
+
+\end{alltt}
+
+
+\slide{Overview ports}
+
+\hlkimage{20cm}{images/observium-ports.png}
+
+\slide{Overview peering ports}
+
+\hlkimage{19cm}{images/observium-peering-ports.png}
+
+\centerline{(does not show all peerings we have)}
+
+\slide{Overview ports}
+
+\hlkimage{\textwidth}{images/observium-drill-down.png}
+
+\centerline{Drill down and hyperlinks everywhere}
+
+
+
+\slide{Combine tools}
+
+\hlkimage{10cm}{images/mrtg-weathermap.png}
+
+\begin{slidelist}
+\item Reuse data - google: mrtg weathermap will show multiple tools\\
+We use: \link{http://netmon.grnet.gr/weathermap/}
+\item Many tools use RRDtool - recreate specific graphs
+\item Gather links and create overview pages with important 
+\end{slidelist}
+
+\centerline{A virtual NOC with Open Source IMHO better than any commercial tool}
+
+
+
+\slide{Embrace, extend and proliferate}
+
+\begin{slidelist}
+\item We have shown a number of high quality tools
+\item Use them and keep the flame burning
+\item Open Source is critical and we need more network skills
+\end{slidelist}
+
+
+\slide{Checklist}
+
+\begin{slidelist}
+\item Get tools, start downloading BT4 now
+\item Learn Unix
+\item Configure devices, Hint: expect and/or RANCID clogin
+\end{slidelist}
+
+\slide{Web sites}
+
+
+\begin{slidelist}
+\item Dont forget about the nice websites that work to your advantage:
+\item \link{http://www.ripe.net} Routing Information Service and Whois
+\item \link{http://www.traceroute.org} traceroutes to your network
+\end{slidelist}
+
+\slide{}
+
+Rancid, syslog, grep, Perl, PHP, NetFlow, and proprietary scripting.
+
+
+
+\slide{Disclaimer: commercial tools}
+
+
+\myquestionspage
+\vskip 5mm
+\centerline{\color{titlecolor}\Large \bf Networks tools are here already - use them}
+
+
+\hlkprofiluk
+
+\end{document}

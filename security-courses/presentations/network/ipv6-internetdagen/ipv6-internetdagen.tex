@@ -1,0 +1,536 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{solido-network-slides}
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{IPv6 is here your fridge is on the network}
+
+
+\vskip 2cm
+\centerline{\footnotesize Slides are available as PDF}
+
+\slide{Goal}
+\hlkimage{5cm}{kame-noanime-small.png}
+
+\begin{list1}
+\item Introduce IPv6 
+\item IPv6 addressing 
+\item IPv4 vs IPv6 - Differences and similarities
+\item The future is here
+\item Denmark is falling behind on IPv6 
+\item Ressources
+\end{list1}
+
+\centerline{Expect you to be administrators of IP networks}
+
+\slide{Internet idag}
+
+\hlkimage{14cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers
+\item Rooted in academic networks
+\item Protocols which are more than 20 years old
+\item Very little encryption and security built into the network
+\end{list1}
+
+\slide{Internetworking: history}
+
+\begin{list2}  
+\item[1960s]  L. Kleinrock, MIT packet-switching theory,
+ J. C. R. Licklider,MIT - notes , \\
+Paul Baran: On Distributed Communications
+\item[1969]  ARPANET 4 nodes
+\item[1971]  14 nodes
+\item[1973]  Design of Internet Protocols started
+\item[1973]  Email is about 75\% of all ARPANET traffic
+\item[1974]  TCP/IP: Cerf/Kahn: A protocol for Packet
+        Network Interconnection
+\item[1983]  EUUG $\rightarrow$ DKUUG/DIKU forbindelse
+\item[1988]  About 60.000 systems on the internet - 
+        The Morris Worm hits about 10\%
+\item[2002]  Ialt ca. 130 millioner på Internet
+\item[2010] 1,966,514,816 users \link{http://www.internetworldstats.com/stats.htm}
+\item[2010] {\bfseries IANA reserved blocks 8\% (March 2010) - \link{http://www.potaroo.net/tools/ipv4/}}
+\end{list2}
+
+\slide{Why IPv6}
+
+\hlkimage{18cm}{ipv4-report-march.png}
+
+\centerline{March 2010}
+\centerline{\link{http://www.potaroo.net/tools/ipv4/}}
+
+\slide{Why IPv6}
+
+\hlkimage{18cm}{ipv4-report-sept.png}
+
+\begin{center}
+Updated September 2010\\
+\link{http://www.potaroo.net/tools/ipv4/}
+
+No more talk, we need IPv6, get to work - end of discussion
+\end{center}
+	
+\slide{OSI \& Internet Protocols}
+
+\hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
+
+\slide{IPv6: Internet redesigned? - no!}
+ 
+\begin{list1}
+\item Preserve the good stuff
+\item back to basics, internet as it used to be!
+\item fate sharing - connection rely on end points, not intermediary NAT boxes
+\item end-to-end transparency - you have an address and I have an address
+\item Wants: bandwidth +10G, low latency/predictable latency, Quality of Service, Security
+\end{list1}
+
+\vskip 5mm
+\centerline{\color{titlecolor}\LARGE \bf IPv6 is evolution, not revolution}
+\vskip 5mm
+
+Note: IPv6 was not designed to solve all problems, so don't expect it to!
+
+
+
+
+\slide{How to use IPv6}
+
+\begin{center}
+\vskip 3 cm
+\hlkbig
+www.solidonetworks.com
+
+hlk@solidonetworks.com
+\end{center}
+
+\slide{Really how to use IPv6?}
+
+\begin{list1}
+\item Get IPv6 address and routing
+\item Add AAAA (quad A) records to your DNS
+\item Done
+\end{list1}
+
+\begin{alltt}
+\LARGE
+www     IN	A       91.102.95.20
+        IN	AAAA    2a02:9d0:10::9
+\end{alltt}
+
+\slide{IPv4 header - RFC-791 September 1981}
+
+\begin{alltt}
+\footnotesize
+      0                   1                   2                   3   
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |Version|  IHL  |Type of Service|          Total Length         |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         Identification        |Flags|      Fragment Offset    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |  Time to Live |    Protocol   |         Header Checksum       |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                       Source Address                          |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                    Destination Address                        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                    Options                    |    Padding    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                     Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{IPv6 header - RFC-2460 December 1998}
+
+\begin{alltt}
+\footnotesize
+      0                   1                   2                   3   
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |Version| Traffic Class |           Flow Label                  |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         Payload Length        |  Next Header  |   Hop Limit   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                                                               |
+     +                                                               +
+     |                                                               |
+     +                         Source Address                        +
+     |                                                               |
+     +                                                               +
+     |                                                               |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                                                               |
+     +                                                               +
+     |                                                               |
+     +                      Destination Address                      +
+     |                                                               |
+     +                                                               +
+     |                                                               |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{IPv6 - extension headers RFC-2460}
+
+\begin{list2}
+\item Hop-by-Hop Options
+\item Routing (Type 0)
+\item Fragment - fragmentation only at end-points!
+\item Destination Options
+\item Authentication
+\item Encapsulating Security Payload
+\end{list2}
+
+
+\slide{IPv6 addressing RFC-4291}
+
+\begin{list1}
+\item Addresses are always 128-bit identifiers for interfaces and sets of
+   interfaces 
+\item Unicast:   An identifier for a {\bf single interface}.\\
+A packet sent to a
+               unicast address is delivered to the interface identified
+               by that address.
+\item Anycast:   An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes).\\  A packet sent to an
+               anycast address is {\bf delivered to one} of the interfaces
+               identified by that address (the "nearest" one, according
+               to the routing protocols' measure of distance).
+
+\item Multicast: An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes). \\ A packet sent to a
+               multicast address is {\bf delivered to all interfaces
+               identified by that address}.
+\end{list1}
+
+\slide{IPv6 addressing RFC-4291, cont.}
+
+\hlkimage{22cm}{ipv6-address-1.pdf}
+
+\begin{list1}
+\item 8 times 4 hex-digits seperated by colon x:x:x:x:x:x:x:x
+\item Written as ipv6-address/prefix-length CIDR notation
+\item Leading zeros can be removed
+\item One or more groups of 16 bits of zeros can be replaced by ::
+\end{list1}
+
+Note: \link{http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing}
+
+\slide{Examples:}
+\begin{list2}
+\item ABCD:EF01:2345:6789:ABCD:EF01:2345:6789
+
+\item Adddress 2001:DB8:0:0:8:800:200C:417A
+\item Address of loopback ::1
+\item IPv6 prefix 2a02:09d0:95::1/64, subnet 2a02:09d0:0095:0000::/64
+\item Address 2a02:09d0:95::1 or 2a02:09d0:0095:0000:0000:0000:0000:0001
+\vskip 1 cm
+\item Hint: use programming libraries to parse them :-) 
+\end{list2}
+
+\slide{Danish sites}
+\begin{list1}
+\item Name servers for .dk\\
+p.nic.dk has IPv6 address 2001:500:14:6036:ad::1\\
+s.nic.dk has IPv6 address 2a01:3f0:0:303::53\\
+b.nic.dk has IPv6 address 2a01:630:0:80::53
+\item ns1.gratisdns.dk has IPv6 address 2a02:9d0:3002:1::2
+\item ns1.censurfridns.dk has IPv6 address 2002:d596:2a92:1:71:53::
+\item www.solidonetworks.com has IPv6 address 2a02:9d0:10::9
+\end{list1}
+
+
+\slide{IPv6 in practice ipconfig/ifconfig and ping}
+
+\begin{alltt}\small
+$ ifconfig en0
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	inet6 {\bf fe80::216:cbff:feac:1d9f%en0} prefixlen 64 scopeid 0x4 
+	inet 10.0.42.15 netmask 0xffffff00 broadcast 10.0.42.255
+	inet6 {\bf 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f} prefixlen 64 autoconf 
+	ether 00:16:cb:ac:1d:9f 
+	media: autoselect (1000baseT <full-duplex>) status: active
+
+$ ping6 ::1
+PING6(56=40+8+8 bytes) ::1 --> ::1
+16 bytes from ::1, icmp_seq=0 hlim=64 time=0.089 ms
+16 bytes from ::1, icmp_seq=1 hlim=64 time=0.155 ms
+
+$ traceroute6 2001:16d8:dd0f:cf0f::1
+traceroute6 to 2001:16d8:dd0f:cf0f::1 (2001:16d8:dd0f:cf0f::1) 
+from 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f, 64 hops max, 12 byte packets
+ 1  2001:16d8:dd0f:cf0f::1  0.399 ms  0.371 ms  0.294 ms
+\end{alltt}
+	
+
+
+\slide{IPv6 autoconfiguration}
+
+\hlkimage{24cm}{modified-eui64.pdf}
+
+\begin{list1}
+\item DHCPv6 is available, but {\bfseries stateless autoconfiguration} is king
+\item Routers announce subnet prefix via {\bfseries router advertisements}
+\item Individual nodes then combine this with their EUI64 identifier
+\end{list1}
+
+%\link{http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_7-2/ipv6_autoconfig.html}
+
+\slide{Router advertisement daemon}
+
+\hlkimage{14cm}{ipv6-router-advertisement.png}
+
+
+
+\slide{Getting connected}
+
+\begin{list1}
+\item Native IPv6 - available at some places in DK\\
+Ask your provider - prepare to switch provider if no plan
+\item Automatic tunnels 6to4, Teredo etc.
+\begin{list2}
+\item 6to4 benytter IPv4 infrastrukturen
+\item Teredo sender IPv6 gennem IPv4/UDP pakker
+\end{list2}
+\item Configured tunnels and tunnelbrokers
+\begin{list2}
+\item \link{http://sixxs.net} IPv6 Deployment \& Tunnel Broker
+\item \link{http://he.net} hurricane electric internet services
+\end{list2}
+
+\end{list1}
+
+\vskip 2cm
+\centerline{Notice: you probably already have IPv6 traffic in your network!}
+
+\slide{Allocating IPv6 addresses} 
+
+\begin{list1}
+\item You have plenty!
+\item Providers will typically get /32
+\item Providers will typically give you /48 or /56
+\item Your /48 can be used for:
+\begin{list2}
+\item 65536 subnets
+\item Each subnet has $2^{64}$ addresses
+\end{list2}
+\end{list1}
+
+\slide{The future is here}
+
+What can we use IPv6 for?
+
+\hlkimage{17cm}{df20030604.jpg}
+
+\centerline{\small Source: Dr Fun 2003/06/04
+The brave new world of IPv6 }
+
+%\link{http://www.ibiblio.org/Dave/Dr-Fun/df200306/df20030604.jpg}}
+
+
+\slide{Think!} 
+
+You have a gazillion IPs what now?
+
+\vskip 3 cm
+\centerline{\Large Be creative. No limits!}
+
+\pause
+About 4 billion mobiles and 1 billion PCs\\ source Vincent Cert \link{http://www.youtube.com/watch?v=t9M0RPNr9qg}
+
+\slide{Home automation} 
+
+\begin{list1}
+\item Putting your fridge on the internet, need more milk!
+\item Report back to manufacturer, each different part has address, easier
+\item Ping light2324.kitchen - still working?
+\end{list1}
+
+\slide{Internet sharing and always on}
+
+\begin{list1}
+\item Internet tethering to your friends, at home, at the bus, train\\
+Each will get their own address - enables direct two-way communication
+\item Mobile IPv6 - better than IPv4 and will be useful
+\end{list1}
+
+
+\slide{Sensors}
+
+
+\begin{list1}
+\item Sensors\\
+Does your lawn need water and where?\\
+Throw a bucket of sensor and let them figure it out
+\item Pressure sensors\\
+Measure the load on ships, containers, people, real life traffic 
+\item Tracking devices\\
+Busses, taxis, deliveries
+\item Snow on a mountain\\
+Spread sensors across a mountain and mesh network them, no problem
+\item Ad-Hoc networks\\
+6LoWPAN IPv6 over Low power Wireless Personal Area Networks
+\item Intelligent Clothing - Wearable Electronics, Smart Clothes
+\end{list1}
+
+\slide{Sample idea, Biodevices Vital Jacket}
+
+\hlkimage{12cm}{biodevices-vital-jacket.jpg}
+
+\begin{quote}
+	Biodevices brings us the Vital Jacket. This garment is used to monitor ECG waves and Heart rate levels. This can be used for sports, fitness, and medical purposes.
+\end{quote}
+
+\link{http://www.crunchwear.com/biodevices-vital-jacket/}
+
+
+\slide{Smart IPv6 building}
+
+Building automation
+\begin{list2}
+\item To reduce energy consumption by at least 25\%.
+\item To ease the deployment and integration of building automation systems.
+\item To manage access control and to improve security.
+\item To provide innovative tools for meeting and conference rooms.
+\item To develop innovative interfaces within the building (virtual assistant, etc.).
+\item To enable individual environment customization by the users (temperature, light, music, etc.).
+\item and more
+\end{list2}
+
+\link{http://www.smartipv6building.org/}
+
+\slide{New applications}
+
+\begin{list1}
+\item Who would have guessed the applications?
+\item World Wide Web 
+\item World Wide chatting - MSN, IRC, Jabber etc.
+\item Distribution of software - peer to peer
+\item Facebook
+\item Twittter
+\item Foursquare
+\item Whats next?
+\item Smart internet devices + GPS + video + users = fun and business!
+\item Sometimes named the Internet of Things
+\end{list1}
+
+\slide{IPv6 business case}
+
+
+\begin{list2}
+\item An almost unlimited scalability with a very large IPv6 address space ($2^128$ addresses), enabling IP addresses to each and every device.
+
+\item Address self-configuration mechanisms, easing the deployment.
+
+\item Improved security and authentication features, such as mandatory IPSec capacities and the possibility to use of the address space to include encryption keys.
+
+\item Peer-to-peer connectivity, solving the NAT barrier with specific and permanent IP addresses for any device and/or user of the Internet.
+
+\item Mobility features, enabling a seamless connexion when moving from one access point to another access point on the Internet.
+
+\item Multi cast and any cast functionalities.
+
+\item IPv6 will provide an easier remote interaction with each and every device with a {\bfseries direct integration to the Internet.} In other words, IPv6 will make possible to move from a network of servers, to a network of things.
+
+\end{list2}
+
+\centerline{ Business case for IPv6 is {\bf continuity}}
+
+
+{\footnotesize Partial quote from http://www.smartipv6building.org/index.php/en/ipv6-potential}
+
+
+
+
+\slide{IPv6 ripeness}
+
+\hlkimage{28cm}{userfiles-v6-ripeness.png}
+
+\centerline{IPv6 ripeness from \link{http://labs.ripe.net/}}
+
+\slide{Curent status Denmark}
+
+\begin{list1}
+\item Too little interest - less than 100 people thinking about IPv6?
+\item Some providers have some IPv6 connectivity
+\item NO ISPs have IPv6 to consumers
+\item NO ISPs market IPv6 as a product, except me perhaps :-)
+\item Perceived NO NEEED
+\vskip 2 cm
+\pause
+\item Free, a major French ISP rolled-out IPv6 at end of year 2007
+\item XS4All As of August 2010 native IPv6 DSL connections became available to almost all their customers.
+\end{list1}
+
+Source: \link{http://en.wikipedia.org/wiki/IPv6_deployment}
+
+
+\slide{Danish resources - get involved}
+
+\hlkimage{10cm}{taskforce-logo.jpg}
+
+\begin{center}
+Danish IPv6 task force - unofficial\\
+\link{http://www.ipv6tf.dk}
+\end{center}
+
+\slide{Conclusion}
+
+\begin{center}
+\vskip 5mm
+{\color{titlecolor}\LARGE \bf IPv6 is here already - use it}
+\vskip 5mm
+
+
+\link{http://www.ipv6actnow.org/}
+
+\link{http://digitaliser.dk/group/374895}
+
+\link{http://www.ipv6tf.dk}
+\end{center}
+\vskip 1cm 
+
+\myquestionspage
+
+\slide{VikingScan.org - free portscanning}
+
+\hlkimage{18cm}{vikingscan.png}
+%\vskip 1cm 
+%\centerline{\link{http://www.vikingscan.org}}
+
+\slide{Referencer: netværksbøger}
+
+\begin{list2}
+\item Stevens, Comer, 
+\item Network Warrior
+\item TCP/IP bogen på dansk
+\item KAME bøgerne
+\item O'Reilly generelt IPv6 Essentials og IPv6 Network Administration  
+\item O'Reilly cookbooks: Cisco, BIND og Apache HTTPD
+\item Cisco Press og website
+\item Firewall bøger, Radia Perlman: IPsec, 
+\end{list2}
+
+\slide{Bøger om IPv6}
+
+\begin{list1}
+\item \emph{IPv6 Network Administration}
+af David Malone og Niall Richard Murphy
+ - god til real-life admins, typisk
+O'Reilly bog
+\item \emph{IPv6 Essentials} af Silvia Hagen, O'Reilly 2nd edition (May 17, 2006)
+	god reference om emnet
+\item \emph{IPv6 Core Protocols Implementation}
+af Qing Li, Tatuya Jinmei og Keiichi Shima
+\item \emph{IPv6 Advanced Protocols Implementation}
+af Qing Li, Jinmei Tatuya og Keiichi Shima
+\item - flere andre
+\end{list1}
+
+\hlkprofiluk
+
+\end{document}

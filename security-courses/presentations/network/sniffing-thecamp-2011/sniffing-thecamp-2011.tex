@@ -1,5 +1,6 @@
 \documentclass[20pt,landscape,a4paper,footrule]{foils}
-\usepackage{solido-network-slides}
+%\usepackage{solido-network-slides}
+\usepackage{thecamp-slides}
 
 
 % Beskrivelse: Det kunne f.eks. handle om hvordan man undgår at afsløre sine brugernavne og adgangskoder når man sidder på et offentligt netværk, og evt. andre ting man skal være opmærksom på som internet-bruger. Herunder en demonstration af hvor nemt det er at sniffe på netværket.
@@ -15,35 +16,25 @@
 
 \begin{document}
 \selectlanguage{english}
-\mytitlepage{Sikkerhed - sniffning på netværket}
+\mytitlepage{Sikkerhed - snifning på netværket}
 
 
-\vskip 2cm
-\centerline{\footnotesize Slides are available as PDF}
 
-\slide{Goal}
-%\hlkimage{6cm}{kame-noanime-small.png}
+
+\slide{Plan for foredraget}
 
 \begin{list1}
-\item Hvorfor? Sidste år :-)
-\item Sniffe - demoer hvordan man henter post med POP3 og en FTP server, update af webhotel scenarier
-
-\item BackTrack 5 bruger vi til at sniffe, vi bruger Wireshark til primære demo, nævner Ettercap osv.
-
-
-\item Demo: løsninger,
-POP3S, SSL/TLS, SMTP over TLS osv. 
-
-\item Mere avanceret: 
-OpenSSH tunnel, SSL VPN - generelt, eksempel med OpenVPN, FileZilla - understøtter vist SFTP/SCP
-
-\item sniffe igen
-
+\item Hvorfor? Sidste år :-) - idag er det kun teknikken 
+\item BackTrack 5 Wireshark til primære demo
+\item Sniffe - demoer POP3, FTP, m.v.
+%hvordan man henter post med POP3 og en FTP server, update af webhotel scenarier - vi bruger thecamp netværket
+\item Løsninger og demoer: POP3S, SSL/TLS, IMAPS, SMTP over TLS osv. 
+\item Mere avanceret: OpenSSH tunnel med Open Source
+\item VPN og SSL VPN - generelt, eksempel med OpenVPN, 
+\item FileZilla 
 \item Advanced sniffing:
-\item Tcpdump wizardry Tyklol
-
-\item HLK: netflow opsamling
-
+\item Tcpdump wizardry 
+\item Kismet demo
 \end{list1}
 
 %\centerline{Participate and demonstrate IPv6 working - make the turtle dance!}
@@ -59,9 +50,583 @@ OpenSSH tunnel, SSL VPN - generelt, eksempel med OpenVPN, FileZilla - understøtt
 \end{list1}
 
 
+\slide{Hvorfor? Sidste års problemer :-)}
+
+\hlkimage{16cm}{wall-of-sheep-defcon.jpg}
+
+\begin{center}
+Defcon Wall of Sheep\\
+Husk nu at vi er venner her! - idag er det kun teknikken
+\end{center}
+
+
+
+\slide{FTP}
+\begin{list1}
+\item File Transfer Protocol - filoverførsler
+\item Trivial File Transfer Protocol - uautentificerede filoverførsler
+\item De bruges især til:
+  \begin{list2}
+    \item FTP - drivere, dokumenter, rettelser - Windows Update? er
+    enten HTTP eller FTP
+\item TFTP bruges til boot af netværksklienter uden egen harddisk
+  \end{list2}
+\item FTP sender i klartekst\\ 
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord} 
+\end{list1}
+
+\slide{POP3 - e-mail i Danmark}
+
+\vskip 1 cm
+
+\begin{list1}
+  \item POP3 sender brugernavn og kodeord i klartekst - ligesom FTP
+\item bruges dagligt af næsten alle privatkunder
+\item  alle internetudbydere og postudbydere tilbyder POP3
+\item der findes en variant, POP3 over SSL/TLS
+\end{list1}
+
+
+\slide{BackTrack 5 og sniffer programmer}
+
+\hlkimage{10cm}{bt5-revolution-blogpost-BTL.png}
+
+\begin{list1}
+\item Wireshark - \link{http://www.wireshark.org} avanceret netværkssniffer\\
+bruger vi til at sniffe, vi bruger Wireshark til primære demo, nævner Ettercap osv.
+\item BackTrack \link{http://www.backtrack-linux.org/}
+\end{list1}
+
+
+
+\slide{alle: Sniffe - demoer}
+
+\begin{list1}
+\item Vi starter en sniffer
+\item hvordan man henter post med POP3 og en FTP server
+\item update af webhotel scenarier - vi bruger thecamp netværket
+\end{list1}
+
+
+\slide{dsniff}
+
+\begin{list1}
+\item en sniffer til mange usikre protokoller
+\item inkluderer {\bfseries arpspoof}  
+\item Lavet af Dug Song, dugsong@monkey.org
+\end{list1}
+
+\begin{alltt}
+dsniff  is  a  password sniffer which handles FTP, Telnet,
+SMTP, HTTP, POP, poppass, NNTP, IMAP, SNMP, LDAP,  Rlogin,
+RIP,  OSPF,  PPTP  MS-CHAP, NFS, VRRP, YP/NIS, SOCKS, X11,
+CVS, IRC, AIM, ICQ, Napster,  PostgreSQL,  Meeting  Maker,
+Citrix  ICA,  Symantec  pcAnywhere, NAI Sniffer, Microsoft
+SMB, Oracle SQL*Net, Sybase and Microsoft SQL protocols.
+\end{alltt}
+
+\slide{dsniff forudsætninger}
+
+\begin{list1}
+\item Der er visse forudsætninger der skal være opfyldt
+  \begin{list2}
+\item Man skal have trafikken
+\item Det kan gøres gennem arp spoofing eller ved at hacke ind i et
+  system/router på netværksvejen
+\end{list2}
+\end{list1}
+
+\begin{center}
+  \colorbox{white}{\includegraphics[width=12cm]{images/arp-spoof.pdf}}  
+\end{center}
+
+\slide{Kommenteret dsniff}
+
+\hlkimage{22cm}{images/dsniff-comments.pdf}
+
+
+
+\slide{TCPDUMP - protokolanalyse pakkesniffer}
+
+\hlkimage{14cm}{images/tcpdump-manual.pdf}
+
+
+\centerline{\link{http://www.tcpdump.org}
+- både til Windows og UNIX}
+\slide{tcpdump - normal brug}
+
+\begin{list2}
+  \item tekstmode
+\item kan gemme netværkspakker i filer
+\item kan læse netværkspakker fra filer
+\item er de-facto standarden for at gemme netværksdata i filer
+\end{list2}
+
+\begin{alltt}
+\tiny [root@otto hlk]# tcpdump -i en0
+tcpdump: listening on en0
+13:29:39.947037 fe80::210:a7ff:fe0b:8a5c > ff02::1: icmp6: router advertisement
+13:29:40.442920 10.0.0.200.49165 > dns1.cybercity.dk.domain:  1189+[|domain]
+13:29:40.487150 dns1.cybercity.dk.domain > 10.0.0.200.49165:  1189 NXDomain*[|domain]
+13:29:40.514494 10.0.0.200.49165 > dns1.cybercity.dk.domain:  24765+[|domain]
+13:29:40.563788 dns1.cybercity.dk.domain > 10.0.0.200.49165:  24765 NXDomain*[|domain]
+13:29:40.602892 10.0.0.200.49165 > dns1.cybercity.dk.domain:  36485+[|domain]
+13:29:40.648288 dns1.cybercity.dk.domain > 10.0.0.200.49165:  36485 NXDomain*[|domain]
+13:29:40.650596 10.0.0.200.49165 > dns1.cybercity.dk.domain:  4101+[|domain]
+13:29:40.694868 dns1.cybercity.dk.domain > 10.0.0.200.49165:  4101 NXDomain*[|domain]
+13:29:40.805160 10.0.0.200 > mail: icmp: echo request
+13:29:40.805670 mail > 10.0.0.200: icmp: echo reply
+...
+\end{alltt}
+
+\slide{TCPDUMP syntaks - udtryk}
+ 
+\begin{list1}
+\item filtre til husbehov
+\begin{list2}
+\item type - host, net og port
+\item src pakker med afsender IP eller afsender port
+\item dst pakker med modtager IP eller modtager port
+\item host - afsender eller modtager 
+\item proto - protokol: ether, fddi, tr, ip, ip6, arp,  rarp,  decnet,
+tcp og udp
+\end{list2}
+\item IP adresser kan angives som dotted-decimal eller navne
+\item porte kan angives med numre eller navne
+\item komplekse udtryk opbygges med logisk and,  or,  not
+\end{list1}
+
+\slide{tcpdump udtryk eksempler}
+
+\begin{list1}
+  \item Host 10.1.2.3\\
+Alle pakker hvor afsender eller modtager er 10.1.2.3
+\item host 10.2.3.4 and not host 10.3.4.5\\
+Alle pakker til/fra 10.2.3.4 undtagen dem til/fra 10.3.4.5\\
+- meget praktisk hvis man er logget ind p<E5> 10.2.3.4 via netv<E6>rk fra 10.3.4.5
+\item host foo and not port ftp  and not  port  ftp-data\\
+trafik til/fra maskine \emph{foo} undtagen hvis det er FTP trafik
+\end{list1}
+
+
+
+\slide{Wireshark - grafisk pakkesniffer}
+
+\hlkimage{20cm}{images/wireshark-website.png} 
+
+\centerline{\link{http://www.wireshark.org}}
+\centerline{både til Windows og UNIX, tidligere kendt som Ethereal}
+
+\slide{Programhygiejne!}
+
+\begin{list1}
+  \item {\color{red}Download, installer - kør!} - farligt!
+\item Sådan gøres det:
+  \begin{list2}
+    \item download program OG signaturfil/MD5
+\item verificer signatur eller MD5
+\item installer
+\item brug programmet
+\item hold programmet opdateret!\\
+Se eksempelvis teksten på hjemmesiden:\\
+\emph{Wireshark 0.99.2 has been released. Several security-related vulnerabilities have been fixed and several new features have been added.}
+  \end{list2}
+\item NB: ikke alle programmer har signaturer :(
+\item MD5 er en envejs hash algoritme - mere om det senere
+\end{list1}
+
+
+\slide{Brug af Wireshark}
+
+\hlkimage{13cm}{images/ethereal-capture-options.png}
+
+\centerline{Man starter med Capture - Options}
+
+\slide{Brug af Wireshark}
+
+\hlkimage{24cm}{images/ethereal-main-window.png}
+
+\centerline{Læg mærke til filtermulighederne}
+
+
+\slide{Chaosreader}
+
+\hlkimage{10cm}{chaosreader1.jpg}
+\hlkimage{20cm}{chaosreader2.png}
+\begin{list1}
+\item Med adgang til et netværksdump kan man læse det med chaosreader
+\item Output er HTML med oversigter over sessioner, billeder fra datastrømmen osv.
+\item \link{http://chaosreader.sourceforge.net/}
+
+\end{list1}
+
+\slide{Cain og Abel}
+
+%\hlkimage{10cm}{cain_brute_attack.jpg}
+\hlkimage{20cm}{cain-win.png}
+
+\begin{list1}
+\item  Cain og Abel anbefales ofte istedet for l0phtcrack
+  \link{http://www.oxid.it}
+\end{list1}
+
+
+\slide{Demo: løsninger}
+
+\slide{kryptering, PGP og SSL/TLS}
+
+\begin{list1}
+  \item kryptering er den eneste måde at sikre:
+    \begin{list2}
+      \item fortrolighed
+      \item autenticitet
+    \end{list2}
+\item kryptering består af:
+  \begin{list2}
+    \item Algoritmer - eksempelvis RSA
+    \item \emph{protokoller} - måden de bruges på
+\item programmer - eksempelvis PGP
+\end{list2}
+\item fejl eller sårbarheder i en af komponenterne kan formindske
+  sikkerheden  
+\item PGP = mail sikkerhed, se eksempelvis Enigmail plugin til Mozilla Thunderbird
+\item Secure Sockets Layer SSL / Transport Layer Services TLS =
+  webservere og klienter
+\end{list1}
+
+\slide{DES, Triple DES og AES/Rijndael}
+
+%\hlkimage{15cm}{images/AES_head.png}
+
+\begin{list1}
+\item DES kryptering baseret på den IBM udviklede Lucifer algoritme
+  har været benyttet gennem mange år. 
+\item Der er vedtaget en ny standard algoritme Advanced Encryption
+  Standard (AES) som afløser Data Encryption Standard (DES)
+\item Algoritmen hedder Rijndael og er udviklet
+af Joan Daemen og Vincent Rijmen.
+%\item \emph{Rijndael is available for free. You can use it for
+%whatever purposes  you want, irrespective of whether
+%it is accepted as AES or not.}
+\item Kilder:
+\link{http://csrc.nist.gov/encryption/aes/} - AES Homepage\\
+\link{http://www.esat.kuleuven.ac.be/~rijmen/rijndael/} - The Rijndael Page
+\end{list1}
+
+
+%\slide{F3: POP3S, SSL/TLS, IMAPS, SMTP over TLS osv.}
+\slide{SSL/TLS (1)}
+
+\centerline{Istedet for POP3 brug POP3s, Istedet for IMAP brug IMAPs}
+
+\hlkimage{8cm}{P1010053.JPG}
+
+
+
+\slide{Server, Dovecot}
+\begin{alltt}\footnotesize
+    protocols = imaps pop3s         # Kun tillade crypt
+    listen = *, [::]                # Også IPv6
+    disable_plaintext_auth = yes    # Ingen auth uden crypt
+    ssl_cert_file = /config/etc/Dovecot/cert.pem
+    ssl_key_file =  /config/etc/Dovecot/cert.pem
+    auth default \{
+      passdb passwd-file \{
+        args = /config/etc/Dovecot/dovecot.passwd
+      \}
+      userdb passwd-file \{          
+         args = username_format=%n /config/etc/Dovecot/dovecot.passwd 
+      \}
+      user = nobody
+      socket listen \{         # Socket Postfix bruger for auth
+        client \{
+          path = /var/spool/postfix/private/auth # modsvarer postfix conf
+          mode = 0660
+          user = postfix
+          group = postfix
+        \}
+      \}
+    \}
+\end{alltt}
+
+\slide{SSL/TLS (2)}
+
+\centerline{SMTP kan erstattes med SMTP+TLS}
+
+\hlkimage{8cm}{P1010054.JPG}
+
+
+\slide{Config til Server}
+
+\begin{alltt}\footnotesize
+  Server, brug TLS hvis afsender supporterer det (Postfix):
+    # TLS settings
+    smtpd_tls_CAcert_file = /config/etc/Dovecot/ca.crt     # Certifikater,
+    smtpd_tls_cert_file =   /config/etc/Dovecot/cert.pem   #    hjemmelavede er fine
+    smtpd_tls_key_file =    /config/etc/Dovecot/cert.pem
+    smtpd_tls_auth_only = yes         # Tillad kun auth over TLS
+    smtpd_tls_received_header = yes   # Log crypto i Recieved: header
+    smtpd_tls_security_level = may    # Opportunistic TLS
+    smtpd_tls_loglevel = 1            # Log i almindelige detaljer
+
+  Server, tillad relay hvis afsender er kendt (Postfix bruger Dovecot for auth info):
+    # SASL settings
+    smtpd_sasl_type = dovecot              # Auth type
+    smtpd_sasl_path = private/auth         # Modsvarer Dovecot conf.
+    smtpd_sasl_auth_enable = yes           # Tillad relay, hvis bruger er auth'et
+    smtpd_sasl_authenticated_header = yes  # Vis auth'et bruger navn i Recieved:
+\end{alltt}
+
+
+
+
+
+
+\slide{Mere avanceret}
+
+
+\slide{Secure Shell - SSH og SCP}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=12cm]{images/tshirt-9b.jpg}}  
+\end{center}
+\begin{list1}
+\item SSH afløser en række protokoller som er usikre:
+  \begin{list2}
+  \item Telnet til terminal adgang
+  \item r* programmerne, rsh, rcp, rlogin, ...
+  \item FTP med brugerid/password
+  \end{list2}
+\end{list1}
+
+
+\slide{SSH - de nye kommandoer er}
+\begin{list1}
+\item kommandoerne er:
+\begin{list2}
+  \item ssh - Secure Shell
+  \item scp - Secure Copy
+  \item sftp - secure FTP 
+  \end{list2}
+\item Husk: SSH er både navnet på protokollerne - version 1 og 2 samt
+  programmet \verb+ssh+ til at logge ind på andre systemer
+\item SSH tillader også port-forward, tunnel til usikre protokoller,
+  eksempelvis X protokollen til UNIX grafiske vinduer
+\item {\bfseries NB: Man bør idag bruge SSH protokol version 2!}
+\end{list1}
+
+
+\slide{Putty en SSH til Windows}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=13cm]{images/putty-1.jpg}}  
+
+Login skærmen til Putty terminal programmet
+\end{center}
+\slide{Putty terminaladgang}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=20cm]{images/putty-screen2.jpg}}  
+
+Billede fra \link{http://edu.muhos.fi/opas/ssh/putty-ohje.htm}
+\end{center}
+
+\slide{Grafisk Secure Copy - WinSCP}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=16cm]{images/winscp-login-advanced.png}}  
+\end{center}
+
+\begin{center}
+\item screenshot fra \link{http://winscp.vse.cz/eng/screenshots/large/advanced.gif}
+\end{center}
+
+\slide{Grafisk Secure Copy - WinSCP}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=12cm]{images/winscp-explorer.png}}  
+\end{center}
+
+\begin{center}
+\item screenshot fra
+  \link{http://winscp.vse.cz/eng/screenshots/large/explorer.gif} 
+\end{center}
+
+
+\slide{OpenSSH tunnel}
+
+%\hlkimage{14cm}{images/openssh.pdf}
+\begin{list1}
+\item Nemt (når man har en server)
+\item Sikkert, samme kryptering som SSH
+\item Kræver at programmet understøtter socks 5 proxy
+\item ssh -D 8080
+\end{list1}
+
+\slide{OpenSSH tunnel - Firefox konfig}
+
+\hlkimage{14cm}{images/firefox-socks.png}
+\begin{list1}
+\item Bemærk: F.eks. Thunderbird og Filezilla understøtter også socks 5 proxy
+\end{list1}
+
+\slide{OpenSSH tunnel - husk Firefox DNS konfig}
+%\hlkimage{14cm}{images/firefox-openssh.pdf}
+
+\hlkimage{22cm}{firefox-remote-dns.png}
+\centerline{er ikke default på alle platforme}
+
+
+\slide{OpenSSH VPN}
+\begin{list1}
+\item Lidt mere omstændigt at sætte op, men mere fleksibelt
+\item Kræver ikke support fra hvert enkelt program
+\item Kræver root på serveren der SSHes til (p.g.a. ifconfig)
+\item ssh -w 0
+\end{list1}
+
+\slide{OpenSSH VPN - ifconfig}
+\begin{list1}
+\item Direkte fra man ssh(1):
+\item On the client:
+\begin{alltt}
+# ssh -f -w 0:1 192.168.1.15 true
+# ifconfig tun0 10.1.1.1 10.1.1.2 netmask 255.255.255.252
+# route add 10.0.99.0/24 10.1.1.2
+\end{alltt}
+\item On the server:
+\begin{alltt}
+# ifconfig tun1 10.1.1.2 10.1.1.1 netmask 255.255.255.252
+# route add 10.0.50.0/24 10.1.1.1
+\end{alltt}
+\end{list1}
+
+\slide{VPN}
+
+\begin{list1}
+\item VPN \link{http://en.wikipedia.org/wiki/Virtual_private_network}
+\item SSL/TLS VPN - Generelt koncept. Adskillige leverandører: Cisco, Juniper, F5 Big IP
+\item De snakker ikke ret godt sammen på tværs. Brug IPSec for dette.
+\item IPsec er desværre blokeret mange steder og man skal bruge en klient\\
+(I praksis bruger SSL VPN ofte en klient, men den downloades fra web)
+\item Open source variant: OpenVPN 
+\end{list1}
+
+\slide{OpenVPN server config}
+
+\begin{alltt}\footnotesize
+Server konfiguration:
+  port 4500                          # Port der lyttes på.
+                                     #  Kun een ad gangen er supporteret :-(
+  proto udp                          # TCP i TCP er ikke godt
+  ca keys/ca.crt                     # CA public key. Denne har signeret alle
+                                     #  klienters cert og serverens.
+  cert keys/server.crt               # Server cert, public key
+  key keys/server.key                # Server cert, private key
+  server 10.1.13.0 255.255.255.0     # Det net VPN klienter får IP på
+  push "route 10.1.0.0 255.255.0.0"  # Mit interne netværk
+  [Resten default]
+\end{alltt}
+
+\slide{OpenVPN server status}
+
+
+\begin{alltt}\footnotesize
+#  cat openvpn-status.log
+OpenVPN CLIENT LIST
+Updated,Tue Jul 26 12:57:13 2011
+Common Name,Real Address,Bytes Received,Bytes Sent,Connected Since
+heartofgold,80.160.242.134:25313,1146127,1358645,Sun Jul 24 12:32:38 2011
+guide2,80.160.242.134:52650,464241,509289,Mon Jul 25 17:07:22 2011
+ROUTING TABLE
+Virtual Address,Common Name,Real Address,Last Ref
+10.1.13.6,heartofgold,80.160.242.134:25313,Tue Jul 26 10:40:51 2011
+10.1.13.10,guide2,80.160.242.134:52650,Tue Jul 26 09:12:44 2011
+GLOBAL STATS
+Max bcast/mcast queue length,0
+END
+# 
+\end{alltt}
+
+
+\slide{OpenVPN client config}
+
+\begin{alltt}\footnotesize
+Klient konfiguration:
+  remote aften.batmule.dk 4500    # Server og port
+  proto udp
+  ca ca.crt                       # Cert stuff (tilsvarende server)
+  cert guide2.crt
+  key guide2.key
+  [Resten default]
+\end{alltt}
+\vskip 2cm
+
+\hlkimage{16cm}{openvpn-gui-systray.png}
+\centerline{OpenVPN GUI on Windows}
+
+\slide{FileZilla - understøtter SFTP}
+
+\hlkimage{22cm}{filezilla.png}
+\centerline{\link{http://filezilla-project.org/}}
+
+
+\slide{Advanced sniffing - Tcpdump / windump}
+%\hlkimage{14cm}{images/tcpdump.pdf}
+\begin{list1}
+\item tcpdump(1) har en lang række "primitives" som bruges til filtrere, se man pcap-filter(7) for mange flere:
+\item src, dst, host, ether, net, port, icmp, tcp, udp, ip, arp, broadcast
+\item tcpdump(1) understøtter også bit-matching i pakker:
+\item For at vise pakker hvor bit 5 i byte 11 er 0 (binært 00001000): \\
+\verb+tcpdump 'udp[11] & 8 = 0'+
+\item Eksempel fra wiki.tyk.nu som kun matcher dynamic DNS update queries:
+\begin{alltt} 
+tcpdump port 53 and 'udp[10] & 128 = 0' and 'udp[10]
+ & 64 = 0' and 'udp[10] & 32 = 32' and 'udp[10] 
+ & 16 = 0' and 'udp[10] & 8 = 8'
+\end{alltt}
+\end{list1}
+
+\slide{Trådløse teknologier 802.11}
+
+\begin{list1}
+\item 802.11 er arbejdsgruppen under IEEE 
+\item De mest kendte standarder idag indenfor trådløse teknologier:
+\begin{list2}
+\item 802.11b 11Mbps versionen
+\item 802.11g 54Mbps versionen
+\item 802.11n endnu hurtigere, og draft
+\item 802.11i Security enhancements
+\end{list2}
+\item Der er proprietære versioner 22Mbps og den slags\\
+- det anbefales IKKE at benytte disse da det giver vendor lock-in -
+man bliver låst fast
+\end{list1}
+
+Kilde: \link{http://grouper.ieee.org/groups/802/11/index.html}
+
+
+\slide{Kismet - wireless sniffing}
+\begin{list1}
+\item Fra man-siden: Kismet is an 802.11 layer2 wireless network detector, sniffer, and intrusion detection system.  Kismet will work with any wireless card which supports raw monitoring (rfmon) mode, and can sniff 802.11b, 802.11a, and 802.11g traffic.
+\item Kismet kan for eksempel anvendes når man vil finde en wlan kanal hvor der er lidt ro
+\item Kismet gemmer som default al trafik på alle kanaler i "tcpdump-format"
+\item Kismet gør det nemt for alle at sniffe på et trådløst netværk
+\item f.eks. Wireshark eller Chaosreader kan bruges til at snage yderligere i trafik opsamlet med Tcpdump / Kismet
+\end{list1}
+
+%\slide{HLK: netflow opsamling}
+
+%Husk: snifning på nationalt niveau
+
 
 
 \myquestionspage
+
+
+
+\end{document}
 
 
 \slide{More Information}

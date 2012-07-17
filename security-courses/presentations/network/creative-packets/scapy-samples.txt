@@ -1,0 +1,187 @@
+>>> res=sr1(IP(dst="192.168.0.1")/ICMP())
+Begin emission:
+Finished to send 1 packets.
+...*
+Received 4 packets, got 1 answers, remaining 0 packets
+>>> res.show()
+###[ IP ]###
+  version= 4L
+  ihl= 5L
+  tos= 0x0
+  len= 28
+  id= 53061
+  flags= 
+  frag= 0L
+  ttl= 64
+  proto= icmp
+  chksum= 0x29c3
+  src= 192.168.0.1
+  dst= 192.168.0.135
+  options= ''
+###[ ICMP ]###
+     type= echo-reply
+     code= 0
+     chksum= 0xffff
+     id= 0x0
+     seq= 0x0
+###[ Padding ]###
+        load= '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+
+Scapy OSPF
+IP(dst="10.9.8.124")/OSPF_Hdr()/OSPF_LSUpd(lsalist=[OSPF_Router_LSA(linklist=[OSPF_Link(), OSPF_Link()]), OSPF_Network_LSA(), OSPF_SummaryIP_LSA(), OSPF_SummaryASBR_LSA(), OSPF_External_LSA()])
+
+send(IP(dst="10.9.8.124")/OSPF_Hdr()/OSPF_LSReq(requests=[OSPF_LSReq_Item()]))
+
+send(IP(dst="10.9.8.124")/fuzz(OSPF_Hdr())/OSPF_LSReq(requests=[OSPF_LSReq_Item()]),loop=1)
+
+
+IP(dst='224.0.0.5')/OSPF_Hdr(src='192.168.170.8')/OSPF_Hello(hellointerval=10,prio=1, deadinterval=40, router='192.168.170.8', backup='0.0.0.0', options=2)
+
+>>> p=IP(dst='224.0.0.5')/OSPF_Hdr(src='192.168.170.8')/OSPF_Hello(hellointerval=10,prio=1, deadinterval=40, router='192.168.170.8', backup='0.0.0.0', options=2)
+>>> p.show2()
+WARNING: No route found (no default route?)
+###[ IP ]###
+  version= 4L
+  ihl= 5L
+  tos= 0x0
+  len= 64
+  id= 1
+  flags= 
+  frag= 0L
+  ttl= 64
+  proto= ospf
+  chksum= 0x9a5f
+  src= 0.0.0.0
+  dst= 224.0.0.5
+  options= ''
+###[ OSPF Header ]###
+     version= 2
+     type= Hello
+     len= 44
+     src= 192.168.170.8
+     area= 0.0.0.0
+     chksum= 0x273c
+     authtype= Null
+     authdata= 0x0
+###[ OSPF Hello ]###
+        mask= 255.255.255.0
+        hellointerval= 10
+        options= E
+        prio= 1
+        deadinterval= 40
+        router= 192.168.170.8
+        backup= 0.0.0.0
+        neighbors= []
+
+
+p=IP(dst='224.0.0.5')/OSPF_Hdr(src='192.168.170.8')/OSPF_Hello(hellointerval=10,prio=1, deadinterval=40, router='192.168.170.8', backup='0.0.0.0', options=2)
+
+>>> sendp(Ether(dst="AA:BB:CC:DD:EE:FF")/p, iface="eth0")
+WARNING: No route found (no default route?)
+WARNING: No route found (no default route?)
+.
+Sent 1 packets.
+
+
+
+>>> sendp(Ether(dst="AA:BB:CC:DD:EE:FF")/p, iface="eth0")WARNING: No route found (no default route?)
+WARNING: No route found (no default route?)
+.
+Sent 1 packets.
+>>> sendp(Ether(dst="FF:FF:FF:FF:FF:FF")/p, iface="eth0")
+WARNING: No route found (no default route?)
+WARNING: No route found (no default route?)
+.
+Sent 1 packets.
+>>> sendp(Ether(dst="FF:FF:FF:FF:FF:FF")/p, iface="eth0")
+WARNING: more No route found (no default route?)
+.
+Sent 1 packets.
+>>> sendp(Ether(dst="FF:FF:FF:FF:FF:FF")/p, iface="eth0")
+.
+Sent 1 packets.
+>>> sendp(Ether(dst="FF:FF:FF:FF:FF:FF")/p*10, iface="eth0")
+WARNING: No route found (no default route?)
+WARNING: No route found (no default route?)
+.WARNING: more No route found (no default route?)
+.........
+Sent 10 packets.
+
+
+
+
+sniff(filter="tcp and host 192.168.3.1", count=4, iface="eth0")
+ans = _         <-- sets ans equal to last result (which is an array)
+ans.summary()   <-- displays summary info on the array contents
+
+s=sniff(filter="ICMP", count=2, iface="eth0")
+
+s.summary()
+ls req[0]
+print req[0]
+
+
+
+>>> s = sniff(filter="host 10.9.8.12",count=5)>>> s.show()
+0000 Ether / IP / TCP 10.9.8.120:2200 > 10.9.8.123:64658 PA / Raw
+0001 Ether / IP / TCP 10.9.8.123:64658 > 10.9.8.120:2200 A
+0002 Ether / IP / TCP 10.9.8.12:ssh > 10.9.8.123:50997 PA / Raw
+0003 Ether / IP / TCP 10.9.8.123:50997 > 10.9.8.12:ssh A
+0004 Ether / IP / UDP 10.9.8.123:17500 > 10.9.8.255:17500 / Raw
+>>> s = sniff(filter="host 224.0.0.5",count=5)
+>>> s.show()
+0000 Ether / IP / TCP 10.9.8.120:2200 > 10.9.8.123:64658 PA / Raw
+0001 Ether / IP / TCP 10.9.8.123:64658 > 10.9.8.120:2200 A
+0002 Ether / IP / UDP 0.0.0.0:bootpc > 255.255.255.255:bootps / BOOTP / DHCP
+0003 Ether / 10.9.8.12 > 224.0.0.5 ospf / OSPF_Hdr / OSPF_Hello
+0004 Ether / IP / TCP 10.9.8.12:ssh > 10.9.8.123:50997 PA / Raw
+>>> s[3].show()
+###[ Ethernet ]###
+  dst= 01:00:5e:00:00:05
+  src= 00:0c:29:78:3e:0b
+  type= 0x800
+###[ IP ]###
+     version= 4L
+     ihl= 5L
+     tos= 0xc0
+     len= 64
+     id= 40319
+     flags= 
+     frag= 0L
+     ttl= 1
+     proto= ospf
+     chksum= 0x290c
+     src= 10.9.8.12
+     dst= 224.0.0.5
+     options= ''
+###[ OSPF Header ]###
+        version= 2
+        type= Hello
+        len= 44
+        src= 10.9.8.12
+        area= 0.0.0.0
+        chksum= 0xd874
+        authtype= Null
+        authdata= 0x0
+###[ OSPF Hello ]###
+           mask= 255.255.255.0
+           hellointerval= 10
+           options= E
+           prio= 1
+           deadinterval= 40
+           router= 10.9.8.12
+           backup= 0.0.0.0
+           neighbors= []
+>>> sendp(Ether(dst="FF:FF:FF:FF:FF:FF")/s[3]*10, iface="eth0")
+..........
+Sent 10 packets.
+>>> sendp(Ether(src="00:0c:29:04:05:06",dst="01:00:5e:00:00:05")/p*10, iface="eth0")
+..........
+Sent 10 packets.
+
+
+
+>>> p=IP(src="10.9.8.11", dst='224.0.0.5',ttl=1)/OSPF_Hdr(src='10.9.8.11')/OSPF_Hello(hellointerval=10,prio=1, deadinterval=40, router='10.9.8.11', backup='0.0.0.0', options=2)
+>>> sendp(Ether(src="00:0c:29:04:05:06",dst="01:00:5e:00:00:05")/p*10, iface="eth0")..........
+Sent 10 packets.

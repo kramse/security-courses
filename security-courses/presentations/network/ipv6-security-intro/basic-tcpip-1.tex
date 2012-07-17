@@ -1,0 +1,372 @@
+
+
+\slide{Internet today}
+
+\hlkimage{14cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers
+\item Rooted in academic networks
+\item Protocols which are more than 20 years old, moved to TCP/IP in 1981 
+\end{list1}
+
+
+\slide{Hvad er Internet}
+
+\begin{list1}
+\item Kommunikation mellem mennesker!
+\item Baseret på TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 kalder det packets, ikke datagram)
+\item forbindelsesorienteret, \emph{connection-oriented}
+\item forbindelsesløs, \emph{connection-less}
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+
+\slide{Hvad er Internet}
+
+\begin{list1}
+\item 80'erne IP/TCP starten af 80'erne
+\item 90'erne IP version 6 udarbejdes
+  \begin{list2}
+  \item IPv6 ikke brugt i Europa og US
+  \item IPv6 er ekstremt vigtigt i Asien 
+  \item historisk få adresser tildelt til 3.verdenslande
+  \item Større Universiteter i USA har ofte større allokering end Kina!
+  \end{list2}
+\item 1991 WWW "opfindes" af Tim Berners-Lee hos CERN
+\item E-mail var hovedparten af traffik
+  - siden overtog web/http førstepladsen
+\end{list1}
+
+
+% IP-adresser
+
+\slide{Fælles adresserum}
+
+\vskip 2 cm
+\hlkimage{17cm}{IP-address.pdf}
+
+\begin{list1}
+\item Hvad kendetegner internet idag
+\item Der er et fælles adresserum baseret på 32-bit adresser
+\item En IP-adresse kunne være 10.0.0.1
+\end{list1}
+
+
+\slide{IPv6 addresser og skrivemåde}
+
+\hlkimage{20cm}{ipv6-address-1.pdf}
+
+\begin{list2}
+\item 128-bit adresser, subnet prefix næsten altid 64-bit
+\item skrives i grupper af 4 hexcifre ad gangen adskilt af kolon :
+\item foranstillede 0 i en gruppe kan udelades, en række 0 kan erstattes med ::
+\item dvs 0:0:0:0:0:0:0:0 er det samme som \\
+0000:0000:0000:0000:0000:0000:0000:0000
+\item Dvs min webservers IPv6 adresse kan skrives som: 
+2001:16d8:ff00:12f::2
+\item Specielle adresser:
+::1 localhost/loopback og
+::  default route
+\item Læs mere i RFC-3513
+\end{list2}
+
+\slide{IPv6 header - RFC-2460}
+
+
+\begin{alltt}
+\footnotesize
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+
+\slide{IPv6 addressing RFC-4291}
+
+\begin{list1}
+\item Addresses are always 128-bit identifiers for interfaces and sets of
+   interfaces 
+\item Unicast:   An identifier for a {\bf single interface}.\\
+A packet sent to a
+               unicast address is delivered to the interface identified
+               by that address.
+\item Anycast:   An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes).\\  A packet sent to an
+               anycast address is {\bf delivered to one} of the interfaces
+               identified by that address (the "nearest" one, according
+               to the routing protocols' measure of distance).
+
+\item Multicast: An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes). \\ A packet sent to a
+               multicast address is {\bf delivered to all interfaces
+               identified by that address}.
+\end{list1}
+
+\slide{Core, Distribution og Access net}
+
+\hlkimage{20cm}{core-dist.pdf}
+
+\centerline{Det er ikke altid man har præcis denne opdeling, men den er ofte brugt}
+
+
+\sout{Where are the NAT gateways?}
+
+\slide{Pakker i en datastrøm}
+
+\hlkimage{23cm}{ethernet-frame-1.pdf}
+\begin{list1}
+\item Ser vi data som en datastrøm er pakkerne blot et mønster lagt henover data 
+\item Netværksteknologien definerer start og slut på en frame
+\item Fra et lavere niveau modtager vi en pakke, eksempelvis 1500-bytes fra Ethernet driver
+\end{list1}
+
+
+\slide{Collect information about your network}
+
+\begin{list1}
+\item devices - what is a network device?
+\item switches - Layer 2 does not matter much, management by RFC-1918 IPv4 is probably wise
+\item routers - most important, connectivity MUST support IPv6. Check vendor home page - do NOT assume support is ready
+\item Security devices: firewalls, IDS/IPS, VPN - critical and support in general poor. Some vendors such as Cisco ASA and Juniper SRX has good support
+
+\end{list1}
+
+\slide{Hello neighbors}
+
+\begin{alltt}\small
+$ ping6 -w -I en1 ff02::1
+PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
+30 bytes from fe80::223:6cff:fe9a:f52c%en1: bigfoot
+36 bytes from fe80::216:cbff:feac:1d9f%en1: mike.kramse.dk.
+38 bytes from fe80::200:aaff:feab:9f06%en1: xrx0000aaab9f06
+34 bytes from fe80::20d:93ff:fe4d:55fe%en1: harry.local
+36 bytes from fe80::200:24ff:fec8:b24c%en1: kris.kramse.dk.
+31 bytes from fe80::21b:63ff:fef5:38df%en1: airport5
+32 bytes from fe80::216:cbff:fec4:403a%en1: main-base
+44 bytes from fe80::217:f2ff:fee4:2156%en1: Base Station Koekken 
+35 bytes from fe80::21e:c2ff:feac:cd17%en1: arnold.local
+\end{alltt}
+
+
+\slide{Vigtigste protokoller}
+
+
+\begin{list1}
+\item ARP Address Resolution Protocol
+\item IP og ICMP Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol 
+\item DNS Domain Name System
+\end{list1}
+\vskip 1cm
+\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
+
+% allerede gennemgået ovenfor
+%\slide{ICMP}
+
+%\begin{list1}
+%\item 	Internet Control Message Protocol 
+%	Defineret i RFC-792
+
+%\end{list1}
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{20cm}{udp-1.pdf}
+\begin{list1}
+\item Forbindelsesløs RFC-768, \emph{connection-less} - der kan tabes pakker
+\item Kan benyttes til multicast/broadcast - flere modtagere
+\end{list1}
+
+
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{20cm}{tcp-1.pdf}
+
+\begin{list1}
+\item Forbindelsesorienteret RFC-791 September 1981, \emph{connection-oriented}
+\item Enten overføres data eller man får fejlmeddelelse
+\end{list1}
+
+
+
+
+\slide{TCP three way handshake}
+
+\hlkimage{7cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item Tidligere loggede systemer kun når der var etableret en fuld TCP
+  forbindelse - dette kan/kunne udnyttes til \emph{stealth}-scans
+\item Hvis en maskine modtager mange SYN pakker kan dette fylde
+  tabellen over connections op - og derved afholde nye forbindelser
+  fra at blive oprette - {\bfseries SYN-flooding}
+\end{list2}
+
+\slide{Well-known port numbers}
+
+\hlkimage{10cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA vedligeholder en liste over magiske konstanter i IP
+\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
+\item En liste af interesse er port numre, hvor et par eksempler er:
+\begin{list2}
+\item Port 25 SMTP Simple Mail Transfer Protocol
+\item Port 53 DNS Domain Name System
+\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
+\item Port 443 HTTP over TLS/SSL
+\end{list2}
+\item Se flere på \link{http://www.iana.org}
+\end{list1}
+
+
+
+\slide{DHCP Dynamic Host Configuration Protocol}
+
+\hlkimage{13cm}{dhcp-1.pdf}
+
+\begin{list1}
+\item Hvordan får man information om default gateway
+\item Man sender et DHCP request og modtager et svar fra en DHCP server
+\item Dynamisk konfiguration af klienter fra en centralt konfigureret server
+\item Bruges til IP adresser og meget mere
+\end{list1}
+
+\slide{IPv6 router advertisement daemon}
+
+\begin{alltt}
+/etc/rtadvd.conf:
+en0:
+      :addrs#1:addr="2001:1448:81:b00f::":prefixlen#64:
+en1:
+      :addrs#1:addr="2001:1448:81:beef::":prefixlen#64:
+
+root# /usr/sbin/rtadvd -Df en0 en1
+root# sysctl -w net.inet6.ip6.forwarding=1
+net.inet6.ip6.forwarding: 0 -> 1
+\end{alltt}
+
+\begin{list1}
+\item Stateless autoconfiguration er en stor ting i IPv6
+\item Kommandoen starter den i debug-mode og i forgrunden\\
+- normalt vil man starte den fra et script 
+\item Typisk skal forwarding aktiveres, som vist med BSD sysctl kommando
+\item NB: de fleste clients vil idag implementere IPv6 privacy addresses
+\end{list1}
+
+\slide{IPv6 autoconfiguration}
+
+\hlkimage{24cm}{modified-eui64.pdf}
+
+\begin{list1}
+\item DHCPv6 is available, but {\bfseries stateless autoconfiguration} is king
+\item Routers announce subnet prefix via {\bfseries router advertisements}
+\item Individual nodes then combine this with their EUI64 identifier
+\end{list1}
+
+%\link{http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_7-2/ipv6_autoconfig.html}
+
+\slide{Router advertisement daemon}
+
+\hlkimage{14cm}{ipv6-router-advertisement.png}
+
+
+
+
+% 802.1q
+\slide{VLAN Virtual LAN}
+
+\hlkimage{10cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q}
+
+\hlkimage{19cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Nogle switche tillader konfiguration med 802.1q VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\item Der findes administrationsværktøjer der letter dette arbejde: OpenNAC FreeNAC, Cisco VMPS
+\end{list1}
+
+
+%DNS
+\slide{Domain Name System}
+
+\hlkimage{12cm}{dns-1.pdf}
+
+\begin{list1}
+\item Gennem DHCP får man typisk også information om DNS servere
+\item En DNS server kan slå navne, domæner og adresser op
+\item Foregår via query og response med datatyper kaldet resource records
+\item DNS er en distribueret database, så opslag kan resultere i flere opslag
+\end{list1}
+
+\slide{Mere end navneopslag}
+
+\begin{list1}
+  \item består af resource records med en type:
+    \begin{list2}
+\item adresser A-records
+\item IPv6 adresser AAAA-records
+\item autoritative navneservere NS-records
+\item post, mail-exchanger MX-records
+\item flere andre: md ,  mf ,  cname ,  soa ,
+                  mb , mg ,  mr ,  null ,  wks ,  ptr ,
+                  hinfo ,  minfo ,  mx ....
+\end{list2}
+\end{list1}
+\begin{alltt}
+ns1     IN      A       217.157.20.130
+        IN      AAAA    2001:618:433::1
+www     IN      A       217.157.20.131
+        IN      AAAA    2001:618:433::14
+        IN      MX      10      mail.security6.net.
+        IN      MX      20      mail2.security6.net.
+\end{alltt}
+
+

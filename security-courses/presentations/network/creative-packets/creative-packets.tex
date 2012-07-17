@@ -1,0 +1,419 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{solido-network-slides}
+
+
+% Husk
+%
+% /Users/hlk/src/net/packetfu-read-only/examples
+
+% check delicious links med tag "packets" 
+
+% http://cs.itd.nrl.navy.mil/work/mgen/ Multi-Generator (MGEN)
+
+% http://sourceforge.net/projects/hyenae/
+% Hyenae is a highly flexible platform independent network packet generator. It allows you to reproduce several MITM, DoS and DDoS attack scenarios, comes with a clusterable remote daemon and an interactive attack assistant.
+
+
+% listes over tools:
+% http://l0t3k.org/security/tools/packetgenerator/
+% http://www.protocoltesting.com/trgen.html
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{Creative packets for Network Operators}
+
+\vskip 2cm
+\centerline{\footnotesize Slides are available as PDF}
+
+\slide{Goal}
+
+\hlkimage{8cm}{kame-noanime-small.png}
+
+\begin{list1}
+\item Introduce packet generating tools
+\item Provide my experiences with these tools
+\item Give some pointers to further resources
+\item why?! - for testing in the broadest sense
+\end{list1}
+
+\slide{Testing with packets}
+
+\begin{list1}
+\item Verifying Router ACLs with Hping\\
+\link{http://startup-config.com/verifying-router-acls-hping/}
+\item Cisco IOS (using hping) Remote Denial of Service Exploit (2003)\\
+\link{http://www.exploit-db.com/exploits/62/}
+\end{list1}
+
+\slide{Juniper DoS}
+
+\begin{quote}
+	JUNOS (Juniper) Flaw Exposes Core Routers to Kernel Crash\\
+A report has been received from Juniper at 4:25pm under bulletin PSN-2010-01-623 that {\bf a crafted malformed TCP field option in the TCP header of a packet will cause the JUNOS kernel to core (crash).} In other words the kernel on the network device (gateway router) will crash and reboot if a packet containing this crafted option is received on a listening TCP port. The JUNOS firewall filter is unable to filter a TCP packet with this issue. Juniper claims this issue as exploit was identified during investigation of a vendor interoperability issue.
+\end{quote}
+
+Juniper bulletin PSN-2010-01-623 and \\
+{\footnotesize http://praetorianprefect.com/archives/2010/01/
+junos-juniper-flaw-exposes-core-routers-to-kernal-crash/}
+
+
+
+\slide{Traceroute}
+
+You know traceroute, the hacker tool?
+
+\begin{enumerate}
+\item Create UDP packet with $TTL = 1$
+\item Send packet, get response from closest router
+\item Repeat three times while increasing port number
+\item increase TTL and repeat, until destination reached or max TTL 
+\end{enumerate}
+\vskip 1 cm
+
+\centerline{\Large\bf Not a built-in feature of IP/TCP}
+\vskip 1 cm
+(Microsoft Windows uses ICMP and calls the tools tracert)
+
+
+
+
+\slide{History - fast forward}
+
+\begin{list1}
+\item Fast forward, another day or over beer
+\item Various snoop and sniffer programs
+\item Libnet - generic API to help with the construction and handling of network packets
+\item Lidpcap
+\end{list1}
+
+\centerline{tl;dr - tools became portable or implemented on Linux}
+
+\vskip 3cm
+Hint: if not already done, create a virtual machine with\\
+ \link{http://www.backtrack-linux.org/}
+
+
+\slide{icmpush, Libnet}
+
+\begin{list1}
+\item icmpush - ICMP packets galore
+\item Nemesis can natively craft and inject ARP, DNS, ETHERNET, ICMP, IGMP, IP, OSPF, RIP, TCP and UDP packets
+\link{http://nemesis.sourceforge.net}
+
+% libnet not working, empty \link{http://code.google.com/p/libnet/}
+Archive of packetfactory exist at \link{http://packetfactory.openwall.net/}
+
+\item Paketto Keiretsu author Dan Kaminsky, circa 2002
+\end{list1}
+
+
+\slide{Command Line packet generation}
+
+\begin{list1}
+\item hping is a command-line oriented TCP/IP packet assembler/analyzer\\ \link{http://www.hping.org/}
+\item  ISIC is a suite of utilities to exercise the stability of an IP Stack and its component stacks (TCP, UDP, ICMP et. al.) \link{http://isic.sourceforge.net/}
+\item TCP traceroute programs - make sure you try out the Nping from the Nmap suite
+\item Too many tools to mention
+\end{list1}
+
+\slide{SING stands for 'Send ICMP Nasty Garbage'}
+
+SING stands for 'Send ICMP Nasty Garbage'. It is a tool that sends ICMP packets fully customized from command line. Its main purpose is to replace the ping command but adding certain enhancements (Fragmentation, spoofing,...)
+
+\link{http://sourceforge.net/projects/sing/}
+
+\vskip 2 cm
+\centerline{\bf\Large Please do good with the tools :-)}
+\vskip 2 cm
+Maybe we should do some network wars with packets :-)
+
+\slide{Perl and Python libraries}
+
+\begin{list1}
+\item C sucks :-)
+\item Perl has a multitude of nice libraries, some create packets - Net:: Packet and Net::DNS
+\item Seems to be updated: pylibnet-3.0-beta-rc1.tar.gz	{\bf Modified: 2011-07-26}\\
+\link{http://pylibnet.sourceforge.net/}
+\end{list1}
+
+
+
+
+\slide{Exploit code / proof of concept}
+
+\lstinputlisting[language=perl]{files/junos-crash.pl}
+Code from:\\ 
+{\small\link{http://evilrouters.net/2010/01/09/junos-psn-2010-01-623-exploit/}}
+
+
+\slide{Use scapy to send JunOS killin' packet}
+
+%\hlkimage{16cm}{files/scapy-junos-crash.png}
+\lstinputlisting[language=python]{files/junos-crash.py}
+Code from:\\ 
+{\small
+\link{http://evilrouters.net/2010/01/10/use-scapy-to-send-junos-killin-packet/}}\\
++ comment about TCP options
+
+
+
+\slide{Packet building libraries}
+
+
+\begin{list1}
+\item Scapy is a powerful interactive packet manipulation program\\
+\link{http://www.secdev.org/projects/scapy/}
+\item pcap, wireshark, gnuplot integrationen
+\item IPv6 scapy \link{http://www.secdev.org/conf/scapy-IPv6\_HITB06.pdf}
+\end{list1}
+
+
+
+\slide{Scapy}
+% my tools /userdata/network/scapy
+
+\begin{alltt}
+>>> for i in range (5,10):
+...       send(IP(dst="192.168.0.1")/ICMP())
+... 
+.
+Sent 1 packets.
+.
+Sent 1 packets.
+.
+Sent 1 packets.
+.
+Sent 1 packets.
+.
+Sent 1 packets.
+\end{alltt}
+
+\slide{Save teh packets}
+It is often useful to save capture packets to pcap file for use at later time or with different applications:
+
+\begin{alltt}
+>>> wrpcap("temp.cap",pkts)
+To restore previously saved pcap file:
+
+>>> pkts = rdpcap("temp.cap")
+or
+
+>>> pkts = sniff(offline="temp.cap")
+\end{alltt}
+
+This is basic functionality with Scapy
+
+
+\slide{Ruby tools}
+
+\begin{list1}
+\item PacketFu, a mid-level packet manipulation library for Ruby\\
+\link{http://code.google.com/p/packetfu}
+
+\item Ruby Packgen Packgen is a simple network packet generator written in ruby. \\
+\link{http://packgen.rubyforge.org/files/README.html}\\
+\emph{Packgen is a simple network packet generator handling diffserv markers, useful for testing network bandwidth and QoS.}
+\end{list1}
+
+\slide{Ruby example}
+
+\lstinputlisting[language=ruby]{packet-fu/examples/ethernet.rb}
+Code from:\\ 
+{\small\link{https://github.com/todb/packetfu/tree/master/examples}}
+
+\slide{Ruby example, unique pcap - removing ducplicates}
+
+\lstinputlisting[language=ruby]{packet-fu/examples/uniqpcap.rb}
+Code from:\\ 
+{\small\link{https://github.com/todb/packetfu/tree/master/examples}}
+
+
+
+\slide{PACKIT (PACket Generation ToolKIT)}
+
+\begin{quote}
+PACKIT stands for PACket Generation ToolKIT which aims to let system administrators and network security software developers, by the use of a Graphical User Interface, conveniently generate customized TCP/IP packets so that the testing of the network performance as well as testing on software during development would become easy.
+
+PACKIT would also be good for network security education in the sense that different networking concepts, such as IP routing, TCP 3-way handshake, and network protocol vulnerabilities, e.g. TCP connection killing, Telnet hijack, ARP poisoning, etc, can be demonstrated easily with the use of PACKIT.
+\end{quote}
+
+\link{http://packitgui.sourceforge.net/}
+
+%\slide{Modern times GUI}
+
+%\begin{list1}
+%\item 
+%\end{list1}
+
+%GUI niceness, ostinato
+
+
+
+\slide{pretty cloud web services pcapr.net}
+
+\hlkimage{18cm}{files/pcapr.png}
+\centerline{pcapr.net - close to wireshark in your browser}
+
+\slide{and pretty packet creation}
+
+\hlkimage{20cm}{files/caprmakr.png}
+\begin{list1}
+\item \emph{pcapr, powered by Mu Dynamics, is a social nOtworking site. There's a lot to learn about networks and protocols from packet captures. Besides, we think packets need as much Web 2.0 love as your spreadsheets.} 
+\item pretty cloud services \link{http://www.pcapr.net/caprmakr}
+\end{list1}
+
+\slide{and easy denial of service testing}
+
+\hlkimage{27cm}{files/mudos.png}
+\centerline{denial of service tool, from existing packets}
+
+
+\slide{Quick demo mudos}
+
+\hlkimage{20cm}{files/mudos-demo.png}
+
+
+%\slide{Loki}
+
+%\hlkimage{7cm}{files/ERNW_loki_tool_ger.jpg}
+%\begin{list1}
+%\item New Loki from 2010
+%\emph{Loki - a Python based framework implementing many packet generation and attack modules for Layer 3
+% protocols, including BGP, LDP, OSPF, VRRP and quite a few others.}
+%\end{list1}
+%\link{http://ernw.de/content/e6/e180/index_eng.html}
+
+\slide{Speeding up}
+
+\begin{list1}
+\item Why generate and send, when you can send faster by pre-generating:
+\item  tcpreplay \link{http://tcpreplay.synfin.net/}
+\item  pcapdiff \link{http://www.eff.org/testyourisp/pcapdiff/}
+\item  main observation, there are already lots of tools, don't reinvent the wheel
+\end{list1}
+
+\slide{More speed}
+
+\begin{list1}
+\item Zero copy, stop moving those bits! 
+\item Performance doc file from \link{http://netsniff-ng.org/}
+\end{list1}
+
+\begin{alltt}\small
+[1] http://www.linuxfoundation.org/collaborate/workgroups/networking/napi
+[2] http://datatag.web.cern.ch/datatag/howto/tcp.html
+[3] http://thread.gmane.org/gmane.linux.network/191115
+    Kernel build option:
+      CONFIG_HAVE_BPF_JIT=y
+      CONFIG_BPF_JIT=y
+[4] http://bit.ly/3XbBrM
+\end{alltt}
+
+% findes på BT5 maskinen på bigfoot under hlk@bt5:~/src/net/netsniff-ng/Documentation$
+
+\slide{netsniff-ng}
+
+The netsniff-ng toolkit consists of the following utilities:
+
+\begin{list2}
+\item netsniff-ng, a zero-copy analyzer, pcap capturer and replayer
+\item trafgen, a high-performance zero-copy network traffic generator
+\item bpfc, a Berkeley Packet Filter compiler supporting Linux extensions
+\item ifpps, a top-like kernel networking and system statistics tool
+\item flowtop, a top-like netfilter connection tracking tool
+\item curvetun, a lightweight multiuser IP tunnel based on elliptic curve cryptography
+\item ashunt, an Autonomous System (AS) trace route and ISP testing utility
+\end{list2}
+
+
+http://netsniff-ng.org/
+
+
+\slide{Programmable cards}
+
+\hlkimage{15cm}{files/NetFPGA10G_front_b.jpg}
+
+\begin{list1}
+\item future programmable cards  - high speed possible, but more complex programming
+\item \link{http://netfpga.org/foswiki/bin/view/NetFPGA/WebHome}
+\item \link{https://github.com/crotsos/netfpga-packet-generator-c-library}
+\item NetFPGA-10G shown in picture \emph{The Academic price is \$1,675.}
+\end{list1}
+
+
+
+\myquestionspage
+
+
+\slide{Books on IPv6}
+
+\begin{list1}
+\item \emph{The Second Internet: Reinventing Computer Networks with IPv6}\\ \link{http://www.secondinternet.org/}
+
+\item \emph{Preparing an IPv6 Addressing Plan}\\ {\small \link{https://labs.ripe.net/Members/steffann/preparing-an-ipv6-addressing-plan}}
+
+\item \emph{Guidelines for the Secure Deployment of IPv6} NIST SP 800-119\\
+\link{http://csrc.nist.gov/publications/nistpubs/800-119/sp800-119.pdf}
+
+\item \emph{IPv6 Network Administration}
+David Malone and Niall Richard Murphy
+\item \emph{IPv6 Core Protocols Implementation}
+af Qing Li, Tatuya Jinmei og Keiichi Shima
+\item \emph{IPv6 Advanced Protocols Implementation}
+af Qing Li, Jinmei Tatuya og Keiichi Shima
+\item - flere andre se reviews på \link{http://getipv6.info/index.php/Book_Reviews}
+\item \emph{IPv6 Essentials} Silvia Hagen, O'Reilly 2nd edition (May 17, 2006)
+\end{list1}
+
+\hlkprofiluk
+
+
+\slide{Modern tools and creative ideas}
+
+\begin{list1}
+\item De tyske ERNW tools \\
+\link{http://www.ernw.de/content/e6/e180/index_ger.html}
+\item evil l2 tools - STP, CDP, DTP, DHCP, HSRP, IEEE 802.1Q, IEEE 802.1X, ISL, VTP\\
+\link{http://www.yersinia.net/}
+\item THC-IPV6 - attacking the IPV6 protocol suite \\
+\link{http://thc.org/thc-ipv6/}
+\item Note: Evil repeats itself, like doing ARP poisoning across MPLS 
+\end{list1}
+
+\vskip 1cm
+\centerline{\bf\Large Every niche has it's tools!}
+
+
+\slide{Other tools}
+
+\begin{list1}
+	
+\item other tools I haven't tried: 
+
+\item Mausezahn is a free fast traffic generator written in C which allows you to send nearly every possible and impossible packet. It is mainly used to {\bf test VoIP or multicast networks}\\
+\link{http://www.perihel.at/sec/mz/}
+
+
+\item Python scripts packet construction set, FreeBSD Developer George Neville-Neil\\
+\link{http://pcs.sourceforge.net/}
+
+\item Bit-Twist is a simple yet powerful libpcap-based Ethernet packet generator. It is designed to complement tcpdump, which by itself has done a great job at capturing network traffic.\\
+\link{http://bittwist.sourceforge.net/}
+
+\item \link{http://wiki.wireshark.org/Tools}
+\end{list1}
+
+
+\slide{Rude and Crude }
+Yet another tool - interesting ideas to create tools that send\\
+- and another process that listen:
+
+\begin{quote}
+RUDE stands for Real-time UDP Data Emitter and CRUDE for Collector for RUDE. RUDE is a small and flexible program that generates traffic to the network, which can be received and logged on the other side of the network with the CRUDE. Currently these programs can generate and measure only UDP traffic. 
+\end{quote}
+
+\link{http://rude.sourceforge.net/}
+
+Source: \link{http://www.protocoltesting.com/trgen.html}
+
+\end{document}

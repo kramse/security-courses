@@ -1,0 +1,1017 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{solido-network-slides}
+%\usepackage{ulem}
+
+% Basic things that we need are below
+\selectlanguage{danish}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+\begin{document}
+
+%It-sikkerhed med Kramshøj
+%Henrik Kramshøj er konsulent inden for blandt andet informationssikkerhed og penetrationstest og vil måske %indgyde lidt frygt for vores tilgang til it-sikkerhedspolitik. Henriks navn er bestemt ikke ukendt i PROSA %regi, hvor han altid begejstrer. 
+
+
+% lavet med basis i advanced-unix-admin kurset!
+
+\mytitlepage
+{IT-sikkerhed 2012}{PROSA Superhelteseminar}
+
+
+\hlkprofil
+
+
+\slide{Planen idag}
+\vskip 2 cm
+
+\hlkimage{5cm}{dont-panic.png}
+\centerline{\color{titlecolor}\LARGE Don't Panic!}
+
+\begin{list1}
+\item Kl 17:00-19:00
+\item Mindre foredrag mere snak
+\item Mindre enetale, mere foredrag 2.0 med socialt medie, informationsdeling og interaktion
+\end{list1}
+\centerline{Send gerne spørgsmål senere}
+PS er her hele weekenden
+
+
+
+\slide{Formål: IT-sikkerhed generelt}
+\hlkimage{12cm}{1969_4-node_map.jpg}
+\centerline{TCP/IP-baserede netværk - internet er overalt}
+
+\slide{Formål: mere specifikt}
+
+\hlkimage{10cm}{homer-end-is-near.jpg}
+\begin{list1}
+\item Vores data er overalt
+\item Vi er afhængige af computere
+\item Vi er afhængige af netværk
+\item Vi er afhængige af andres computere - servere og services
+\item ...
+\end{list1}
+
+
+\slide{Formål: sund paranoia}
+
+\hlkimage{18cm}{1984-not-instruction-manual.jpg}
+
+
+
+\slide{Hackerværktøjer}
+% måske til reference afsnit?
+\hlkimage{3cm}{hackers_JOLIE+1995.jpg}
+
+\begin{list2}
+\item Nmap, Nping - tester porte, godt til firewall admins \link{http://nmap.org}
+\item Metasploit Framework gratis på \link{http://www.metasploit.com/}
+\item Wireshark avanceret netværkssniffer - \link{http://http://www.wireshark.org/} 
+%\item Paros proxy \link{http://www.parosproxy.org}
+\item Burpsuite \link{http://portswigger.net/burp/}
+\item Skipfish \link{http://code.google.com/p/skipfish/}
+\item OpenBSD operativsystem med fokus
+  på sikkerhed  \link{http://www.openbsd.org} 
+\end{list2}
+
+Kilde: Angelina Jolie fra Hackers 1995
+
+\slide{BackTrack 5 og sniffer programmer}
+
+\hlkimage{16cm}{bt5-revolution-blogpost-BTL.png}
+
+\begin{list1}
+\item BackTrack er baseret på Linux og må kopieres frit :-)\\
+\link{http://www.backtrack-linux.org/}
+\item Wireshark - \link{http://www.wireshark.org} 
+\end{list1}
+\vskip 2cm
+\centerline{Er det fornuftigt at man kan hente dem?}
+
+
+\slide{Status idag på internet}
+
+\hlkimage{21cm}{youtube-hacking-backtrack.png}
+
+
+\slide{Worldwide Infrastructure Security Report 2011}
+
+\begin{list2}
+\item Ideologically-Motivated "Hactivism" and Vandalism Are the Most Readily-Identified DDoS Attack Motivations
+\item 10 Gbps and Larger Flood-Based DDoS Attacks Are the "New Normal"
+\item Increased Sophistication and Complexity of Application-Layer (Layer 7) DDoS Attacks and Multi-Vector DDoS Attacks Are Becoming More Common
+\item Visibility and Security of Mobile and Fixed Wireless Networks Are an Ongoing Concern
+\item {\bf First-Ever Reports of IPv6 DDoS Attacks "in the Wild" on Production Networks}
+\item {\bf Rarity of IPv6-Enabled Attacks Indicates Low IPv6 Market Penetration and Lack of Critical Mass}
+\item Stateful Firewalls, IPS and Load-Balancer Devices Continue to Fall Short on DDoS Protection Capabilities
+\item The Overwhelming Majority of Network Operators Do Not Engage Law Enforcement 
+\end{list2}
+
+Kilde:
+\link{http://www.arbornetworks.com/report} 
+
+\slide{Moderne botnets}
+
+\begin{list1}
+\item Botnets spreder sig ved at inficere så mange systemer som muligt
+\item Botnets idag vokser gerne langsommere - ingen ny Code Red hastighedsrekord
+\item Spreder sig via SMTP, HTTP, SMB, ... alle protokoller der kan overføre data
+\item Bannerkampagner og 3. parts kilder til elementer på din side?!
+\item Når først der er kommet malware på systemet udvides med moduler
+\end{list1}
+
+\slide{Malware idag}
+
+\begin{list1}
+\item Malware idag er sofistikeret
+\item Modulært opbygget
+\item Benytter stærk kryptering til at sikre administrationen af inficerede computere
+\item Benytter seneste sikkerhedshuller - 0 days til at sprede sig
+\item Benytter de seneste rootkit metoder til at holde sig skjult
+\item Muterer efter alle kendte metoder for at undgå opdagelse
+\item Larmer mindre end tidligere
+\end{list1}
+
+
+\slide{Botnets og malware sælges med support}
+
+\hlkimage{21cm}{dagens-tilbud-trojanere.pdf}
+
+\begin{list1}
+\item Malware programmører har lært kundepleje
+\item "Køb denne version  og få gratis opdateringer"
+\item Lej vores botnet med 100.000 computere
+\end{list1}
+
+
+\slide{Phishing - Receipt for Your Payment to mark561@bt....com}
+\hlkimage{21cm}{paypal-phish.png}
+
+\pause
+\centerline{\bf\LARGE\color{titlecolor}Kan du selv genkende Phishing}
+
+
+\slide{Zip files?}
+
+\hlkimage{18cm}{emailvirus-zipfile.pdf}
+
+\slide{Money!}
+
+\hlkimage{17cm}{emailscam-banking.pdf}
+
+
+\hlkimage{17cm}{emailvirus-scrfile.pdf}
+
+\centerline{SCR er screensaver files - programmer}
+\slide{Fremtiden - er success en risiko}
+
+\begin{quote}
+{\bf The Mobile Network in 2010 and 2011}\\
+Global mobile data traffic grew 2.6-fold in 2010, nearly tripling for the third year in a row. The 2010 mobile data traffic growth rate was higher than anticipated. Last year's forecast projected that the growth rate would be 149 percent. This year's estimate is that global mobile data traffic grew 159 percent in 2010.\\
+...\\
+Last year's mobile data traffic was three times the size of the entire global Internet in 2000. Global mobile data traffic in 2010 (237 petabytes per month) was over three times greater than the total global Internet traffic in 2000 (75 petabytes per month).\\
+...\\
+There will be 788 million mobile-only Internet users by 2015. The mobile-only Internet population will grow 56-fold from 14 million at the end of 2010 to 788 million by the end of 2015.
+\end{quote}
+
+{\small Kilde:
+\emph{Cisco Visual Networking Index: Global Mobile Data Traffic Forecast Update, 2010 - 2015}}
+%\link{http://www.cisco.com/en/US/solutions/collateral/ns341/ns525/ns537/ns705/ns827/white_paper_c11-520862.html}
+
+
+\slide{Håndholdte enheder}
+
+
+\begin{list1}
+\item Hvad kendetegner håndholdte enheder
+\begin{list2}
+\item små - kan typisk ligge i en lomme
+\item meget lille lager til rådighed
+\item begrænset funktionalitet
+\item kan synkroniseres med en stationær computer
+\pause
+\item meget stor lagerkapacitet i moderne udgaver!
+\item udvidet funktionalitet
+\item \emph{viewer programmer} til Word, Excel, PDF m.fl.
+\item alt er forbundet idag, typisk netværk udover GPRS/telefoni
+\end{list2}
+\end{list1}
+
+
+\slide{Problemer med smart phones/PDA }
+
+
+\begin{list1}
+\item Kan gemme mange data - hvor følsomme er data
+\begin{list2}
+\item Kalender
+\item Kontakter
+\item Opgaver - To Do listen
+\end{list2}
+\item Nem backup af data - nemt at stjæle alle oplysninger!
+\begin{list2}
+\item flyt data applikationen på Nokia - data flytning {\color{red}
+    uden SIM kort}
+\item sikkerhedskopi til MMC kort - næsten alle data kan overføres $<$
+  1 minut 
+\end{list2}
+\item Adgang ind til virksomheden - via wireless?
+\begin{list2}
+\item Genbruge loginoplysninger fra PDA og koble en laptop på netværket?    
+\end{list2}
+\end{list1}
+
+\slide{Gode råd til jer}
+
+\begin{list1}
+  
+\item Brug teknologien 
+\item Lær teknologien at kende - læs manualen!
+\item Tænk på følsomheden af data I gemmer og overfører
+\begin{list2}
+\item Slå ting fra som I ikke bruger
+\item Slå bluetooth fra når I ikke bruger den
+\item Opdater softwaren på enheden
+\item Slå kryptering til hvor I kan: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} og over bluetooth
+\item Brug låsekode fremfor tastaturlås uden kode på mobiltelefonen
+\item Stol ikke for meget på fingertryksaflæsere
+
+\end{list2}
+
+\end{list1}
+
+\slide{SSL/TLS (1)}
+
+\centerline{Istedet for POP3 brug POP3s, Istedet for IMAP brug IMAPs}
+
+\hlkimage{8cm}{P1010053.JPG}
+
+
+\slide{SSL/TLS (2)}
+
+\centerline{SMTP kan erstattes med SMTP+TLS}
+
+\hlkimage{8cm}{P1010054.JPG}
+
+
+
+\slide{Tyveri - børnehaven og lufthavnen}
+
+\begin{list1}
+\item Mange glemmer at låse bilen når de skal hente børn - travlhed
+\item Mange lader deres baggage være ubevogtet i lufthavnen - sult
+  tørst
+\item Mange lader deres bærbare stå på kontoret - frit fremme
+\item Mange forlader deres bærbare på et bord under konferencer
+\item ... simpelt tyveri er ofte muligt
+\vskip 1 cm
+\item eller er det industrispionage?
+\end{list1}
+
+
+
+\slide{Er dine data sikre}
+
+\hlkimage{20cm}{images/data-integrity-1.pdf}
+
+\begin{list1}
+\item Stjålet laptop
+\item Slettede eller ødelagte data
+\item - og hvordan sletter man data? Huskede du mini SD kortet med dine private billeder?
+\end{list1}
+
+
+\slide{Superhelt}
+
+\hlkimage{7cm}{wizard_in_blue_hat.png}
+Hvad betyder det at være superhelt?
+
+Beskytte andre - og sig selv
+
+Have ekspertviden 
+
+
+\slide{Hacking er ikke magi}
+
+\hlkimage{17cm}{ninjas.png}
+
+\vskip 1 cm
+\centerline{Hacking kræver blot lidt ninja-træning}
+
+
+\slide{God sikkerhed}
+
+\hlkimage{15cm}{stupid-security.jpg}
+
+
+\slide{Teknisk hvad er hacking}
+
+\hlkimage{17cm}{buffer-overflow-3.pdf}
+
+
+\slide{buffer overflows et C problem}
+
+\begin{list1}
+\item {\bfseries Et buffer overflow}
+er det der sker når man skriver flere data end der er afsat plads til
+i en buffer, et dataområde. Typisk vil programmet gå ned, men i visse
+tilfælde kan en angriber overskrive returadresser for funktionskald og
+overtage kontrollen. 
+\item {\bfseries Stack protection} 
+er et udtryk for de systemer der ved hjælp af operativsystemer,
+programbiblioteker og lign. beskytter stakken med returadresser og
+andre variable mod overskrivning gennem buffer overflows. StackGuard
+og Propolice er nogle af de mest kendte.
+\end{list1}
+
+
+\slide{Buffer og stacks}
+
+\hlkimage{20cm}{buffer-overflow-1.pdf}
+
+\begin{alltt}
+main(int argc, char **argv)
+\{      char buf[200];
+        strcpy(buf, argv[1]); 
+        printf("%s\textbackslash{}n",buf);
+\}
+\end{alltt}
+
+
+\slide{Overflow - segmentation fault }
+
+\hlkimage{20cm}{buffer-overflow-2.pdf}
+
+
+\begin{list1}
+\item Bad function overwrites return value!
+\item Control return address
+\item Run shellcode from buffer, or from other place
+\end{list1}
+
+
+\slide{Exploits}
+
+\vskip 1 cm
+
+\begin{alltt}
+$buffer = ""; 
+$null = "\textbackslash{}x00"; \pause
+$nop = "\textbackslash{}x90"; 
+$nopsize = 1; \pause
+$len = 201; // what is needed to overflow, maybe 201, maybe more!
+$the_shell_pointer = 0xdeadbeef; // address where shellcode is 
+# Fill buffer
+for ($i = 1; $i < $len;$i += $nopsize) \{
+    $buffer .= $nop;
+\}\pause
+$address = pack('l', $the_shell_pointer);
+$buffer .= $address;\pause
+exec "$program", "$buffer";
+\end{alltt}
+\vskip 1 cm
+\centerline{Demo exploit in Perl}
+
+\slide{Hvordan finder man buffer overflow, og andre fejl}
+
+\begin{list1}
+\item Black box testing
+\item Closed source reverse engineering
+\item White box testing
+\item Open source betyder man kan læse og analysere koden 
+\item Source code review - automatisk eller manuelt
+\item Fejl kan findes ved at prøve sig frem - fuzzing
+\item Exploits virker typisk mod specifikke versioner af software
+\end{list1}
+
+\slide{The Exploit Database - dagens buffer overflow}
+
+\hlkimage{20cm}{exploit-db.png}
+
+\centerline{\link{http://www.exploit-db.com/}}
+
+\slide{Metasploit}
+
+\hlkimage{20cm}{metasploit-about.png}
+
+\begin{list1}
+\item Idag findes der samlinger af exploits som exploit-db eller exploit packs
+\item Udviklingsværktøjerne til exploits er idag meget raffinerede!
+\item \link{http://www.metasploit.com/}
+\item \link{http://www.fastandeasyhacking.com/} Armitage GUI til Metasploit
+\item \link{http://www.offensive-security.com/metasploit-unleashed/}
+\end{list1}
+
+\slide{Forudsætninger}
+
+\begin{list1}
+\item Bemærk: alle angreb har forudsætninger for at virke
+\item Et angreb mod Telnet virker kun hvis du bruger Telnet
+\item Et angreb mod Apache HTTPD virker ikke mod Microsoft IIS
+\item Kan du bryde kæden af forudsætninger har du vundet!
+\end{list1}
+
+\slide{Eksempler på forudsætninger}
+
+
+\begin{list1}
+\item Computeren skal være tændt
+\item Funktionen der misbruges skal være slået til
+\item Executable stack
+\item Executable heap
+\item Fejl i programmet
+\end{list1}
+\pause
+\vskip 2cm 
+
+\centerline{\color{solido-orange}\LARGE \bf alle programmer har fejl}
+
+\slide{Gode operativsystemer}
+
+\begin{list1}
+\item Nyere versioner af Microsoft Windows, Mac OS X og Linux distributionerne inkluderer:
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Vælg derfor hellere:
+\begin{list2}
+\item Windows 7, end Windows Xp
+\item Mac OS X 10.7 fremfor 10.6
+\item Linux sikkerhedsopdateringer, sig ja når de kommer
+\end{list2}
+\item Det samme gælder for serveroperativsystemer
+\item NB: meget få embedded systemer har beskyttelse!
+\end{list1}
+
+\slide{Enhance and secure runtime environment}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{20cm}{medieval-clipart-5}
+%\centerline{Picture from: http://karenswhimsy.com/public-domain-images}
+
+\centerline{Sidste chance er på afviklingstidspunktet}
+
+\slide{Defense in depth - flere lag af sikkerhed}
+
+\hlkimage{8cm}{security-layers-1.pdf}
+
+\centerline{\hlkbig\color{solido-orange} Forsvar dig selv med flere lag af sikkerhed! }
+
+
+
+\slide{Chroot, Jails and }
+
+\begin{list1}
+\item Der findes mange typer \emph{jails} på Unix
+\item Ideer fra Unix chroot som ikke er en egentlig sikkerhedsfeature
+\begin{list2}
+\item Unix chroot - bruges stadig, ofte i daemoner som OpenSSH
+\item FreeBSD Jails
+\item SELinux
+\item Solaris Containers og Zones - \emph{jails på steroider}
+\item VMware virtuelle maskiner, er det et jail?
+\end{list2}
+\item Hertil kommer et antal andre måder at adskille processer - sandkasser
+\item Husk også de simple, database som \verb+_postgresql+, Tomcat som \verb+tomcat+, Postfix postsystem som \verb+_postfix+, SSHD som \verb+sshd+ osv. - simple brugere, få rettigheder
+\end{list1}
+
+
+\slide{OpenBSD systrace}
+
+systrace - generate and enforce system call policies
+\begin{alltt}\small
+EXAMPLES
+   An excerpt from a sample ls(1) policy might look as follows:
+     Policy: /bin/ls, Emulation: native
+     [...]
+        native-fsread: filename eq "$HOME" then permit
+        native-fchdir: permit
+     [...]
+        native-fsread: filename eq "/tmp" then permit
+        native-stat: permit
+        native-fsread: filename match "$HOME/*" then permit
+        native-fsread: filename eq "/etc/pwd.db" then permit
+     [...]
+        native-fsread: filename eq "/etc" then deny[eperm], if group != wheel
+
+SEE ALSO
+     systrace(4)
+\end{alltt}
+
+\slide{Apache 6.0.18 catalina.policy (uddrag) - Java JVM}
+
+\begin{alltt}\footnotesize
+// ========== WEB APPLICATION PERMISSIONS =====================================
+// These permissions are granted by default to all web applications
+// In addition, a web application will be given a read FilePermission
+// and JndiPermission for all files and directories in its document root.
+grant \{ 
+    // Required for JNDI lookup of named JDBC DataSource's and
+    // javamail named MimePart DataSource used to send mail
+    permission java.util.PropertyPermission "java.home", "read";
+    permission java.util.PropertyPermission "java.naming.*", "read";
+    permission java.util.PropertyPermission "javax.sql.*", "read";
+...
+\};
+// The permission granted to your JDBC driver
+// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
+//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
+// \};
+\end{alltt}
+
+\begin{list1}
+\item Eksempel fra \verb+apache-tomcat-6.0.18/conf/catalina.policy+
+\end{list1}
+
+
+
+\slide{Apple sandbox named generic rules} 
+
+\begin{alltt}\small 
+;; named - sandbox profile
+;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
+;;
+;; WARNING: The sandbox rules in this file currently constitute 
+;; Apple System Private Interface and are subject to change at any time and
+;; without notice. The contents of this file are also auto-generated and not
+;; user editable; it may be overwritten at any time.
+;;
+(version 1)
+(debug deny)
+
+(import "bsd.sb")
+
+(deny default)
+(allow process*)
+(deny signal)
+(allow sysctl-read)
+(allow network*)
+\end{alltt}
+
+
+\slide{Apple sandbox named specific rules } 
+
+\vskip 2cm
+\begin{alltt}\small 
+;; Allow named-specific files
+(allow file-write* file-read-data file-read-metadata
+  (regex "^(/private)?/var/run/named\textbackslash\textbackslash.pid$"
+         "^/Library/Logs/named\textbackslash\textbackslash.log$"))
+
+(allow file-read-data file-read-metadata
+  (regex "^(/private)?/etc/rndc\textbackslash\textbackslash.key$"
+         "^(/private)?/etc/resolv\textbackslash\textbackslash.conf$"
+         "^(/private)?/etc/named\textbackslash\textbackslash.conf$"
+         "^(/private)?/var/named/"))
+\end{alltt}
+
+\begin{list1}
+\item Eksempel fra \verb+/usr/share/sandbox+ på Mac OS X
+\end{list1}
+
+
+
+\slide{Flashback}
+
+\hlkimage{18cm}{flash-security-2011}
+Kilde: \link{http://www.locklizard.com/adobe-flash-security.htm}
+
+\slide{Client side: Flash, PDF, Facebook}
+
+\hlkimage{26cm}{drive-by-download-wikipedia.png}
+
+\vskip 1cm
+\centerline{Kan vi undvære Java, Flash og PDF?}
+
+Kilde: \link{http://en.wikipedia.org/wiki/Drive-by_download}
+
+
+\slide{Flash blockers}
+
+\hlkimage{6cm}{clicktoflash.png}
+
+\begin{list1}
+\item Safari \link{http://clicktoflash.com/}
+\item Firefox Extension Flashblock
+\item Chrome extension called FlashBlock
+\item Internet Explorer 8: IE has the Flash block functionality built-in so you don't need to install any additional plugins to be able to block flash on IE 8.
+\item FlashBlock for Opera 9 - bruger nogen Opera mere?
+\item FlashBlockere til iPad? iPhone? Android? - hvorfor er det ikke default?
+\end{list1}
+
+
+
+
+\slide{Superheltegerninger}
+
+\vskip 2cm
+\hlkrightimage{7cm}{003scawebgoshindomanicon.png}
+.
+%{\large Superheltegerninger}
+
+\begin{list1}
+\item Backup - jævnligt
+\item Kryptografi - brug så vidt muligt kryptering og kryptoværktøjer
+\item Sikre protokoller - som ofte bruger kryptering
+\vskip 1cm
+\item Tal frit
+\item Lær og lær fra dig
+\item Følg med i nyhederne
+\end{list1}
+
+
+
+\slide{Backup}
+
+\vskip 3cm
+\centerline{\LARGE \bf Kom igang!}
+
+\slide{Kryptering}
+
+Formålet med kryptering
+
+\vskip 3 cm
+\centerline{\hlkbig kryptering er den eneste måde at sikre:}
+\vskip 3 cm
+\centerline{\hlkbig fortrolighed}
+\vskip 3 cm
+\centerline{\hlkbig autenticitet / integritet}
+
+
+\slide{Kryptografi}
+
+\hlkimage{18cm}{images/crypto-rot13.pdf}
+
+\begin{list1}
+\item Kryptografi er læren om, hvordan man kan kryptere data
+\item Kryptografi benytter algoritmer som sammen med nøgler giver en
+  ciffertekst - der kun kan læses ved hjælp af den tilhørende nøgle
+\end{list1}
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{18cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering 
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{18cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter - som så verificeres med den offentlige nøgle
+\end{list1}
+
+
+\slide{Kryptografiske principper}
+
+\begin{list1}
+\item Algoritmerne er kendte
+\item Nøglerne er hemmelige
+\item Nøgler har en vis levetid - de skal skiftes ofte
+\item Et successfuldt angreb på en krypto-algoritme er enhver genvej
+  som kræver mindre arbejde end en gennemgang af alle nøglerne 
+\item Nye algoritmer, programmer, protokoller m.v. skal gennemgås nøje!
+\item Se evt. Snake Oil Warning Signs:
+Encryption Software to Avoid 
+\link{http://www.interhack.net/people/cmcurtin/snake-oil-faq.html}
+\end{list1}
+
+
+
+\slide{harddisk beskyttelse og data kryptering}
+
+\hlkimage{20cm}{images/apple-filevault.png}
+
+\begin{list1}
+\item Kryptering findes i alle de gængse klient operativsystemer   
+\begin{list2}
+\item Microsoft Windows Bitlocker - kryptering af disken Ultimate eller Enterprise
+\item Apple Mac OS X - krypterer nemt med FileVault og FileVault2
+\item FreeBSD GEOM og GBDE - giver mulighed for at kryptere enheder
+  generelt
+\item PGP disk - Pretty Good Privacy - laver en virtuel krypteret disk
+\item Nogle producenter har kodeord på disken - IBM harddisk BIOS kodeord
+\end{list2}
+\end{list1}
+
+\slide{Opbevaring af passwords}
+
+\hlkimage{10cm}{password-window.png}
+
+
+
+\slide{Sikre protokoller som bruger krypto}
+
+\begin{list1}
+\item Kryptering af e-mail
+\begin{list2}
+\item Pretty Good Privacy - Phil Zimmermann
+\item PGP = mail sikkerhed
+\end{list2}
+\item Kryptering af sessioner SSL/TLS
+\begin{list2}
+\item Secure Sockets Layer SSL / Transport Layer Services TLS
+\item krypterer data der sendes mellem webservere og klienter
+\item SSL kan bruges generelt til mange typer sessioner, eksempelvis
+  POP3S, IMAPS, SSH m.fl.
+\end{list2}
+\item Kryptering af netværkstrafik - Virtual Private Networks VPN
+\begin{list2}
+\item {\color{green}IPsec IP Security Framework, se også L2TP}
+\item {\color{red} PPTP Point to Point Tunneling Protocol - dårlig og usikker, brug den ikke mere!}
+\item OpenVPN m.fl.
+\end{list2}
+\end{list1}
+
+\slide{Enigmail - GPG plugin til Mail}
+
+\hlkimage{20cm}{images/enigmail-compose}
+\begin{list2}
+\item Enigmail er en udvidelse til 
+\item mailklienten i Mozilla/Netscape
+\item standalone mailklienten Thunderbird
+\item Billede fra \link{http://enigmail.mozdev.org}
+\end{list2}
+
+
+\slide{Enigmail - OpenGPG Key Manager}
+
+\hlkimage{18cm}{images/enigmail-keyman1}
+
+
+\centerline{Key Manager funktionaliteten i Enigmail kan anbefales}  
+
+\slide{GPGMail plugin til Mac OS X Mail.app}
+
+\hlkimage{20cm}{images/gpgmail-new-message.png}      
+
+\begin{list2}
+\item Bruger GPG
+\item kilde:
+\link{http://www.sente.ch/software/GPGMail/English.lproj/GPGMail.html}
+\end{list2}
+
+
+
+
+\slide{VPN}
+
+\begin{list1}
+\item VPN \link{http://en.wikipedia.org/wiki/Virtual_private_network}
+\item SSL/TLS VPN - Generelt koncept. Adskillige leverandører: Cisco, Juniper, F5 Big IP
+\item De snakker ikke ret godt sammen på tværs. Brug IPSec for dette.
+\item IPsec er desværre blokeret mange steder og man skal bruge en klient\\
+(I praksis bruger SSL VPN ofte en klient, men den downloades fra web)
+\item Open source variant: OpenVPN 
+\end{list1}
+
+
+\slide{OpenVPN client}
+
+\hlkimage{16cm}{openvpn-gui-systray.png}
+\centerline{OpenVPN GUI - easy to use}
+
+
+
+\slide{Internet sniffing by government}
+
+\begin{list1}
+\item Ægypten, Sudan, Tunesien, ...
+\item Den der kontrollerer ISPerne kontrollerer trafikken
+\item Facebook revolutionerne
+\item Blokering er umulig, men det forsøges
+\item Spredning af falsk information
+\item Diginotar Dutch Certificate Authority
+\end{list1}
+
+Kilde:
+{\footnotesize\link{http://irevolution.net/2011/02/10/facebook-for-repressive-regimes/}}
+
+\slide{HTTPS Everywhere}
+
+\hlkimage{5cm}{HTTPS_Everywhere_new_logo.jpg}
+\begin{quote}
+HTTPS Everywhere is a Firefox extension produced as a collaboration between The Tor Project and the Electronic Frontier Foundation. It encrypts your communications with a number of major websites.
+\end{quote}
+
+\centerline{\link{http://www.eff.org/https-everywhere}}
+
+
+
+\slide{CertPatrol - which site uses which certificate}
+
+
+\hlkimage{13cm}{certificate-patrol-400x300.jpg}
+
+\begin{quote}
+An add-on formerly considered paranoid: CertPatrol implements ''pinning'' for Firefox/Mozilla/SeaMonkey roughly as now recommended in the User Interface Guidelines of the World Wide Web Consortium (W3C).
+\end{quote}
+
+\centerline{\link{http://patrol.psyced.org/}}
+
+
+\slide{Convergence - who do you trust}
+
+\hlkimage{21cm}{convergence.png}
+
+
+\centerline{\link{http://convergence.io/}}
+\centerline{Warning: radical change to how certificates work}
+
+\slide{Tor project}
+
+\hlkimage{21cm}{tor-project.png}
+
+\centerline{\link{https://www.torproject.org/}}
+
+\slide{Tor project - how it works 1}
+
+\hlkimage{21cm}{how-tor-works-1.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 2}
+
+\hlkimage{21cm}{how-tor-works-2.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 3}
+
+\hlkimage{21cm}{how-tor-works-3.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Bonus: brug Bitcoins?}
+
+
+\hlkimage{17cm}{bitcoinnordic.png}
+
+
+
+
+\slide{Er du passende paranoid?}
+
+\hlkimage{15cm}{MangaRamblo.jpg}
+
+\centerline{Vær på vagt}
+
+\slide{Hvordan bliver du sikker} 
+
+\begin{list1}
+\item Lad være med at bruge computere :-)
+\item Lad være med at bruge een computer til alt - en privat bærbar ER mere privat end en firmacomputer
+\item Forskellige computere til forskellige formål, en server er mail-server en anden er web-server
+\item Brug en sikker konfiguration, minimumskonfiguration
+\item Brug sikre protokoller, kryptering, evt. TOR
+\item Opsætning af netværk, hvordan? Security Configuration Guides + paranoia
+\begin{list2}
+\item \link{http://csrc.nist.gov/publications/PubsSPs.html}
+\item \link{http://www.nsa.gov/research/publications/index.shtml}
+\item \link{http://www.nsa.gov/ia/guidance/security_configuration_guides/index.shtml}
+\end{list2}
+\end{list1}
+
+
+
+\slide{Følg med Twitter news}
+
+%\hlkimage{18cm}{twitter-security-feed.png}
+\hlkimage{10cm}{twitter-safety.png}
+
+\begin{list1}
+\item Twitter has become an important new resource for lots of stuff
+\item Twitter has replaced RSS for me 
+\end{list1}
+
+\slide{Følg med Twitter news}
+
+\hlkimage{18cm}{twitter-security-feed.png}
+
+Exploits og nye sårbarheder
+
+
+
+\slide{Checklisten}
+
+\begin{list2}
+\item BIOS kodeord, pin-kode til telefon 
+\item Firewall - specielt på laptops
+\item Installer anti-virus og anti-spyware hvis det er på Windows
+\item Brug to browsere med forskellige indstillinger
+\item Brug evt. PGP til mailkryptering
+\item Brug Password Safe, Keychain Access (OSX) eller tilsvarende
+\item Overvej at bruge harddisk eller filkryptering
+\item Opdatere alle programmer jævnligt 
+\item {\bf Backup af vigtige data - harddiske i bærbare kan også dø}
+\item Husk: sikker sletning af harddiske, medier osv.
+\end{list2}
+
+\slide{Afbalanceret sikkerhed}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Det er bedre at have et ensartet niveau
+\item Hvor rammer angreb hvis du har Fort Knox et sted og kaos andre steder
+\item Hackere vælger ikke med vilje den sværeste vej ind
+\end{list1}
+
+
+\slide{For lidt samarbejde}
+
+\hlkimage{18cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item Snak med din sidemand/dame - I har sikkert mange af de samme udfordringer.
+\end{list1}
+
+
+\slide{PROSA CTF}
+
+\hlkimage{10cm}{DSCF3910s.jpg}
+
+\begin{list1}
+\item PROSA afholdt fredag 17. september - til lørdag 18. september Capture the Flag 
+\item Distribueret CTF med 6 hold og arrangørerne i Aalborg
+\item Sjovt og lærerigt - gentages helt sikkert
+\end{list1}
+Kilde: \link{http://prosa-ctf.the-playground.dk/}
+
+\centerline{Get ready! Lær debuggere, perl, java at kende, start på at hacke}
+
+\slide{Fri adgang til hackerværktøjer}
+
+\begin{list1}
+\item I 1993 skrev Dan Farmer og Wietse Venema artiklen\\
+\emph{Improving the Security of Your Site by Breaking Into it}
+\item I 1995 udgav de softwarepakken SATAN\\
+\emph{Security Administrator Tool for Analyzing Networks}
+\begin{quote}\large
+We realize that SATAN is a two-edged sword - like many tools,\\
+it can be used for good and for evil purposes. We also \\
+realize that intruders (including wannabees) have much \\
+more capable (read intrusive) tools than offered with SATAN. 
+\end{quote}
+\item Se \link{http://sectools.org} og \link{http://www.packetstormsecurity.org/}
+
+\end{list1}
+Kilde:
+\link{http://www.fish2.com/security/admin-guide-to-cracking.html}
+
+
+
+
+\slide{Be careful}
+
+\hlkimage{6cm}{michael-conrad.jpg}
+\centerline{\Large Hey, Lets be careful out there!}
+
+\vskip 2cm
+Kilde: Michael Conrad \link{http://www.hillstreetblues.tv/}
+
+
+
+\slide{Spørgsmål?}
+
+
+\vskip 4cm
+
+\begin{center}
+\hlkbig 
+
+\myname
+
+\myweb
+\vskip 2 cm
+
+I er altid velkomne til at sende spørgsmål på e-mail
+\end{center}
+
+
+\slide{VikingScan.org - free portscanning}
+
+\hlkimage{18cm}{vikingscan.png}
+%\vskip 1cm 
+%\centerline{\link{http://www.vikingscan.org}}
+
+
+\end{document}
+\input{references.tex}
+

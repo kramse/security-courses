@@ -1,0 +1,1000 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Lund Kramshøj, February 2001 
+% hlk@security6.net,
+% My standard packages 
+\usepackage{solido-network-exercises}
+
+\begin{document}
+
+\selectlanguage{danish}
+
+\newcommand{\emne}[1]{Introduktion til IPv6}
+\newcommand{\kursus}[1]{\emne{} workshop}
+\newcommand{\kursusnavn}[1]{\emne\\ øvelseshæfte}
+
+\mytitle{Introduktion til IPv6}{øvelseshæfte}
+
+\thispagestyle{empty}
+\eject
+
+\pagenumbering{roman}
+\setlength{\parskip}{0pt}
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used 
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Forord}
+\markboth{Forord}{}
+Dette kursusmateriale er beregnet til brug på kurset
+\emph{\kursus}. Materialet er lavet af Henrik Lund
+Kramshøj, \link{http://www.solidonetworks.com}
+
+Materialet skal opfattes som beskrivelse af netværkssetup og
+applikationer til kurser og workshops med behov for praktiske
+øvelser. 
+
+Til workshoppen hører desuden en præsentation som udleveres og der
+henvises til et antal dokumenter som kan hjælpe under øvelserne.
+
+\vskip 1cm
+God fornøjelse
+%\eject
+
+\section*{\color{titlecolor}Oversigt}
+\markright{Oversigt}
+\setlength{\parskip}{10pt}
+
+Materialet er inddelt i et antal områder som er beregnet til at give
+valgfrihed i opsætningen af miljøet.
+
+Formålet med kurserne at ofte at give kursusdeltagerne et indblik i
+hvordan emnet i praksis ser ud og opfører sig. De foreslåede
+konfigurationer ligger derfor tæt op ad virkelige konfigurationer, men
+kan samtidig passes ind i et eksisterende kursusnetværk.
+
+% beskrivelse af øvelses materialet
+
+%Der er følgende øvelser som forventes at kunne udføres på det
+%beskrevne netværk:
+%\begin{itemize}
+%\item IP forbindelser og sniffere
+%\item SSH login - Putty og Unix SSHD
+%\item
+%\end{itemize}
+
+\section*{\color{titlecolor}Forudsætninger}
+
+Dette materiale forudsætter at deltageren har kendskab til
+TCP/IP på brugerniveau. Det betyder at begreber som
+\link{www.solidonetworks.com},
+\href{mailto:hlk@solidonetworks.com}{hlk@solidonetworks.com}, IP-adresse og DHCP
+ikke bør være helt ukendte.   
+
+% ordliste ikke lavet til forensics!
+%Dog er der i appendix \ref{app:ordliste} lavet en ordliste der kan
+%hjælpe med til at huske de vigtigste begreber som benyttes i dette
+%materiale og indenfor \emne{} generelt. 
+
+\section*{\color{titlecolor}Værktøjer}
+%\markright{Værktøjer}
+
+Materialet er beregnet på at kunne udføres i et almindeligt
+kursuslokale med netværksopkoblede pc'er.
+
+De praktiske øvelser benytter i vid udstrækning Open Source og 
+kan derfor afvikles på blandt andet følgende platforme:
+\begin{itemize}
+\item Unix - herunder Linux, OpenBSD, NetBSD, FreeBSD og Mac OS X
+\item Microsoft Windows 2000 og XP - primært som
+  klientoperativsystem
+\item Kravene til kursisternes arbejdspladser er generelt en browser
+  og SSH adgang
+\item På visse kurser udleveres en Linux boot CD som kan benyttes til
+  at skifte kursusisternes arbejdsplads til at køre Linux
+\end{itemize}
+
+Udover de programmer der gennemgås er der følgende programmer som kan
+være til stor nytte:
+\begin{itemize}
+%\item \link{http://www.ctan.org} - \LaTeX
+\item \link{http://www.openbsd.org} - OpenBSD - en moderne Unix med
+  fokus på sikkerhed
+\item \link{http://www.openssh.com} - OpenSSH - Secure Shell
+  værktøjer både server og klientprogrammer. Giver sikkerhed mod aflytning
+\end{itemize}
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bfseries \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af øvelserne
+% check questions
+% eventuelle åbne spørgsmål
+% henvisning til øvelse, hvis der er en 
+
+
+
+\chapter*{\color{titlecolor}Introduktion til netværk}
+%\markboth{Introduktion til netværk}{}
+\label{chap:intro}
+
+\section*{\color{titlecolor}TCP/IP - Internet protokollerne}
+Det er vigtigt at have viden om IP for at kunne implementere sikre
+infrastrukturer da man ellers vil have svært ved at vælge mellem de
+mange muligheder for implementation.
+
+\section*{\color{titlecolor}OSI reference model}
+En af de mest benyttede modeller til beskrivelse af netværk er OSI
+reference modellen som gennemgås i alle datakommunikationsbøger.
+
+Denne model beskriver hvorledes man kan opdele funktionerne i netværk
+i lag som så kan implementeres uafhængigt og derfor kan udskiftes
+nemmere - eksempelvis når der kommer nye transmissionsteknologier på
+de lavere niveauer.
+
+På billedet ses en oversigt over OSI referencemodellen, også kaldet
+7-lags modellen. OSI modellen sammenlignes med internetmodellen, som
+ligeledes er lagdelt.
+
+Fordelen ved at opdele i flere lag er at man kan løse problemerne
+uafhængigt og får frihed til at udskifte dele. Eksempelvis er de
+nederste fysiske lag med tiden blevet hurtigere ved skift fra 10Mbit
+Ethernet baseret på coax-kabler, henover 100Mbit Ethernet på
+twisted-pair kabler til idag hvor Gigabit er udbredt.
+
+
+\begin{figure}[H]
+\label{fig:osi}
+\begin{center}
+\colorbox{white}{\includegraphics[width=8cm,angle=90]{images/compare-osi-ip.pdf}}
+\end{center}
+\caption{OSI og Internetmodellerne}
+\end{figure}
+
+
+\section*{\color{titlecolor}Standarder og RFC'er}
+De dokumenter som beskriver internet-standarderne udgives i en række
+Request for Comments (RFC'er) som kan hentes via
+\link{ftp://ftp.ietf.org/rfc}. Når en standard eller et dokument i
+denne serie opdateres sker det ved genudgivelse under et nyt nr - og
+derved bevares de gamle versioner af alle dokumenterne. For at lette
+navigeringen i disse dokumenter udgives et index-dokument som blandt
+andet beskriver om et dokument er erstattet med en ny version. I
+serien er også oversigter over opdelinger indenfor RFC'erne:
+eksempelvis standarder (STD), For Your Information (FYI) og Best
+Current Practice (BCP).
+
+Et eksempel fra index filen er IP specifikationen (version 4):\\
+0791 Internet Protocol. J. Postel. Sep-01-1981. (Format: TXT=97779
+bytes) (Obsoletes RFC0760) (Updated by RFC1349) (Also STD0005)
+(Status: STANDARD) 
+
+Det betyder at RFC0791 altså er en standard og den erstatter
+RFC0760.
+
+Hvis man så kigger på den tilsvarende information for et
+\emph{forældet} dokument ser det således ud:\\
+760 DoD standard Internet Protocol. J. Postel. Jan-01-1980. (Format:
+TXT=81507 bytes) (Obsoletes IEN 123) (Obsoleted by RFC0791) (Updated
+by RFC0777) (Status: UNKNOWN)
+
+
+\chapter*{\color{titlecolor}Hardware og netværk til øvelserne}
+%\markboth{Hardware og netværk til øvelserne}{}
+
+I dette afsnit beskrives de krav der stilles til miljøet hvor de
+beskrevne øvelser kan udføres.
+
+Forudsætningerne for øvelserne er et lokale med et antal PC'er
+med Microsoft Windows klienter og netværksadgang.
+
+En del af øvelserne udføres med Unix, specifikt med OpenBSD, dette
+valg er udfra en betragtning om at det er meget stabilt og
+understøtter de funktioner godt som beskrives i kurset.
+
+OpenBSD er et moderne operativsystem som er frit tilgængeligt og fordi
+det er Open Source tillader det at man kan undersøge og tilpasse
+systemet. Man kan endda benytte BSD systemerne kommercielt - hvis man
+ønsker det.
+
+Hvis der er mulighed for det kan man installere en anden Unix variant,
+ellers skal der som minimum være adgang til en 
+maskine som flere brugere deler:
+\begin{itemize}
+\item Et flerbruger Unix system som eksempelvis kan være OpenBSD
+\item et udvalg af editorer - så folk føler sig hjemme, EMACS, VI,
+  JOVE, Nedit ... I de grafiske brugergrænseflader findes flere
+  lettilgængelige  editorer, der som Nedit fungerer med en File-Save menu. 
+\item OpenSSH - mulighed for både login og filoverførsel på sikker vis. 
+\item webserver med de filer der skal bruges 
+\item hubs, switches, netkort - alt efter hvor komplekst et setup der
+  vil arbejdes med
+\end{itemize}
+
+Et antal windows programmer stilles til rådighed via webserveren:
+\begin{itemize}
+\item putty - SSH adgang fra Windows
+\item winscp - nem adgang til filoverførsel via SSH indeholder tillige editor
+\item wireshark - open source pakkesniffer  
+\end{itemize}
+
+
+Formålet med kurset er blandt andet at forstå hvad der sker i netværk
+og derfor introduceres emnerne ved hjælp af konfigurationsfiler og
+lavniveau beskrivelse af emnet.
+
+Konfigurationsfilerne er ofte mere kompakte og tydelige end
+tilsvarende screen-dumps fra GUI programmer.
+
+Tilsvarende implementerer GUI programmerne ikke altid alle dele af de
+underliggende lag - og er derfor ikke komplette. Eksempelvis
+indeholder firewall funktionen på Mac OS X ingen information om TCP og
+UDP eller forskellen på disse.
+
+Alle filer er tilgængelige både på den lokale server i kursuslokalet
+og via Internet. På kurset gives anvisninger til adgangen.
+
+
+
+
+
+\chapter*{\color{titlecolor}Indholdet i øvelserne}
+\markboth{Indholdet i øvelserne}{}
+
+De fleste af øvelserne har følgende indhold:
+\begin{itemize}
+\item {\bfseries Opgave:} Hvad går øvelsen ud på
+\item {\bfseries Formål:} Hvad forventes det at man lærer ved at løse opgaven
+\item {\bfseries Forslag til fremgangsmåde:} er en hjælp til at komme igang
+\item {\bfseries Hjælp:} et eller flere tips eller beskrivelser af hvordan
+  man kan løse opgaven 
+\item {\bfseries Forslag til løsning:} en mulig løsning til opgaven
+\item {\bfseries Diskussion:} er oplæg til diskussion efter løsning af
+  opgaven. Der er mulighed for at sammenligne og diskutere de valgte
+  løsninger.
+\end{itemize}
+
+
+
+\chapter{Putty installation - Secure Shell login}
+\label{ex:putty-install}
+\hlkimage{6cm}{images/putty-1.jpg}
+
+{\bfseries Opgave:}\\
+Installer Putty lokalt på Windows maskinen
+
+{\bfseries Formål:}\\
+Installere et SSH program således at man kan tilgå servere og systemer senere i kurset.
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Hent og installer programmet, hent fra webserveren eller\\
+\link{http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html}
+
+
+{\bfseries Hjælp:}\\ 
+Putty er en terminal emulator og erstatter telnet programmet i
+Windows. Det er ofte den foretrukne brugergrænseflade for Unix brugere
+og hackere. Husk at putty skal have at vide at det er SSH protokollen og ikke
+Telnet
+
+Hvis der skal ændres på profiler kan Putty godt drille lidt, husk
+altid at trykke \verb+Save+ i profilvinduet - så indstillingerne du har
+valgt gemmes til næste gang
+
+{\bfseries Forslag til løsning:}\\
+Hvis man kender SSH i forvejen anbefales det at man ser på
+brug af public key autentifikation herunder nøglegenerering og
+installation.
+
+{\bfseries Diskussion:}\\
+SSH protokollen tillader både login og filoverførsel - secure copy
+
+Man BØR bruge SSH protokol version 2!
+
+{\bf NB: benyt gerne chancen til at skrive IP-adresser ind i hosts
+filen lokalt på din maskine}.
+
+Eksempel:
+\begin{alltt}
+10.0.45.36    fiona
+\end{alltt}
+
+Det gør det nemmere senere at skrive \verb+ping fiona+ for at se om
+der er forbindelse til serveren.
+
+
+\chapter{WinSCP installation - Secure Copy}
+\label{ex:winscp-install}
+
+{\bfseries Opgave:}\\
+Installer WinSCP lokalt på Windows maskinen
+
+{\bfseries Formål:}\\
+Installere et GUI program så man kan undersøge serversystemerne senere, eksempelvis læse konfigurationsfiler. Sekundært afprøve SSH protokollen til filoverførsel - se at det er nemt.
+
+{\bfseries Forslag til fremgangsmåde:}\\ 
+Hent og installer programmet, hent winscp fra webserveren eller fra\\
+\link{http://winscp.sourceforge.net}
+
+Installer programmet som beskrevet
+
+{\bfseries Hjælp:}\\
+WinSCP kan være en stor hjælp når I skal arbejde med filer på Unix
+systemet - I kan ofte slippe for Unix editorerne VI og EMACS
+
+{\bfseries Diskussion:}\\ 
+Kan WinSCP bruges generelt til opdatering af websites? hvad kræver
+det? kan brugerne finde ud af det?
+
+WinSCP indeholder også en editor, så vi slipper for Unix VI editor ;-)
+
+\chapter{Login på Unix systemerne}
+\label{ex:unix-login}
+
+{\bfseries Opgave:}\\
+Brug jeres arbejdsplads til at logge ind på serverne 
+
+Det kræves at der er installeret SSH program, eksempelvis Putty fra  
+øvelse \ref{ex:putty-install}.
+
+{\bfseries Formål:}\\
+Få adgang til Fiona server således at man kan udføre opgaverne fra denne server senere i kurset
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Brug SSH til at logge ind på Fiona eller en anden host i netværket
+
+{\bfseries Hjælp:}\\
+Der skal bruges enten Putty på Windows eller ssh programmet på Unix/boot CD
+
+Med Unix/boot CD og OpenSSH kan logges ind således:\\
+\verb+ssh brugernavn@server -p port+ dvs på fiona:\\
+\verb+ssh kursus1@fiona -p 22+
+
+NB: fiona er ikke med i DNS, så brug IP-adressen!
+
+%I kan også logge ind på Fiona som er en OpenBSD server
+På kursusservere er brugernavne: kursus1, kursus2, kursus3, op til
+kursus20 - allesammen med kodeord \emph{kursus}.
+
+
+{\bfseries Forslag til løsning:}\\
+Start Putty eller Boot på CD'en
+
+
+{\bfseries Hostoplysninger:}\\
+\begin{itemize}
+\item I bedes registrere IP-adresserne for maskinerne
+\item Filer til installation - installationsprogrammer:\\
+http:// \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm /public/windows/
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Din egen
+  arbejdsstation - Windows
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Fiona
+  OpenBSD scanserver, nmap mv.
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - 
+\end{itemize}
+
+
+
+\chapter{Axence NetTools installation}
+
+{\bfseries Opgave:}\\
+Installer Axence NetTools lokalt på Windows maskinen
+
+{\bfseries Formål:}\\
+Installere et værktøjsprogram program som kan erstatte mange kommandolinieværktøjer senere.
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Hent og installer programmet, hent fra webserveren NetTools.exe
+
+{\bfseries Hjælp:}\\ 
+Programmet tillader at man arbejder med netværksværktøjer på en nem måde.
+
+{\bfseries Forslag til løsning:}\\
+
+{\bfseries Diskussion:}\\
+
+
+\chapter{Netværksinformation: ifconfig/ipconfig}
+\label{ex:network-ifconfig}
+%\hlkimage{6cm}{images/putty-1.jpg}
+
+{\bfseries Opgave:}\\ 
+Brug ifconfig på Unix eller ipconfig på Windows til at indsamle information
+
+{\bfseries Formål:}\\
+Lære at læse output fra netværkskonfiguration - specielt skal man kunne genkende netværksmasker og checke om de er sat rigtigt.
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Udfør kommandoen \verb+ifconfig -a+ på Unix systemerne og
+se information om netværkskort.
+
+Tilsvarende udføres kommandoen \verb+ipconfig /all+ på Windows og
+se information om netværkskort.
+
+
+{\bfseries Hjælp:}\\ 
+Hvad er forskellen på\\
+\verb+ifconfig -a+ og \verb+ifconfig vr0+ (Linux: \verb+ifconfig eth0+)
+
+{\bfseries Diskussion:}\\ 
+Udover ifconfig og netstat der altid findes på Unix kan det være en
+fordel at installere list open files kommandoen, \verb+lsof+. Med
+denne kommando kan man se hvilke programmer der benytter hvilke filer,
+herunder netværksforbindelser.
+
+Bemærk: på Linux kaldes netværkskort for eth0, eth1, ... mens OpenBSD
+bruger interfacenavne svarende til den driver/hardware som benyttes
+nfe0, vr0, em0 osv. Mac OS X og AIX bruger en0, en1, ...
+
+Vores systemer Fiona og Luffe benytter allesammen VIA Rhine kort.
+Soekris 4801 systemer benytter sis driver, så netkort hedder sis0, sis1 og sis2
+
+Timon benytter Intel gigabit netkort som kaldes em0, Atheros baserede netkort til 802.11b/g kaldes typisk for ath0, ath1 osv.
+
+AIX og Mac OS X kalder netkortene for en0, en1 - Mac OS X gør det endda for wireless kort.
+
+Windows kalder kommandoen ifconfig for \verb+ipconfig+ eller \verb+ipv6+ hvis det er information omkring IPv6.
+
+Forvirret? :-)
+
+Brug altid først \verb+ifconfig -a+ evt. \verb+ifconfig -a | more+
+
+
+
+\chapter{Netværksinformation: netstat}
+\label{ex:network-netstat}
+%\hlkimage{6cm}{images/putty-1.jpg}
+
+{\bfseries Opgave:}\\ 
+Brug netstat til at indsamle information
+
+{\bfseries Formål:}\\
+Netstat er et af de primære værktøjer til at undersøge routingtabeller og det er nødvendigt at kende routing for at kunne bruge mere avancerede features som VLANs
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Udfør kommandoerne \verb+netstat+ på systemerne og
+se information om netværkskort, lyttende serverprogrammer og
+igangværende forbindelser. 
+
+
+{\bfseries Hjælp:}\\ 
+Hvad er forskellen på\\
+\verb+netstat -an+ og \verb+netstat -a+
+
+Netstat har mange options, men den mest benyttede er:\\
+\verb+netstat -an+ evt. kombineret med grep\\
+\verb+netstat -an | grep -i listen+
+
+Netstat kan også vise memoryforbrug og interfacestatistik med -m og -i
+options. 
+
+Routingtabellen vises med \verb+netstat -rn+ evt. \verb+netstat -rn -f inet+
+eller \verb+netstat -rn -f inet6+
+
+
+{\bfseries Diskussion:}\\ 
+Udover ifconfig og netstat der altid findes på Unix kan det være en
+fordel at installere list open files kommandoen, \verb+lsof+. Med
+denne kommando kan man se hvilke programmer der benytter hvilke filer,
+herunder netværksforbindelser.
+
+\chapter{ping og traceroute}
+\label{ex:ping}
+
+{\bfseries Opgave:}\\ 
+Lær at bruge ping og traceroute programmerne
+
+{\bfseries Formål:}\\
+Disse programmer er vores primære diagnosticeringsprogrammer for netværk og det er obligatorisk at kende dem.
+
+{\bfseries Forslag til fremgangsmåde:} \\
+Brug \verb+ping+ og \verb+traceroute+ til at teste netværksforbindelsen - kan
+udføres fra både windows og Unix.
+
+Husk at traceroute hedder \verb+tracert+ på windows.
+
+Er der forbindelse til alle servere på oversigtstegningen?
+
+{\bfseries Hjælp:} \\
+ICMP er Internet Control Message Protocol det bruges typisk til at
+rapportere om fejl, host unreachable og lignende.
+
+Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
+reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
+svar tilbage for at kunne mappe et netværk.
+
+{\bf Ekstra:}
+Hvad er forskellen på (skal udføres på OpenBSD/Unix)
+\begin{list2}
+\item {\bfseries traceroute} og {\bfseries traceroute -I} 
+\item NB: traceroute med -I findes kun på Unix - traceroute med ICMP pakker
+\item Der er mange der ikke blokerer for ICMP traceroute
+\end{list2}
+
+
+\chapter{ping6 og traceroute6}
+\label{ex:ping6}
+
+{\bfseries Opgave:}\\ 
+Lær at bruge ping og traceroute programmerne - men med IPv6
+
+{\bfseries Formål:}\\
+Disse programmer er vores primære diagnosticeringsprogrammer for netværk og det er obligatorisk at kende dem.
+
+{\bfseries Forslag til fremgangsmåde:} \\
+Brug \verb+ping6+ og \verb+traceroute6+ til at teste netværksforbindelsen - kan
+udføres fra både windows og Unix.
+
+Husk at traceroute hedder \verb+tracert6+ på windows.
+
+Er der forbindelse til alle servere på oversigtstegningen?
+
+{\bfseries Hjælp:} \\
+ICMP er Internet Control Message Protocol det bruges typisk til at
+rapportere om fejl, host unreachable og lignende. IPv6 har tilsvarende ICMPv6 med samme funktioner - men har overtaget ARP funktionen.
+
+Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
+reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
+svar tilbage for at kunne mappe et netværk.
+
+{\bf Ekstra:}
+Hvad er forskellen på (skal udføres på OpenBSD/Unix)
+\begin{list2}
+\item {\bfseries traceroute6} og {\bfseries traceroute6 -I} 
+\item NB: traceroute med -I findes kun på Unix - traceroute med ICMP pakker
+\item Der er mange der ikke blokerer for ICMP traceroute
+\end{list2}
+
+Det er ikke altid at IPv4 og IPv6 routes går gennem de samme routere! Det er med vilje lavet simpelt i vores setup.
+
+
+
+\chapter{Wireshark netværksniffer}
+\label{ex:wireshark}
+
+\hlkimage{9cm}{images/ethereal-main-window.pdf}
+
+{\bfseries Opgave:}\\
+Prøv en Wireshark sniffer på din maskine!
+
+Brug lidt tid på at lære den at kende. 
+
+{\bfseries Formål:}\\
+Lære at bruge en sniffer til enkle undersøgelser, så man senere kan lære mere om netværk.
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Find Wireshark og installer denne, hent fra den lokale webserver eller \link{http://www.wireshark.org}
+
+{\bfseries Hjælp:}\\
+Find ud af hvordan det er understøttet i dit favorit operativsystem
+ved at bruge eksempelvis \link{http://www.google.com}
+
+{\bfseries Forslag til løsning:}\\
+Windows - hvis du er på Windows skal der
+installeres WinPCAP - packet capture - biblioteket. Dette bibliotek følger med
+Wireshark i installationsfilen.
+
+%adressen:
+%\href{http://www.security6.net/courses/programs/WinPcap_3_0_beta.exe}
+%{http://www.security6.net/courses/programs/WinPcap\_3\_0\_beta.exe}
+
+Unix - de fleste Unix varianter har installationspakker til Wireshark
+og TCPdump
+
+Prøv efter installationen at kigge på den normale trafik på nettet,
+eller generer selv trafik med ping og traceroute (windows: tracert)
+programmer 
+- når dette er gjort virker snifferen
+
+{\bfseries Diskussion:}\\
+Kender du forskel på ICMP, TCP og UDP? 
+
+Hvilke protokoller bruger kryptering?
+
+Husk også at sniffe en TCP session og sammensæt alle pakkerne med
+TCP Follow Stream funktionaliteten.
+
+Wireshark er en efterfølger til Ethereal, navneskiftet skyldes et jobskifte hvor ejeren af Ethereal domænet ikke ville give det med programmøren.
+
+
+Specielt med IPv6 vil man se ICMPv6 Router Advertisement og Neighbor Discovery Protocol ICMPv6 pakker.
+
+\chapter{VLAN 802.1q}
+\label{ex:vlan}
+
+\hlkimage{12cm}{vlan-8021q.pdf}
+
+{\bfseries Opgave:} \\
+Se VLAN konfiguration i webinterface 
+
+{\bfseries Formål:}\\
+Se et par eksempler på hvordan 802.1q kan være implementeret. Der er stor forskel på brugervenligheden.
+
+{\bfseries Forslag til fremgangsmåde:} \\
+Login på de tilgængelige enheder som har 802.1q
+
+Der er følgende enheder:
+\begin{itemize}
+\item Dell 3448 switch
+\item Linksys WRV-200 switch, access point og router
+\item Juniper SRX210 firewall og router
+\item OpenBSD, hvis man kender OpenBSD i forvejen - se man \verb+hostname.if+ ;-)
+\end{itemize}
+
+NB: ikke alle enheder tillader flere samtidige logins, specielt firmware i små enheder gør ikke
+
+{\bfseries Hjælp:} \\
+Mange moderne managed switche har mulighed for VLAN efter 802.1q standarden.
+
+{\bfseries Diskussion:}\\ 
+Er det for besværligt?
+
+Husk at hvis man opdeler i VLAN kan maskinerne ikke se hinanden, og der skal routes ligesom hvis det var fysiske interfaces!
+
+
+
+
+
+
+\chapter{DNS og navneopslag}
+\label{ex:basic-dns-lookup}
+
+{\bfseries Opgave:}\\
+Prøv forskellige programmer til at spørge en service
+
+{\bfseries Formål:}\\
+Lære om DNS records og hvordan man kan slå dem op programmatisk
+
+{\bfseries Forslag til fremgangsmåde:}\\
+\begin{itemize}
+\item nslookup - findes både på Unix og Windows
+\item Prøv nslookup -q=txt -class=CHAOS version.bind. 0  
+\item dig - syntaks @server domain query-type query-class
+\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]
+\item prøv {\bfseries host -a security6.net} \\
+{\bfseries host -a www.security6.net} - hvad er forskellen 
+\end{itemize}
+
+{\bfseries Hjælp:}\\ 
+Host programmet er med som standard på OpenBSD - så brug Fiona eller Luffe
+
+På Unix Boot CD og MS Windows platformen findes mange GUI programmer til det samme.
+
+{\bfseries Diskussion:}\\
+Hvad er en zonetransfer? det er alle de records der er defineret for
+et domæne
+
+Hvad er forward og reverse lookup? forward er fra hostnavn til IP adresse,
+mens reverse er fra IP adresse til hostnavn 
+
+
+
+\chapter{DNS og navneopslag - IPv6}
+\label{ex:basic-dns-lookup6}
+
+{\bfseries Opgave:}\\
+Prøv host programmet til at spørge efter Quad-A (AAAA) records.
+
+{\bfseries Formål:}\\
+Lære om IPv6 specifikke DNS records og hvordan man kan slå dem op programmatisk
+
+{\bfseries Forslag til fremgangsmåde:}\\
+\begin{itemize}
+\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]
+\item prøv {\bfseries host -t A security6.net} \\
+{\bfseries host -t AAAA security6.net} - hvad er forskellen 
+\end{itemize}
+
+{\bfseries Hjælp:}\\ 
+Host programmet er med som standard på OpenBSD - så brug Fiona eller Luffe
+
+På Unix Boot CD og MS Windows platformen findes mange GUI programmer til det samme.
+
+{\bfseries Diskussion:}\\
+DNS har mange recordtyper og AAAA er blot endnu en. Typisk vil programmer der har IPv6 funktionalitet forsøge at slå både AAAA records og A records op - og forsøge at forbinde til AAAA først.
+
+
+\chapter{Opslag i whois databaser}
+\label{ex:whois}
+
+
+{\bfseries Opgave:} \\
+Lær at bruge whois 
+
+{\bfseries Formål:}\\
+Lære whois at kende - eksempelvis kunne slå abuse adresser op
+
+{\bfseries Forslag til fremgangsmåde:}\\
+\begin{list2}
+\item Login på UNIX server - læs manualen til programmet whois
+eller brug webinterface på\\ \link{http://www.ripe.net}
+\end{list2}
+
+{\bfseries Hjælp:}\\ 
+Whois databaserne er fordelt på ARIN, RIPE, LACNIC og APNIC.
+
+Kommandoen \verb+whois -r 90.184.69.97+ vil på en OpenBSD give
+svaret på et opslag i RIPE databasen efter IP adresse 90.184.69.97
+
+{\bfseries Diskussion:}\\
+I skal lære at spørge efter IP adresser og spore oprindelsen - find
+eksempelvis brugeren af IP-adressen 217.157.20.129
+
+
+
+\chapter{Test din forbindelse test-ipv6.com}
+
+{\bfseries Opgave:}\\
+Besøg hjemmesiden \link{http://www.test-ipv6.com}
+
+
+{\bfseries Formål:}\\
+Undersøg om din forbindelse er klar til IPv6.
+
+{\bfseries Forslag til fremgangsmåde:}\\
+
+{\bfseries Hjælp:}\\ 
+
+{\bfseries Forslag til løsning:}\\
+
+{\bfseries Diskussion:}\\
+
+
+\chapter{Test din forbindelse for DNS problemer}
+
+{\bfseries Opgave:}\\
+Besøg hjemmesiden \link{http://labs.ripe.net/content/testing-your-resolver-dns-reply-size-issues}
+og kør testprogrammet.
+
+{\bfseries Formål:}\\
+Undersøg om din forbindelse er klar til DNS med større pakker.
+
+{\bfseries Forslag til fremgangsmåde:}\\
+
+{\bfseries Hjælp:}\\ 
+
+{\bfseries Forslag til løsning:}\\
+
+{\bfseries Diskussion:}\\
+
+
+
+\chapter{Performance tool - iperf}
+\label{ex:iperf}
+
+{\bfseries Opgave:} \\
+Lær at bruge iperf programmet
+
+{\bfseries Formål:}\\
+Få et indblik i hvordan man med enkle testprogrammer kan få målbare data fra netværksperformance
+
+{\bfseries Forslag til fremgangsmåde:} \\
+Login på Unix server start en iperf server og tilsvarende start en iperf client på en anden maskine i netværket.
+
+Brug eksempelvis fiona som client og din PC som server.
+
+{\bfseries Hjælp:} \\
+Iperf er et lille nemt program som blot skal startes som server på en maskine og derefter kaldes som klient på et andet. Så måler den som default et kort stykke tid og præsenterer resultatet.
+
+{\bfseries Diskussion:}\\ 
+Til rigtige performancemålinger er det uhensigtsmæssigt at netværket benyttes til anden traffik under målingerne, medmindre man ønsker at måle nu og her.
+
+Der findes et GUI til programmet kaldet jperf.
+
+\chapter{SNMP walk}
+\label{ex:snmpwalk}
+
+{\bfseries Opgave:}\\
+Log ind på et OpenBSD Unix system og se på \verb+snmpwalk+
+
+{\bfseries Formål:}\\
+Se eksempel på data fra netværksenheder
+
+{\bfseries Forslag til fremgangsmåde:}\\
+SNMP walk betyder at man går igennem alle SNMP oplysningerne fra et system.
+
+{\bfseries Hjælp:}\\
+\verb+snmpwalk -v 2c -c public 10.0.45.17+
+
+Public er default på meget udstyr og findes stadig mange steder i produktion.
+
+Private er et andet kendt community name og gav tidligere lov til at ændre indstillingerne på enheder.
+
+{\bfseries Diskussion:}\\
+
+
+
+
+
+
+
+
+\chapter{Logning med syslogd og syslog.conf}
+\label{ex:syslogd-basic}
+
+{\bfseries Opgave:}\\
+log ind på et OpenBSD Unix system og se på \verb+syslog.conf+
+
+{\bfseries Formål:}\\
+Se mulighederne for at samle eller sortere logbeskeder med en standardfunktionalitet
+
+{\bfseries Forslag til fremgangsmåde:}\\
+
+\begin{list2}
+\item Hvor ligger den? - i hvilket katalog?
+\item Hvordan kan man sende loggen videre til en anden maskine?
+\item Hvilken protocol og port bruger syslog - hvis I skal tillade det
+  gennem en firewall?
+\end{list2}
+
+{\bfseries Hjælp:}\\
+ Indholdet af filen kan ses nedenfor:
+
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+{\bfseries Diskussion:}\\
+Se også \link{http://www.loganalysis.org/}
+
+{\bf Syslog er standard logging format/protokol for netværksenheder, ikke bare Unix }
+
+
+
+\chapter{AirPort Extreme}
+\label{ex:AirPort-AP}
+
+\hlkimage{10cm}{airport-configuration-3.png}
+
+{\bfseries Opgave:}\\
+Konfiguration af Apple AirPort Extreme
+
+{\bfseries Formål:}\\
+Prøve et administrativt interface til et access point, sekundært se de mange muligheder som repræsenterer avancerede netværksenheder
+
+{\bfseries Forslag til fremgangsmåde:}\\
+Hent AirPort konfigurationsprogrammet til Windows og
+brug denne til at konfigurere Apple AirPort
+
+{\bfseries Hjælp:}\\
+Manualen til udstyret forefindes i PDF format
+
+{\bfseries Forslag til løsning:}\\
+Sæt det trådløse udstyr i et isoleret netværk når det skal konfigureres
+
+{\bfseries Diskussion:}\\
+Hvad er de mange Ethernet stik til?
+
+Sørg for at undersøge alle mulighederne i konfigurationen
+
+Prøv evt. også at se på Linksys udstyret WAP54 og WRV-200
+
+
+
+
+\chapter{RADIUS client}
+\label{ex:radius-client}
+
+% http://open1x.sourceforge.net/ måske
+
+{\bfseries Opgave:}\\
+
+{\bfseries Formål:}\\
+Prøve at bruge et RADIUS testprogram fra Fiona serveren - den har både RADIUS server og client
+
+{\bfseries Forslag til fremgangsmåde:}\\ 
+Undersøg med  vores systemer og kommandoen radclient. Der er defineret en enkelt "user" i \verb+/etc/raddb/users+
+med teksten:
+\begin{alltt}
+"kursus1"       Cleartext-Password := "kursus"
+                Reply-Message = "Hello, %{User-Name}"
+\end{alltt}
+
+Dette bør ved brug af kommandoerne nedenfor give resultat.
+
+\begin{alltt}\footnotesize
+echo "User-Name = kursus1" | radclient 127.0.0.1:1812 auth testing123
+
+echo "User-Name=kursus1,Cleartext-Password=kursus " | radclient 127.0.0.1:1812 auth testing123
+\end{alltt}
+
+Output skulle ligne:
+\begin{alltt}
+	Received response ID 102, code 3, length = 36
+        Reply-Message = "Hello, kursus1"
+\end{alltt}
+
+{\bfseries Hjælp:}\\
+Husk secret vores er testing123 som er default mange steder! (bør selvfølgelig ændres)
+
+Se også: \link{http://wiki.freeradius.org/Radclient}
+
+{\bfseries Diskussion:}\\
+RADIUS er OK - men mange loginmetoder og protokoller er ikke!
+
+RADIUS sikrer at man kan snakke sammen, men hvis man bruger cleartext passwords giver det naturligvis ringe sikkerhed.
+
+Et godt råd er at sikre:
+\begin{itemize}
+\item Hvem må tale med RADIUS serveren, IP-adresser
+\item Hvem kender hemmeligheden, secret
+\item Brug TLS/SSL osv.
+\item Lad være med at bruge PAP med cleartext password, lad være med at bruge PPTP osv.
+\end{itemize}
+
+
+
+\chapter{LDAP client}
+\label{ex:ldap-client}
+
+{\bfseries Opgave:}\\
+Brug et LDAP klientprogram til at slå op i LDAP
+
+{\bfseries Formål:}\\
+Prøve at bruge et LDAP testprogram
+
+{\bfseries Forslag til fremgangsmåde:}\\ 
+Undersøg med \verb+ldapsearch+ vores systemer.
+
+\verb+ldapsearch -h 10.0.45.12 -x -b 'dc=darky,dc=kramse,dc=dk' '(uid=root)' +
+
+\verb+ldapsearch -h 10.0.45.12 -x -b 'dc=darky,dc=kramse,dc=dk' '(uid=*)'+
+
+(husk den rigtige IP-adresse på serveren)
+
+{\bfseries Hjælp:}\\
+I kan også prøve JXplorer som er et JAVA GUI program til LDAP
+
+Det skal udfyldes med følgende oplysninger:
+Host: 10.0.45.12 Port: 389\\
+Protocol LDAP v3\\
+BaseDN: dc=darky,dc=kramse,dc=dk\\
+User DN: uid=diradmin,cn=users,dc=darky,dc=kramse,dc=dk\\
+Password: henrik42
+
+
+\link{http://www.jxplorer.org/}
+
+{\bfseries Diskussion:}\\
+Hvad er bind? 
+
+Hvad med LDAP kan det bruge SSL?
+
+Der findes også en protokol TACACS som ligeledes bruges til centraliseret brugerstyring.
+
+
+
+
+
+\appendix 
+\rhead{\fancyplain{}{\bfseries\leftmark}}
+%\setlength{\parskip}{5pt}
+\normal
+
+
+%\chapter{Kursusnetværk}
+
+%\colorbox{white}{\includegraphics[width=18cm]{kursus-network.pdf}}
+
+\end{document}
+

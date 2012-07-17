@@ -1,0 +1,1639 @@
+\slide{Agenda - dag 2 Avancerede netværksteknologier og 802.11}
+%\hlkimage{18cm}{nagios-status-overview.jpg}
+\hlkimage{21cm}{cricket-mini-graph.png}
+
+
+\slide{Nu skal vi til management og diagnosticering}
+
+\begin{list1}
+\item Always check the spark plugs!
+\item Når man skal spore fejl i netværk er det essentielt at starte fra bunden:
+\begin{list2}
+\item Er der link?
+\item Er der IP-adresse?
+\item Er der route?
+\item Modtager systemet pakker
+\item Er der en returvej fra systemet! Den her kan snyde mange!
+\item Lytter serveren på den port man vil forbinde til, UDP/TCP
+\end{list2} 
+\item Hvis der ikke er link vil man aldrig få svar fra databasen/webserveren/postserveren
+\end{list1}
+
+\slide{Udtræk af netværkskonfigurationen}
+
+\begin{list1}
+\item De vigtigste kommandoer til udtræk af netværkskonfigurationen
+\item På Unix:
+\begin{list2}
+\item cat - til at vise tekstfiler
+\item ifconfig - interface configuration
+\item netstat - network statistics
+\item lsof - list open files
+\end{list2}
+\item Windows:
+\begin{list2}
+\item kontrolpanelet
+\item ipconfig/ipv6
+\end{list2}
+\end{list1}
+
+\slide{Basale testværktøjer TCP - Telnet og OpenSSL}
+
+\begin{list1}
+\item Telnet blev tidligere brugt til login og er en klartekst forbindelse
+over TCP
+\item Telnet kan bruges til at teste forbindelsen til mange ældre serverprotokoller som benytter ASCII kommandoer
+\begin{list2}
+\item \verb+telnet mail.kramse.dk 25+ laver en forbindelse til port 25/tcp
+\item \verb+telnet www.kramse.dk 80+ laver en forbindelse til port 80/tcp
+\end{list2}
+\item Til krypterede forbindelser anbefales det at teste med openssl
+\begin{list2}
+\item \verb+openssl s_client -host www.kramse.dk -port 443+\\
+laver en forbindelse til port 443/tcp med SSL
+\item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
+ laver en forbindelse til port 993/tcp med SSL
+\end{list2}
+\item Med OpenSSL i client-mode kan services tilgås med samme tekstkommandoer som med telnet
+\end{list1}
+
+
+\slide{Basale testværktøjer UDP}
+
+\begin{list1}
+\item UDP er lidt drilsk, for de fleste services er ikke \emph{ASCII protokoller}
+\item Der findes dog en række testprogrammer, a la ping
+\begin{list2}
+\item nsping - name server ping
+\item dhcping - dhcp server ping
+\item ...
+\end{list2}
+\item Derudover kan man bruge de sædvanlige programmer som \verb+host+ til navneopslag osv.
+\end{list1}
+
+
+\slide{Logfiler}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler giver mulighed for statistik
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:  
+\begin{list2}
+\item routere
+\item firewalls
+\item webservere
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales 
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+
+\slide{syslog}
+
+\begin{list1}
+\item syslog er system loggen på Unix og den er effektiv
+  \begin{list2}
+\item man kan definere hvad man vil se og hvor man vil have det
+  dirigeret hen
+\item man kan samle det i en fil eller opdele alt efter programmer og
+  andre kriterier
+\item man kan ligeledes bruge named pipes - dvs filer i filsystemet
+  som tunneller fra chroot'ed services til syslog i det centrale system! 
+\item man kan nemt sende data til andre systemer
+  \end{list2}
+\item Hvis man vil lave en centraliseret løsning er følgende link
+  vigtigt: \\
+\link{http://loganalysis.org}
+\end{list1}
+
+\slide{syslogd.conf eksempel}
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+\slide{Andre syslogs syslog-ng}
+
+\begin{list1}
+\item der findes andre syslog systemer eksempelvis syslog-ng
+\item konfigureres gennem \verb+/etc/syslog-ng/syslog-ng.conf+   
+\item Eksempel på indholdet af filen kunne være:
+\end{list1}
+
+\begin{alltt}
+\small 
+options \{ 
+        long_hostnames(off); 
+        sync(0); 
+        stats(43200); 
+\};
+
+source src { unix-stream("/dev/log"); internal(); pipe("/proc/kmsg"); };
+destination messages { file("/var/log/messages"); };
+destination console_all { file("/dev/console"); };
+log { source(src); destination(messages); };
+log { source(src); destination(console_all); };
+\end{alltt}
+
+\exercise{ex:syslogd-basic}
+
+\slide{Logfiler og computer forensics}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:  
+\begin{list2}
+\item routere
+\item firewalls
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales 
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+
+\slide{Simple Network Management Protocol}
+
+\begin{list1}
+\item SNMP er en protokol der supporteres af de fleste professionelle
+  netværksenheder, såsom switche, routere
+\item hosts - skal slås til men følger som regel med
+\item SNMP bruges til: 
+  \begin{list2}
+    \item \emph{network management}
+    \item statistik
+    \item rapportering af fejl - SNMP traps
+  \end{list2}
+\item {\bfseries sikkerheden baseres på community strings der sendes
+    som klartekst ...}
+\item det er nemmere at brute-force en community string end en
+  brugerid/kodeord kombination
+\end{list1}
+
+\slide{SNMP - \emph{hacking}}
+
+\vskip 2 cm
+
+\begin{list1}
+\item Simple Network Management Protocol
+\item sikkerheden afhænger alene af en Community string SNMPv2
+\item typisk er den nem at gætte:
+  \begin{list2}
+    \item public - default til at aflæse statistik
+\item private - default når man skal ændre på enheden, skrive 
+\item cisco
+\item ...
+  \end{list2}
+\item Der findes lister og ordbøger på nettet over kendte default communities
+\end{list1}
+
+\slide{Systemer med SNMP}
+
+\begin{list1}
+  \item kan være svært at finde ... det er UDP 161
+\item Hvis man finder en så prøv at bruge {\bfseries snmpwalk}
+  programmet - det kan vise alle tilgængelige SNMP oplysninger fra den
+  pågældende host 
+\item det kan være en af måderne at identificere uautoriserede WLAN
+  Access Points på - sweep efter port 161/UDP 
+\item snmpwalk er et af de mest brugte programmer til at hente snmp
+  oplysninger - i forbindelse med hackning og penetrationstest
+\end{list1}
+
+\slide{snmpwalk}
+
+\begin{list1}
+\item Typisk brug er:
+\item \verb+snmpwalk -v 1 -c secret switch1+
+\item \verb+snmpwalk -v 2c -c secret switch1+
+\item Eventuelt bruges \verb+snmpget+ og \verb+snmpset+
+\item Ovenstående er en del af Net-SNMP pakken\\
+ \link{http://net-snmp.sourceforge.net/}
+\end{list1}
+
+\exercise{ex:snmpwalk}
+
+
+\slide{Eksempler på SNMP og management}
+
+\begin{list1}
+\item Ofte foregår administration af netværksenheder via HTTP, Telnet eller SSH
+\begin{list2}	
+\item små dumme enheder er idag ofte web-enablet
+\item bedre enheder giver både HTTP og kommandolinieadgang
+\item de bedste giver mulighed for SSH, fremfor Telnet
+\end{list2}
+\end{list1}
+
+
+\slide{Tobi Oetiker's MRTG The Multi Router Traffic Grapher}
+
+\hlkimage{15cm}{rrdtool-demo.png}
+
+\begin{list1}
+\item Monitorering af SNMP enheder og grafer
+\item Inkluderer en nem configmaker og benytter idag RRDTool til data
+\item Hjemmesiden: \link{http://oss.oetiker.ch/mrtg/}
+\end{list1}
+
+\slide{RRDTool Round Robin Database Tool}
+
+\hlkimage{12cm}{rrdtool-demo.png}
+
+\begin{list1}
+\item Round Robin Database Tool er en måde at gemme data på
+\item Med RRDTool kan man derefter få lavet grafer
+\item Typisk bruger man et andet værktøj som benytter RRDTool til data
+\item \link{http://oss.oetiker.ch/rrdtool/doc/index.en.html}
+\end{list1}
+
+Kan bruges til temperaturmålinger og alt muligt andet
+
+\slide{Smokeping}
+
+\hlkimage{15cm}{smokeping-demo.jpg}
+
+\begin{list1}
+\item Måling af latency for netværksservice
+\item Understøtter et stort antal prober: ICMP, DNS, HTTP, LDAP, SMTP, ...
+\item Min SmokePing server \link{http://pumba.kramse.dk/smokeping/}
+\item Hjemmesiden for SmokePing \link{http://oss.oetiker.ch/smokeping/}
+\item Lavet af Tobias Oetiker og Niko Tyni
+\end{list1}
+
+
+\slide{Nagios}
+
+\begin{list1}
+\item Overvågningsværktøj der giver godt overblik
+\begin{list2}	
+\item Monitoring af diverse services (SMTP, POP3, HTTP, NNTP, PING, etc.)
+\item Monitoring af host resources (processor load, disk and memory usage, running processes, log files, etc.)
+\item Monitoring af andre ressourcer som temperatur
+\item Simpel plugin design som gør det nemt at udvide
+\item Kan sende e-mail, SMS m.v.
+\end{list2}
+\item Benyttes mange steder
+\item Hjemmesiden for Nagios \link{http://www.nagios.org/}
+\end{list1}
+
+\slide{Stop - overvågningsværktøjer}
+
+\begin{list1}
+\item Brug lidt tid på at se på vores netværk
+\item Valgfrit om I vil se på Administrationsinterface på switche
+\item eller SNMP indstillinger eksempelvis
+\item eller Nagios og SmokePing på mine servere
+\end{list1}
+
+
+\slide{Små DNS tools bind-version - Shell script}
+
+\begin{alltt}\small
+#! /bin/sh
+# Try to get version info from BIND server
+PROGRAM=`basename $0`
+. `dirname $0`/functions.sh
+if [ $# -ne 1 ]; then
+   echo "get name server version, need a target! "
+   echo "Usage: $0 target"
+   echo "example $0 10.1.2.3"
+   exit 0
+fi
+TARGET=$1
+# using dig 
+start_time
+dig @$1 version.bind chaos txt
+echo Authors BIND er i versionerne 9.1 og 9.2 - måske ...
+dig @$1 authors.bind chaos txt
+stop_time
+\end{alltt}
+\centerline{\link{http://www.kramse.dk/files/tools/dns/bind-version}}
+
+\slide{Små DNS tools dns-timecheck - Perl script}
+
+\begin{alltt}\small
+#!/usr/bin/perl
+# modified from original by Henrik Kramshøj, hlk@kramse.dk
+# 2004-08-19
+#
+# Original from: http://www.rfc.se/fpdns/timecheck.html
+use Net::DNS;
+
+my $resolver = Net::DNS::Resolver->new;
+$resolver->nameservers($ARGV[0]);
+
+my $query = Net::DNS::Packet->new;
+$query->sign_tsig("n","test");
+
+my $response = $resolver->send($query);
+foreach my $rr ($response->additional) {
+  print "localtime vs nameserver $ARGV[0] time difference: ";
+  print$rr->time_signed - time() if $rr->type eq "TSIG";
+}  
+\end{alltt}
+% inserting stupid $ to stop EMACS from
+\centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
+
+
+
+\exercise{ex:bind-version}
+
+
+% 802.11 her
+\slide{Trådløse teknologier 802.11}
+
+\begin{list1}
+\item 802.11 er arbejdsgruppen under IEEE 
+\item De mest kendte standarder idag indenfor trådløse teknologier:
+\begin{list2}
+\item 802.11b 11Mbps versionen
+\item 802.11g 54Mbps versionen
+\item 802.11n endnu hurtigere, og draft
+\item 802.11i Security enhancements
+\end{list2}
+\item Der er proprietære versioner 22Mbps og den slags\\
+- det anbefales IKKE at benytte disse da det giver vendor lock-in -
+man bliver låst fast
+\end{list1}
+
+Kilde: \link{http://grouper.ieee.org/groups/802/11/index.html}
+
+\slide{802.11 modes og frekvenser}
+
+\begin{list1}
+\item Access point kører typisk i \emph{access point mode} også kaldet
+  infrastructure mode - al trafik går via AP
+\item Alternativt kan wireless kort oprette ad-hoc netværk - hvor
+  trafikken går direkte mellem netkort
+\item Frekvenser op til kanal 11 og 12+13 i DK/EU
+\item Helst 2 kanaler spring for 802.11b AP der placeres indenfor rækkevidde
+\item Helst 4 kanaler spring for 802.11g AP der placeres indenfor rækkevidde
+\end{list1}
+
+\slide{Eksempel på netværk med flere AP'er}
+
+\hlkimage{20cm}{images/wireless-multi-ap.pdf}
+
+\slide{Eksempel på netværk med flere AP'er}
+
+\hlkimage{20cm}{images/wireless-multi-ap-2.pdf}
+
+
+\slide{Wireless Distribution System WDS}
+
+\hlkimage{18cm}{images/wireless-multi-ap-wds.pdf}
+
+\begin{list1}
+\item Se også:
+\link{http://en.wikipedia.org/wiki/Wireless_Distribution_System}
+\end{list1}
+
+
+\slide{\hskip 1 cm Er trådløse netværk interessante?}
+
+\begin{list1}
+\item Sikkerhedsproblemer i de trådløse netværk er mange
+  \begin{list2}
+  \item Fra lavt niveau - eksempelvis ARP, 802.11
+  \item dårlige sikringsmekanismer - WEP
+  \item dårligt udstyr - mange fejl
+  \item usikkkerhed om implementering og overvågning
+  \end{list2}
+\item Trådløst udstyr er blevet meget billigt!
+\item Det er et krav fra brugerne - trådløst er lækkert
+\end{list1}
+
+
+\slide{Konsekvenserne}
+
+\hlkimage{10cm}{images/wireless-daekning.pdf}
+
+\begin{list2}
+\item Værre end Internetangreb - anonymt
+\item Kræver ikke fysisk adgang til lokationer
+%\emph{spioneres imod}
+\item Konsekvenserne ved sikkerhedsbrud er generelt større
+\item Typisk får man direkte LAN eller Internet adgang!
+\end{list2}
+
+
+
+\slide{Konsulentens udstyr wireless}
+
+\begin{list1}
+\item Laptop gerne med PC-CARD slot
+\item Trådløse kort Atheros chipset anbefales, de indbyggede er til tider ringe ;-)
+\item Access Points - jeg anbefaler Airport Express
+\item Antenner hvis man har lyst
+\item Bøger: \emph{Real 802.11 security}
+\item Internetressourcer:
+\begin{list2}
+\item BackTrack - CD image med Linux+værktøjer    
+\item Packetstorm wireless tools
+\link{http://packetstormsecurity.org/wireless/}
+\item \emph{Beginner's Guide to Wireless Auditing}
+David Maynor \\
+\link{http://www.securityfocus.com/infocus/1877?ref=rss}
+\item Aircrack-ng suiten af programmer \link{http://www.aircrack-ng.org/}
+\end{list2}
+\end{list1}
+
+
+\slide{Typisk brug af 802.11 udstyr}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=20cm]{images/wlan-accesspoint-1.pdf}}
+\end{center}
+
+\centerline{\hlkbig et access point - forbindes til netværket}
+
+\slide{Basal konfiguration}
+
+\begin{list1}
+\item Når man tager fat på udstyr til trådløse netværk opdager man:
+\item SSID - nettet skal have et navn
+\item frekvens / kanal - man skal vælge en kanal, eller udstyret
+  vælger en automatisk
+\item der er nogle forskellige metoder til sikkerhed  
+\end{list1}
+
+
+\exercise{ex:AirPort-AP}
+
+\slide{Trådløs sikkerhed}
+
+\hlkimage{14cm}{images/apple-wireless-security.png}
+
+\begin{list2}
+\item Trådløs sikkerhed - WPA og WPA2
+\item Nem konfiguration
+\item Nem konfiguration af Access Point  
+\end{list2}
+
+\slide{Wireless networking sikkerhed i 802.11b}
+
+\hlkimage{10cm}{images/wlan-accesspoint-1.pdf}
+
+\begin{list1}
+\item Sikkerheden er baseret på nogle få forudsætninger 
+  \begin{list2}
+  \item SSID - netnavnet
+  \item WEP \emph{kryptering} - Wired Equivalent Privacy
+  \item måske MAC flitrering, kun bestemte kort må tilgå accesspoint 
+  \end{list2}
+\item Til gengæld er disse forudsætninger ofte ikke tilstrækkelige ... 
+%\item Hvorfor hader du WEP?
+  \begin{list2}
+  \item WEP er måske \emph{ok} til visse små hjemmenetværk
+  \item WEP er baseret på en DELT hemmelighed som alle stationer kender
+  \item nøglen ændres sjældent, og det er svært at distribuere en ny
+  \end{list2}
+  
+\end{list1}
+
+
+\slide{Forudsætninger}
+
+\begin{list1}
+\item Til gengæld er disse forudsætninger ofte ikke tilstrækkelige ... 
+\item Hvad skal man beskytte?
+\item Hvordan kan sikkerheden omgås?
+\item Mange firmaer og virksomheder stille forskellige krav til
+  sikkerheden - der er ikke en sikkerhedsmekanisme der passer til alle
+\end{list1}
+
+\slide{SSID - netnavnet}
+
+\begin{list1}
+\item Service Set Identifier (SSID) - netnavnet
+\item 32 ASCII tegn eller 64 hexadecimale cifre
+\item Udstyr leveres typisk med et standard netnavn
+\begin{list2}
+\item Cisco - tsunami
+\item Linksys udstyr - linksys
+\item Apple Airport, 3Com m.fl. - det er nemt at genkende dem  
+\end{list2}
+\item SSID kaldes også for NWID - network id
+\item SSID broadcast - udstyr leveres oftest med broadcast af SSID
+\end{list1}
+
+
+%wardriving her
+\slide{Demo: wardriving med stumbler programmer}
+
+\hlkimage{17cm}{images/macstumbler.png}  
+
+\begin{list1}
+\item man tager et trådløst netkort og en bærbar computer og noget software:
+\begin{list2}
+\item Netstumbler - Windows \link{http://www.netstumbler.com}
+\item dstumbler - UNIX \link{http://www.dachb0den.com/projects/dstumbler.html}
+\item iStumbler - Mac \link{http://www.istumbler.net/}
+\item Kismet ... mange andre
+  \end{list2}
+\end{list1}
+
+\slide{Start på demo - wardriving}
+
+\hlkimage{15cm}{images/server-client-wlan.pdf}
+
+\begin{list2}
+\item Almindelige laptops bruges til demo
+\item Der startes et \emph{access point}
+\end{list2}
+
+\slide{MAC filtrering}
+
+\begin{list1}
+\item De fleste netkort tillader at man udskifter sin MAC adresse
+\item MAC adressen på kortene er med i alle pakker der sendes
+\item MAC adressen er aldrig krypteret, for hvordan skulle pakken så
+  nå frem?
+\item MAC adressen kan derfor overtages, når en af de tilladte
+  stationer forlader området ...
+\end{list1}
+
+\slide{Resultater af wardriving}
+
+\begin{list1}
+\item Hvad opdager man ved wardriving?
+\begin{list2}
+\item at WEP IKKE krypterer hele pakken
+\item at alle pakker indeholder MAC adressen
+\item WEP nøglen skifter sjældent
+\item ca. 2/3 af de netværk man finder har ikke WEP slået til - og der
+  er fri og uhindret adgang til Internet
+\end{list2}
+\item {\color{red}
+Man kan altså lytte med på et netværk med WEP, genbruge en anden
+maskines MAC adresse - og måske endda bryde WEP krypteringen.}
+\item 
+Medmindre man kender virksomheden og WEP nøglen ikke er skiftet ...
+det er besværligt at skifte den, idet alle stationer skal opdateres.
+\end{list1}
+
+\slide{Storkøbenhavn}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=20cm]{images/20030830-kbh.png}}  
+\end{center}
+
+\exercise{ex:wardriving-windows}
+\exercise{ex:wardriving-kismet}
+
+\slide{Informationsindsamling}
+
+\begin{list1}
+\item Det vi har udført er informationsindsamling
+\item Indsamlingen kan være aktiv eller passiv indsamling i forhold
+  til målet for angrebet
+\item passiv kunne være at lytte med på trafik eller søge i databaser
+  på Internet
+\item aktiv indsamling er eksempelvis at sende ICMP pakker og
+  registrere hvad man får af svar
+\end{list1}
+
+\slide{WEP kryptering} 
+
+%\begin{center}
+%\colorbox{white}{\includegraphics[width=12cm]{images/airsnort.pdf}}  
+%\end{center}
+\begin{list1}
+\item WEP \emph{kryptering} - med nøgler der specificeres som tekst
+  eller hexadecimale cifre
+\item typisk 40-bit, svarende til 5 ASCII tegn eller 10 hexadecimale
+  cifre eller 104-bit 13 ASCII tegn eller 26 hexadecimale cifre
+\item WEP er baseret på RC4 algoritmen der er en \emph{stream cipher}
+  lavet af Ron Rivest for RSA Data Security
+\end{list1}
+
+
+\slide{De første fejl ved WEP}
+\begin{list1}
+\item Oprindeligt en dårlig implementation i mange Access Points
+\item Fejl i krypteringen - rettet i nyere firmware
+\item WEP er baseret på en DELT hemmelighed som alle stationer kender
+\item Nøglen ændres sjældent, og det er svært at distribuere en ny
+\end{list1}
+
+
+\slide{WEP sikkerhed}
+
+\hlkimage{12cm}{images/airsnort.pdf}  
+
+\begin{quote}
+AirSnort is a wireless LAN (WLAN) tool which recovers encryption
+keys. AirSnort operates by passively monitoring transmissions,
+computing the encryption key when enough packets have been gathered.  
+
+802.11b, using the Wired Equivalent Protocol (WEP), is crippled with
+numerous security flaws. Most damning of these is the weakness
+described in " Weaknesses in the Key Scheduling Algorithm of RC4 "
+by Scott Fluhrer, Itsik Mantin and Adi Shamir. Adam Stubblefield
+was the first to implement this attack, but he has not made his
+software public. AirSnort, along with WEPCrack, which was released
+about the same time as AirSnort, are the first publicly available
+implementaions of this attack.  \link{http://airsnort.shmoo.com/}
+\end{quote}
+
+%\begin{list1}
+%\item i dag er firmware opdateret hos de fleste producenter
+%\item men sikkerheden baseres stadig på een delt hemmelighed
+%\end{list1}
+
+\slide{major cryptographic errors}
+
+\begin{list1}
+\item weak keying - 24 bit er allerede kendt - 128-bit = 104 bit i praksis
+\item small IV - med kun 24 bit vil hver IV blive genbrugt oftere
+\item CRC-32 som integritetscheck er ikke \emph{stærkt} nok
+  kryptografisk set
+\item Authentication gives pad - giver fuld adgang - hvis der bare
+  opdages \emph{encryption pad} for en bestemt IV. Denne IV kan så
+  bruges til al fremtidig kommunikation
+\end{list1}
+
+{\hlkbig Konklusion: Kryptografi er svært}
+
+\slide{WEP cracking - airodump og aircrack}
+
+\hlkimage{3cm}{images/no-wep.pdf}
+
+\begin{list1}
+\item airodump - opsamling af krypterede pakker
+\item aircrack - statistisk analyse og forsøg på at finde WEP nøglen
+\item Med disse værktøjer er det muligt at knække \emph{128-bit nøgler}!
+\item Blandt andet fordi det reelt er 104-bit nøgler \smiley
+\item tommelfingerregel - der skal opsamles mange pakker ca. 100.000
+  er godt
+\item Links:\\
+\link{http://www.cr0.net:8040/code/network/aircrack/} aircrack\\
+\link{http://www.securityfocus.com/infocus/1814} WEP: Dead Again
+\end{list1}
+
+\slide{airodump afvikling}
+
+\begin{list1}
+\item Når airodump kører opsamles pakkerne
+\item samtidig vises antal initialisationsvektorer IV's:
+\end{list1}
+
+\vskip 1 cm
+
+\begin{alltt}
+\hlktiny
+   BSSID              CH  MB  ENC  PWR  Packets   LAN IP / # IVs   ESSID
+
+   00:03:93:ED:DD:8D   6  11       209   {\bf 801963                  540180}   wanlan    
+\end{alltt}
+
+\vskip 2 cm
+
+\begin{list1}
+\item NB: dataopsamlingen er foretaget på 100\% opdateret Mac udstyr
+\end{list1}
+
+
+\slide{aircrack - WEP cracker}
+
+\begin{alltt}
+\hlktiny
+   $ aircrack -n 128 -f 2 aftendump-128.cap
+                                 aircrack 2.1
+   * Got  540196! unique IVs | fudge factor = 2
+   * Elapsed time [00:00:22] | tried 12 keys at 32 k/m
+   KB    depth   votes
+    0    0/  1   CE(  45) A1(  20) 7E(  15) 98(  15) 72(  12) 82(  12) 
+    1    0/  2   62(  43) 1D(  24) 29(  15) 67(  13) 94(  13) F7(  13) 
+    2    0/  1   B6( 499) E7(  18) 8F(  15) 14(  13) 1D(  12) E5(  10) 
+    3    0/  1   4E( 157) EE(  40) 29(  39) 15(  30) 7D(  28) 61(  20) 
+    4    0/  1   93( 136) B1(  28) 0C(  15) 28(  15) 76(  15) D6(  15) 
+    5    0/  2   E1(  75) CC(  45) 39(  31) 3B(  30) 4F(  16) 49(  13) 
+    6    0/  2   3B(  65) 51(  42) 2D(  24) 14(  21) 5E(  15) FC(  15) 
+    7    0/  2   6A( 144) 0C(  96) CF(  34) 14(  33) 16(  33) 18(  27) 
+    8    0/  1   3A( 152) 73(  41) 97(  35) 57(  28) 5A(  27) 9D(  27) 
+    9    0/  1   F1(  93) 2D(  45) 51(  29) 57(  27) 59(  27) 16(  26) 
+   10    2/  3   5B(  40) 53(  30) 59(  24) 2D(  15) 67(  15) 71(  12) 
+   11    0/  2   F5(  53) C6(  51) F0(  21) FB(  21) 17(  15) 77(  15) 
+   12    0/  2   E6(  88) F7(  81) D3(  36) E2(  32) E1(  29) D8(  27) 
+         {\color{red}\bf KEY FOUND! [ CE62B64E93E13B6A3AF15BF5E6 ]}
+\end{alltt}
+%$
+
+
+\slide{Hvor lang tid tager det?}
+
+\begin{list1}
+\item Opsamling a data - ca. en halv time på 802.11b ved optimale forhold
+\item Tiden for kørsel af aircrack fra auditor CD 
+på en Dell CPi 366MHz Pentium II laptop:
+\end{list1}
+\begin{alltt}
+
+   $ time aircrack -n 128 -f 2 aftendump-128.cap
+   ...
+   real    5m44.180s   user  0m5.902s     sys  1m42.745s
+   \end{alltt}
+   %$
+
+\pause
+\begin{list1}
+\item Tiden for kørsel af aircrack på en moderne 1.6GHz CPU med
+  almindelig laptop disk tager typisk mindre end 60 sekunder
+\end{list1}
+
+\exercise{ex:airodump}
+
+\slide{Erstatning for WEP- WPA}
+
+\begin{list1}
+\item Det anbefales at bruge:
+%\begin{list2}
+\item Kendte VPN teknologier eller WPA
+\item baseret på troværdige algoritmer
+\item implementeret i professionelt udstyr
+\item fra troværdige leverandører
+\item udstyr der vedligeholdes og opdateres
+%\end{list2}
+\item Man kan måske endda bruge de eksisterende løsninger - fra
+  hjemmepc adgang, mobil adgang m.v.
+\end{list1}
+
+
+
+\slide{Erstatninger for WEP}
+\begin{list1}
+\item Der findes idag andre metoder til sikring af trådløse netværk
+\item 802.1x Port Based Network Access Control 
+\item WPA - Wi-Fi Protected Access)\\
+WPA = 802.1X + EAP + TKIP + MIC
+\item nu WPA2 som kræver CCMP\\
+\begin{quote}
+WPA2 is based on the final IEEE 802.11i amendment to the 802.11
+standard and is eligible for FIPS 140-2 compliance.
+\end{quote}
+\item Kilde: 
+\href{http://www.wifialliance.org/OpenSection/protected_access.asp}
+{http://www.wifialliance.org/OpenSection/protected\_access.asp}
+\end{list1}
+
+\slide{WPA eller WPA2?}
+
+\begin{quote}
+WPA2 is based upon the Institute for Electrical and Electronics
+Engineers (IEEE) 802.11i amendment to the 802.11 standard, which was
+ratified on July 29, 2004.  
+\end{quote}
+
+\begin{quote}
+Q: How are WPA and WPA2 similar?\\
+A: Both WPA and WPA2 offer a high level of assurance for end-users and network
+administrators that their data will remain private and access to their
+network restricted to authorized users.
+Both utilize 802.1X and Extensible Authentication Protocol (EAP) for
+authentication. Both have Personal and Enterprise modes of operation
+that meet the distinct needs of the two different consumer and
+enterprise market segments. 
+
+Q: How are WPA and WPA2 different?\\
+A: WPA2 provides a {\bf stronger encryption mechanism} through {\bf
+  Advanced Encryption Standard (AES)}, which is a requirement for some
+corporate and government users. 
+\end{quote}
+
+\centerline{Kilde: http://www.wifialliance.org WPA2 Q and A}
+
+\slide{WPA Personal eller Enterprise}
+
+\begin{list1}
+\item Personal - en delt hemmelighed, preshared key kaldes WPA-PSK
+\item Enterprise - brugere valideres op mod fælles server
+\item Hvorfor er det bedre?
+\begin{list2}
+\item Flere valgmuligheder - passer til store og små
+\item WPA skifter den faktiske krypteringsnøgle jævnligt - TKIP 
+\item Initialisationsvektoren (IV) fordobles 24 til 48 bit   
+\item Imødekommer alle kendte problemer med WEP!
+\item Integrerer godt med andre teknologier - RADIUS
+
+\vskip 1 cm
+\item EAP - Extensible Authentication Protocol - individuel autentifikation
+\item TKIP - Temporal Key Integrity Protocol - nøgleskift og integritet
+\item MIC - Message Integrity Code - Michael, ny algoritme til integritet
+\item CCMP - Counter-Mode/CBC-MAC Protocol, IEEE 802.11i    AES kryptering
+\item CBC-MAC -  Cipher Block Chaining - Message Authentication Code
+\item AES - Advanced Encryption Standard, Rijndael algoritmen
+\item RSN - Robust Secure Network, en del af IEEE 802.11i
+\end{list2}
+
+\end{list1}
+
+
+\slide{WPA-PSK cracking}
+
+\begin{list1}
+\item Nu skifter vi så til WPA og alt er vel så godt?  
+\pause
+\item Desværre ikke!
+\item Du skal vælge en laaaaang passphrase, ellers kan man sniffe WPA
+  handshake når en computer går ind på netværket!
+\item Med et handshake kan man med aircrack igen lave off-line
+  bruteforce angreb!
+\end{list1}
+
+\slide{WPA-PSK cracking demo}
+
+\begin{list1}
+\item Vi konfigurerer AP med Henrik42 som WPA-PSK/passhrase  
+\item Vi finder netværk kismet eller airodump
+\item Vi starter airodump mod specifik kanal
+\item Vi spoofer deauth og opsamler WPA handshake
+\item Vi knækker WPA :-)
+\end{list1}
+
+\centerline{Brug manualsiderne for programmerne i aircrack-ng pakken!}
+
+\slide{WPA-PSK cracking med aircrack - start}
+
+\begin{alltt}
+\small
+slax ~ # aircrack-ng -w dict wlan-test.cap
+Opening wlan-test.cap
+Read 1082 packets.
+
+#  BSSID              ESSID           Encryption
+
+1  00:11:24:0C:DF:97  wlan            WPA (1 handshake)
+2  00:13:5F:26:68:D0  Noea            No data - WEP or WPA
+3  00:13:5F:26:64:80  Noea            No data - WEP or WPA
+4  00:00:00:00:00:00                  Unknown
+
+Index number of target network ? {\bf 1}
+\end{alltt}
+
+\slide{WPA cracking med aircrack - start}
+
+\begin{alltt}
+\small
+          [00:00:00] 0 keys tested (0.00 k/s)
+
+                    KEY FOUND! [ Henrik42 ]
+
+Master Key     : 8E 61 AB A2 C5 25 4D 3F 4B 33 E6 AD 2D 55 6F 76
+                 6E 88 AC DA EF A3 DE 30 AF D8 99 DB F5 8F 4D BD
+Transcient Key : C5 BB 27 DE EA 34 8F E4 81 E7 AA 52 C7 B4 F4 56
+                 F2 FC 30 B4 66 99 26 35 08 52 98 26 AE 49 5E D7
+                 9F 28 98 AF 02 CA 29 8A 53 11 EB 24 0C B0 1A 0D
+                 64 75 72 BF 8D AA 17 8B 9D 94 A9 31 DC FB 0C ED
+
+EAPOL HMAC     : 27 4E 6D 90 55 8F 0C EB E1 AE C8 93 E6 AC A5 1F
+
+\end{alltt}
+
+\vskip 1 cm
+
+\centerline{Min Thinkpad X31 med 1.6GHz Pentium M knækker ca. 150 Keys/sekund}
+
+\slide{WPA cracking med Pyrit}
+
+\begin{quote}
+\emph{Pyrit} takes a step ahead in attacking WPA-PSK and WPA2-PSK, the protocol that today de-facto protects public WIFI-airspace. The project's goal is to estimate the real-world security provided by these protocols. Pyrit does not provide binary files or wordlists and does not encourage anyone to participate or engage in any harmful activity. {\bf This is a research project, not a cracking tool.}
+
+\emph{Pyrit's} implementation allows to create massive databases, pre-computing part of the WPA/WPA2-PSK authentication phase in a space-time-tradeoff. The performance gain for real-world-attacks is in the range of three orders of magnitude which urges for re-consideration of the protocol's security. Exploiting the computational power of GPUs, \emph{Pyrit} is currently by far the most powerful attack against one of the world's most used security-protocols. 
+\end{quote}
+
+\begin{list1}
+\item sloooow, plejede det at være -  ~150 keys/s på min Thinkpad X31
+\item Kryptering afhænger af SSID! Så check i tabellen er ~minutter.
+\item \link{http://pyrit.wordpress.com/about/} 
+\end{list1}
+
+\slide{Tired of WoW?}
+
+\hlkimage{22cm}{pyritperfaa3.png}
+
+Kilde: \link{http://code.google.com/p/pyrit/}
+
+
+\slide{Når adgangen er skabt}
+
+\begin{list1}
+\item Så går man igang med de almindelige værktøjer
+\item Fyodor Top 100 Network Security Tools \link{http://www.sectools.org}  
+\end{list1}
+\vskip 2 cm
+
+\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
+
+\slide{Infrastrukturændringer}
+
+\begin{center}
+\colorbox{white}{\includegraphics[height=11cm]{images/wlan-accesspoint-2.pdf}}
+\end{center}
+
+\centerline{\hlkbig Sådan bør et access point forbindes til netværket}
+
+
+\slide{Anbefalinger mht. trådløse netværk}
+
+\begin{minipage}{10cm}
+\includegraphics[width=10cm]{images/wlan-accesspoint-2.pdf}
+\end{minipage}
+\begin{minipage}{\linewidth-10cm}
+\begin{list2}
+\item Brug noget tilfældigt som SSID - netnavnet
+\item Brug ikke WEP til virksomhedens netværk\\
+- men istedet en VPN løsning med individuel
+  autentificering eller WPA
+\item NB: WPA Personal/PSK kræver passphrase på +40 tegn!
+\item Placer de trådløse adgangspunkter hensigtsmæssigt i netværket -
+  så de kan overvåges
+\item Lav et sæt regler for brugen af trådløse netværk - hvor må 
+  medarbejdere bruge det?
+\item Se eventuelt pjecerne \emph{Beskyt dit trådløse Netværk} fra
+Ministeriet for Videnskab, Teknologi og Udvikling \\
+\link{http://www.videnskabsministeriet.dk/}
+\end{list2}
+\end{minipage} 
+
+
+\slide{Hjemmenetværk for nørder}
+
+\begin{list1}
+\item Lad være med at bruge et wireless-kort i en PC til at lave AP, brug et AP
+\item Husk et AP kan være en router, men den kan ofte også blot være en bro
+\item Brug WPA og overvej at lave en decideret DMZ til WLAN
+\item Placer AP hensigtsmæddigt og gerne højt, oppe på et skab eller lignende
+\end{list1}
+
+%\exercise{ex:AirPort-AP}
+
+%\exercise{ex:wardriving-windows}
+%\exercise{ex:wardriving-kismet}
+%\exercise{ex:aircrack-ng}
+% 802.11 sikkerhed her
+
+
+
+% RADIUS her
+
+\slide{RADIUS}
+\begin{list1}
+\item RADIUS er en protokol til autentificering af brugere op mod en
+  fælles server 
+\item Remote Authentication Dial In User Service (RADIUS)
+\item RADIUS er beskrevet i RFC-2865
+\item RADIUS kan være en fordel i større netværk med 
+\begin{list2}
+\item dial-in
+\item administration af netværksudstyr
+\item trådløse netværk
+\item andre RADIUS kompatible applikationer
+\end{list2}
+\end{list1}
+
+% LDAP her
+\slide{LDAP}
+
+\begin{list1}
+\item LDAP er en protokol til directory access, opslag i database
+\item Light udgave af den X.500 directory access standard 
+\item LDAP er beskrevet i RFC-3377: Lightweight Directory Access Protocol 
+(v3): Technical Specification
+\item Standard interface for opslag, men desværre ikke for data
+\item Bruges meget typisk til brugere, grupper og passwords
+\end{list1}
+
+\exercise{ex:radius-client}
+
+
+\exercise{ex:ldap-client}
+
+
+% 802.1x
+\slide{IEEE 802.1x  Port Based Network Access Control}
+
+\hlkimage{15cm}{osx-8021x.png}
+
+\begin{list1}
+\item Nogle switche tillader at man benytter 802.1x brugervalidering på portniveau
+\item Adgang til porten baseret på brugernavn og kodeord/certifikat
+\item Denne protokol indgår også i WPA Enterprise
+\end{list1}
+
+
+\slide{802.1x og andre teknologier}
+
+\begin{list1}
+\item 802.1x giver væsentlige fordele
+\item MAC filtrering kan spoofes, hvor 802.1x kræver det rigtige kodeord
+\item WEP og WPA-PSK er een nøgle til alle brugere, 802.1x er individuel adgang
+\item Typisk benyttes RADIUS integration mod LDAP eller Active Directory
+\end{list1}
+
+
+% netværksdesign her
+
+
+\slide{Infrastrukturer i praksis}
+
+\begin{list1}
+\item Vi vil nu gennemgå netværksdesign med udgangspunkt i vores setup
+\item Vores setup indeholder:
+\begin{list2}
+\item Routere
+\item Firewall
+\item Wireless
+\item DMZ
+\item DHCPD, BIND, BGPD, ...
+\end{list2}
+\item Den kunne udvides med flere andre teknologier vi har til rådighed:
+\begin{list2}
+\item VLAN inkl VLAN trunking/distribution
+\item WPA Enterprise
+\end{list2}
+\end{list1}
+
+
+
+% VoIP her
+
+\slide{VoIP Voice over IP}
+
+\begin{list1}
+\item Tidligere havde vi adskilte netværk, nu samles de 
+\item Idag er det meget normalt at både firmaer og private bruger IP-telefoni
+\item Fordele er primært billigere og mere fleksibelt
+\item Eksempler på IP telefoni:
+\begin{list2}
+\item Skype benytter IP, men egenudviklet protokol
+\item Cisco IP-telefoner benyttes ofte i firmaer
+\item Cybercity telefoni kører over IP, med analog adapter
+\end{list2}
+\item Det anbefales at se på Asterisk telefoniserver, hvis man har mod på det :-)
+\item \link{http://www.asterisk.org/}
+\end{list1}
+
+\slide{VoIP bekymringer}
+
+\begin{list1}
+\item Der er generelt problemer med:
+\begin{list2}
+\item Stabilitet - quality of service, netværket skal være bygget til det
+\item Sikkerhed - hvem lytter med, hvem kan afbryde forbindelsen\\
+Se evt. \link{http://www.voipsa.org/}
+\item Spam over VoIP, connect, send WAV fil med spam kaldes SPIT
+\item Kompatabilitet - hvilke protokoller, codecs, standarder, ...
+\end{list2}
+\item Der er flere store spillere
+\end{list1}
+
+\slide{VoIP protokoller}
+
+\begin{list1}
+\item SIP Session Initiation Protocol, IETF standard signaleringsprotokol
+\item H.323 ITU-T standard signaleringsprotokol
+\item IAX Inter-Asterisk Exchange Protocol, Asterisk protokol
+\item SSCP Cisco protokol
+\item ZRTP Phil Zimmermann, zfone - sikker kommunikation\\ 
+\link{http://zfoneproject.com/}
+\end{list1}
+
+% efter VoIP
+
+\slide{TFTP Trivial File Transfer Protocol}
+
+\begin{list1}
+\item Trivial File Transfer Protocol - uautentificerede filoverførsler
+\item De bruges især til:
+  \begin{list2}
+\item TFTP bruges til boot af netværksklienter uden egen harddisk
+\item TFTP benytter UDP og er derfor ikke garanteret at data overføres korrekt
+  \end{list2}
+\item TFTP sender alt i klartekst, hverken password \\ 
+\item FTP bruger TCP men sender også i klartekst:
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord} 
+\end{list1}
+
+\slide{Båndbreddestyring og policy based routing}
+
+\begin{list1}
+\item Mange routere og firewalls idag kan lave båndbredde allokering til
+  protokoller, porte og derved bestemte services
+\item Mest kendte er i Open Source:
+\begin{list2}
+\item ALTQ bruges på OpenBSD - integreret i PF
+%  \link{http://www.csl.sony.co.jp/person/kjc/kjc/software.html}
+\item FreeBSD har dummynet
+\item Linux har tilsvarende\\
+ADSL-Bandwidth-Management-HOWTO, ADSL Bandwidth Management HOWTO\\
+Adv-Routing-HOWTO, Linux Advanced Routing \& Traffic Control HOWTO\\
+\link{http://www.knowplace.org/shaper/resources.html} Linux resources
+\end{list2}
+\item Det kaldes også traffic shaping
+\end{list1}
+
+\slide{Firewalls - packet filtering}
+
+\begin{alltt}
+\small
+0                   1                   2                   3   
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering er firewalls der filtrerer på IP niveau
+\item Idag inkluderer de fleste statefull inspection 
+\end{list1}
+
+\slide{TCP three way handshake}
+
+\hlkimage{7cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item Hvis en maskine modtager mange SYN pakker kan dette fylde
+  tabellen over connections op - og derved afholde nye forbindelser
+  fra at blive oprettet - {\bfseries SYN-flooding}
+\item Mange firewalls kan udføre SYN handshake idag, før forbindelsen overlades til serveren bagved
+\item Beskytter mod {\bfseries TCP SYN flooding}
+\end{list2}
+
+
+\slide{Kommercielle firewalls}
+\begin{list2}
+\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
+\item Nokia appliances - Nokia IPSO \link{http://www.nokia.com}
+\item Cisco PIX \link{http://www.cisco.com}
+\item Clavister firewalls \link{http://www.clavister.com}
+\item Netscreen - nu ejet af Juniper
+  \link{http://www.juniper.net}
+\end{list2}
+
+Ovenstående er dem som jeg oftest ser ude hos mine kunder
+
+\slide{Open source baserede firewalls}
+\begin{list2} 
+\item Linux firewalls - fra begyndelsen til det nuværende netfilter
+  til kerner version 2.4 og 2.6\\
+\link{http://www.netfilter.org}
+\item Firewall GUIs ovenpå Linux - mange! IPcop, Guarddog, Watchguard
+nogle Linux firewalls er kommercielle produkter
+\item IP Filter (IPF) \link{http://coombs.anu.edu.au/~avalon/}
+\item OpenBSD PF - findes idag på andre operativsystemer
+\link{http://www.openbsd.org} 
+\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
+\item FreeBSD inkluderer også OpenBSD PF
+\item Mac OS X benytter IPFW og har en application socket firewall
+\item NetBSD - bruger IPF og OpenBSD PF
+\end{list2}
+
+NB: kun eksempler og dem jeg selv har brugt
+
+
+\slide{Hardware eller software}
+
+
+\begin{list1}
+\item Man hører indimellem begrebet \emph{hardware firewall}  
+\item Det er dog et faktum at en firewall består af:
+\begin{list2}
+\item Netværkskort - som er hardware
+\item Filtreringssoftware - som er \emph{software}!    
+\end{list2}
+\item Det giver ikke mening at kalde en Zyxel 10 en hardware firewall
+  og en Soekris med OpenBSD for en software firewall!
+\item Det er efter min mening et marketingtrick
+\vskip 1 cm
+\item Man kan til gengæld godt argumentere for at en dedikeret
+  firewall som en separat enhed kan give bedre sikkerhed
+\end{list1}
+
+
+
+\slide{m0n0wall}
+
+\hlkimage{20cm}{images/m0n0wall-1.pdf}
+
+Kilde: billede fra \link{http://m0n0.ch/wall/}
+
+
+
+\slide{firewall koncepter}
+
+\begin{list1}
+\item Rækkefølgen af regler betyder noget!
+\begin{list2}
+\item To typer af firewalls:
+ First match - når en regel matcher, gør det som angives block/pass
+ Last match  - marker pakken hvis den matcher, til sidst afgøres block/pass
+\end{list2}
+\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
+    man bruger!} 
+\item OpenBSD PF er last match
+\item FreeBSD IPFW er first match  
+\item Linux iptables/netfilter er last match
+\end{list1}
+
+\slide{First or Last match firewall?}
+
+\hlkimage{20cm}{images/first-last-match-1.pdf}
+\begin{list2}
+\item To typer af firewalls:
+ First match - eksempelvis IPFW,
+ Last match - eksempelvis PF
+%\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
+%    man bruger!} 
+\end{list2}
+
+
+\slide{First match - IPFW}
+
+\begin{alltt}
+\hlksmall
+00100 16389  1551541 allow ip from any to any via lo0
+00200     0        0 deny log ip from any to 127.0.0.0/8
+00300     0        0 check-state
+...
+{\bfseries 
+65435    36     5697 deny log ip from any to any}
+65535   865    54964 allow ip from any to any
+\end{alltt}
+
+\vskip 2 cm
+
+\centerline{Den sidste regel nås aldrig!}
+
+\slide{Last match - OpenBSD PF}
+
+\begin{alltt}
+\small
+ext_if="ext0"
+int_if="int0"
+
+block in
+pass out keep state
+
+pass quick on \{ lo $int_if \}
+
+# Tillad forbindelser ind på port 80=http og port 53=domain
+# på IP-adressen for eksterne netkort ($ext_if) syntaksen
+pass in on $ext_if proto tcp to ($ext_if) port http keep state
+pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
+\end{alltt}
+
+\vskip 2 cm
+\centerline{Pakkerne markeres med block eller pass indtil sidste
+  regel}
+\centerline{nøgleordet \emph{quick} afslutter match - god til store
+  regelsæt} 
+
+
+\slide{Firewalls og ICMP}
+
+
+\begin{alltt}
+ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\end{alltt}
+
+\begin{list1}
+\item Ovenstående er IPFW syntaks for at tillade de interessant ICMP beskeder igennem
+\item Tillad ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{netdesign - med firewalls - 100\% sikkerhed?}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=12cm]{images/kut.jpg}}  
+\end{center}
+
+\begin{list1}
+\item Hvor skal en firewall placeres for at gøre størst nytte?
+\item Hvad er forudsætningen for at en firewall virker?\\
+At der er konfigureret et sæt fornuftige regler!
+\item Hvor kommer reglerne fra? Sikkerhedspolitikken!
+%\item Kan man lave en 100\% sikker firewall? Ja selvfølgelig, se!
+\end{list1}
+
+
+\centerline{\small Kilde: Billedet er fra Marcus Ranum The ULTIMATELY
+  Secure Firewall} 
+
+
+\slide{Bloker indefra og ud}
+
+\begin{list1}
+\item Der er porte og services som altid bør blokeres
+\item Det kan være kendte sårbare services
+\begin{list2}
+\item Windows SMB filesharing - ikke til brug på Internet!
+\item Unix NFS - ikke til brug på Internet!
+\end{list2}
+\item Kendte problemer:
+\begin{list2}
+\item KaZaA og andre P2P programmer - hvis muligt!
+\item Portmapper - port 111    
+\end{list2}
+\end{list1}
+
+
+\slide{Firewall konfiguration}
+
+\begin{list1}
+\item Den bedste firewall konfiguration starter med:
+\begin{list2}
+\item Papir og blyant
+\item En fornuftig adressestruktur
+\end{list2}
+\item Brug dernæst en firewall med GUI første gang!
+\item Husk dernæst:
+\begin{list2}
+\item En firewall skal passes
+\item En firewall skal opdateres
+\item Systemerne bagved skal hærdes!    
+\end{list2}
+\end{list1}
+
+
+
+\slide{Netværksdesign og sikkerhed}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser 
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+
+\slide{En typisk firewall konfiguration}
+
+\hlkimage{17cm}{images/firma-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter traffik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\end{list1}
+
+
+\slide{Seperation of privileges} 
+
+\begin{list1}
+\item Forskellige computere til forskellige formål, en server er mail-server en anden er web-server
+\item Brug en sikker konfiguration, minimumskonfiguration
+\item Brug sikre protokoller, kryptering SSH fremfor Telnet
+\item Opsætning af netværk, hvordan? Security Configuration Guides + paranoia
+\begin{list2}
+\item \link{http://csrc.nist.gov/publications/PubsSPs.html}
+\item \link{http://www.nsa.gov/research/publications/index.shtml}
+\item \link{http://www.nsa.gov/ia/guidance/security_configuration_guides/index.shtml}
+\end{list2}
+\end{list1}
+
+
+
+\slide{Proxy servers}
+
+\begin{list1}
+\item Filtrering på højere niveauer i OSI modellen er muligt
+\item Idag findes proxy applikationer til de mest almindelige
+  funktioner
+\item Den typiske proxy er en caching webproxy der kan foretage HTTP
+  request på vegne af arbejdsstationer og gemme resultatet 
+\item NB: nogle protokoller egner sig ikke til proxy servere
+\item SSL forbindelser til \emph{secure websites} kan per design ikke proxies
+\end{list1}
+
+\slide{Unified communications}
+
+\hlkimage{23cm}{firma-netvaerk-wlan}
+
+\slide{Redundante firewalls}
+
+\hlkimage{8cm}{images/pfsync-carp-1.jpg}
+
+\begin{list2}
+\item OpenBSD Common Address Redundancy Protocol CARP - både IPv4 og IPv6\\
+overtagelse af adresse både IPv4 og IPv6
+\item pfsync - sender opdateringer om firewall states mellem de to systemer  
+\item Kilde:
+\link{http://www.countersiege.com/doc/pfsync-carp/}
+\end{list2}
+
+\exercise{ex:unix-basic-firewall}
+\exercise{ex:nmap-sweep}
+\exercise{ex:nmap-portscan}
+
+\slide{IPsec og Andre VPN features}
+
+\begin{list1}
+\item De fleste firewalls giver mulighed for at lave krypterede
+  tunneler
+\item Nyttigt til fjernkontorer der skal have usikker traffik henover
+  usikre netværk som Internet 
+\item Konceptet kaldes Virtual Private Network VPN
+\item IPsec er de facto standarden for VPN og beskrevet i RFC'er 
+\end{list1}
+
+\slide{IPsec}
+
+\begin{list1}
+\item Sikkerhed i netværket
+\begin{list2}
+\item RFC-2401 Security Architecture for the Internet Protocol
+\item RFC-2402 IP Authentication Header (AH)
+\item RFC-2406 IP Encapsulating Security Payload (ESP)
+\item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
+\end{list2}
+\item Både til IPv4 og IPv6
+\item {\bfseries MANDATORY} i IPv6! - et krav hvis man implementerer
+  fuld IPv6 support
+\item Der findes IKEscan til at scanne efter IKE
+  porte/implementationer\\
+\link{http://www.nta-monitor.com/ike-scan/index.htm}
+\end{list1}
+
+\slide{IPsec er ikke simpelt!}
+
+\hlkimage{16cm}{images/ipsec-hsc.png}
+\centerline{Kilde: \link{http://www.hsc.fr/presentations/ike/}}
+
+
+
+\slide{RFC-2406 IP ESP}
+
+Pakkerne før og efter:
+\begin{alltt}
+\small 
+               BEFORE APPLYING ESP
+         ---------------------------------------
+   IPv6  |             | ext hdrs |     |      |
+         | orig IP hdr |if present| TCP | Data |
+         ---------------------------------------
+
+
+
+               AFTER APPLYING ESP
+         ---------------------------------------------------------
+   IPv6  | orig |hop-by-hop,dest*,|   |dest|   |    | ESP   | ESP|
+         |IP hdr|routing,fragment.|ESP|opt*|TCP|Data|Trailer|Auth|
+         ---------------------------------------------------------
+                                   |<---- encrypted ---->|
+                               |<---- authenticated ---->| 
+\end{alltt}
+
+
+\slide{OpenVPN / OpenSSL VPN}
+
+\begin{quote}
+OpenVPN is a full-featured SSL VPN solution which can accomodate a
+wide range of configurations, including remote access, site-to-site
+VPNs, WiFi security, and enterprise-scale remote access solutions with
+load balancing, failover, and fine-grained access-controls (articles)
+(examples) (security overview) (non-english languages).   
+\end{quote}
+
+\begin{list1}
+\item Et andet populært VPN produkt er OpenVPN
+\item Bemærk dog at hvis der benyttes TCP i TCP risikerer man at støde ind i 
+et problem som kaldes \emph{TCP in TCP meltdown} 
+\item Kilde: \link{http://openvpn.net/}  
+\end{list1}
+
+
+\slide{Network patterns }
+
+\begin{list1}
+\item Hvad taler for og imod - de næste slides gennemgår nogle standardsetups
+\item En slags Patterns for networking
+\end{list1}
+
+ 
+\slide{Pattern: erstat Telnet med SSH}
+
+\begin{list1}
+\item Telnet er død!
+\item Brug altid Secure Shell fremfor Telnet
+\item Opgrader firmware til en der kan SSH, eller køb bedre udstyr næste gang
+\item Selv mine små billige Linksys switche forstår SSH!
+\end{list1}
+
+\slide{Pattern: erstat FTP med HTTP}
+
+\begin{list1}
+\item Hvis der kun skal distribueres filer kan man ofte benytte HTTP istedet for FTP
+\item Hvis der skal overføres med password er SCP/SFTP fra Secure Shell at foretrække
+\end{list1}
+
+
+\slide{Anti-patterns}
+
+\begin{list1}
+\item Nu præsenteres et antal setups, som ikke anbefales
+\item Faktisk vil jeg advare mod at bruge dem
+\item Husk følgende slides er min mening
+\end{list1}
+
+\slide{Anti-pattern dobbelt NAT i eget netværk}
+
+\hlkimage{20cm}{nat-double.pdf}
+
+\begin{list1}
+\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
+ud på internet.
+\vskip 1cm
+\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
+\end{list1}
+
+\slide{Anti-pattern blokering af ALT ICMP}
+
+\begin{alltt}
+ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\end{alltt}
+
+\begin{list1}
+\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net 
+\vskip 1cm
+\item \end{list1}
+
+\slide{Anti-pattern blokering af DNS opslag på TCP}
+
+\begin{list1}
+\item Det bliver (er) nødvendigt med DNS opslag over TCP på grund af store svar. Det betyder at firewalls skal tillade DNS opslag via TCP
+\vskip 1cm
+\item 
+\item Guide:\\
+Brug en caching nameserver, således at det kun er den som kan lave DNS opslag ud i verden
+
+\end{list1}
+
+\slide{Anti-pattern daisy-chain}
+
+\hlkimage{20cm}{daisy-chain-server.pdf}
+
+\begin{list1}
+\item Daisy-chain af servere, erstat med firewall, switch og VLAN
+\vskip 1cm
+\item Det giver et væld af problemer med overvågning, administration, backup og opdatering
+\end{list1}
+
+\slide{Anti-pattern WLAN forbundet direkte til LAN}
+
+\hlkimage{10cm}{images/wlan-accesspoint-2.pdf}
+
+\begin{list1}
+\item WLAN AP'er forbundet direkte til LAN giver større risiko for at sikkerheden brydes
+\item Ved at sætte WLAN direkte på LAN risikerer man at eksterne får direkte adgang
+\item Kan selvfølgelig gå an i et privat hjem
+\item Det forværres jo flere AP'er man har, har du 100 skal du være sikker på allesammen er sikre!
+\end{list1}
+
+
+
+
+

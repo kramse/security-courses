@@ -1,0 +1,699 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{thecamp-slides}
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{Open Source projects with 10Gbit}
+{Network Camp 2012}
+
+
+\slide{Plan for foredraget}
+
+\begin{list1}
+\item 30 min Network introduction Kristen Nielsen\\
+- shared view of networking, common terms
+\item 1,5t The Network Camp 2012 experiments
+\item Networking hardware
+\item Operating systems, the network stacks and TCP/IP problems
+\item Network measurements: performance testing with iperf, tcpbench m.fl.
+\item More application testing and hacker tools 
+\item My current results for Linux, FreeBSD and OpenBSD
+\item Troubleshooting
+\item Conclusion
+\end{list1}
+
+\hlkprofiluk
+
+\slide{Background for this presentation}
+
+Lab testing 10Gbit servers with various open source operating systems
+
+Can they support 10Gbps?
+
+What is needed to reach 10Gbit?
+
+\vskip 3 cm
+Goal - be able to configure high performance servers with octo-core and ~100Gb memory for 100.000s of connections or requests/sec supporting DNS, HTTP and email
+
+On commodity hardware, like regular blade server
+
+Some results from this is going directly in production after The Camp 2012\\
+Going to roll out across +500 servers in Hosting\\
+- updating the existing tuning settings
+
+\slide{My networks}
+
+\hlkimage{17cm}{images/transit-net-cph-1-customer.pdf}
+\vskip 1cm
+\begin{center}
+	I co-admin AS12617 and AS59469
+	
+\link{http://bgp.he.net/AS12617} \link{http://bgp.he.net/AS59469}
+\end{center}
+
+\slide{My environments: europe}
+
+\hlkimage{23cm}{images/europe-interxion-luxconnect.pdf}
+\vskip 1cm
+\centerline{about 26ms latency - measured using ping}
+
+\slide{Networking hardware}
+
+I bought and configured the following systems based on Shuttle:
+\begin{list2}
+\item Shuttle SX58H7 Pro Barebone
+\item Chipset	Intel X58 + ICH10R
+\item Memory	4 x 240pin DDR3 DIMM slots,4GB per DIMM(Max 16GB)\\
+Support Triple channel DDR3 1066/1333/1600(OC)MHz
+\item Expansion slot	(2) PCI-E X16 slot
+\item Ethernet	(2) Realtek 8111E 10Mb/s,100Mb/s,1Gb/s operation
+\end{list2}
+\slide{Actual configuration}
+\hlkimage{8cm}{images/shuttle-sx58h7.png}
+
+\begin{list2}
+\item Shuttle SX58H7 Pro Barebone
+\item CPU Intel Core i7 - 960 (3.2GHz) (4core) (8MB) (130W) (LGA1366) (45nm)
+\item 4GB, DDR3, DIMM 240-pin, 1333 MHz (PC3-10600), CL9
+\item Club 3D Nvidia GeForce GT520  1GB PCI-E - SMALL - one slot only
+\item Dual port Intel 10GbE SFP+ (82599 chip)
+\end{list2}
+
+This is just a sample system, let me know if you find better portable systems
+
+\slide{ Operating systems}
+
+
+\begin{list1}
+\item My primary interests are:
+\begin{list2}
+\item Linux - used for web hosting, DNS
+\item FreeBSD - used for Varnish and stuff
+\item OpenBSD - which we use mostly for DNS, NTP and \emph{other infrastructure servers}
+\end{list2}
+\item I will have to redo these experiments with Windows 2008R8 and Windows 7 clients
+\end{list1}
+
+Note: This presentation is based on dual-port Intel 82599 NICs\\
+Later this year I will probably be testing various other NICs, like Myricom, Broadcom, Brocade and maybe even Napatech
+
+\vskip 2cm
+
+This is not a which OS is fastest, but more focus on how to achieve good network performance
+
+\slide{IP network stacks}
+
+\hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
+
+\slide{TCP/IP features}
+\begin{list1}
+\item IP/TCP is old RFC-793 September 1981
+\item Implemented on the internet circa 1983
+\item TCP over low speed data links to High speed 10Gbit Ethernets
+\item Soon we will have 100Gbps links in production
+\item I have switches on camp with 40Gbit ports!
+\item Many keywords on the internet today:
+Ethernet, Layer2, Layer3, SNMP, OSPF, BGP, firewalls, routers, switches, syslog, ACL, security, denial of service, syn flooding, backtrack, Nmap, portscan, Metasploit, 802.1q, 802.11, 802.1x, STP, BPDU guard, IPv4, IPv6, ICMPv6, NTP, Cisco IOS, 802.3ad
+\vskip 5mm
+\item I will not repeat a lot of slides about protocols, use Wikipedia has great pages about most network protocols
+\end{list1}
+
+\slide{The network characteristic}
+\hlkimage{14cm}{images/email-to-porn.pdf}
+
+
+
+\begin{list1}
+\item Networks have evolved from mail being the primary application
+\item today we expect to stream high definition content
+\item Hosts on the internet maybe 800 million mobile-only in 2015?
+\item Unified communications - \emph{everything over networks}\\
+\link{http://en.wikipedia.org/wiki/Unified_communications}
+\end{list1}
+
+\slide{Problems - incomplete list!}
+\begin{list1}
+\item Too much bandwidth Long fat networks (LFNs, pronounced "elefan(t)s")\\
+Even reaching 1Gbit transfer over TCP between Copenhagen and Luxembourg with 25ms latency can be tough
+\item TCP Slow start - to little data sent initially\\
+\link{http://en.wikipedia.org/wiki/Slow-start}
+\item Buffer bloat - efficient buffering, break TCP's congestion-avoidance algorithms\\
+\link{http://en.wikipedia.org/wiki/Bufferbloat}
+\end{list1}
+
+\slide{Do we have tools for solving network stack problems}
+\begin{list1}
+\item Today we have:
+\begin{list2}
+\item Huge memory available +16Gb in single user work stations, more in servers\\
+We can use larger buffers 
+\item RFC1323 TCP Extensions for High Performance -  May 1992 \smiley\\
+includes Negotiating TCP Large Windows options (RFC1323)
+\item RFC2018 TCP Selective Acknowledgments (SACK)
+\item RFC3390 Increasing TCP's Initial Window
+\item TCP sliding window - INCREASE the buffer captain
+\item Path MTU Discovery - Go big or Go home\\
+minimum IP datagram size that a host must be able to receive IPv4 576, IPv6 1280
+\end{list2}
+\end{list1}
+\centerline{Conclusion: do not expect things to work out of the box in every case - test}
+
+\slide{Bandwidth-delay product TCP}
+\hlkimage{18cm}{images/bdp-examples.png}
+
+\link{http://en.wikipedia.org/wiki/Bandwidth-delay_product}
+
+\slide{ Network measurements}
+
+\begin{list1}
+\item The need for testing - crucial for success!
+\item Well known tool iperf 
+\item Others exist like: Netperf, tcpbench
+\item FTP, SCP, SFTP - Warning: when disk/storage I/O is introduced less accurate network results!\\
+Still this is the next step for the server people ;-)
+(and they will know the network works, and must tune database exports, disk I/O, iSCSI, SAN etc.)
+\item Smokeping - latency monitoring
+\item Why use popular tools - other people will recognize results immediately
+\end{list1}
+
+\slide{Trust nobody, use the switch port for measurements}
+
+\begin{alltt}\footnotesize
+force10-2#sh interfaces Fo 0/60 | grep Mbits
+     Input 9869.00 Mbits/sec,     813004 packets/sec, 25.00% of line-rate
+     Output 35.00 Mbits/sec,      62589 packets/sec, 0.11% of line-rate
+force10-2#sh interfaces Tengigabitethernet 0/0 | grep Mbits
+     Input 35.00 Mbits/sec,      62616 packets/sec, 0.45% of line-rate
+     Output 9869.00 Mbits/sec,     812987 packets/sec, 99.90% of line-rate
+\end{alltt}
+
+\begin{list1}
+\item Were do you measure?
+\item What about different tools - some report Mbits per second, other Mbytes
+\item I will use the switch port for precise measurements, if needed
+\item Output shown is from Force10 S4810 switch
+\end{list1}
+
+\slide{iperf}
+
+\begin{quote}
+iperf was developed by NLANR/DAST as a modern alternative for measuring maximum TCP and UDP bandwidth performance.
+\end{quote}
+
+\begin{list1}
+\item Client server based
+\item Both TCP and UDP, and allows various tuning parameters
+\item Make sure to use the latest version - iperf-2.0.5.tar.gz
+\item Precompiled executable for Windows are available at various places, ask me :-)
+\item Used by all danish ISPs, and the rest of the world
+\end{list1}
+
+Information: \link{http://en.wikipedia.org/wiki/iperf}\\
+Source at: \link{http://sourceforge.net/projects/iperf/}
+
+\slide{iperf server}
+
+\begin{alltt}\small
+[hlk@patchman ~]$ sudo iperf -s
+------------------------------------------------------------
+Server listening on TCP port 5001
+TCP window size: 85.3 KByte (default)
+------------------------------------------------------------
+[  4] local 109.238.48.53 port 5001 connected with 109.238.49.65 port 50395
+[ ID] Interval       Transfer     Bandwidth
+[  4]  0.0-10.0 sec  1.08 GBytes   931 Mbits/sec
+\end{alltt}
+
+
+\slide{iperf client}
+\begin{alltt}\small
+solido@solido01:~$ sudo iperf -c 109.238.48.53
+------------------------------------------------------------
+Client connecting to 109.238.48.53, TCP port 5001
+TCP window size: 16.0 KByte (default)
+------------------------------------------------------------
+[  3] local 109.238.49.65 port 50395 connected with 109.238.48.53 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  1.08 GBytes    932 Mbits/sec
+\end{alltt}
+
+\begin{list1}
+\item Recommendations:
+\item start the server, keep it running
+\item {\bf run for at least 60 seconds}
+\item typical use \verb+iperf -t 60 -i 5 -c 10.0.10.30+
+\end{list1}
+
+\slide{Tuning the network}
+
+\begin{list1}
+\item When you have used iperf or similar to perform baseline testing
+\item start tuning your engines \smiley
+\item The main tuning options will be kernel related and today done via \verb+/etc/sysctl.conf+
+from 4.4BSD now also on Linux, see \link{http://en.wikipedia.org/wiki/Sysctl}\\
+\item Other tuning options:
+\begin{list2}
+\item Kernel upgrade - new kernels may be better - or worse!
+\item Driver upgrade - download newest driver from Intel, install and test, may be better - or worse!
+\item Driver options - intel driver has some parameters, some compile-time others dynamic\\
+/boot/loader.conf used on FreeBSD to load ixgbe driver with options at boot time
+\end{list2}
+\item Disabling unnecessary daemons and features
+\end{list1}
+
+\slide{Testing methodology}
+
+\begin{list1}
+\item When testing:
+\begin{list2}
+\item Do a baseline before optimizing
+\item Do initial testing with the usual stuff - /etc/sysctl.conf
+\item Research, google, mailinglists for operating system - have others succeeded
+\item Take small steps, confirm by turning on and off
+\item Try switching your testing tool - the tool might be bad for this combination of OS, NIC, hardware
+\item Monitor the operating system, especially interrupts, but also logs, console etc.
+\end{list2}
+\item Rinse repeat - redo tests often, redo the baseline test again
+\end{list1}
+
+Trying to formalize what we do, but most importantly
+
+keep notes, what you did, what was changed
+
+
+\slide{More application testing}
+
+\hlkimage{13cm}{images/linux-tsung-size_rcv.png}
+
+\begin{list1}
+\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
+\item Apache benchmark included with Apache
+\end{list1}
+
+\slide{Hacker tools}
+
+\begin{list1}
+\item All public web sites will receive bad traffic
+\item You need to run hacker tools to simulate attacks, and to know how your environment react to bad traffic
+\item Install Backtrack Linux \link{http://www.backtrack-linux.org/}
+\item Run hacker tools from Backtrack, install those which are not included
+\item More inspiration can be found in my other presentations:\\
+\link{http://files.kramse.org/tmp/creative-packets-screen.pdf}\\
+\link{http://www.version2.dk/blogs/henrik-lund-kramshoej}
+\end{list1}
+
+\slide{Results from Linux after tuning}
+\begin{alltt}\scriptsize
+hlk@xpc03:~$ sudo iperf -t 60 -i 5 -c 10.0.10.20
+------------------------------------------------------------
+Client connecting to 10.0.10.20, TCP port 5001
+TCP window size: 9.54 MByte (default)
+------------------------------------------------------------
+[  3] local 10.0.10.30 port 49131 connected with 10.0.10.20 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 5.0 sec  5.52 GBytes  9.49 Gbits/sec
+[  3]  5.0-10.0 sec  5.53 GBytes  9.50 Gbits/sec
+[  3] 10.0-15.0 sec  5.52 GBytes  9.49 Gbits/sec
+[  3] 15.0-20.0 sec  5.53 GBytes  9.49 Gbits/sec
+[  3] 20.0-25.0 sec  5.53 GBytes  9.49 Gbits/sec
+[  3] 25.0-30.0 sec  5.52 GBytes  9.49 Gbits/sec
+[  3] 30.0-35.0 sec  5.52 GBytes  9.49 Gbits/sec
+[  3] 35.0-40.0 sec  5.53 GBytes  9.49 Gbits/sec
+[  3] 40.0-45.0 sec  5.53 GBytes  9.50 Gbits/sec
+[  3] 45.0-50.0 sec  5.52 GBytes  9.49 Gbits/sec
+[  3] 50.0-55.0 sec  5.53 GBytes  9.50 Gbits/sec
+[  3]  0.0-60.0 sec  66.3 GBytes  9.49 Gbits/sec
+\end{alltt}
+\vskip 1cm
+Tested with BackTrack Linux distribution with this uname -a:\\
+{\small \verb+Linux xpc02 3.2.6 #1 SMP Fri Feb 17 10:34:20 EST 2012 x86_64 GNU/Linux+}
+
+against Ubuntu Server with this uname -a:\\
+{\small \verb+Linux xpc03 3.2.0-26-generic #41-Ubuntu SMP Thu Jun 14 17:49:24 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux+}
+
+\slide{Tuning process performed on Linux}
+\begin{list1}
+\item Baseline testing - no optimizations 
+\item Update to latest kernel/driver
+\item Update /etc/sysctl.conf with some tweaks
+\item Monitor and watch using ifpps, vmstat etc. for sign of bottle-necks
+\item Ask friends - cry for help. Received good help from Brian Lagoni and others
+\end{list1}
+
+
+\slide{ifpps}
+
+\begin{alltt}\scriptsize
+Kernel net/sys statistics for eth2, t=8.00s
+  RX:            0.000 MiB/t          0 pkts/t          0 drops/t          0 errors/t  
+  TX:          658.223 MiB/t    9326989 pkts/t          0 drops/t          0 errors/t  
+ 
+  RX:            0.000 MiB            0 pkts            0 drops            0 errors 
+  TX:        11978.994 MiB    169741693 pkts            0 drops            0 errors
+ 
+  SYS:            4342 cs/t        2.7% mem             4 running          0 iowait
+  CPU0:           0.0% usr/t       0.1% sys/t       99.9% idl/t         0.0% iow/t
+  CPU1:           0.2% usr/t       1.0% sys/t       98.8% idl/t         0.0% iow/t
+  CPU2:           0.0% usr/t       0.0% sys/t      100.0% idl/t         0.0% iow/t
+  CPU3:           0.0% usr/t       0.0% sys/t      100.0% idl/t         0.0% iow/t
+  CPU4:           0.0% usr/t       2.7% sys/t       97.3% idl/t         0.0% iow/t
+  CPU5:          17.4% usr/t      81.5% sys/t        1.1% idl/t         0.0% iow/t
+  CPU6:           0.0% usr/t       0.0% sys/t      100.0% idl/t         0.0% iow/t
+  CPU7:          15.0% usr/t      85.0% sys/t        0.0% idl/t         0.0% iow/t
+\end{alltt}
+
+ifpps while running test with tcpreplay - no responses sent back
+
+awesome for showing bits, packets per sec, interrupts
+
+\link{http://netsniff-ng.org/}
+
+\slide{Current Linux configuration}
+
+/etc/sysctl.conf - much inspiration from Intel driver README:
+\begin{alltt}\scriptsize
+# General 10 gigabit tuning:
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.core.optmem_max = 524287
+net.core.rmem_default = 524287
+net.core.wmem_default = 524287
+net.ipv4.tcp_mem = 10000000 10000000 10000000
+net.ipv4.tcp_rmem = 10000000 10000000 10000000
+net.ipv4.tcp_wmem = 10000000 10000000 10000000
+net.ipv4.tcp_syncookies = 1
+# this gives the kernel more memory for tcp
+# which you need with many (100k+) open socket connections
+net.ipv4.tcp_mem = 50576   64768   98152
+net.core.netdev_max_backlog = 50000
+\end{alltt}
+
+\centerline{Tested using BackTrack and Ubuntu Server}
+Tested with BackTrack Linux distribution with this uname -a:\\
+{\small \verb+Linux xpc02 3.2.6 #1 SMP Fri Feb 17 10:34:20 EST 2012 x86_64 GNU/Linux+}
+
+against Ubuntu Server with this uname -a:\\
+{\small \verb+Linux xpc03 3.2.0-26-generic #41-Ubuntu SMP Thu Jun 14 17:49:24 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux+}
+
+
+\slide{Results from XenServer (Linux) after tuning}
+\begin{alltt}\scriptsize
+[root@xen01 ~]# iperf -t 60 -i 5 -c 10.0.10.30
+------------------------------------------------------------
+Client connecting to 10.0.10.30, TCP port 5001
+TCP window size: 16.0 KByte (default)
+------------------------------------------------------------
+[  3] local 10.0.10.20 port 42256 connected with 10.0.10.30 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 5.0 sec  5.37 GBytes  9.22 Gbits/sec
+[  3]  5.0-10.0 sec  5.39 GBytes  9.25 Gbits/sec
+[  3] 10.0-15.0 sec  5.28 GBytes  9.07 Gbits/sec
+[  3] 15.0-20.0 sec  5.37 GBytes  9.22 Gbits/sec
+[  3] 20.0-25.0 sec  5.35 GBytes  9.19 Gbits/sec
+[  3] 25.0-30.0 sec  5.38 GBytes  9.24 Gbits/sec
+[  3] 30.0-35.0 sec  5.44 GBytes  9.34 Gbits/sec
+[  3] 35.0-40.0 sec  5.40 GBytes  9.27 Gbits/sec
+[  3] 40.0-45.0 sec  5.29 GBytes  9.10 Gbits/sec
+[  3] 45.0-50.0 sec  5.23 GBytes  8.98 Gbits/sec
+[  3] 50.0-55.0 sec  5.43 GBytes  9.34 Gbits/sec
+[  3] 55.0-60.0 sec  5.32 GBytes  9.15 Gbits/sec
+[  3]  0.0-60.0 sec  64.2 GBytes  9.20 Gbits/sec
+\end{alltt}
+
+Data from latest XenServer 6.2 with updates - update for Intel driver
+
+\slide{Getting the last bits}
+
+Some extra sysctls were tuned:
+\begin{alltt}
+kernel.shmmax = 4294967295
+kernel.shmall = 268435456
+fs.aio-max-nr = 444416
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_mem = 50576   64768   98152
+net.core.netdev_max_backlog = 10000
+\end{alltt}
+
+\slide{Results from XenServer (Linux) after last tuning}
+\begin{alltt}\scriptsize
+[root@xen01 ~]# iperf -t 60 -i 5 -c 10.0.10.30
+------------------------------------------------------------
+Client connecting to 10.0.10.30, TCP port 5001
+TCP window size: 64.0 KByte (default)
+------------------------------------------------------------
+[  3] local 10.0.10.20 port 32852 connected with 10.0.10.30 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 5.0 sec  5.44 GBytes  9.34 Gbits/sec
+[  3]  5.0-10.0 sec  5.47 GBytes  9.40 Gbits/sec
+[  3] 10.0-15.0 sec  5.47 GBytes  9.40 Gbits/sec
+[  3] 15.0-20.0 sec  5.47 GBytes  9.40 Gbits/sec
+[  3] 20.0-25.0 sec  5.48 GBytes  9.41 Gbits/sec
+[  3] 25.0-30.0 sec  5.48 GBytes  9.41 Gbits/sec
+[  3] 30.0-35.0 sec  5.46 GBytes  9.39 Gbits/sec
+[  3] 35.0-40.0 sec  5.48 GBytes  9.41 Gbits/sec
+[  3] 40.0-45.0 sec  5.47 GBytes  9.41 Gbits/sec
+[  3] 45.0-50.0 sec  5.48 GBytes  9.42 Gbits/sec
+[  3] 50.0-55.0 sec  5.47 GBytes  9.40 Gbits/sec
+[  3] 55.0-60.0 sec  5.47 GBytes  9.40 Gbits/sec
+[  3]  0.0-60.0 sec  65.7 GBytes  9.40 Gbits/sec
+\end{alltt}
+
+Squeeeeezing the last bits from the XenServer :-)
+
+Also verified a CentOS virtuel server could reach +9Gbits/sec!
+
+\slide{Results from FreeBSD after tuning}
+\begin{alltt}\small
+root@xpc03:/root # iperf -s
+------------------------------------------------------------
+Server listening on TCP port 5001
+TCP window size: 4.00 MByte (default)
+------------------------------------------------------------
+[  4] local 10.0.10.30 port 5001 connected with 10.0.10.20 port 53080
+[ ID] Interval       Transfer     Bandwidth
+[  4]  0.0-60.0 sec  42.9 GBytes  6.15 Gbits/sec
+\end{alltt}
+
+\vskip 1cm
+
+Note: the large TCP window size
+
+Some room for improvement.
+
+\slide{Results from FreeBSD after tuning}
+\begin{alltt}\small
+root@xpc02:/root # netperf -H 10.0.10.30 -t UDP_STREAM
+MIGRATED UDP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET
+to 10.0.10.30 (10.0.10.30) port 0 AF_INET
+Socket  Message  Elapsed      Messages               
+Size    Size     Time         Okay Errors   Throughput
+bytes   bytes    secs            #      #   10^6bits/sec
+
+  9216    9216   10.00     1234419      0    9100.60
+ 42080           10.00     1234419           9100.60
+\end{alltt}
+
+\vskip 1cm
+
+So FreeBSD can go closer to wirespeed 10G when sending UDP - less work
+
+\slide{Tuning process performed on FreeBSD}
+\begin{list1}
+\item Baseline testing - no optimizations 
+\item Update to latest kernel/driver, from 9.0-RELEASE to 10-current
+\item Update /etc/sysctl.conf with some tweaks\\
+/etc/sysctl.conf: \verb+kern.ipc.nmbclusters=262144+\\
+/etc/sysctl.conf: \verb+kern.ipc.nmbjumbop=262144+\\
+\item Noticed warnings on console \verb+hw.intr_storm_threshold=9000+
+\item Update /boot/loader.conf with some tweaks
+\item Remove WITNESS - kernel audit of semaphores and other stuff
+\item Remove USB3 xhci driver - ate about 20-50.000 interrupts when idle!
+\item Monitor and watch using systat, vmstat etc. for sign of bottle-necks
+\item Ask friends - cry for help. Received good help from tykling, batmule and others
+\end{list1}
+
+\slide{Current FreeBSD configuration}
+
+/etc/sysctl.conf
+\begin{alltt}\small
+# Increase the network buffers
+kern.ipc.nmbclusters=262144
+kern.ipc.maxsockbuf=4194304
+hw.intr_storm_threshold=9000
+kern.ipc.nmbjumbop=262144
+\end{alltt}
+
+/boot/loader.conf
+\begin{alltt}\small
+ixgbe_load="YES"
+hw.ixgbe.txd=4096
+hw.ixgbe.rxd=4096
+\end{alltt}
+
+
+
+We should go back and revisit FreeBSD 9.0-RELEASE for confirming which tuning option did most
+
+\slide{Results from OpenBSD}
+
+Before tuning:
+\begin{alltt}\small
+root@xpc03:root# tcpbench -n 4 -s
+  elapsed_ms          bytes         mbps   bwidth
+...
+Conn:   4 Mbps:     2784.465 Peak Mbps:     2799.272 Avg Mbps:      696.116
+        4000       86687512      693.500   25.00%
+        3999       88704632      709.637   25.58%
+        3999       88733536      709.868   25.59%
+        3999       82607488      660.860   23.82%
+Conn:   4 Mbps:     2773.865 {\bf Peak Mbps:     2799.272} Avg Mbps:      693.466
+\end{alltt}
+
+\slide{Results from OpenBSD after basic sysctl tuning}
+
+
+\begin{alltt}\small
+Output from tcpbench was similar to:
+  elapsed_ms          bytes         mbps   bwidth
+...
+     353030       97605896      780.847   25.01% 
+     353030       97517512      780.140   24.99% 
+     353030       97517568      780.921   24.99% 
+     353029       97600864      781.589   25.01% 
+Conn:   4 Mbps:     3123.497 {\bf Peak Mbps:     3159.770} Avg Mbps:      780.874
+\end{alltt}
+
+\slide{Results from OpenBSD after intel card  tuning}
+Increased hardware queues\\
+TxDescriptors/RxDescriptors from 256 to 512
+in \verb+src/sys/dev/pci/if_ix.h+
+\begin{alltt}\small
+root@xpc02:root# tcpbench -n 4 10.0.10.30
+ elapsed_ms          bytes         mbps   bwidth 
+...
+Conn:   4 Mbps:     3296.798 Peak Mbps:     3341.420 Avg Mbps:      824.200
+       4006      107893344      863.147   26.49% 
+       4006       95005528      760.044   23.33% 
+       4006      110895272      887.162   27.23% 
+       4005       93440408      747.523   22.95% 
+Conn:   4 Mbps:     3257.876 Peak Mbps:     3341.420 Avg Mbps:      814.469
+       5006      114901384      919.211   28.44% 
+       5006      112567984      900.544   27.86% 
+       5006       61887976      495.104   15.32% 
+       5006      114646592      917.173   28.38% 
+Conn:   4 Mbps:     3232.031 {\bf Peak Mbps:     3341.420} Avg Mbps:      808.008
+\end{alltt}
+
+
+\slide{Results from OpenBSD after intel card  tuning}
+Increased hardware queues\\
+TxDescriptors/RxDescriptors from 256 to 2048
+in \verb+src/sys/dev/pci/if_ix.h+
+\begin{alltt}\small
+root@xpc02:root# tcpbench -n 4 10.0.10.30
+ elapsed_ms          bytes         mbps   bwidth 
+...
+Conn:   4 Mbps:     3292.587 Peak Mbps:     3345.610 Avg Mbps:      823.147
+       4004       99490792      795.131   24.45% 
+       4004       98965000      790.929   24.32% 
+       4003      101455168      810.831   24.93% 
+       4003      107086560      855.837   26.31% 
+Conn:   4 Mbps:     3252.727 Peak Mbps:     3345.610 Avg Mbps:      813.182
+       5006       99454488      794.048   24.63% 
+       5006       99545880      794.777   24.65% 
+       5006      102509992      818.443   25.38% 
+       5005      102365192      817.287   25.35% 
+Conn:   4 Mbps:     3224.555 {\bf Peak Mbps:     3345.610} Avg Mbps:      806.139
+\end{alltt}
+
+\centerline{Ongoing project - not good enough yet}
+
+
+\slide{Tuning process performed on OpenBSD}
+\begin{list1}
+\item Baseline testing - no optimizations 
+\item Update to latest kernel/driver, as recommended by misc@openbsd mailinglist
+\item Update /etc/sysctl.conf with some tweaks
+\item Update TxDescriptors/RxDescriptors
+\item Monitor and watch using systat, vmstat etc. for sign of bottle-necks
+\item Write misc@openbsd mailinglist - cry for help
+\end{list1}
+
+\slide{Current OpenBSD configuration}
+
+\begin{alltt}\scriptsize
+/etc/sysctl.conf
+ddb.panic=0                    # do not enter ddb console on kernel panic, reboot if possible
+kern.bufcachepercent=90        # Allow the kernel to use up to 90% of the RAM for cache (default 10%)
+machdep.allowaperture=2        # Access the X Window System (if you use X on the system)
+net.inet.ip.forwarding=1       # Permit forwarding (routing) of packets through the firewall
+net.inet.ip.ifq.maxlen=512     # Maximum allowed input queue length (256*number of physical interfaces)
+net.inet.ip.mtudisc=0          # TCP MTU (Maximum Transmission Unit) discovery off since our mss is small enough
+net.inet.tcp.rfc3390=2         # RFC3390 increasing TCP's Initial Congestion Window to 14600 for SPDY
+net.inet.tcp.mssdflt=1440      # maximum segment size (1440 from scrub pf.conf match statement)
+net.inet.udp.recvspace=231072 # Increase UDP "receive" buffer size. Good for 200Mbit without packet drop.
+net.inet.udp.sendspace=231072 # Increase UDP "send" buffer size. Good for 200Mbit without packet drop.
+\end{alltt}
+
+and changes of TxDescriptors/RxDescriptors from 256 to 2048\\
+in \verb+src/sys/dev/pci/if_ix.h+
+
+\slide{Troubleshooting and problems}
+
+\begin{list1}
+\item Lost hardware - suddenly one XPC had 12Gb memory?
+\item Leaking IP packets out through default gateway
+\item Reverse lookups for non-existing addresses
+\item Especially when working with hacker tools - take care!
+\end{list1}
+
+
+
+
+\slide{Changes}
+
+\begin{list1}
+\item To improve this setup I would:
+\begin{list2}
+\item Create isolated network, firewall traffic from inside this network
+\item Add DNS server to isolated network
+\item Add network management server, which can measure on the network devices
+\item Add syslog server for catching kernel warnings etc.
+\item Configure the usual suspects Observium, RANCID etc.\\
+See http://files.kramse.org/tmp/osd-2011-Network-Management-print.pdf for inspiration
+\item Version control for configuration files, puppet or similar
+\end{list2}
+\item Treat the setup as production, which can be tuned
+\end{list1}
+
+\slide{Smokeping}
+
+\begin{list1}
+\item When doing transfers across the internet, make sure to have Smokeping running
+\item When you hear reports of slow transfers, \\
+check your latency - increased latency $\rightarrow$ lower transfer speed
+\item When you hear reports of slow transfers, \\
+check your packet loss - increased packet loss $\rightarrow$ lower transfer speed
+
+\item Important to keep historic data
+\end{list1}
+
+\link{https://ring.nlnog.net/smokeping/solido01}
+
+\slide{Conclusion}
+
+\begin{list1}
+\item Open Source and 10Gbit is workable today on commodity hardware, Yay!
+\item It currently does require some tuning to achieve high speeds
+\item What about routing performance? Tomorrow and rest of week :-)
+\end{list1}
+
+{\bf You MUST perform testing when you think the environment is ready
+\vskip 2cm
+\centerline{\Large do NOT assume it works out of the box}}
+
+\end{document}

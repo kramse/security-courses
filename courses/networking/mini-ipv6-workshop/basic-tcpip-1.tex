@@ -1,7 +1,3 @@
-\slide{Dag 1 Basale begreber og Ethernet}
-
-\hlkimage{22cm}{images/kursus-netvaerk.pdf}
-
 
 \slide{Netværk til routning}
 
@@ -182,7 +178,7 @@ Binary:	1111111000000000000000000000001
 \hlkimage{10cm}{subnet-calculator.png}
 
 \begin{list1}
-\item Der findes et væld af programmer som kan hjælpe med at udregne
+\item Der findes programmer som kan hjælpe med at udregne
 subnetmasker til IPv4
 \item Screenshot fra \link{http://www.subnet-calculator.com/}
 \end{list1}
@@ -234,16 +230,76 @@ subnetmasker til IPv4
 \item Læs mere i RFC-3513
 \end{list2}
 
+\slide{IPv6 header - RFC-2460}
+
+
+\begin{alltt}
+\footnotesize
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+
+
+\slide{IPv6 addressing RFC-4291}
+
+\begin{list1}
+\item Addresses are always 128-bit identifiers for interfaces and sets of
+   interfaces 
+\item Unicast:   An identifier for a {\bf single interface}.\\
+A packet sent to a
+               unicast address is delivered to the interface identified
+               by that address.
+\item Anycast:   An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes).\\  A packet sent to an
+               anycast address is {\bf delivered to one} of the interfaces
+               identified by that address (the "nearest" one, according
+               to the routing protocols' measure of distance).
+
+\item Multicast: An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes). \\ A packet sent to a
+               multicast address is {\bf delivered to all interfaces
+               identified by that address}.
+\end{list1}
+
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+
+%\sout{Where are the NAT gateways?}
 
 \slide{Stop - netværket idag}
 
 \begin{list1}
 \item Bemærk hvilket netværk vi bruger idag
 \item Primære server fiona har IP-adressen 10.0.45.36
-\item Primære router luffe har IP-adressen 10.0.45.2 (og flere andre)
-\item Sekundære router idag er Bianca som har IP-adressen 10.0.46.2 (og flere andre)  
+\item Primære router conhome har IP-adressen 10.0.45.2 (og flere andre)
+%\item Sekundære router idag er Bianca som har IP-adressen 10.0.46.2 (og flere andre)  
 \item Hvis du kender til IP i forvejen så udforsk gerne på egen hånd netværket
-\item Det er tilladt at logge ind på alle systemer, undtagen Henrik's laptop bigfoot :-)
+\item Det er tilladt at logge ind på alle systemer, undtagen Henrik's laptop :-)
 \item {\bf Det er forbudt at ændre IP-konfiguration og passwords}
 \item Nu burde I kunne forbinde jer til netværket fysisk, check med \verb+ping 10.0.45.2+
 \item Det er nok at en PC i hver gruppe er på kursusnetværket
@@ -252,9 +308,6 @@ subnetmasker til IPv4
 \centerline{Pause for dem hvor det virker, mens vi ordner resten}
 
 
-\slide{OSI og Internet modellerne}
-
-\hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
 
 
 \slide{Trådløse teknologier}
@@ -263,7 +316,6 @@ subnetmasker til IPv4
 
 \begin{list1}
 \item Et typisk 802.11 Access-Point (AP) der har Wireless og Ethernet stik/switch
-\item Første dag bruger vi blot trådløse netværk, på dag 2 gennemgår vi 802.11
 \end{list1}
 
 \slide{Broer og routere}
@@ -326,20 +378,25 @@ Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Swit
 
 \begin{alltt}
 \small
-hlk@bigfoot:hlk$ arp -an        
-? (10.0.42.1) at 0:0:24:c8:b2:4c on en1 [ethernet]
-? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+hlk$ {\bf ping 10.0.42.1}
+PING 10.0.42.1 (10.0.42.1): 56 data bytes
+64 bytes from 10.0.42.1: icmp_seq=0 ttl=255 time=0.994 ms
+64 bytes from 10.0.42.1: icmp_seq=1 ttl=255 time=1.060 ms
+^C
+--- 10.0.42.1 ping statistics ---
+2 packets transmitted, 2 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 0.994/1.027/1.060/0.033 ms
+hlk$ {\bf arp -an}
+? (10.0.42.1) at 0:0:24:ce:7c:9c on en1 ifscope [ethernet]
 \end{alltt}
 
 \begin{list1}
 \item ARP cache kan vises med kommandoen \verb+arp -an+
 \item -a viser alle
-\item -n viser kun adresserne, prøver ikke at slå navne op - typisk hurtigere
+ -n viser kun adresserne numerisk
 \item ARP cache er dynamisk og adresser fjernes automatisk efter 5-20 minutter hvis de ikke bruges mere
 \item Læs mere med \verb+man 4 arp+
 \end{list1}
-
-
 
 
 \slide{Proxy-arp}
@@ -352,6 +409,23 @@ hlk@bigfoot:hlk$ arp -an
 \item Hvis man kun har få adresser er subnetting måske heller ikke muligt
 \item \link{http://en.wikipedia.org/wiki/Proxy_ARP}
 \end{list1}
+
+\slide{Hello neighbors}
+
+\begin{alltt}\small
+$ ping6 -w -I en1 ff02::1
+PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
+30 bytes from fe80::223:6cff:fe9a:f52c%en1: bigfoot
+36 bytes from fe80::216:cbff:feac:1d9f%en1: mike.kramse.dk.
+38 bytes from fe80::200:aaff:feab:9f06%en1: xrx0000aaab9f06
+34 bytes from fe80::20d:93ff:fe4d:55fe%en1: harry.local
+36 bytes from fe80::200:24ff:fec8:b24c%en1: kris.kramse.dk.
+31 bytes from fe80::21b:63ff:fef5:38df%en1: airport5
+32 bytes from fe80::216:cbff:fec4:403a%en1: main-base
+44 bytes from fe80::217:f2ff:fee4:2156%en1: Base Station Koekken 
+35 bytes from fe80::21e:c2ff:feac:cd17%en1: arnold.local
+\end{alltt}
+
 
 \slide{ARP vs NDP}
 
@@ -368,6 +442,24 @@ fe80::1%lo0                   (incomplete)         lo0 permanent R
 fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R   
 fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R      
 \end{alltt}
+
+\vskip 1cm
+\centerline{NDP og ARP har samme funktion, binder IP og MAC sammen}
+
+\slide{Vigtigste protokoller}
+
+
+\begin{list1}
+\item ARP Address Resolution Protocol
+\item IP og ICMP Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol 
+\item DNS Domain Name System
+\end{list1}
+\vskip 1cm
+\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
+
 
 
 \slide{Fragmentering og PMTU}
@@ -533,262 +625,6 @@ tcpdump: listening on en0
 \end{list1}
 
 
-\slide{Stop - vi gennemgår og tester vores setup}
-
-\begin{list1}
-\item Vi gennemgår hvordan vores setup ser ud
-\item Vi laver traceroute før og efter:
-\item Vi fjerner en ledning \emph{link down}
-\item Vi stopper en router og ser de annoncerede netværk forsvinder
-\item Vi booter en router og ser de annoncerede netværk igen
-\end{list1}
-
-\slide{Stop - vi ser i fællesskab på admin interfaces}
-
-\begin{list1}
-\item Vi prøver lige at se på diverse interfaces sammen
-\item hvis alle prøver samtidig bliver det lidt kaos :-)
-\item Huskeliste til Henrik:
-\begin{list2}
-\item Cisco switch
-\item Airport Extreme access-point
-\item Juniper SSG5 firewall
-\item Linksys WRV-200 router, access-point og switch
-\end{list2}
-\end{list1}
-
-
-\slide{Kommandolinien på Unix}
-
-\begin{list1}
-\item Shells kommandofortolkere:
-  \begin{list2}
-    \item sh - Bourne Shell
-\item bash - Bourne Again Shell
-\item ksh - Korn shell, lavet af David Korn
-\item csh - C shell, syntaks der minder om C sproget
-\item flere andre, zsh, tcsh 
-  \end{list2}
-\item Svarer til command.com og cmd.exe på Windows
-\item Kan bruges som komplette programmeringssprog
-\end{list1}
-
-\slide{Kommandoprompten}
-
-
-\begin{alltt}    
-\small
-[hlk@fischer hlk]$ id
-uid=6000(hlk) gid=20(staff) groups=20(staff), 
-0(wheel), 80(admin), 160(cvs) 
-[hlk@fischer hlk]$ 
-
-[root@fischer hlk]# id
-uid=0(root) gid=0(wheel) groups=0(wheel), 1(daemon),
-2(kmem), 3(sys), 4(tty), 5(operator), 20(staff), 
-31(guest), 80(admin) 
-[root@fischer hlk]#
-\end{alltt}
-
-\begin{list1}  
-\item typisk viser et dollartegn at man er logget ind som almindelig bruge
-\item mens en havelåge at man er root - superbruger
-\end{list1}
-
-\slide{Kommandoliniens opbygning}
-
-
-\begin{alltt}
-echo [-n] [string ...]  
-\end{alltt}
-
-\begin{list1}
-\item Kommandoerne der skrives på kommandolinien skrives sådan:
-\begin{list2}
-\item Starter altid med kommandoen, man kan ikke skrive \verb+henrik echo+
-\item Options skrives typisk med bindestreg foran, eksempelvis \verb+-n+
-\item Flere options kan sættes sammen, \verb+tar -cvf+ eller \verb+tar cvf+
-\item I manualsystemet kan man se valgfrie options i firkantede
-  klammer \verb+[]+
-\item Argumenterne til kommandoen skrives typisk til sidst (eller der
-  bruges redirection)
-\end{list2}
-\end{list1}
-
-\slide{Manualsystemet}
-
-\begin{quote}
- It is a book about a Spanish guy called Manual. You should read it.
-       -- Dilbert
-\end{quote}
-
-\begin{list1}
-\item Manualsystemet i Unix er utroligt stærkt!
-\item Det SKAL altid installeres sammen med værktøjerne!
-\item Det er næsten identisk på diverse Unix varianter!  
-\item \verb+man -k+ søger efter keyword, se også \verb+apropos+
-\end{list1}
-
-Prøv \verb+man crontab+ og \verb+man 5 crontab+
-
-\hlkimage{10cm}{images/unix-command-1.pdf}
-
-\slide{En manualside}
-
-\begin{alltt}
-\small
-CAL(1)                BSD General Commands Manual                CAL(1)
-NAME
-     cal - displays a calendar
-SYNOPSIS
-     cal [-jy] [[month]  year]
-DESCRIPTION
-   cal displays a simple calendar.  If arguments are not specified, the cur-
-   rent month is displayed.  The options are as follows:
-   -j      Display julian dates (days one-based, numbered from January 1).
-   -y      Display a calendar for the current year.
-
-The Gregorian Reformation is assumed to have occurred in 1752 on the 3rd
-of September.  By this time, most countries had recognized the reforma-
-tion (although a few did not recognize it until the early 1900's.)  Ten
-days following that date were eliminated by the reformation, so the cal-
-endar for that month is a bit unusual.
-
-HISTORY
-     A cal command appeared in Version 6 AT&T Unix.  
-\end{alltt}
-
-
-\slide{Adgang til Unix}
-
-\begin{center}
-\includegraphics[width=4cm]{images/kde.png}
-\includegraphics[width=4cm]{images/gnome-logo-large.png}
-\end{center}
-
-\begin{list1}
-%\item Systemer der minder om Unix kan idag nemt skaffes
-\item Adgang til Unix kan ske via grafiske brugergrænseflader
-  \begin{list2}
-%  \item X11 \link{http://www.x.org}
-  \item KDE \link{http://www.kde.org}
-  \item GNOME \link{http://www.gnome.org}
-  \end{list2}
-\item eller kommandolinien
-\end{list1}
-\centerline{\includegraphics[width=17cm]{images/unix-cmdline.pdf}}
-
-
-\exercise{ex:putty-install}
-
-
-
-\exercise{ex:winscp-install}
-
-\exercise{ex:unix-login}
-
-\exercise{ex:unix-cal}
-
-\exercise{ex:sudo}
-
-
-
-\exercise{ex:unix-boot-cd}
-
-\slide{TCP/IP basiskonfiguration}
-
-\begin{alltt}
-ifconfig en0 10.0.42.1 netmask 255.255.255.0
-route add default gw 10.0.42.1 
-\end{alltt}
-
-\begin{list1}
-\item konfiguration af interfaces og netværk på Unix foregår med:
-\item \verb+ifconfig+, \verb+route+ og \verb+netstat+  
-\item - ofte pakket ind i konfigurationsmenuer m.v.
-\item fejlsøgning foregår typisk med \verb+ping+ og \verb+traceroute+
-\item På Microsoft Windows benyttes ikke \verb+ifconfig+\\
-men kommandoerne \verb+ipconfig+ og \verb+ipv6+
-\end{list1}
-
-
-
-
-
-\slide{OpenBSD}
-
-Netværkskonfiguration på OpenBSD:
-\begin{alltt}
-# cat /etc/hostname.sk0
-inet 10.0.0.23 0xffffff00 NONE
-# cat /etc/mygate
-10.0.0.1
-# cat /etc/resolv.conf    
-domain security6.net
-lookup file bind
-nameserver 212.242.40.3
-nameserver 212.242.40.51
-\end{alltt}
-
-
-\slide{GUI værktøjer - autoconfiguration}
-
-\hlkimage{20cm}{osx-network-automatic.png}
-
-\slide{GUI værktøjer - manuel konfiguration}
-
-\hlkimage{20cm}{osx-network-manual.png}
-
-\slide{ifconfig output}
-
-\begin{alltt}\small
-hlk@bigfoot:hlk$ ifconfig -a
-lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
-        inet 127.0.0.1 netmask 0xff000000 
-        inet6 ::1 prefixlen 128 
-        inet6 fe80::1%lo0 prefixlen 64 scopeid 0x1 
-gif0: flags=8010<POINTOPOINT,MULTICAST> mtu 1280
-stf0: flags=0<> mtu 1280
-en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
-        ether 00:0a:95:db:c8:b0 
-        media: autoselect (none) status: inactive
-        supported media: none autoselect 10baseT/UTP <half-duplex> 10baseT/UTP <full-duplex> 10baseT/UTP <full-duplex,hw-loopback> 100baseTX <half-duplex> 100baseTX <full-duplex> 100baseTX <full-duplex,hw-loopback> 1000baseT <full-duplex> 1000baseT <full-duplex,hw-loopback> 1000baseT <full-duplex,flow-control> 1000baseT <full-duplex,flow-control,hw-loopback>
-en1: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
-        ether 00:0d:93:86:7c:3f 
-        media: autoselect (<unknown type>) status: inactive
-        supported media: autoselect
-\end{alltt}
-%$
-\vskip 1 cm
-\centerline{ifconfig output er næsten ens på tværs af Unix}
-
-
-
-
-\slide{Vigtigste protokoller}
-
-
-\begin{list1}
-\item ARP Address Resolution Protocol
-\item IP og ICMP Internet Control Message Protocol
-\item UDP User Datagram Protocol
-\item TCP Transmission Control Protocol
-\item DHCP Dynamic Host Configuration Protocol 
-\item DNS Domain Name System
-\end{list1}
-\vskip 1cm
-\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
-
-% allerede gennemgået ovenfor
-%\slide{ICMP}
-
-%\begin{list1}
-%\item 	Internet Control Message Protocol 
-%	Defineret i RFC-792
-
-%\end{list1}
-
-
 \slide{UDP User Datagram Protocol}
 \hlkimage{20cm}{udp-1.pdf}
 \begin{list1}
@@ -833,11 +669,204 @@ en1: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
 \begin{list2}
 \item Port 25 SMTP Simple Mail Transfer Protocol
 \item Port 53 DNS Domain Name System
+\item Port 67/68 DHCP
 \item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
 \item Port 443 HTTP over TLS/SSL
 \end{list2}
 \item Se flere på \link{http://www.iana.org}
 \end{list1}
+
+
+\slide{DHCP Dynamic Host Configuration Protocol}
+
+\hlkimage{13cm}{dhcp-1.pdf}
+
+\begin{list1}
+\item Hvordan får man information om default gateway
+\item Man sender et DHCP request og modtager et svar fra en DHCP server
+\item Dynamisk konfiguration af klienter fra en centralt konfigureret server
+\item Bruges til IP adresser og meget mere
+\end{list1}
+
+\link{http://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol}
+
+\slide{IPv6 router advertisement daemon}
+
+\begin{alltt}
+/etc/rtadvd.conf:
+en0:
+      :addrs#1:addr="2001:1448:81:b00f::":prefixlen#64:
+en1:
+      :addrs#1:addr="2001:1448:81:beef::":prefixlen#64:
+
+root# /usr/sbin/rtadvd -Df en0 en1
+root# sysctl -w net.inet6.ip6.forwarding=1
+net.inet6.ip6.forwarding: 0 -> 1
+\end{alltt}
+
+\begin{list1}
+\item Stateless autoconfiguration er en stor ting i IPv6
+\item Kommandoen starter den i debug-mode og i forgrunden\\
+- normalt vil man starte den fra et script 
+\item Typisk skal forwarding aktiveres, som vist med BSD sysctl kommando
+\item NB: de fleste clients vil idag implementere IPv6 privacy addresses
+\end{list1}
+
+\slide{IPv6 autoconfiguration}
+
+\hlkimage{24cm}{modified-eui64.pdf}
+
+\begin{list1}
+\item DHCPv6 is available, but {\bfseries stateless autoconfiguration} is king
+\item Routers announce subnet prefix via {\bfseries router advertisements}
+\item Individual nodes then combine this with their EUI64 identifier
+\end{list1}
+
+%\link{http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_7-2/ipv6_autoconfig.html}
+
+\slide{Router advertisement daemon}
+
+\hlkimage{14cm}{ipv6-router-advertisement.png}
+
+
+
+% 802.1q
+\slide{VLAN Virtual LAN}
+
+\hlkimage{10cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q}
+
+\hlkimage{19cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Nogle switche tillader konfiguration med 802.1q VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\item Der findes administrationsværktøjer der letter dette arbejde: OpenNAC FreeNAC, Cisco VMPS
+\end{list1}
+
+
+\slide{Stop - vi gennemgår og tester vores setup}
+
+\begin{list1}
+\item Vi gennemgår hvordan vores setup ser ud
+\item Vi laver traceroute før og efter:
+\item Vi fjerner en ledning \emph{link down}
+\item Vi stopper en router og ser de annoncerede netværk forsvinder
+\item Vi booter en router og ser de annoncerede netværk igen
+\end{list1}
+
+\slide{Stop - vi ser i fællesskab på admin interfaces}
+
+\begin{list1}
+\item Vi prøver lige at se på diverse interfaces sammen
+\item Huskeliste til Henrik:
+\begin{list2}
+\item Airport Extreme access-point
+\item Juniper SRX router/firewall
+\item OpenBSD router
+\item Linux Ubuntu config
+\end{list2}
+\end{list1}
+
+
+\slide{TCP/IP basiskonfiguration}
+
+\begin{alltt}
+ifconfig en0 10.0.42.1 netmask 255.255.255.0
+route add default gw 10.0.42.1 
+\end{alltt}
+
+\begin{list1}
+\item konfiguration af interfaces og netværk på Unix foregår med:
+\item \verb+ifconfig+, \verb+route+ og \verb+netstat+  
+\item - ofte pakket ind i konfigurationsmenuer m.v.
+\item fejlsøgning foregår typisk med \verb+ping+ og \verb+traceroute+
+\item På Microsoft Windows benyttes ikke \verb+ifconfig+\\
+men kommandoerne \verb+ipconfig+ og \verb+ipv6+
+\end{list1}
+
+
+
+
+
+\slide{OpenBSD}
+
+Netværkskonfiguration på OpenBSD:
+\begin{alltt}
+\emph{To netkort med fast IPv6 og DHCP på ydersiden}
+# cat /etc/hostname.em0
+inet 10.0.42.1 255.255.255.0
+inet6 2a02:2190:f000:cf0f::1
+# cat hostname.em3
+dhcp
+inet6 2a02:2190:1004:da::2 64
+!route add -inet6 default 2a02:2190:1004:da::1
+# cat /etc/resolv.conf    
+domain security6.net
+lookup file bind
+nameserver 212.242.40.3
+nameserver 212.242.40.51
+\end{alltt}
+
+
+\slide{GUI værktøjer - autoconfiguration}
+
+\hlkimage{20cm}{osx-network-automatic.png}
+
+\slide{GUI værktøjer - manuel konfiguration}
+
+\hlkimage{20cm}{osx-network-manual.png}
+
+\slide{ifconfig output}
+
+\begin{alltt}\small
+hlk@bigfoot:hlk$ ifconfig -a
+lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
+        inet 127.0.0.1 netmask 0xff000000 
+        inet6 ::1 prefixlen 128 
+        inet6 fe80::1%lo0 prefixlen 64 scopeid 0x1 
+gif0: flags=8010<POINTOPOINT,MULTICAST> mtu 1280
+stf0: flags=0<> mtu 1280
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+        ether 00:0a:95:db:c8:b0 
+        media: autoselect (none) status: inactive
+        supported media: none autoselect 10baseT/UTP <half-duplex> 10baseT/UTP <full-duplex> 10baseT/UTP <full-duplex,hw-loopback> 100baseTX <half-duplex> 100baseTX <full-duplex> 100baseTX <full-duplex,hw-loopback> 1000baseT <full-duplex> 1000baseT <full-duplex,hw-loopback> 1000baseT <full-duplex,flow-control> 1000baseT <full-duplex,flow-control,hw-loopback>
+en1: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+        ether 00:0d:93:86:7c:3f 
+        media: autoselect (<unknown type>) status: inactive
+        supported media: autoselect
+\end{alltt}
+%$
+\vskip 1 cm
+\centerline{ifconfig output er næsten ens på tværs af Unix}
+
+
+
+
+\slide{Vigtigste protokoller - opsummering}
+
+
+\begin{list1}
+\item ARP Address Resolution Protocol
+\item IP og ICMP Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol 
+\item DNS Domain Name System
+\end{list1}
+\vskip 1cm
+\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
+
 
 \slide{Hierarkisk routing}
 
@@ -849,7 +878,7 @@ Hvordan kommer pakkerne frem til modtageren
 \hlkimage{13cm}{routing-2.pdf}
 
 \begin{list1}
-\item IP routing er nemt
+\item IP routing er nemt - {\bf longest match vinder altid}
 \item En host kender en default gateway i nærheden
 \item En router har en eller flere upstream routere, få adresser den sender videre til
 \item Core internet har default free zone, kender \emph{alle netværk} 
@@ -1086,7 +1115,7 @@ SMB, Oracle SQL*Net, Sybase and Microsoft SQL protocols.
 
 \slide{SSL og TLS}
 
-\hlkimage{18cm}{ehandel-https.pdf}
+\hlkimage{17cm}{ehandel-https.pdf}
 
 \begin{list1}
 \item Oprindeligt udviklet af Netscape Communications Inc.
@@ -1144,34 +1173,6 @@ se \link{http://www.ssh.com}
 \item {\bfseries NB: Man bør idag bruge SSH protokol version 2!}
 \end{list1}
 
-%VLAN
-
-
-% 802.1q
-\slide{VLAN Virtual LAN}
-
-\hlkimage{10cm}{vlan-portbased.pdf}
-
-\begin{list1}
-\item Nogle switche tillader at man opdeler portene
-\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
-\item Port 1-4 er et LAN
-\item De resterende er et andet LAN
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\end{list1}
-
-\slide{IEEE 802.1q}
-
-\hlkimage{19cm}{vlan-8021q.pdf}
-
-\begin{list1}
-\item Nogle switche tillader konfiguration med 802.1q VLAN tagging på Ethernet niveau
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
-\item Der findes administrationsværktøjer der letter dette arbejde: OpenNAC FreeNAC, Cisco VMPS
-\end{list1}
-
-\exercise{ex:vlan}
 
 %DNS
 \slide{Domain Name System}
@@ -1208,6 +1209,8 @@ www     IN      A       217.157.20.131
         IN      MX      20      mail2.security6.net.
 \end{alltt}
 
+\centerline{Husk også DANE DNS-Based Authentication of Named Entities RFC 6698}
+
 \slide{Basal DNS opsætning på klienter}
 
 \begin{list1}    
@@ -1218,7 +1221,7 @@ www     IN      A       217.157.20.131
 \end{list1}
 
 \begin{alltt}
-domain security6.net
+domain solido.net
 nameserver 212.242.40.3
 nameserver 212.242.40.51
 \end{alltt}
@@ -1227,10 +1230,9 @@ nameserver 212.242.40.51
 
 \begin{list1}
 \item Berkeley Internet Name Daemon server
-\item Mange bruger BIND fra Internet Systems Consortium
-   - altså Open Source
+\item BIND fra Internet Systems Consortium
 \item konfigureres gennem \verb+named.conf+
-\item det anbefales at bruge BIND version 9
+\item det anbefales at bruge BIND version 9 eller senere
 \end{list1}
 
 \begin{list2}
@@ -1268,29 +1270,67 @@ view "internal" \{
 \end{alltt}
 
 
+\slide{Other DNS software}
+\begin{list1}
+\item Unbound DNS server \link{http://www.nlnetlabs.nl/projects/unbound/}
+\item NSD \link{http://www.nlnetlabs.nl/projects/nsd/}
+\item OpenDNSSEC \link{http://www.opendnssec.org/}
+\end{list1}
+
+
+
 \exercise{ex:basic-dns-lookup}
 \exercise{ex:basic-dns-lookup6}
 
 
+\slide{Små DNS tools bind-version - Shell script}
 
+\begin{alltt}\small
+#! /bin/sh
+# Try to get version info from BIND server
+PROGRAM=`basename $0`
+. `dirname $0`/functions.sh
+if [ $# -ne 1 ]; then
+   echo "get name server version, need a target! "
+   echo "Usage: $0 target"
+   echo "example $0 10.1.2.3"
+   exit 0
+fi
+TARGET=$1
+# using dig 
+start_time
+dig @$1 version.bind chaos txt
+echo Authors BIND er i versionerne 9.1 og 9.2 - måske ...
+dig @$1 authors.bind chaos txt
+stop_time
+\end{alltt}
+\centerline{\link{http://www.kramse.dk/files/tools/dns/bind-version}}
 
-\slide{Navngivning af servere}
+\slide{Små DNS tools dns-timecheck - Perl script}
 
-\begin{list1}
-  \item Hvordan skal vi kunne huske og administrere servere?
-\item Det er ikke nemt at navngive hverken brugere eller servere!
-\item Selvom det lyder smart med A01S13, som forkortelse af Afdeling
-  01's Server nr 13, er det umuligt at huske
-\item ... men måske nødvendigt i de største netværk
-  \begin{list2}
-  
-\item Windows serveren er domænecontroller - skal hedde:
-\item Linux server som er terminalserver - skal hedde:
-\item PC-system med NetBSD skal måske være vores ene server - skal hedde: ?
-\item PC-system 1 med en Linux server - skal hedde: 
-\item PC-system 2 med en Linux server - skal hedde:
-  \end{list2}
-\end{list1}
+\begin{alltt}\small
+#!/usr/bin/perl
+# modified from original by Henrik Kramshøj, hlk@kramse.dk
+# 2004-08-19
+#
+# Original from: http://www.rfc.se/fpdns/timecheck.html
+use Net::DNS;
+
+my $resolver = Net::DNS::Resolver->new;
+$resolver->nameservers($ARGV[0]);
+
+my $query = Net::DNS::Packet->new;
+$query->sign_tsig("n","test");
+
+my $response = $resolver->send($query);
+foreach my $rr ($response->additional) {
+  print "localtime vs nameserver $ARGV[0] time difference: ";
+  print$rr->time_signed - time() if $rr->type eq "TSIG";
+}  
+\end{alltt}
+% inserting stupid $ to stop EMACS from
+\centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
+
 
 \slide{At være på internet}
 
@@ -1494,8 +1534,32 @@ icmpush: Program finished OK
 \item Man kan ikke begynde at tune ud fra subjektive målinger 
 \item \emph{Det kører langsomt}, \emph{Svartiden er for høj}
 \item Målinger der giver præcise tal er nødvendige, før og efter målinger!
-\item Der findes et antal værktøjer til, blandt andet Iperf
+\item Der findes et antal værktøjer til test, blandt andet Nping og Iperf
 \end{list1}
+\slide{Målinger med Nping fra Nmap}
+
+\begin{alltt}\footnotesize
+hlk@fluffy:hlk$ nping www.solidonetworks.com
+Starting Nping 0.5.61TEST5 ( http://nmap.org/nping ) at 2012-03-15 07:06 CET
+SENT (0.2006s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (0.2198s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (1.2030s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (1.2213s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (2.2056s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (2.2260s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (3.2076s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (3.2286s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+SENT (4.2098s) Starting TCP Handshake > www.solidonetworks.com:80 (91.102.95.20:80)
+RECV (4.2301s) Handshake with www.solidonetworks.com:80 (91.102.95.20:80) completed
+ 
+Max rtt: 21.040ms | Min rtt: 18.324ms | Avg rtt: 19.819ms
+TCP connection attempts: 5 | Successful connections: 5 | Failed: 0 (0.00%)
+Tx time: 4.01046s | Tx bytes/s: 99.74 | Tx pkts/s: 1.25
+Rx time: 4.03064s | Rx bytes/s: 49.62 | Rx pkts/s: 1.24
+Nping done: 1 IP address pinged in 4.23 seconds
+\end{alltt}
+
+\centerline{God test af netværkslatency, samt TCP sockets på OS}
 
 \slide{Målinger med Iperf}
 
@@ -1511,7 +1575,9 @@ TCP window size: 64.0 KByte (default)
 [  4]  0.0-10.2 sec  7.02 MBytes  5.76 Mbits/sec
 \end{alltt}
 
-Ovenstående er set fra server, client kaldes med \verb+iperf -c fluffy+
+Ovenstående er set fra server, client kaldes med \verb+iperf -c 10.0.42.23+
+
+NB: brug i praksis altid mindst 60 sekunder, \verb+iperf -i 5 -t 60 -c 10.0.42.23+
 
 \slide{Stop - vi prøver i fællesskab Iperf}
 
@@ -1520,6 +1586,39 @@ Ovenstående er set fra server, client kaldes med \verb+iperf -c fluffy+
 \item hvis alle prøver samtidig giver det stor variation i resultaterne
 \end{list1}
 
+\slide{Basale testværktøjer TCP - Telnet og OpenSSL}
+
+\begin{list1}
+\item Telnet blev tidligere brugt til login og er en klartekst forbindelse
+over TCP
+\item Telnet kan bruges til at teste forbindelsen til mange ældre serverprotokoller som benytter ASCII kommandoer
+\begin{list2}
+\item \verb+telnet mail.kramse.dk 25+ laver en forbindelse til port 25/tcp
+\item \verb+telnet www.kramse.dk 80+ laver en forbindelse til port 80/tcp
+\end{list2}
+\item Til krypterede forbindelser anbefales det at teste med openssl
+\begin{list2}
+\item \verb+openssl s_client -host www.kramse.dk -port 443+\\
+laver en forbindelse til port 443/tcp med SSL
+\item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
+ laver en forbindelse til port 993/tcp med SSL
+\end{list2}
+\item Med OpenSSL i client-mode kan services tilgås med samme tekstkommandoer som med telnet
+\end{list1}
+
+
+\slide{Basale testværktøjer UDP}
+
+\begin{list1}
+\item UDP er lidt drilsk, for de fleste services er ikke \emph{ASCII protokoller}
+\item Der findes dog en række testprogrammer, a la ping
+\begin{list2}
+\item nsping - name server ping
+\item dhcping - dhcp server ping
+\item ...
+\end{list2}
+\item Derudover kan man bruge de sædvanlige programmer som \verb+host+ til navneopslag osv.
+\end{list1}
 
 
 \slide{Antal pakker per sekund} 
@@ -1600,22 +1699,9 @@ Percentage of the requests served within a certain time (ms)
  100%    446 (longest request)
 \end{alltt}
 
+\vskip 1cm
+\centerline{ab er godt til små test, i praksis er Tsung, Jmeter m.fl. bedre}
 
-
-\exercise{ex:sysctl}
 \exercise{ex:iperf}
-\exercise{ex:apache-benchmark}
-
-
-
-
-
-\slide{Opsamling på dagens arbejde}
-
-\begin{list1}
-\item Hvad har vi lært?
-\item Fri leg på udstyret
-\end{list1}
-
 
 

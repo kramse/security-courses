@@ -532,7 +532,7 @@ Sources:\\
 
 \slide{Circumvent security - single user mode boot}
 \begin{list1}
-\item Unix systemer often allows boot into singleuser mode\\
+\item Unix systems often allows boot into singleuser mode\\
 press command-s when booting Mac OS X 
 \item Laptops can often be booted using PXE network or CD boot
 \item Mac computers can become a Firewire disk\\
@@ -912,30 +912,6 @@ From previous slide:\\
 \end{list2}
 \end{list1}
 
-\slide{Balanced security}
-
-\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
-
-\begin{list1}
-\item Better to have the same level of security
-\item If you have bad security in some part - guess where attackers will end up
-\item Hackers are not required to take the hardest path into the network
-\item Realize there is no such thing as 100\% security 
-\end{list1}
-
-
-
-\slide{Work together}
-
-\hlkimage{18cm}{Shaking-hands_web.jpg}
-
-\begin{list1}
-\item Team up!
-\item We need to share security information freely
-\item We often face the same threats, so we can work on solving these together
-\end{list1}
-
-
 \slide{Cisco IOS password}
 
 \begin{quote}
@@ -957,23 +933,15 @@ Reference: via SANS @RISK newsletter\\
 \link{http://arstechnica.com/security/2013/03/cisco-switches-to-weaker-hashing-scheme-passwords-cracked-wide-open/}
 
 
-
-
-
-
 \slide{buffer overflows is a C problem}
 
 \begin{list1}
 \item {\bfseries Et buffer overflow}
-er det der sker når man skriver flere data end der er afsat plads til
-i en buffer, et dataområde. Typisk vil programmet gå ned, men i visse
-tilfælde kan en angriber overskrive returadresser for funktionskald og
-overtage kontrollen. 
-\item {\bfseries Stack protection} 
-er et udtryk for de systemer der ved hjælp af operativsystemer,
-programbiblioteker og lign. beskytter stakken med returadresser og
-andre variable mod overskrivning gennem buffer overflows. StackGuard
-og Propolice er nogle af de mest kendte.
+is what happens if some internal structure in programs are modified by an attacker for the purpose 
+of taking control of the application and system. Often a program will crash, but if the attacker can input specific data it might be possible to point to their own {\bf shell code} containing instructions to be executed.
+\item {\bfseries Stack protection} today both a specific technique and generic term for 
+adding protection to operating systems and programs to reduce the likelihood of buffer overflows succeeding. The main features are protecting areas in memory by making them non-writeable and non-executable. StackGuard
+and Propolice are some popular choices
 \end{list1}
 
 
@@ -1002,20 +970,21 @@ main(int argc, char **argv)
 \end{list1}
 
 
-\slide{Exploits - udnyttelse af sårbarheder}
+\slide{Exploits - exploiting vulnerabilities}
 
 \begin{list1}
-\item exploit/exploitprogram er
+\item an exploit is a program designed to abuse some weakness or vulnerability
 \begin{list2}
-\item udnytter eller demonstrerer en sårbarhed
-\item rettet mod et specifikt system.
-\item kan være 5 linier eller flere sider
-\item Meget ofte Perl eller et C program 
+\item Usually the expliot will demonstrate the weakness found, proof-of-concept (PoC)
+\item Usually the exploit will only include one vulnerability and is targeted at specific versions of the vulnerable program
+\item Exploits can be a few lines of code or multiple pages
+\item Used to be written using Perl and C, but today popular choices include Ruby and Python
+\item Can often be plugged into the Metasploit framework for direct execution
 \end{list2}
 \end{list1}
 
 
-\slide{Exploits}
+\slide{Exploit sample}
 
 \vskip 1 cm
 
@@ -1038,27 +1007,20 @@ exec "$program", "$buffer";
 \centerline{Demo exploit in Perl}
 %Eksempel på webserver buffer overflow, nosejob?
 
-\slide{Privilegier least privilege}
+\slide{Principle of least privilege}
 
 \begin{list1}
-\item Hvorfor afvikle applikationer med administrationsrettigheder -
-  hvis der kun skal læses fra eksempelvis en database?
-\item {\bfseries least privilege} 
-betyder at man afvikler kode med det mest
-restriktive sæt af privileger - kun lige nok til at
-opgaven kan udføres
-\item Dette praktiseres ikke i webløsninger i Danmark - eller meget få steder
+\item Why execute applications with administrative rights - if they only need to read from a database
+\item {\bfseries principle of least privilege} 
+execute code only with the most restrictive set of permissions required to perform a task
 \end{list1}
 
-\slide{Privilegier privilege escalation}
+\slide{Privilege escalation}
 \begin{list1}
-\item {\bfseries privilege escalation} er når man på en eller anden vis
-opnår højere privileger på et system, eksempelvis som
-følge af fejl i programmer der afvikles med højere
-privilegier. Derfor HTTPD servere på UNIX afvikles som
-nobody - ingen specielle rettigheder.
-\item En angriber der kan afvikle vilkårlige kommandoer kan ofte finde
-  en sårbarhed som kan udnyttes lokalt - få rettigheder = lille skade
+\item {\bfseries privilege escalation} is what an attacker aims to perform
+\item Trying to get from an authenticated user to a higher privileged administrative user id
+\item Some functions in operating systems require higher privileges, and they can sometimes be persuaded to fail in spectacular ways
+\item When an attacker can execute commands they can often find a way to exploit software and escalate privileges
 \end{list1}
 
 
@@ -1066,21 +1028,13 @@ nobody - ingen specielle rettigheder.
 
 \begin{list1} 
 \item {\bfseries local vs. remote}
-angiver om et exploit er rettet mod
-en sårbarhed lokalt på maskinen, eksempelvis
-opnå højere privilegier, eller beregnet
-til at udnytter sårbarheder over netværk
+signifies if the specific attack exploited is done from the operating system using a local command/feature or if this is done remotely across some network connection
 \item {\bfseries remote root exploit} 
-- den type man frygter mest, idet
-det er et exploit program der når det afvikles giver
-angriberen fuld kontrol, root user er administrator
-på UNIX, over netværket. 
-\item {\bfseries zero-day exploits} dem som ikke offentliggøres - dem
-  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
-  til dem før de offentliggøres og ofte er der umiddelbart ingen
-  rettelser til de sårbarheder
+- feared because it would grant administrative rights across a network connection
+\item More often an attacker will combine a remote exploit with a privilege escalation exploit
+\item {\bfseries zero-day exploits} 0-days are not made public, but kept in small groups and suddenly can be found in use on the internet, or in specific use for a targeted attack
+\item Since nobody is aware of the problem, there is no fix readily available from the vendors/programmers
 \end{list1}
-
 
 
 
@@ -1100,8 +1054,6 @@ på UNIX, over netværket.
 \end{list1}
 
 NB: you still have to think \smiley
-
-
 
 
 \slide{OWASP top ten}
@@ -1240,6 +1192,32 @@ Kilde:\\
 \hlkimage{20cm}{exploit-db.png}
 
 \centerline{\link{http://www.exploit-db.com/}}
+
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security 
+\end{list1}
+
+
+
+\slide{Work together}
+
+\hlkimage{14cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
 
 
 

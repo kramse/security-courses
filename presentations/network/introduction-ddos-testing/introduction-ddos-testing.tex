@@ -1,0 +1,637 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{solido-network-slides}
+
+
+%Taler: Henrik Kramshøj
+%Teaser: DDoS er kommet på alles læber specielt efter NemID ikke havde beskyttelse mod selv små angreb. Denne DDoS %workshop fortæller om kategorierne af DoS og demonstrerer med programmer i et lukket miljø hvordan det kan udføres.
+%Niveauet er middel og du forventes at kende begreber som webserver, IP-adresser, altså basal internetviden. Implementation af beskyttelse vil fordre BGP, men ikke mere end du kan nå at lære på The Camp.
+
+%Om taleren: Henrik Kramshøj (HLK) er cand.scient i datalogi og til daglig internet samurai hos Solido Networks ApS. Han administrerer større netværk og sikrer mod DDoS efter bedste evne.
+
+% links
+% http://staff.washington.edu/dittrich/misc/ddos/
+
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{DDoS Workshop}
+{The Camp 2013}
+
+\slide{Agenda}
+
+\begin{list1}
+\item Intro
+\item Graphs and Dashboards!
+\item Taxonomy of DDoS Attacks 
+\item Netflow NFSen
+\item Defense in depth - multiple layers of security
+\item Routing RTBH
+\item Troubleshooting
+\end{list1}
+
+\slide{Intro}
+
+\hlkimage{7cm}{thecamp-2012-hlk.jpg}
+
+\begin{quote}
+DDoS is very much in the media 
+
+Vendors say:\\
+Prolexic did mitigate a 130 Gbps attack in March and more than 10 percent of attacks directed at Prolexic's global client base exceeded 60 Gigabits per second (Gbps). Source: Prolexic Quarterly Global DDoS Attack Report Q1 2013
+
+\end{quote}
+
+\slide{Attack overview}
+
+\hlkimage{22cm}{sicherheitstacho.png}
+
+{\small\link{http://www.sicherheitstacho.eu/?lang=en}}
+
+\slide{Spamhaus}
+\hlkimage{24cm}{spamhaus-services.png}
+
+Source: \link{http://www.spamhaus.org/}
+
+\slide{Massive DDoS}
+\begin{quote}
+Title: Massive DDoS against Spamhaus reaches 300Gbps
+Description: Following a dispute between Dutch hosting provider
+Cyberbunker and anti-spam group Spamhous, the latter suffered what
+initially began as a relatively small - 10 Gbps - DDoS, which escalated
+over the course of last week to a 300Gbps flood. 
+\end{quote}
+
+{\small Source:
+\link{http://blog.cloudflare.com/the-ddos-that-almost-broke-the-internet}}
+
+\slide{Massive DDoS a lie}
+
+\begin{quote}
+CloudFlare CEO Matthew Prince said he was sure of the 300Gbps figure, pointing to an online comment from Richard Steenbergen, CTO of nLayer, one of the upstream network providers of CloudFlare. Although Steenbergen said the company saw a 300Gbps hit going after CloudFlare, which targeted "pieces" of the core network, it was nothing "record smashing" or "game changing"
+
+Actual data proving a 300Gbps hit remains thin on the ground. Hammack said his firm had not seen anything above 160Gbps in a single DDoS, with 144 million packets sent per second, and he doesn't believe there has been one higher. He won't be convinced otherwise unless someone shows him proof one organisation's network took more traffic in an attack.
+\end{quote}
+
+Source: Prolexic CEO: Biggest Cyber Attack Ever Was Built On Lies\\
+{\footnotesize
+\link{http://www.techweekeurope.co.uk/news/prolexic-ceo-scott-hammack-biggest-cyber-attack-lies-spamhaus-113551}}
+
+\vskip 5 mm
+\centerline{Ohhh only 160Gbps \smiley }
+
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{20cm}{observium-screenshot.png}
+\centerline{\link{https://observium.solido.net/}}
+
+\slide{Riorey Taxonomy of DDoS Attacks }
+
+\begin{list1}
+\item What are DDoS? and DoS?
+\item Denial of Service attack - prevents authorized users access to resources
+\item Can be a single request to HTTP service, sequence of network packets
+\item Distributed Denial of Service attack - many (spoofed) sources
+\item \link{https://en.wikipedia.org/wiki/Denial-of-service_attack}	
+\end{list1}
+
+\slide{Denial of Service description}
+\hlkimage{27cm}{junos-dos-example.png}
+
+\centerline{Source: \link{http://osvdb.org/}}
+
+\slide{Cisco DoS \emph{exploit} script}
+
+\begin{alltt}    
+\small
+#!/bin/sh
+# 2003-07-21 pdonahue
+# cisco-44020.sh
+# -- this shell script is just a wrapper for hping (http://www.hping.org)
+#    with the parameters necessary to fill the input queue on
+# exploitable IOS device
+# -- refer to "Cisco Security Advisory: Cisco IOS Interface Blocked by
+# IPv4 Packets" 
+# (http://www.cisco.com/warp/public/707/cisco-sa-20030717-blocked.shtml)
+#for more information 
+...
+for protocol in $PROT
+    do
+       $HPING $HOST --rawip $ADDR --ttl $TTL --ipproto $protocol \\
+       --count $NUMB --interval u250 --data $SIZE --file /dev/urandom
+    done
+
+\end{alltt}
+
+\slide{Networks today}
+\hlkimage{20cm}{overview-routing-customer-2015.pdf}
+
+\slide{ Taxonomy of DDoS Attacks }
+\hlkimage{22cm}{riorey-ddos-tcp.png}
+
+\slide{HTTP}
+\hlkimage{22cm}{riorey-ddos-http.png}
+
+\slide{UDP and ICMP}
+\hlkimage{22cm}{riorey-ddos-udp.png}
+
+\hlkimage{22cm}{riorey-ddos-icmp.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{22cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+\slide{Defense in depth - multiple layers of security}
+
+\hlkimage{23cm}{network-layers-1.pdf}
+
+\slide{DDoS traffic before filtering}
+\hlkimage{26cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{18cm}{ddos-after-filtering}
+\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
+
+
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a sample, better to use BGP flowspec and RTBH */
+inactive: term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+...
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers have extensive Class-of-Service (CoS) tools today
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \}
+    then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol-except icmp;
+    \}
+    then \{
+        count some-server-block;
+        discard;
+    \}
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{ Firewalls - screens, IDS like features}
+
+When you know regular traffic you can decide:
+
+\begin{alltt}\small
+hlk@srx-kas-05# show security screen ids-option untrust-screen
+icmp \{
+    ping-death;
+\}
+ip \{
+    source-route-option;
+    tear-drop;
+\}
+tcp \{    Note: UDP flood setting also exist
+    syn-flood \{
+        alarm-threshold 1024;
+        attack-threshold 200;
+        source-threshold 1024;
+        destination-threshold 2048;
+        timeout 20;
+    \}
+    land;
+\} 
+\end{alltt}
+
+Always select your own settings YMMV
+
+\slide{ Routing RTBH}
+
+\begin{list1}
+\item What about a really big DDoS?
+\item and routers can do more
+\end{list1}
+
+
+
+
+\slide{uRPF unicast Reverse Path Forwarding}
+
+\begin{quote}
+Reverse path forwarding (RPF) is a technique used in modern routers for the purposes of ensuring loop-free forwarding of multicast packets in multicast routing and to help prevent IP address spoofing in unicast routing.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
+
+%\slide{Juniper RPF check}
+
+%\begin{quote}
+%{\bf Understanding Unicast Reverse Path Forwarding}\\
+%IP spoofing can occur during a denial-of-service (DoS) attack. IP spoofing allows an intruder to pass IP packets to a destination as genuine traffic, when in fact the packets are not actually meant for the destination. This type of spoofing is harmful because it consumes the destination's resources.
+
+%A unicast reverse-path-forwarding (RPF) check is a tool to reduce forwarding of IP packets that might be spoofing an address. A unicast RPF check performs a route table lookup on an IP packet's source address, and checks the incoming interface. 
+%\end{quote}
+
+%Source:\\ {\footnotesize\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/topic-map/unicast-rpf.html}\\
+%\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/usage-guidelines/interfaces-configuring-unicast-rpf.html}}
+
+
+\slide{Strict vs loose mode RPF}
+
+\hlkimage{24cm}{uRPF-check-1.pdf}
+
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
+\end{quote}
+
+
+\slide{uRPF Junos config with loose mode}
+
+\begin{alltt}\footnotesize
+xe-5/1/1 \{
+    description "Transit: Blah (AS65512)";
+    unit 0 \{
+        family inet \{
+            rpf-check \{
+                mode loose;
+            \}
+            filter \{
+                input all;
+                output all;
+            \}
+            address xx.yy.xx.yy/30;
+        \}
+        family inet6 \{
+            rpf-check \{
+                mode loose;
+            \}
+            address 2001:xx:yy/126;
+        \}
+    \}
+\}
+\end{alltt}
+
+See also: {\small\link{http://www.version2.dk/blog/den-danske-internettrafik-og-bgp-49401}}
+
+
+\slide{Remotely Triggered Black Hole Configurations}
+
+\hlkimage{10cm}{packetlife-RTBH.png}
+Picture from packetlife.net showing  R9 as a standalone "management" router for route injection.
+
+{\footnotesize
+\link{http://packetlife.net/blog/2009/jul/6/remotely-triggered-black-hole-rtbh-routing/}\\
+\link{https://ripe65.ripe.net/presentations/285-inex-ripe-routingwg-amsterdam-2012-09-27.pdf}\\
+\link{https://www.inex.ie/rtbh}}
+
+
+\slide{Remotely Triggered Black Hole at upstreams}
+
+\begin{alltt}\footnotesize
+6.  Black Hole Server (Optional)
+
+   ###################################################################################
+   #                           NOTE                                                  #
+   #  The Cogent Black Hole server will allow customers to announce a /32 route      #
+   #  to Cogent and have all traffic to that network blocked at Cogents backbone.    #
+   #  All peers on the Cogent black hole server require a password and IP address    #
+   #  from your network for Cogent to peer with.                                     #
+   ###################################################################################
+
+       [   ]  Please set up a BGP peer on the Cogent Black Hole server
+
+       Black Hole server password:  
+       Black Hole server peer IP:  
+
+       North American Black Hole Peer:  66.28.8.1
+       European Black Hole Peer:  130.117.20.1
+\end{alltt}
+
+Source:\\
+{\footnotesize\link{http://cogentco.com/files/docs/customer_service/guide/bgpq.sample.txt}}
+
+\centerline{Better drop single /32 host than whole network!}
+
+\slide{BGP speaking software}
+
+\begin{list1}
+\item Example BGP speakers - which can be used for RTBH
+
+\item OpenBGPD from OpenBSD easy to install, also on FreeBSD, NetBSD
+\item BIRD \link{http://bird.network.cz/} great BGP daemon, used as Router Server in some internet exchanges
+\item Vyatta \link{http://www.vyatta.org/} complete BGP routing, firewall etc.
+\item Exabgp \link{http://code.google.com/p/exabgp/} BGP engine useful for injecting routes and flowspec
+\end{list1}
+
+Unfortunately there is not a lot of open source "scrubbing" software
+
+\slide{BCP38 Network Ingress Filtering}
+
+\begin{alltt}\small
+Network Working Group                                        P. Ferguson
+Request for Comments: 2827                           Cisco Systems, Inc.
+Obsoletes: 2267                                                 D. Senie
+BCP: 38                                           Amaranth Networks Inc.
+Category: Best Current Practice                                 May 2000
+
+
+                       Network Ingress Filtering:
+            Defeating Denial of Service Attacks which employ
+                       IP Source Address Spoofing
+\end{alltt}
+
+\vskip 2cm
+Note: you should try validating INCOMING traffic from customers, also note the date!
+
+\link{http://tools.ietf.org/html/bcp38}
+
+\slide{}
+
+\hlkimage{20cm}{BCP38_DHCP.png}
+Source:
+\link{http://www.bcp38.info/index.php/Main_Page}
+
+
+\slide{Remember those BGP import filters, perhaps try bgpq3} 
+
+\begin{alltt}
+hlk@katana:bgpq3-0.1.16$ ./bgpq3 -Jl larsen-data AS197495
+policy-options \{
+replace:
+ prefix-list larsen-data \{
+    91.221.196.0/23;
+    185.10.8.0/22;
+ \}
+\}
+\end{alltt}
+
+\link{http://snar.spb.ru/prog/bgpq3/}
+
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
+
+\slide{Flowspec Self inflicted DoS}
+
+\begin{alltt}
++    route 173.X.X.X/32-DNS-DROP \{
++        match \{
++            destination 173.X.X.X/32;
++            port 53;
++            packet-length [ 99971 99985 ];
++        \}
++        then discard;
++    \}
+\end{alltt}
+
+Resulted in router crashes - ooopps
+
+{\small
+\link{http://blog.cloudflare.com/todays-outage-post-mortem-82515}\\
+\link{http://www.slideshare.net/sfouant/an-introduction-to-bgp-flow-spec}\\
+\link{https://code.google.com/p/exabgp/wiki/flowspec}\\
+\link{http://www.slideshare.net/junipernetworks/flowspec-bay-area-juniper-user-group-bajug}
+}
+
+
+
+\slide{Demo network}
+
+\hlkimage{24cm}{ddos-workshop-network-1}
+
+
+
+\slide{Prepare}
+
+Getting SNMP data from Juniper SRX:
+\begin{alltt}\small
+hlk@srx-kas-05> show snmp mib walk jnxJsSPUMonitoringObjectsTable
+jnxJsSPUMonitoringFPCIndex.0 = 0
+jnxJsSPUMonitoringSPUIndex.0 = 0
+jnxJsSPUMonitoringCPUUsage.0 = 0
+jnxJsSPUMonitoringMemoryUsage.0 = 50
+{\bf jnxJsSPUMonitoringCurrentFlowSession.0 = 20}
+jnxJsSPUMonitoringMaxFlowSession.0 = 65536
+jnxJsSPUMonitoringCurrentCPSession.0 = 0
+jnxJsSPUMonitoringMaxCPSession.0 = 0
+jnxJsSPUMonitoringNodeIndex.0 = 0
+jnxJsSPUMonitoringNodeDescr.0 = single
+\end{alltt}
+
+
+\slide{SNMP OID value}
+
+You should download and install MIBs, but quick and dirty:
+\begin{alltt}\footnotesize
+hlk@srx-kas-05> show snmp mib walk jnxJsSPUMonitoringObjectsTable | display xml
+<rpc-reply xmlns:junos="http://xml.juniper.net/junos/11.4R8/junos">
+    <snmp-object-information xmlns="http://xml.juniper.net/junos/11.4R8/junos-snmp">
+...
+<snmp-object>
+            <name>jnxJsSPUMonitoringCurrentFlowSession.0</name>
+            <index>
+                <index-name>jnxJsSPUMonitoringIndex</index-name>
+                <index-value>0</index-value>
+            </index>
+            <object-value-type>gauge</object-value-type>
+            <object-value>20</object-value>
+            <oid>{\bf 1.3.6.1.4.1.2636.3.39.1.12.1.1.1.6.0}</oid>
+        </snmp-object>
+
+hlk@katana:hlk$ snmpget -v 2c -c public 192.168.18.236 {\bf 1.3.6.1.4.1.2636.3.39.1.12.1.1.1.6.0}
+SNMPv2-SMI::enterprises.2636.3.39.1.12.1.1.1.6.0 = Gauge32: 26
+\end{alltt}
+
+\slide{With installed MIBs}
+
+You can use better descriptive references:
+\begin{alltt}\footnotesize
+hlk@katana:hlk$ snmpget -v 2c -c public 192.168.18.236 {\bf jnxJsSPUMonitoringCurrentFlowSession.0}
+JUNIPER-SRX5000-SPU-MONITORING-MIB::jnxJsSPUMonitoringCurrentFlowSession.0 = Gauge32: 45
+\end{alltt}
+
+\slide{Ruby SNMP}
+
+\begin{alltt}\footnotesize
+#!/usr/bin/env ruby
+require 'net-snmp'
+router='192.168.18.236'
+
+#snmpget -v 2c -c public 192.168.18.236 1.3.6.1.4.1.2636.3.39.1.12.1.1.1.6.0
+session = Net::SNMP::Session.open(:peername => router, :community => "public" )
+begin
+  pdu = session.get("1.3.6.1.4.1.2636.3.39.1.12.1.1.1.6.0")
+  puts pdu.varbinds.first.value
+rescue Net::SNMP::Error => e
+  puts e.message
+end
+session.close
+
+hlk@katana:ruby-snmp-graph$ ./test2.rb
+{\bf 18}
+\end{alltt}
+
+
+
+\slide{Kali Linux the new backtrack}
+
+\hlkimage{\linewidth-2cm}{kali-linux.png}
+
+\begin{list1}
+\item BackTrack \link{http://www.backtrack-linux.org}
+\item  Kali \link{http://www.kali.org/}
+\end{list1}
+
+\slide{it's a Unix system, I know this}
+
+
+\hlkimage{24cm}{twitter-unix-security.png}
+
+\begin{list1}
+\item Getting into security?
+\item Configure your own network, perhaps just a small virtualized VMware, Virtualbox, Parallels, Xen, GNS3, ...
+\item Use Kali/BackTrack, watch youtube videos
+\end{list1}
+
+Quote from Jurassic Park
+\link{http://www.youtube.com/watch?v=dFUlAQZB9Ng}
+
+\slide{More application testing}
+
+\hlkimage{13cm}{images/linux-tsung-size_rcv.png}
+
+\begin{list1}
+\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
+\item Apache benchmark included with Apache
+\end{list1}
+
+
+\slide{Security Onion}
+
+\hlkimage{15cm}{security-onion.png}
+\centerline{\link{securityonion.blogspot.dk}}
+
+
+\slide{BRO IDS}
+
+\hlkimage{14cm}{bro-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Bro provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Bro has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{http://www.bro.org/}
+
+\slide{BRO more than an IDS}
+
+\begin{quote}
+	The key point that helped me understand was the explanation that Bro is a
+               domain-specific language for networking applications and that Bro-IDS
+               (http://bro-ids.org/) is an application written with Bro.
+\end{quote}
+
+Why I think you should try Bro\\
+\link{https://isc.sans.edu/diary.html?storyid=15259}\\
+
+
+\slide{Next steps}
+
+In our network we are always improving things:
+\begin{list1}
+\item More Suricata IDS \link{http://www.openinfosecfoundation.org/}
+\item More graphs, with automatic identification of IPs under attack
+\item More identification of short sessions without data - spoofed addresses
+\item ARP sponge, ARP watch etc.
+\end{list1}
+
+
+\begin{list1}
+\item {\bf Conclusion:} use anything you can! Combine tools!
+\end{list1}
+
+See also:\\
+\link{http://www.version2.dk/blog/hvad-er-ddos-distributed-denial-of-service-101-46653}
+
+
+
+
+\slide{Problems and Troubleshooting}
+
+Note: some security features does not work well when DDoS hits
+
+For instance firewall sessions can be depleted by attack traffic
+
+
+\myquestionspage
+
+\hlkprofiluk
+
+\end{document}

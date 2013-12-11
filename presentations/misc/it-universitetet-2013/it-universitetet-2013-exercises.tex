@@ -1,0 +1,455 @@
+\documentclass[a4paper,11pt,notitlepage]{oevelser}
+% Henrik Lund Kramshøj, February 2001 
+% hlk@solido.net,
+% course for basic IPv6
+% My standard packages
+\usepackage{solido-network-exercises}
+
+\begin{document}
+\selectlanguage{danish}
+
+\newcommand{\emne}[1]{Paranoia and government hacking}
+\newcommand{\kursus}[1]{\emne{} workshop}
+\newcommand{\kursusnavn}[1]{\emne\\ exercises}
+
+\mytitle{\emne}{workshop}
+
+
+\thispagestyle{empty}
+\eject
+
+\pagenumbering{roman}
+\setlength{\parskip}{0pt}
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used 
+
+\normal
+
+%\tableofcontents
+%\listoffigures - not used
+%\listoftables - not used 
+
+%---------------------------------------------------------------------
+% Indholdet i kurset
+%
+% Dette forventes udleveret til deltagerne
+
+\normal
+\pagestyle{fancy}
+\chapter*{Forord}
+\markboth{Forord}{}
+Dette kursusmateriale er beregnet til brug på kurset
+\emph{\kursus}. Materialet er lavet af Henrik Lund
+Kramshøj, \link{http://www.solido.net}
+
+Materialet skal opfattes som øvelseshæfte til kurset, og
+indeholder derfor ikke en fuldstændig beskrivelse af emnet.
+Der henvises istedet til andet materiale om emnet som nævnt i
+litteraturlisten.
+
+Til workshoppen hører desuden en præsentation som udleveres.
+% og et antal dokumenter som kan hjælpe under øvelserne.
+
+God fornøjelse
+%\eject
+
+\section*{Oversigt}
+\markright{Oversigt}
+\setlength{\parskip}{10pt}
+
+Materialet er inddelt i et antal øvelser som er beregnet til at give
+kursusdeltagerne et indblik i hvordan \emne i praksis ser ud og opfører
+sig.
+
+% beskrivelse af øvelses materialet
+
+%Der er følgende øvelser:
+%\begin{itemize}
+%\item 
+%\item 
+%\end{itemize}
+
+Formålet med workshoppen er at give deltagerne en praktisk erfaring
+med emnet og information til at implementere i egne miljøer.
+
+\section*{Forudsætninger og ordliste}
+
+Dette kursusmateriale forudsætter at deltageren har kendskab til
+internet og e-mail på brugerniveau. Det betyder at begreber som
+\link{http://www.solido.net}, \link{hlk@solido.net}
+ikke bør være ukendte.  
+
+\section*{Værktøjer}
+%\markright{Værktøjer}
+
+Dette materiale er udarbejdet ved hjælp af en masse værktøjer, og er
+beregnet på at kunne udføres i et almindeligt kursuslokale med
+netværksopkoblede pc'er. De praktiske øvelser benytter i vid udstrækning Open Source og 
+kan derfor afvikles på blandt andet følgende platforme:
+\begin{itemize}
+\item UNIX - herunder Linux, OpenBSD, NetBSD, FreeBSD og Mac OS X
+\item Microsoft Windows 7 - primært som
+  klientoperativsystem
+\end{itemize}
+
+Det anbefales at benytte virtualiseringsplatforme til hackerværktøjer, herunder BackTrack Linux. Der findes flere alternativer som:
+\begin{itemize}
+\item VMware Player \link{https://www.vmware.com/products/player/}
+\item VirtualBox \link{https://www.virtualbox.org/}
+\item Xen \link{http://www.xen.org/}
+\end{itemize}
+
+
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bfseries Kapitel \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+% eventuelle åbne spørgsmål
+% henvisning til øvelse, hvis der er en 
+
+%\chapter*{Introduktion til computer forensics}
+%\markboth{Introduktion til computer forensics}{}
+%\label{chap:intro}
+
+
+
+\chapter*{Indholdet i øvelserne}
+\markboth{Indholdet i øvelserne}{}
+
+De fleste af øvelserne har følgende indhold:
+\begin{itemize}
+\item {\bfseries Opgave:} Hvad går øvelsen ud på
+\item {\bfseries Formål:} Hvad forventes det at man lærer ved at løse opgaven
+\item {\bfseries Forslag til fremgangsmåde:} er en hjælp til at komme igang
+\item {\bfseries Hjælp:} er flere tips eller beskrivelser af hvordan
+  man kan løse opgaven 
+\item {\bfseries Forslag til løsning:} en mulig løsning til opgaven
+\item {\bfseries Diskussion:} er oplæg til diskussion efter løsning af
+  opgaven. Der er mulighed for at sammenligne og diskutere de valgte
+  løsninger.
+\end{itemize}
+
+\chapter{Wireshark installation}
+\label{ex:wireshark}
+
+\hlkimage{10cm}{ethereal-main-window.pdf} 
+
+
+{\bf Objective:}\\
+Install the program Wireshark locally on the Windows workstation
+
+{\bf Purpose:}\\
+Installing Wireshark will allow you to analyse packets and protocols
+
+{\bf Suggested method:}\\ 
+Download and install the program, either download from web server locally or from \link{http://www.wireshark.org}\\
+Wireshark requires a Windows Capture library to be installed, which is included in the
+Wireshark installation, but can none the less be downloaded from\link{http://www.winpcap.org/}\\
+
+{\bf Hints:}\\ 
+PCAP is a packet capture library allowing you to read packets from the network. Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+{\bf Solution:}\\
+When Wireshark is installed sniff some packets, also see next exercise.
+
+{\bf Discussion:}\\ 
+Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
+
+\chapter{Sniffing network packets}
+\label{ex:wireshark-sniff}
+
+{\bf Objective:}\\ 
+Sniff packets and dissect them using Wireshark
+
+{\bf Purpose:}\\
+See real network traffic, also know that a lot of information is available and not encrypted. 
+
+{\bf Suggested method:}\\ 
+Open Wireshark and start a capture - either from Windows or BackTrack\\
+Then in another window execute the ping program while sniffing
+
+{\bf Hints:}\\
+When running on Linux the network cards are named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some packets you are done.
+
+{\bf Discussion:} 
+Is it ethical to collect packets from an open wireless network?
+
+
+
+
+\chapter{Discover active systems ping sweep}
+\label{ex:nmap-pingsweep}
+\hlkimage{10cm}{nmap-zenmap.png}
+
+{\bf Objective:}\\ 
+Use Nmap to discover active systems
+
+{\bf Purpose:}\\ 
+Know how to use Zenmap from the Nmap suite to scan networks for active systems.
+
+{\bf Suggested method:}\\ 
+Try different scans,
+\begin{itemize}
+\item Ping sweep to find active systems
+\item Port sweeps to find active systems with specific ports
+\end{itemize}
+
+{\bf Hints:} \\
+Try nmap in sweep mode
+
+{\bf Solution:}\\
+Use the command below as examples:
+\begin{itemize}
+\item Ping sweep \verb+nmap -sP 10.0.45.*+
+\item Port sweeps \verb+nmap -p 80 10.0.45.*+
+\end{itemize}
+
+{\bf Discussion:}\\ 
+
+{\bf You can also use the graphical interface to nmap called Zenmap.}
+
+
+\chapter{Execute nmap TCP and UDP port scan}
+\label{ex:nmap-synscan}
+
+
+{\bf Objective:} \\
+Use nmap to discover open ports on active systems
+
+{\bf Purpose:}\\ 
+Finding open ports will allow you to find vulnerabilities on these ports.
+
+{\bf Suggested method:}\\ 
+Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
+ports
+
+Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
+
+If a firewall blocks ICMP you might need to add \verb+-P0+
+or even \verb+-PN+ to make nmap scan even if there are no Ping responses
+
+{\bf Hints:} \\
+Sample command: \verb+nmap -P0 -sU -p1-1024 server+ UDP port scanning
+1024 ports without doing a Ping first
+
+{\bf Solution:}\\
+Discover some active systems and you are done.
+
+{\bf Discussion:}\\ 
+There is a lot of documentation about the nmap portscanner, even a book by the author
+of nmap. Make sure to visit \link{http://www.nmap.org}
+
+TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
+
+When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
+
+\chapter{Perform nmap OS detection}
+\label{ex:nmap-os}
+
+{\bf Objective:} \\
+Use nmap OS detection and see if you can guess the devices on the network
+
+{\bf Purpose:}\\ 
+Getting the operating system of a system will allow you to focus your next attacks.
+
+{\bf Suggested method:}\\ 
+Look at the list of active systems, or do a ping sweep.
+
+Then add the OS detection using the option \verb+-O+
+
+{\bf Hints:} \\
+Use the manual page
+
+The nmap can send a lot of packets that will get different responses, depending on the operating system.
+
+{\bf Solution:}\\
+Use a command like \verb+nmap -O -p1-100 10.0.45.45+ 
+
+ 
+{\bf Discussion:}\\ 
+nmap OS detection is not a full proof way of knowing the actual operating system, but in most cases in can detect the family and in some cases it can identify the exact patch level of the system.
+
+Another tool which does the same is Xprobe.
+
+\chapter{Perform nmap service scan}
+\label{ex:nmap-service}
+
+{\bf Objective:} \\
+Use more advanced features in nmap to discover services.
+
+{\bf Purpose:}\\ 
+Getting more intimate with the system will allow more precise discovery of the vulnerabilities and also allow you to select the next tools to run.
+
+{\bf Suggested method:}\\ 
+Use \verb+nmap -A+ option for enabling service detection
+
+{\bf Hints:} \\
+Look into the manual page of nmap or the web site book about nmap scanning
+
+{\bf Solution:}\\
+Run nmap and get results.
+
+{\bf Discussion:}\\ 
+
+Some services will show software versions allowing an attacker easy lookup at web sites to known vulnerabilities and often exploits that will have a high probability of success.
+
+Make sure you know the difference between a vulnerability which is discovered, but not really there, a false positive, and a vulnerability not found due to limitations in the testing tool/method, a false negative.
+
+A sample false positive might be reporting that a Windows server has a vulnerability that you know only to exist in Unix systems.
+
+
+\chapter{Find systems with SNMP}
+\label{ex:find-snmp}
+
+{\bf Objective:}\\ 
+Use snmpwalk to research SNMP systems
+
+{\bf Purpose:}\\ 
+Learn that gathering information can help an attacker.
+
+{\bf Suggested method:} \\
+Log into the Unix server provided and run snmpwalk which is using UDP port 161.
+
+{\bf Hints:} \\
+We are running in a LAN environment with less firewalls, so doing nmap UDP scan is possible.
+
+When discovering an IP then use the \verb+snmpwalk+
+  program to show a lot of information.
+
+
+{\bf Solution:}\\
+\begin{itemize}
+\item Use the command \verb+snmpwalk -v 2c -c public 10.0.45.34 | less +\\
+\end{itemize}
+
+The command less will show output one screen at a time.
+
+{\bf Discussion:}\\ 
+In real networks SNMP is being used a lot, but new equipment is starting NOT to allow access using the community string public. 
+
+\chapter{Try Hydra brute force}
+\label{ex:hydra-brute}
+
+{\bf Objective:}\\ 
+Try a brute force program named hydra/Xhydra
+
+{\bf Purpose:}\\ 
+Learn that some protocols allow brute forcing.
+
+{\bf Suggested method:} \\
+Log into the Unix server or use the BackTrack.
+
+Make a short list of usernames and a short list of passwords 
+and use hydra to brute force your way into a system. Use the editor \verb+kate+, using \verb+kate users.txt+ and \verb+kate pass.txt+ followed by a command similar to this:
+\begin{alltt}
+$ hydra -V -t 1 -L users.txt -P pass.txt 10.0.45.2 ssh
+\end{alltt}
+
+
+{\bf Hints:} \\
+When learning tools create a nice environment and check that things are working
+before trying to hack. So with brute forcing an account, create and test it!
+
+{\bf Solution:}\\
+There is an FTP server with an easy to guess administrator password.
+
+{\bf Discussion:}\\ 
+The hydra program can brute force a lot of different protocols and also
+allow a lot of tuning. 
+
+The hydra program does an online brute force attack, in some cases you
+can get access to data like password databases, or hash values that can
+be cracked in off-line brute force attacks.
+
+\chapter{Try Cain brute force}
+\label{ex:cain-brute}
+
+\hlkimage{8cm}{cain_brute_attack.png}
+
+
+{\bf Objective:}\\ 
+Try a brute force program named Cain
+
+{\bf Purpose:}\\ 
+Learn that some algorithms allow for easier brute forcing.
+
+{\bf Suggested method:} \\
+Download and install the Windows program Cain
+
+Then try cracking some local accounts, access to hash is only allowed if you are administrator.
+
+{\bf Hints:} \\
+When learning tools create a nice environment and check that things are working
+before trying to hack. So with Cain use a system where you are administrator and crack local accounts.
+
+Then later get hash values from real systems, or by doing google searches.
+
+{\bf Solution:}\\
+See that some algorithm can do 100.000s keys/second and others only allow 100s keys/second.
+
+{\bf Discussion:}\\ 
+Cain is built for cracking passwords in off-line brute force attacks, but also includes other features like sniffing.
+
+
+
+
+\appendix 
+\rhead{\fancyplain{}{\bfseries\leftmark}}
+%\setlength{\parskip}{5pt}
+%\normal
+
+% der er ikke lavet ordliste til forensics workshop
+%\chapter{Ordliste og forklaringer}
+%\label{app:ordliste}
+%\input{../ipv6-reference/wordlist.dk.tex}
+
+
+%\chapter{Sikkerhed}
+
+%Når man aktiverer \emne åbner man mange muligheder for angreb!
+
+%Det vil ofte være muligt at skabe adgang til netværket for
+%uvedkommende og det er derfor nødvendigt med løbende kontrol,
+%overvågning og udskiftning af hemmeligheder som kodeord.
+
+%IPsec er et krav til alle IPv6 implementationer, så man ved at man har
+%muligheden for at kommunikere sikkert.
+
+%Wireless teknologier og IPv6 er blot to emner der har indflydelse på
+%sikkerheden i dagens netværk - men ofte kan det integreres fornuftigt
+%med både virksomheden og de netværk som skal forbindes til
+%infrastrukturen. 
+
+%Det anbefales at læse bogen: \title{Firewalls and {Internet} Security:
+%  Repelling the Wily Hacker}, \cite{Cheswick:2003:FIS}
+
+
+\bibliographystyle{alpha}
+%\bibliography{../ipv6-reference/solido-net.bib,../ipv6-reference/rfc.bib,../ipv6-reference/std.bib,../ipv6-reference/fyi.bib}
+\bibliography{kramse.bib,rfc.bib,std.bib,fyi.bib}
+%,internet.bib}
+
+
+%\printindex
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

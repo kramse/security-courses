@@ -1,6 +1,6 @@
 # Makefile for generating presentation $(TARGET).pdf from $(TARGET).tex 
 
-TARGET = $(shell basename ${CURDIR})
+TARGET = $(shell basename "${CURDIR}")
 
 all: pdf 
 

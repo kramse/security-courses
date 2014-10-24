@@ -1,0 +1,1380 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{solido-network-slides}
+\usepackage{pdf14}
+%\usepackage{ulem}
+
+% Basic things that we need are below
+\selectlanguage{danish}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+
+%\slide{Pause}
+%Er det tid til en lille pause?
+%\hlkimage{15cm}{300px-Fozziecurtain.JPG}
+
+% Overvågning og hacking ved it-samurai Henrik Kramshøj, Solido Networks
+% Henrik vil med udgangspunkt i hackerværktøjer afdække hvorfor det er så nemt at tilgå 
+% andres data. Vi vil sammen se på eksempler fra applikationer og operativsystemer som 
+% Windows og Mac, fra Henriks demoudstyr - samt trådløse netværk på steder og protokoller 
+% som afkodes med tilgængelige værktøjer. Vi kommer omkring nogle af de aktuelle sager 
+% og diskuterer om det er rimeligt at det kan lade sig gøre, eller om vi som brugere er lidt blåøjede.
+
+% Niveauet sigtes mod at være mindre teknisk tungt, og detaljer forventes ikke kendt af deltagerne
+% på forhånd. Dog kommer der hex data på skærmen.
+
+% Nøgleord:
+% HTTP, wireshark, chaosreader, bruteforce værktøjer, browser plugins, fuld diskkryptering,
+% kodeordshuskere, intro til hacking for 14 årige
+
+
+\begin{document}
+
+\mytitlepage
+{Overvågning og hacking}{PROSA Stud Svendborg 2014}
+\vskip 1 cm
+
+\slide{HUSK}
+
+Parallella
+
+Airport til snif netværk
+
+%\hlkprofil
+
+
+\slide{Agenda}
+
+\centerline{Internet - Here be dragons}
+
+\hlkimage{24cm}{dragon-drawing-6.jpg}
+
+\begin{list1}
+\item Kl 11:30-13:00 
+\item Paranoia defined
+\item What are the risks, vulnerabilities and threats
+\item Reduce risk and mitigate impact
+\end{list1}
+
+
+\slide{Goals: Why?}
+
+\hlkimage{22cm}{jacob-appelbaum.png}
+
+{\bf Demokrati:}
+Et frit demokrati fordrer borgere med frihed som har evnen til at tage beslutninger uden konstant at være overvåget.
+
+Et demokrati fordrer borgere som aktivt vælger hvornår de afgiver personlige data om deres liv og færden og
+kryptografi er en fredelig protest mod indsamling at data.
+
+
+
+\slide{Indsamlede data vil altid blive misbrugt}
+
+\hlkimage{10cm}{homer-end-is-near.jpg}
+
+Data som indsamles {\bf bliver misbrugt} enten til kriminelle formål, kommercielle formål uanset oprindelige formål med indsamlingen - under dække af beskyttelse mod terror, ekstremisme, nazisme, misbrug af børn, ... Le mal du jour / dagens onde.
+
+Derudover stalking, ekskærester, arbejdsgivere, forældre, ...
+
+\vskip 1 cm
+\centerline{\Large Du bestemmer - det er privatliv og demokrati}
+
+
+\slide{Why think of security?}
+
+\hlkimage{8cm}{1984-not-instruction-manual.jpg}
+
+
+\begin{quote}
+	Privacy is necessary for an open society in the electronic age. Privacy is not secrecy. A private matter is something one doesn't want the whole world to know, but a secret matter is something one doesn't want anybody to know. Privacy is the power to selectively reveal oneself to the world. ~A Cypherpunk's Manifesto by Eric Hughes, 1993
+\end{quote}
+
+Copied from \link{https://cryptoparty.org/wiki/CryptoParty}
+
+
+\slide{Security is not magic}
+
+%\vskip 2cm
+
+\hlkimage{4cm}{wizard_in_blue_hat.png}
+
+\hlkrightimage{5cm}{003scawebgoshindomanicon.png}
+.
+%{\large Superheltegerninger}
+
+\begin{list1}
+\item Think security, it may seem like magic - but it is not
+\item Follow news about security
+\item Support communities, join and learn
+\end{list1}
+
+
+\slide{Rejsen starter}
+
+Hvor skal vi nu starte denne rejse?
+
+\hlkimage{4cm}{network-security-book-perlman9780137155880_s.jpeg}
+\centerline{Private Communications in an Public World}
+
+Anbefalelsesværdig bog som gennemgår grundlaget for kryptering, teknikker og protokollerne der bruges på internet idag, herunder: IPsec, SSL/TLS, PGP, PKI, AES m.fl.
+
+\vskip 1cm
+\centerline{Vi troede krypto kunne hjælpe os med næsten alle problemer ...}
+
+
+
+\slide{Part I: Paranoia defined}
+
+\hlkimage{15cm}{paranoia-definition.png}
+
+Source: google paranoia definition
+
+\slide{Face reality}
+
+From the definition:
+\begin{quote}
+suspicion and mistrust of people or their actions {\bf without evidence or justification}.
+{\bf "the global paranoia about hackers and viruses"}
+\end{quote}
+
+\begin{list1}
+\item It is not paranoia when:
+\begin{list2}
+\item Criminals sell your credit card information and identity theft
+\item Hackers trade infected computers like a commodity
+\item Governments write laws that allows them to introduce back-doors - and use these
+\item Governments do blanket surveillance of their population
+\item Governments implement censorship, threaten citizens and journalist
+\item Governemnts monitor your sexting and naked chats over instant messaging apps
+\item Companies gather your personal data and sell access
+\item ... and the list goes on!
+\end{list2}
+\end{list1}
+
+\vskip 1cm
+\centerline{You are not paranoid when there are people actively attacking you!}
+
+
+\slide{Risk management defined}
+
+\hlkimage{24cm}{shon-harris-risk-management.png}
+
+Source: Shon Harris \emph{CISSP All-in-One Exam Guide}
+
+
+\slide{Example UK: Seize smart phones and download data}
+
+\begin{quote}
+Officers use counter-terrorism laws to remove a mobile phone from any passenger they wish coming through UK air, sea and international rail ports and then scour their data.
+
+The blanket power is so broad they do not even have to show reasonable suspicion for seizing the device and can retain the information for "as long as is necessary".
+
+Data can include call history, contact books, photos and who the person is texting or emailing, although not the contents of messages.
+\end{quote}
+
+
+{\small Source:
+http://www.telegraph.co.uk/technology/10177765/Travellers-mobile-phone-data-seized-by-police-at-border.html}
+
+
+\slide{Example: UK wouldn't seize data like that, you are lying}
+
+\begin{quote}
+(Reuters) - British authorities came under pressure on Monday to explain why anti-terrorism powers were used to detain for nine hours the partner of a journalist who has written articles about {\bf U.S. and British surveillance programs} based on {\bf leaks from Edward Snowden}.
+
+Brazilian David Miranda, the partner of American journalist Glenn Greenwald, was detained on Sunday at London's Heathrow Airport where he was in transit on his way from Berlin to Rio de Janeiro. {\bf He was released without charge}.
+\end{quote}
+
+{\small Source:\\
+{http://www.reuters.com/article/2013/08/19/us-britain-snowden-detention-idUSBRE97I0J520130819}}
+
+
+\slide{Government backdoors is not new information}
+
+\hlkimage{12cm}{nation-of-sheep.jpg}
+
+\begin{list1}
+\item Nothing new really, see for example D.I.R.T and Magic Lantern
+\item D.I.R.T - Data Interception by Remote Transmission since the late 1990s\\
+\link{http://cryptome.org/fbi-dirt.htm}\\
+\link{http://cryptome.org/dirty-secrets2.htm}
+
+\item They will always use \emph{Le mal du jour} to increase monitoring
+\end{list1}
+
+
+
+\slide{Governments blanket surveillance}
+
+\hlkimage{10cm}{prism_logo.jpg}
+
+\begin{list1}
+\item NSA - need we say more?\\
+\link{http://en.wikipedia.org/wiki/PRISM_(surveillance_program)}
+\item Governments also implementing censorship
+\item Outlaw and/or discredit crypto
+\item Go after Tor exit nodes
+\end{list1}
+
+
+
+\slide{Use protection - always}
+
+\hlkimage{14cm}{protect-from-governments.jpg}
+%{\LARGE Protecting yourself against criminals or the government is the same thing!}
+
+\slide{A vulnerability can and will be abused}
+
+What if I told you:
+
+{\Large \bf Criminals will be happy to leverage backdoors created by government}
+
+It does not matter if the crypto product has a weakness to allow investigations or the software has a backdoor to help law enforcement. Data and vulnerabilities WILL be abused and exploited.
+
+
+
+\slide{Ånden til at hacke}
+
+\hlkimage{4cm}{dont-panic.png}
+\centerline{\color{titlecolor}\LARGE Don't Panic!}
+
+
+Hacking betyder idag indbrud, kriminalitet, hærværk m.v.
+
+Oprindeligt betød hacking at man udforskede, undersøgte, involverede sig
+
+Vi skal bruge ånden fra hacking til forskning, udvikling
+
+Mange regler om at man ikke må noget er imod hacking.
+
+\vskip 1cm
+\centerline{Lad være med at bryde love, men bøj gerne regler \smiley }
+
+
+
+
+\slide{Hackerværktøjer}
+% måske til reference afsnit?
+\hlkimage{3cm}{hackers_JOLIE+1995.jpg}
+
+\begin{list2}
+\item Nmap, Nping - tester porte, godt til firewall admins \link{http://nmap.org}
+\item Metasploit Framework gratis på \link{http://www.metasploit.com/}
+\item Wireshark avanceret netværkssniffer - \link{http://http://www.wireshark.org/} 
+%\item Paros proxy \link{http://www.parosproxy.org}
+\item Burpsuite \link{http://portswigger.net/burp/}
+\item Skipfish \link{http://code.google.com/p/skipfish/}
+\item OpenBSD operativsystem med fokus
+  på sikkerhed  \link{http://www.openbsd.org} 
+\end{list2}
+
+Kilde: Angelina Jolie fra Hackers 1995
+
+\slide{Kali Linux the new backtrack}
+
+\hlkimage{20cm}{kali-linux.png}
+
+\begin{list1}
+\item BackTrack \link{http://www.backtrack-linux.org}
+\item Kali \link{http://www.kali.org/}
+\item Wireshark - \link{http://www.wireshark.org} avanceret netværkssniffer
+\end{list1}
+
+
+\slide{Wireshark - grafisk pakkesniffer}
+
+\hlkimage{20cm}{images/wireshark-website.png} 
+
+\centerline{\link{http://www.wireshark.org}}
+\centerline{både til Windows og UNIX, tidligere kendt som Ethereal}
+
+
+\slide{Brug af Wireshark}
+
+\hlkimage{13cm}{images/ethereal-capture-options.png}
+
+\centerline{Man starter med Capture - Options}
+
+\slide{Brug af Wireshark}
+
+\hlkimage{24cm}{images/ethereal-main-window.png}
+
+\centerline{Læg mærke til filtermulighederne}
+
+
+
+\slide{Wall of sheep}
+
+\hlkimage{16cm}{wall-of-sheep-defcon.jpg}
+
+\begin{center}
+Defcon Wall of Sheep\\
+Husk nu at vi er venner her! - idag er det kun teknikken
+\end{center}
+
+
+\slide{Getting to your data: Google for it}
+
+\hlkimage{16cm}{images/googledorks-1.pdf}
+
+\begin{list1}
+\item Google as a hacker tools?
+\item Concept named googledorks when google indexes information not supposed to be public
+\link{http://johnny.ihackstuff.com/}
+\end{list1}
+
+
+\slide{Hacking er magi}
+
+\hlkimage{7cm}{wizard_in_blue_hat.png}
+
+\vskip 1 cm
+
+\centerline{Hacking ligner indimellem  magi}
+
+
+\slide{Hacking er ikke magi}
+
+\hlkimage{17cm}{ninjas.png}
+
+\vskip 1 cm
+\centerline{Hacking kræver blot lidt ninja-træning}
+
+
+
+
+
+\slide{Hacking eksempel - det er ikke magi}
+
+\begin{list1}
+\item MAC filtrering på trådløse netværk
+\item Alle netkort har en MAC adresse - BRÆNDT ind i kortet fra fabrikken
+\item Mange trådløse Access Points kan filtrere MAC adresser
+\item Kun kort som er på listen over godkendte adresser tillades adgang til netværket
+\pause
+\item Det virker dog ikke \smiley
+\item De fleste netkort tillader at man overskriver denne adresse midlertidigt
+%\item Derudover har der ofte været fejl i implementeringen af MAC filtrering
+\end{list1}
+
+\slide{Myten om MAC filtrering}
+
+\begin{list1}
+\item Eksemplet med MAC filtrering er en af de mange myter 
+\item Hvorfor sker det?
+\item Marketing - producenterne sætter store mærkater på æskerne
+\item Manglende indsigt - forbrugerne kender reelt ikke koncepterne
+\item Hvad \emph{er} en MAC adresse egentlig
+\item Relativt få har forudsætningerne for at gennemskue dårlig sikkerhed
+\item Løsninger?
+\pause
+\item Udbrede viden om usikre metoder til at sikre data og computere
+\item Udbrede viden om sikre metoder til at sikre data og computere
+\end{list1}
+
+\slide{MAC filtrering}
+
+\hlkimage{15cm}{stupid-security.jpg}
+
+
+
+\slide{Demo investigating the current network}
+
+\begin{list1}
+\item Old skool tools: dsniff
+\item one sniffer for old protocols includes {\bfseries arpspoof}  
+\item Lavet af Dug Song, dugsong@monkey.org
+\item Want a gui, try Ettercap
+\end{list1}
+
+\begin{alltt}
+dsniff  is  a  password sniffer which handles FTP, Telnet,
+SMTP, HTTP, POP, poppass, NNTP, IMAP, SNMP, LDAP,  Rlogin,
+RIP,  OSPF,  PPTP  MS-CHAP, NFS, VRRP, YP/NIS, SOCKS, X11,
+CVS, IRC, AIM, ICQ, Napster,  PostgreSQL,  Meeting  Maker,
+Citrix  ICA,  Symantec  pcAnywhere, NAI Sniffer, Microsoft
+SMB, Oracle SQL*Net, Sybase and Microsoft SQL protocols.
+\end{alltt}
+
+Note: requires access to network traffic, like open wireless
+
+\slide{Chaosreader}
+
+\hlkimage{10cm}{chaosreader1.jpg}
+\hlkimage{20cm}{chaosreader2.png}
+\begin{list1}
+\item Med adgang til et netværksdump kan man læse det med chaosreader
+\item Output er HTML med oversigter over sessioner, billeder fra datastrømmen osv.
+\item \link{http://chaosreader.sourceforge.net/}
+
+\end{list1}
+
+\slide{Ettercap}
+
+\begin{quote}
+Ettercap is a comprehensive suite for man in the middle attacks. It features sniffing of live connections, content filtering on the fly and many other interesting tricks. It supports active and passive dissection of many protocols and includes many features for network and host analysis.
+\end{quote}
+
+Source: \link{https://ettercap.github.io/ettercap/}
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{8cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
+\end{quote}
+
+\begin{list2}
+\item \link{http://suricata-ids.org/}
+\item \link{http://openinfosecfoundation.org}
+\end{list2}
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic 
+\item We use mostly NFSen, but are looking at various software packages
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+\slide{Netflow using NFSen}
+
+\hlkimage{16cm}{images/nfsen-overview.png}
+
+
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{16cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+
+\slide{Status idag på internet}
+
+\hlkimage{21cm}{youtube-hacking-backtrack.png}
+
+
+\slide{Quick Wins}
+
+Using different password for each service, unpossible!
+
+OTP One Time Password, sniff one and you can use it, if you have a time machine \smiley
+
+\slide{Yubico Yubikey}
+
+\hlkimage{20cm}{yubico-overview.png}
+\begin{quote}
+A Yubico OTP is unique sequence of characters generated every time the YubiKey button is touched. The Yubico OTP is comprised of a sequence of 32 Modhex characters representing information encrypted with a 128 bit AES-128 key
+\end{quote}
+
+\link{http://www.yubico.com/products/yubikey-hardware/}
+
+\slide{TwoFactor authentication: Example Duosecurity}
+
+\hlkimage{12cm}{duosecurity-overview.png}
+Video
+\link{https://www.duosecurity.com/duo-push}
+
+\link{https://www.duosecurity.com/}
+
+\slide{Low tech 2-step verification }
+
+\centerline{\Large Printing code on paper, low level pragmatic }
+
+\hlkimage{9cm}{google-backup-codes.png}
+
+\begin{list1}
+\item Login from new devices today often requires two-factor - email sent to user
+\item Google 2-factor auth. SMS with backup codes
+\item Also read about S/KEY developed at Bellcore {\bf in the late 1980s}\\ \link{http://en.wikipedia.org/wiki/S/KEY}
+\end{list1}
+
+\centerline{Conclusion passwords: integrate with authentication, not reinvent}
+
+\slide{Integrate or develop?}
+
+From previous slide:\\
+\centerline{Conclusion passwords: integrate with authentication, not reinvent}
+
+
+\begin{list1}
+\item Dont:
+\begin{list2}
+\item Reinvent the wheel - too many times, unless you can maintain it afterwards
+\item Never invent cryptography yourself
+\item No copy paste of functionality, harder to maintain in the future
+\end{list2}
+\item Do:
+\begin{list2}
+\item Integrate with existing solutions
+\item Use existing well-tested code: cryptography, authentication, hashing
+\item Centralize security in your code
+\item Fine to hide which authentication framework is being used, easy to replace later
+\end{list2}
+\end{list1}
+
+
+\slide{January 2013: Github Public passwords?}
+
+
+\hlkimage{20cm}{github-credentials.png}
+
+ Sources:\\
+{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
+\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
+\link{http://www.leakedin.com/}\\
+\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
+}
+
+\vskip 5mm
+\centerline{Use different passwords for different sites, yes - every site!}
+
+%Sidetrack: Mat Honan epic hacking :-( using password reset\\
+%\link{http://www.wired.com/gadgetlab/2012/08/apple-amazon-mat-honan-hacking/all/}
+
+\slide{Opbevaring af passwords}
+
+\hlkimage{10cm}{password-window.png}
+
+\vskip 5mm
+\centerline{Use some kind of Password Safe program which encrypts your password database}
+
+
+\slide{Wall of sheep}
+
+\hlkimage{16cm}{wall-of-sheep-defcon.jpg}
+
+\begin{center}
+Defcon Wall of Sheep
+\end{center}
+
+\slide{Cain \& Abel}
+
+%\hlkimage{10cm}{cain_brute_attack.jpg}
+\hlkimage{20cm}{cain-win.png}
+
+\centerline{sniff, crack and hack \link{http://www.oxid.it}}
+
+
+\slide{John the ripper}
+
+\begin{quote}
+John the Ripper is a fast password cracker, currently available for
+many flavors of Unix (11 are officially supported, not counting
+different architectures), Windows, DOS, BeOS, and OpenVMS. Its primary
+purpose is to detect weak Unix passwords. Besides several crypt(3)
+password hash types most commonly found on various Unix flavors,
+supported out of the box are Kerberos AFS and Windows NT/2000/XP/2003
+LM hashes, plus several more with contributed patches.   
+\end{quote}
+
+\begin{list1}
+\item UNIX passwords kan knækkes med alec Muffets kendte Crack program
+  eller eksempelvis John The Ripper \link{http://www.openwall.com/john/}  
+\item Jeg bruger selv John The Ripper
+\end{list1}
+
+
+\slide{Pause}
+Er det tid til en lille pause?
+\hlkimage{15cm}{300px-Fozziecurtain.JPG}
+
+
+\slide{Good security}
+
+\hlkimage{15cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\end{list1}
+
+
+\slide{First advice}
+
+\begin{list1}
+\item Use technology
+\item Learn the technology - read the freaking manual
+\item Think about the data you have, upload, facebook license?! WTF!
+\item Think about the data you create - nude pictures taken, where will they show up?
+\begin{list2}
+\item Turn off features you don't use
+\item Turn off network connections when not in use
+\item Update software and applications
+\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
+\item Lock devices automatically when not used for 10 minutes
+\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
+\end{list2}
+\end{list1}
+
+
+\slide{First advice use the modern operating systems}
+
+\begin{list1}
+\item Newer versions of Microsoft Windows, Mac OS X and Linux
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Note: these still have errors and bugs, but are better than older versions
+\item OpenBSD has shown the way in many cases\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\vskip 1cm
+
+\centerline{Always try to make life worse and more costly for attackers}
+
+\slide{Defense in depth}
+
+\hlkimage{8cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{solido-orange} Defense using multiple layers is stronger!}
+
+
+\slide{Kryptografi}
+
+\hlkimage{18cm}{images/crypto-rot13.pdf}
+
+\begin{list1}
+\item Kryptografi er læren om, hvordan man kan kryptere data
+\item Kryptografi benytter algoritmer som sammen med nøgler giver en
+  ciffertekst - der kun kan læses ved hjælp af den tilhørende nøgle
+\end{list1}
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{18cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering 
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{18cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter - som så verificeres med den offentlige nøgle
+\end{list1}
+
+
+
+\slide{Kryptografiske principper}
+
+\begin{list1}
+\item Algoritmerne er kendte
+\item Nøglerne er hemmelige
+\item Nøgler har en vis levetid - de skal skiftes ofte
+\item Et successfuldt angreb på en krypto-algoritme er enhver genvej
+  som kræver mindre arbejde end en gennemgang af alle nøglerne 
+\item Nye algoritmer, programmer, protokoller m.v. skal gennemgås nøje!
+\item Se evt. Snake Oil Warning Signs:
+Encryption Software to Avoid\\ 
+\link{http://www.interhack.net/people/cmcurtin/snake-oil-faq.html}
+\end{list1}
+
+\slide{Kryptering}
+
+Formålet med kryptering
+
+\vskip 3 cm
+\centerline{\hlkbig kryptering er den eneste måde at sikre:}
+\vskip 3 cm
+\centerline{\hlkbig fortrolighed}
+\vskip 3 cm
+\centerline{\hlkbig autenticitet / integritet}
+
+
+\slide{Cryptography Engineering}
+
+\hlkimage{8cm}{book-ce-150w.jpg}
+
+\emph{Cryptography Engineering} by
+Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno
+
+\link{https://www.schneier.com/book-ce.html}
+
+\slide{Safe encrypted protocols}
+
+{\bf \LARGE Sorry, none}
+
+\slide{SSL}
+
+\begin{quote}
+The 'S' in HTTPS stands for 'secure' and the security is provided by SSL/TLS. SSL/TLS is a standard network protocol which is implemented in every browser and web server to provide confidentiality and integrity for HTTPS traffic.
+\end{quote}
+
+OpenSSL, LibreSSL, Apple SSL flaw exit exit exit!, Android SSL, certs certs cert!!!111, SSLv2, Heartbleed
+
+\centerline{Sorry, brain overflow from SSL/TLS vulnerabilities}
+
+
+\slide{Heartbleed}
+
+insert here from 
+ /userdata/projects/security-courses/presentations/misc/heartbleed-bug
+
+\slide{Are your data secure}
+
+\hlkimage{15cm}{images/data-integrity-1.pdf}
+
+\begin{list1}
+\item Stolen laptop, tablet, phone - can anybody read your data?
+\item Do you trust "remote wipe"
+\item How do you in fact wipe data securely off devices, and SSDs?
+\item Encrypt disk and storage devices before using them in the first place!
+\end{list1}
+
+
+\slide{Circumvent security - single user mode boot}
+\begin{list1}
+\item Unix systems often allows boot into singleuser mode\\
+press command-s when booting Mac OS X 
+\item Laptops can often be booted using PXE network or CD boot
+\item Mac computers can become a Firewire disk\\
+hold t when booting - firewire target mode
+\item Unrestricted access to un-encrypted data
+\item Moving hard drive to another computer is also easy
+\end{list1}
+\pause
+\centerline{Physical access is often - {\bf game over}}
+
+\slide{Mac OS X} 
+
+\hlkimage{16cm}{macbook-black.jpg}
+
+\centerline{Firewire target mode: Macbook disken kan tilgås fra en anden Mac}
+
+Press t to enter firewire target mode \smiley\\
+\link{http://support.apple.com/kb/ht1661}
+
+
+
+\slide{Theft - kindergarten and airports}
+
+\begin{list1}
+\item Many parents are in a hurry when they are picking up their kids
+\item Many people can easily be distracted around crowds
+\item Many people let their laptops stay out in the open - even at conferences
+\item ... making theft likely/easy
+\vskip 1 cm
+\item Stolen for the value of the hardware - or for the data?
+\item Industrial espionage, economic espionage or corporate espionage is real
+\end{list1}
+
+
+\slide{Backup}
+
+\vskip 3cm
+\centerline{\LARGE \bf Kom igang!}
+
+\begin{list2}
+\item Skriv på DVD - DVD brændere i mange laptops idag
+\item Gem på netværket - Dropbox, husk en yderligere backup!
+\item Brug Duplicity på egen server, eller tilsvarende services
+\end{list2}
+
+Mat Honan epic hacking :-(\\ {\small\link{http://www.wired.com/gadgetlab/2012/08/apple-amazon-mat-honan-hacking/all/}}
+
+\slide{Duplicity}
+
+\begin{quote}
+{\large\bf What is it?}
+
+Duplicity backs directories by producing encrypted tar-format volumes and uploading them to a remote or local file server. Because duplicity uses librsync, the incremental archives are space efficient and only record the parts of files that have changed since the last backup. Because duplicity uses {\bf GnuPG} to encrypt and/or sign these archives, they will be safe from spying and/or modification by the server.
+\end{quote}
+
+\link{http://duplicity.nongnu.org/} duplicity home page
+
+\link{http://www.gnupg.org/} The GNU Privacy Guard
+
+\slide{Opbevaring af passwords}
+
+\hlkimage{10cm}{password-window.png}
+
+\slide{Encrypting hard disk}
+
+\hlkimage{17cm}{images/apple-filevault.png}
+
+\begin{list1}
+\item Becoming available in the most popular client operating systems
+\begin{list2}
+\item Microsoft Windows Bitlocker - requires Ultimate or Enterprise
+\item Apple Mac OS X - FileVault og FileVault2
+\item FreeBSD GEOM og GBDE - encryption framework
+\item Linux distributions like Ubuntu ask to encrypt home dir during installation
+\item PGP disk - Pretty Good Privacy - makes a virtuel krypteret disk
+\item TrueCrypt - similar to PGP disk, a virtual drive with data, cross platform
+\item Some vendors have BIOS passwords, or disk passwords
+\end{list2}
+\end{list1}
+
+\emph{Let's audit Truecrypt!}\\
+{\small\link{http://blog.cryptographyengineering.com/2013/10/lets-audit-truecrypt.html}}
+
+Note: truecrypt halted and insecure? who knows?
+
+
+
+
+\slide{Email security - PGP pretty good privacy}
+
+\hlkimage{5cm}{images/pgp.png}
+
+\begin{list2}
+\item Pretty Good Privacy - PGP 
+\item Oprindeligt udviklet af Phil Zimmermann 
+\item nu kommercielt, men der findes altid en freeware version \link{http://www.pgp.com}
+\item Eksporteret fra USA på papir og scannet igen - det var lovligt 
+\item I dag kan en masse information om PGP findes gennem:
+\link{http://www.pgpi.org}
+\end{list2}
+
+
+\slide{Basale tools - GPG}
+
+\hlkimage{5cm}{images/logo-gnupg.png}
+\begin{list1}
+\item Gnu Privacy Guard, forkortes GnuPG eller GPG
+\item brug linket:
+  \link{http://www.gnupg.org/}
+\item Open Source med GPL licens. 
+\item Kan bruges på alle de gængse operativsystemer
+\end{list1}
+
+\slide{Enigmail - GPG plugin til Mail}
+
+\hlkimage{20cm}{images/enigmail-compose}
+\begin{list2}
+\item Enigmail er en udvidelse til 
+\item mailklienten i Mozilla/Netscape
+\item standalone mailklienten Thunderbird
+\item Billede fra \link{http://enigmail.mozdev.org}
+\end{list2}
+
+
+\slide{Enigmail - OpenGPG Key Manager}
+
+\hlkimage{18cm}{images/enigmail-keyman1}
+
+
+\centerline{Key Manager funktionaliteten i Enigmail kan anbefales}  
+
+\slide{GPGMail plugin til Mac OS X Mail.app}
+
+\hlkimage{20cm}{images/gpgmail-new-message.png}      
+
+\begin{list2}
+\item Bruger GPG
+\item kilde:
+\link{http://www.sente.ch/software/GPGMail/English.lproj/GPGMail.html}
+\end{list2}
+
+
+
+\slide{Use VPN!}
+
+\hlkimage{12cm}{openvpn-gui-systray.png}
+
+\begin{list1}
+\item Virtual Private Networks are {\bf useful} - or even {\bf required when traveling}
+\item VPN \link{http://en.wikipedia.org/wiki/Virtual_private_network}
+\item SSL/TLS VPN - Multiple incompatible vendors: OpenVPN, Cisco, Juniper, F5 Big IP
+\item IETF IPsec does work cross-vendors - sometimes, and is also increasingly becoming blocked or unusable due to NAT :-(
+\item Note: your VPN provider may be forced to give up your identity and traffic, beware!
+\end{list1}
+
+
+\slide{HTTPS Everywhere}
+
+\hlkimage{5cm}{HTTPS_Everywhere_new_logo.jpg}
+\begin{quote}
+HTTPS Everywhere is a Firefox extension produced as a collaboration between The Tor Project and the Electronic Frontier Foundation. It encrypts your communications with a number of major websites.
+\end{quote}
+
+\centerline{\link{http://www.eff.org/https-everywhere}}
+
+
+\slide{DNSSEC and DANE}
+
+\begin{quote}
+Objective:
+
+Specify mechanisms and techniques that allow Internet applications to
+establish cryptographically secured communications by using information
+distributed through DNSSEC for discovering and authenticating public 
+keys which are associated with a service located at a domain name.
+\end{quote}
+
+DNS-based Authentication of Named Entities (dane)\\
+\link{https://datatracker.ietf.org/wg/dane/charter/}\\
+{\footnotesize \link{http://googleonlinesecurity.blogspot.dk/2011/04/improving-ssl-certificate-security.html}}
+
+\vskip 2cm
+
+\centerline{\Large DNSSEC er ved at være godt udbredt - undtagen i DK}
+(findes på .dk zonen, men næsten ingen resolvere)
+
+\slide{Censurfridns.dk uncensoredDNS}
+
+\link{http://www.censurfridns.dk}
+
+\begin{alltt}
+www.censurfridns.dk
+
+Welcome to www.censurfridns.dk. You are welcome to use:
+
+anycast.censurfridns.dk / 91.239.100.100 / 2001:67c:28a4::
+ns1.censurfridns.dk / 89.233.43.71 / 2002:d596:2a92:1:71:53::
+as a resolver to avoid DNS censorship.
+Please see blog.censurfridns.dk/en for more information.
+\end{alltt}
+
+\vskip 2cm
+
+\centerline{\Large Det er uacceptabelt at pille ved DNS - punktum!}
+
+\slide{DNSSEC trigger}
+
+\hlkimage{7cm}{dnssec-trigger.png}
+
+Der findes mange DNSSEC programmer, blandt andet DNSSEC-trigger som er en navneserver til din lokale PC
+
+\begin{list2}
+\item DNSSEC Validator for firefox\\ \link{https://addons.mozilla.org/en-us/firefox/addon/dnssec-validator/}
+\item OARC tools \link{https://www.dns-oarc.net/oarc/services/odvr}
+\item \link{http://www.nlnetlabs.nl/projects/dnssec-trigger/}
+\end{list2}
+
+
+
+\slide{Tor project}
+
+\hlkimage{21cm}{tor-project.png}
+
+\centerline{\link{https://www.torproject.org/}}
+
+Der findes alternativer, men Tor er mest kendt
+
+\slide{Tor project - how it works 1}
+
+\hlkimage{21cm}{how-tor-works-1.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 2}
+
+\hlkimage{21cm}{how-tor-works-2.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 3}
+
+\hlkimage{21cm}{how-tor-works-3.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project install}
+
+\hlkimage{12cm}{tor-project.png}
+
+Der findes diverse tools til Tor, Torbutton on/off knap til Firefox osv.
+
+Det anbefales at bruge bundles fra \link{https://www.torproject.org/}
+
+\vskip 2cm
+\centerline{Pause mens dem som vil installere gør det}
+
+\slide{Whonix}
+
+\hlkimage{17cm}{400px-Whonix.jpg}
+
+\begin{quote}
+Whonix is an operating system focused on anonymity, privacy and security. It's based on the Tor anonymity network[5], Debian GNU/Linux[6] and security by isolation. DNS leaks are impossible, and not even malware with root privileges can find out the user's real IP.
+\end{quote}
+
+\link{https://www.whonix.org/}
+
+
+\slide{Definition}
+
+\vskip 4cm
+
+\begin{quote}
+{\hlkbig
+Computer Forensics involves the preservation, identification,
+extraction, documentation and interpretation of computer data.}
+
+\vskip 1 cm
+
+\emph{Computer Forensics: Incident Response Essentials}, Warren
+G. Kruse II og Jay G. Heiser, Addison-Wesley, 2002  
+\end{quote}
+
+
+
+\slide{TASK og Autopsy}
+
+\hlkimage{7cm}{images/sleuthkit.png}
+
+\begin{list1}
+\item Inspireret af TCT har Brian Carrier fra Atstake lavet flere
+  værktøjer til forensics analyse
+\item Det officielle hjem for TASK og autopsy er nu:
+  \link{www.sleuthkit.org}
+\item TASK kan betragtes som en erstatning for TCT the coroners
+  toolkit lavet af Dan Farmer og Wietse Venema
+\item Autopsy er en Forensic Browser - et interface til TASK
+\end{list1}
+
+%Kilde: \link{http://www.atstake.com/research/tools/forensic/}
+\slide{Hvordan slettes data}
+
+\begin{list2}
+\item Filsystemer skal være hurtige - skal ikke lave unødvendige
+  operationer
+\item En harddisk er en fysisk disk med en arm der skal bevæges og et
+  læse/skrivehoved som skal tændes og slukkes
+\item Hvis man kan undgå at skulle skrive over hele filen ved sletning
+  er det hurtigere
+\item De fleste operativsystemer sletter derfor kun metadata og
+  overskriver derfor ikke alle datablokke for filer
+\item Eksempel DOS FAT\\
+Når man slettede en fil på MS-DOS fjernede man reelt kun det
+  første bogstav i filnavnet\\
+undelete bestod i at skrive det første bogstav i filnavnet - og
+  håbe på at alle datablokke der hørte til filen stadig var at finde
+  på disken 
+\end{list2} 
+
+\slide{Darik's Boot and Nuke}
+
+\hlkimage{10cm}{images/dban-screenshot.png}
+
+\begin{list2}
+\item ad-hoc oprydning, formatering og sletning af filer giver ingen sikkerhed!
+\item Free. Fast. Rapid deployment in emergency situations.
+\item Easy. Start the computer with DBAN and press the ENTER key.
+\item Safe. Irrecoverable data destruction. Prevents most forensic data recovery
+ techniques.  
+\item \link{http://dban.sourceforge.net/}
+\item NB: Brug \link{http://unetbootin.sourceforge.net/} til at skrive CD-image til 
+\end{list2}
+
+
+\slide{Be careful}
+
+\hlkimage{6cm}{michael-conrad.jpg}
+\centerline{\Large Hey, Lets be careful out there!}
+
+\vskip 2cm
+Kilde: Michael Conrad \link{http://www.hillstreetblues.tv/}
+
+Nødvendigt eller er det ekstreme teknikker vi har diskuteret?
+
+
+\slide{Pause}
+Er det tid til en lille pause?
+\hlkimage{15cm}{300px-Fozziecurtain.JPG}
+
+
+
+
+\slide{Informationsindsamling}
+
+\begin{list1}
+\item Det vi har udført er informationsindsamling
+\item Indsamlingen kan være aktiv eller passiv indsamling i forhold
+  til målet for angrebet
+\item passiv kunne være at lytte med på trafik eller søge i databaser
+  på Internet
+\item aktiv indsamling er eksempelvis at sende ICMP pakker og
+  registrere hvad man får af svar
+\end{list1}
+
+\slide{MAC adresser}
+%\hlkimage{10cm}{apple-oui.png}
+
+\begin{alltt}
+00-03-93   (hex)        Apple Computer, Inc.
+000393     (base 16)    Apple Computer, Inc.
+                        20650 Valley Green Dr.
+                        Cupertino CA 95014
+                        UNITED STATES
+\end{alltt}
+\begin{list1}
+\item Netværksteknologierne benytter adresser på lag 2
+\item Typisk svarende til 48-bit MAC adresser som kendes fra Ethernet MAC-48/EUI-48
+\item Første halvdel af adresserne er Organizationally Unique Identifier (OUI)
+\item Ved hjælp af OUI kan man udlede hvilken producent der har produceret netkortet
+\item \link{http://standards.ieee.org/regauth/oui/index.shtml}
+\end{list1}
+
+\slide{IPv4 pakken - header - RFC-791}
+
+\begin{alltt}
+\small  
+    0                   1                   2                   3   
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{Burp Suite}
+
+\hlkimage{19cm}{burp-suite-1.png}
+
+\begin{list1}
+\item Burp Suite af Dafydd Stuttard \link{http://portswigger.net/burp/}
+\item Twitter @PortSwigger
+\end{list1}
+
+
+\slide{Burpsuite}
+
+\begin{quote}
+Burp Suite is an integrated platform for performing security testing of web applications. Its various tools work seamlessly together to support the entire testing process, from initial mapping and analysis of an application's attack surface, through to finding and exploiting security vulnerabilities.
+
+Burp gives you full control, letting you combine advanced manual techniques with state-of-the-art automation, to make your work faster, more effective, and more fun.
+\end{quote}
+
+Burp suite indeholder både proxy, spider, scanner og andre værktøjer i samme pakke - NB: EUR 249 per user per year.
+
+\link{http://portswigger.net/burp/}
+
+
+\slide{brute force}
+
+\begin{list1}
+\item hvad betyder bruteforcing?\\
+afprøvning af alle mulighederne
+\end{list1}
+
+\begin{alltt}
+\small
+Hydra v2.5 (c) 2003 by van Hauser / THC <vh@thc.org>
+Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] 
+[-o FILE] [-t TASKS] [-g TASKS] [-T SERVERS] [-M FILE] [-w TIME] 
+[-f] [-e ns] [-s PORT] [-S] [-vV] server service [OPT]
+
+Options:
+  -S        connect via SSL
+  -s PORT   if the service is on a different default port, define it here
+  -l LOGIN  or -L FILE login with LOGIN name, or load several logins from FILE
+  -p PASS   or -P FILE try password PASS, or load several passwords from FILE
+  -e ns     additional checks, "n" for null password, "s" try login as pass
+  -C FILE   colon seperated "login:pass" format, instead of -L/-P option
+  -M FILE   file containing server list (parallizes attacks, see -T)
+  -o FILE   write found login/password pairs to FILE instead of stdout
+...  
+\end{alltt}
+
+
+\slide{Følg med Twitter news}
+
+%\hlkimage{18cm}{twitter-security-feed.png}
+\hlkimage{10cm}{twitter-safety.png}
+
+\begin{list1}
+\item Twitter has become an important new resource for lots of stuff
+\item Twitter has replaced RSS for me 
+\end{list1}
+
+
+\slide{Work together}
+
+\hlkimage{14cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+
+
+
+\slide{Fri adgang til hackerværktøjer}
+
+\begin{list1}
+\item I 1993 skrev Dan Farmer og Wietse Venema artiklen\\
+\emph{Improving the Security of Your Site by Breaking Into it}
+\item I 1995 udgav de softwarepakken SATAN\\
+\emph{Security Administrator Tool for Analyzing Networks}
+\begin{quote}\large
+We realize that SATAN is a two-edged sword - like many tools,\\
+it can be used for good and for evil purposes. We also \\
+realize that intruders (including wannabees) have much \\
+more capable (read intrusive) tools than offered with SATAN. 
+\end{quote}
+\item Se \link{http://sectools.org} og \link{http://www.packetstormsecurity.org/}
+
+\end{list1}
+Kilde:
+\link{http://www.fish2.com/security/admin-guide-to-cracking.html}
+
+
+\slide{How to become secure} 
+
+\hlkimage{8cm}{MangaRamblo.jpg}
+
+\begin{list1}
+\item Dont use computers at all, data about you is still processed by computers :-(
+\item Dont use a single device for all types of data
+\item Dont use a single server for all types of data, mail server != web server
+\item Configure systems to be secure by default, or change defaults
+\item Use secure protocols and VPN solutions
+\end{list1}
+
+
+
+
+\slide{Ubuntu Unity Privacy problems} 
+
+\hlkimage{22cm}{unity-privacy-problem.png}
+
+Source: \link{https://fixubuntu.com/}
+
+\slide{Mac OS X Yosemite - E.T. Phone Home}
+
+\hlkimage{19cm}{mac-os-x-yosemite-privacy-problem.png}
+
+Source:
+https://github.com/fix-macosx/yosemite-phone-home
+
+
+\slide{Surveillance Self-Defense EFF}
+
+\hlkimage{10cm}{ssd-eff-logo.png}
+
+\begin{quote}
+\centerline{Tips, Tools and How-tos For Safer Online Communications}
+
+Modern technology has given the powerful new abilities to eavesdrop and collect data on innocent people. Surveillance Self-Defense is EFF's guide to defending yourself and your friends from surveillance by using secure technology and developing careful practices.
+\end{quote}
+
+Source: \link{https://ssd.eff.org/}
+
+\slide{Ononymous robot, formerly ONO robot}
+
+\hlkimage{20cm}{tactical-tech-securitybox.png}
+Source: \link{https://tacticaltech.org/}
+
+
+
+
+\slide{Checklisten}
+
+\begin{list2}
+\item BIOS kodeord, lock-codes for mobile devices
+\item Firewall - specifically for laptops
+\item Two browser strategy, one with paranoid settings
+\item Use OpenPGP for email
+\item Use a password safe for storing passwords
+\item Use hard drive encryption
+\item Keep systems updated
+\item Backup your data
+\item Dispose of data securely
+\end{list2}
+
+\slide{Be careful - questions?}
+
+\hlkimage{5cm}{michael-conrad.jpg}
+\centerline{\Large Hey, Lets be careful out there!}
+\vskip 2 cm
+
+\begin{center}
+\myname
+
+%\myweb
+\end{center}
+
+\vskip 2cm
+Source: Michael Conrad \link{http://www.hillstreetblues.tv/}
+
+
+\slide{PROSA CTF}
+
+\hlkimage{10cm}{DSCF3910s.jpg}
+
+\begin{list1}
+\item PROSA afholder CTF konkurrence fredag den 29. november 13 til lørdag
+\item Capture the Flag er en mulighed for at afprøve sine hackerskillz
+\item Distribueret CTF med hold  Sjovt og lærerigt 
+\end{list1}
+Kilde: \link{http://prosa-ctf.the-playground.dk/}
+
+\centerline{Get ready! Lær debuggere, perl, java at kende, start på at hacke}
+
+
+
+\slide{Hacker - cracker}
+
+{\bfseries Det korte svar - drop diskussionen}
+
+%Det lidt længere svar:\\
+Det havde oprindeligt en anden betydning, men medierne har taget
+udtrykket til sig - og idag har det begge betydninger. 
+
+{\color{red}\hlkbig Idag er en hacker stadig en der bryder ind i systemer!}
+
+ref. Spafford, Cheswick, Garfinkel, Stoll, ...
+- alle kendte navne indenfor sikkerhed
+
+
+\begin{list2}
+\item \emph{Cuckoo's Egg: Tracking a Spy Through the Maze of Computer
+ Espionage},  Clifford Stoll  
+\item \emph{Hackers: Heroes of the Computer Revolution},
+Steven Levy
+\item \emph{Practical Unix and Internet Security},
+Simson Garfinkel, Gene Spafford, Alan Schwartz 
+\end{list2}
+
+\slide{Definition af hacking, oprindeligt}
+
+\begin{quote}
+Eric Raymond, der vedligeholder en ordbog over computer-slang (The Jargon File) har blandt andet følgende forklaringer på ordet hacker:
+\begin{list2}
+\item En person, der nyder at undersøge detaljer i programmerbare systemer og hvordan man udvider deres anvendelsesmuligheder i modsætning til de fleste brugere, der bare lærer det mest nødvendige
+\item En som programmerer lidenskabligt (eller enddog fanatisk) eller en der foretrækker at programmere fremfor at teoretiserer om det
+\item En ekspert i et bestemt program eller en der ofter arbejder med eller på det; som i "en Unixhacker".
+\end{list2}
+\end{quote}
+
+\begin{list1}
+\item Kilde: Peter Makholm, \link{http://hacking.dk}
+\item Benyttes stadig i visse sammenhænge se \link{http://labitat.dk}
+\end{list1}
+
+
+\end{document}

@@ -1,0 +1,125 @@
+% simpsons.tex -- macros for using the Simpsons font. 
+% 
+% by Raymond Chen (rjc@math.princeton.edu) 
+% 
+% You say \Lisa, \Homer, \Bart, or \Marge to typeset the corresponding 
+% character.  The default is to draw the character facing to the right 
+% and looking directly at you.  To modify this, you can do the following: 
+% 
+% Prefix the csname \Left to get the character face left instead of right. 
+% E.g., \Left\Lisa 
+% 
+% Prefix the csname \Goofy and suffix two pairs of coordinates, which 
+% modify how the pupils are drawn.  E.g., \Goofy\Lisa(7,5)(5,5) 
+% The first pair of coordinates is applied to the right pupil (which 
+% is the one on the left when printed) and the second pair to the left 
+% pupil.  The units are relative to the size of the character. 
+% (So if you say ``\font\simpsons=simpsons scaled 1200'' you don't have 
+% to modify all the coordinates in the \Goofy's.) 
+% 
+% If you prefix \Goofy\Left, then the mirror-image-reversal takes place 
+% <<after>> the goofiness is applied.  This is so that you can just say 
+% \Goofy\Left\Lisa(7,5)(5,5) to get a mirror image of \Goofy\Lisa(7,5)(5,5). 
+% 
+% Sample goofinesses: 
+% 
+%       \Goofy\Lisa(7,5)(5,5) 
+%       \Goofy\Homer(6,4)(4,4) 
+% 
+ 
+\let\ifGoofy=\iffalse 
+    \def\Goofy{\let\ifGoofy\iftrue} \def\unGoofy{\let\ifGoofy\iffalse} 
+\let\ifLeft=\iffalse 
+    \def\Left {\let\ifLeft \iftrue} \def\unLeft {\let\ifLeft \iffalse} 
+ 
+\font\simpsons=simpsons \nopagenumbers 
+ 
+\count255=\catcode`\@       % save the old catcode 
+ 
+\catcode`\@=11 
+ 
+% \Simps@nEyeball 
+% 
+% On entry: 
+%       \count@ points to the first fontdimen for the current character 
+%       \box0   contains the character being typeset (used only if Left) 
+% 
+% Uses: \dimen@ for scratch computations 
+% 
+% Pseudocode: 
+% 
+%   If left:    \dimen@ = \wd0 - first fontdimen 
+%   If right:   \dimen@ = first fontdimen 
+% 
+%   Advance \count@ to the second fontdimen (must do now, outside a group) 
+% 
+%   Build a zero-width box containing { 
+%       If left:  \dimen@ = \dimen@ - #1ex 
+%       If right: \dimen@ = \dimen@ + #1ex 
+%       Move right \dimen@ 
+% 
+%       \dimen@ = second fontdimen + #2ex 
+%       Move up \dimen@ 
+%       Place the eyeball 
+%   } 
+%   Advance \count@ to the next fontdimen (ready for next iteration) 
+% 
+% But note that the ``If left: ... If right: ...'' stuff is done 
+% extraordinarily dastardlyly. 
+ 
+\def\Simps@nEyeball(#1,#2){% 
+    \dimen@ \ifLeft \wd\z@ \advance\dimen@-\fi \fontdimen\count@\simpsons 
+    \advance\count@\@ne 
+    \hbox to\z@{\advance\dimen@\ifLeft-\fi#1ex 
+          \kern\dimen@ 
+          \dimen@\fontdimen\count@\simpsons 
+          \advance\dimen@#2ex 
+          \raise\dimen@\hbox{\char0}\hss}% 
+    \advance\count@\@ne} 
+ 
+% \doSimpson 
+% 
+% Uses:  All register usage is localized to a group. 
+% 
+% Pseudocode: 
+% 
+% \leavevmode, in case we were in vertical mode 
+% Begin a group 
+%   Switch to simpsons font. 
+%   Set \count@ = 2 * #1 
+%   Set \box0 to \char\count@ (or \char(\count@+1) if left) 
+%   Set \count@ = 4 + 4 * #1 
+%   \Simps@nEyeball the right eyeball 
+%   \Simps@nEyeball the left eyeball 
+%   Emit \box0 
+% End the group 
+% Reset \Goofy and \Left 
+ 
+\def\doSimpson#1(#2,#3)(#4,#5){\leavevmode 
+    {\simpsons 
+    \count@=#1% 
+    \advance\count@\count@ 
+    \setbox\z@=\hbox{\ifLeft\advance\count@\@ne\fi 
+                     \char\count@}% 
+    \advance\count@\tw@ 
+    \multiply\count@\tw@ 
+    \Simps@nEyeball(#2,#3)% 
+    \Simps@nEyeball(#4,#5)% 
+    \box\z@}\unGoofy\unLeft} 
+ 
+\def\Simpson{\ifGoofy\let\next\doSimpson\else\let\next\normalSimpson\fi\next} 
+\def\normalSimpson#1{\doSimpson#1(0,0)(0,0)} 
+ 
+\chardef\f@ur=4 
+\chardef\f@ve=5 
+\chardef\s@x=6 
+ 
+\def\Lisa{\Simpson\@ne} 
+\def\Homer{\Simpson\tw@} 
+\def\Bart{\Simpson\thr@@} 
+\def\Marge{\Simpson\f@ur} 
+\def\Maggie{\Simpson\f@ve} 
+\def\Burns{\Simpson\s@x} 
+\def\SNPP{{\simpsons\@ne}} 
+ 
+\catcode`\@=\count255                   % restore the catcode 

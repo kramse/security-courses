@@ -304,14 +304,14 @@ global dns_A_reply_count=0;
 global dns_AAAA_reply_count=0;
 ...
 event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
-	\{
+	{
 	++dns_A_reply_count;
-	\}
+	}
 
 event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
-	\{
+	{
 	++dns_AAAA_reply_count;
-	\}
+	}
 \end{alltt}
 
 Source: dns-fire-count.bro from\\
@@ -460,6 +460,19 @@ Source:
 \link{https://www.elastic.co/products/kibana}
 
 
+\slide{Lets get to work!}
+
+\begin{list2}
+\item Get Kibana working
+\item Get access to Kibana
+\item Produce some data
+\item Create dashboards
+\end{list2}
+
+While demoing Ansible, and vagrant
+
+Lots of examples\\
+\link{https://github.com/geerlingguy/ansible-vagrant-examples/}
 
 
 \slide{Next steps}
@@ -477,25 +490,127 @@ In our network we are always improving things:
 \centerline{\bf\Large Conclusion: Combine tools!}
 
 
+\slide{Logstash pipeline }
 
-\slide{Lets get to work!}
+\begin{verbatim}
+input { stdin { } }
+output {
+  elasticsearch { host => localhost }
+  stdout { codec => rubydebug }
+}
+\end{verbatim}
+
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
 
 \begin{list2}
-\item Get Kibana working
-\item Get access to Kibana
-\item Produce some data
-\item Create dashboards
+\item Logstash receives via {\bf input}
+\item Processes with {\bf filters} - grok
+\item Forward events with {\bf output}
 \end{list2}
 
-While demoing Ansible, and vagrant
+\slide{Logstash as SNMPtrap and syslog server}
 
-Lots of examples\\
-\link{https://github.com/geerlingguy/ansible-vagrant-examples/}
+{\footnotesize
+\begin{verbatim}
+input {
+  snmptrap {
+    host => "0.0.0.0"
+    type => "snmptrap"
+    port => 1062
+    community => "xxxxx"
+  }
+  tcp {
+    port => 5000
+    type => syslog
+  }
+  udp {
+    port => 5000
+    type => syslog
+  }
+}
+\end{verbatim}
+}
+
+\begin{list2}
+\item We run logstash on port 5000 - but use IPtables port forwarding
+\end{list2}
+
+\slide{IPtables forwarding}
+
+{\footnotesize
+\begin{verbatim}
+*nat
+:PREROUTING ACCEPT [0:0]
+# redirect all incoming requests on port 514 to port 5000
+-A PREROUTING -p tcp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 162 -j REDIRECT --to-port 1062
+COMMIT
+\end{verbatim}
+}
+
+\centerline{Inserted near beginning of /etc/ufw/before.rules on Ubuntu}
 
 \slide{Grok expresssions}
 
+{\footnotesize
+\begin{verbatim}
+  filter {
+    if [type] == "syslog" {
+      grok {
+        match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp}
+        %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}
+        (?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+\end{verbatim}
+}
 
-og vise hvordan man kan lave sine egne Grok expressions til at splitte loglinier til felter.
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Grok expresssions, sample from my archive}
+
+{\footnotesize
+\begin{verbatim}
+filter {
+# decode some SSHD
+if [syslog_program] == "sshd" {
+  grok {
+# May 20 10:27:08 odn1-nsm-01 sshd[4554]: Accepted publickey for hlk from
+10.50.11.17 port 50365 ssh2: DSA 9e:fd:3b:3d:fc:11:0e:b9:bd:22:71:a9:36:d8:06:c7
+
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: Accepted publickey for %{USERNAME:username} from
+  %{IP:src_ip} port %{BASE10NUM:port} ssh2" }
+
+# "May 20 10:27:08 odn1-nsm-01 sshd[4554]: pam_unix(sshd:session):
+session opened for user hlk by (uid=0)"
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: pam_unix\(sshd:session\): session opened for user
+%{USERNAME:username}" }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
 
 
 

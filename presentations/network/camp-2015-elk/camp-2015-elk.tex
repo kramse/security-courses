@@ -1,0 +1,513 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{thecamp-slides}
+\begin{document}
+%\selectlanguage{danish}
+
+% Log analyse er idag nødvendigt for at kunne forstå og efterforske hvad der sker i vores infrastrukturer med servere, netværk og andre enheder.
+% Vi vil introducere ELK stakken og viser fordelene ved at kunne "google" sine logs på sekunder, fremfor old-skool grep og cut i Gb af logs.
+% Vi vil bruge eksempler med logs fra Suricata, Sudo, SSH, Postgresql m.fl. og vise hvordan man kan lave sine egne Grok expressions til at splitte loglinier til felter.
+
+
+\mytitlepage{Log analyse med Elasticsearch, Logstash og Kibana}{TheCamp.dk 2015}
+
+\vskip 2cm
+\centerline{\tiny Slides are available as PDF, kramshoej@Github}
+
+\slide{Goals of today}
+\hlkimage{10cm}{moloch-sessions}
+
+\begin{list1}
+\item Log analysis is required today - and we have many logs
+\item Gather logs, parse logs, explain logs - fix stuff
+\item Google your logs with the ELK stack
+\item Show sample logs from Suricata, Sudo, SSH, Postgresql m.fl.
+\end{list1}
+
+\slide{Plan for today}
+
+\hlkimage{10cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Kl 13:30 - 16:00 with a break, or shorter
+\item Less presentation, more talk
+\item Less me talking (only) and more 2.0 social media interaction
+\end{list1}
+
+\centerline{Trying to fit in demo and workshop-like stuff}
+
+
+\slide{The current situation}
+
+\hlkimage{8cm}{homer-end-is-near.jpg}
+\begin{list1}
+\item Internet security sucks
+\item Personal computers like laptops suck at security
+\item Mobile devices suck even more at security - less CPU/MEM/storage
+\item We depend on cloud services and underfunded infrastructure - OpenSSL
+\item We depend on others and the whole internet - DDoS
+\end{list1}
+
+
+\slide{Goals: Internet Ninjas}
+
+\hlkimage{10cm}{ninjas.png}
+\begin{list1}
+\item Real super heroes are just ninjas
+\item By knowing the internet, technologies and possibilities
+\item Using technology and knowledge make it seem magical
+\item In reality preparedness and defense in depth go a looooong way
+\item Common sense is not magic, structured methods are king
+\end{list1}
+
+\slide{Challenges}
+
+\begin{list1}
+\item Less resources available for IT and infosec
+\item Lots of new malware, virus, vulnerabilities and hacking
+\item Dataloss ransomware, theft
+\item Loss of confidentiality, 2014: 700 million lost accounts
+\item Infosec charlatans, hype and lies
+\end{list1}
+
+\vskip 2cm
+\centerline{Your boss wants: No cost, and please show us great results}
+
+\slide{Solutions}
+
+\begin{list1}
+\item Automate your job, Ansible is our poison - demo
+\item Backup your life, help others backup, Duplicity is my choice
+\item Learn self-defense for yourself, practice infosec war \link{http://ssd.eff.org}
+\item Use hackertools to detect and identify
+\item Categories, sort, prioritize, group problems - solve more
+\item Measure, collect and present - make it pretty
+\item Learn from devops, Elasticsearch Logstash Kibana D3.js
+\end{list1}
+
+
+\centerline{Use your brain}
+
+A lot will seem easy and basic from the outside, but when you are knee-deep\\
+in something you loose focus. Take a step back once in a while.
+
+\slide{Case: Aalborg Farve og Lak.}
+
+\begin{quote}
+"Vi skulle alligevel have nyt Navision-system i maj, så vi måtte fremrykke den investering. På den måde kunne vi få tastet alt ind i det nye system. I hele sagen har vi dog tabt omkring en million kroner med de mistede ordrer, ny software og revisionsbistand,"
+\end{quote}
+Medejer og salgs- og personaleansvarlig hos Aalborg Farve- og Lak, Pernille Skall
+
+\begin{list1}
+\item Break-in through Windows Xp
+\item Ransomware infection - across multiple systems
+\item Latest backup from November (currently we are in April!)
+\item Great that they share
+\item Todays break-ins use yesterdays vulns, repeated and documented multiple times
+\end{list1}
+
+
+{\small\link{http://www.computerworld.dk/art/233684/hacker-kom-ind-via-labelprinter-tog-dansk-firmas-it-systemer-som-gidsel}}
+
+\slide{Hackertools are for everyone!}
+
+\hlkimage{2cm}{hackers_JOLIE+1995.jpg}
+
+
+\begin{list2}
+\item Hackers work all the time to break stuff, Use hackertools:
+\item Nmap, Nping \link{http://nmap.org}
+\item Wireshark - \link{http://www.wireshark.org/}
+\item Aircrack-ng \link{http://www.aircrack-ng.org/}
+\item Metasploit Framework \link{http://www.metasploit.com/}
+\item Burpsuite \link{http://portswigger.net/burp/}
+\item Skipfish \link{http://code.google.com/p/skipfish/}
+\item Kali Linux \link{http://www.kali.org}
+\end{list2}
+
+\vskip 5mm
+\centerline{Most popular hacker tools \link{http://sectools.org/}}
+
+\slide{Kali Linux the pentest toolbox}
+
+\hlkimage{\linewidth-8cm}{kali-linux.png}
+
+\begin{list1}
+\item  Kali \link{http://www.kali.org/}
+\item 100.000s of videos on youtube
+\item Also versions for Raspberry Pi, mobile and other small computers
+\end{list1}
+
+
+\slide{Metasploit and Armitage Still rocking the internet}
+
+
+%\hlkimage{20cm}{metasploit-about.png}
+\hlkimage{10cm}{armitage-overview.png}
+
+\begin{list1}
+\item \link{http://www.metasploit.com/}
+\item Armitage GUI fast and easy hacking for Metasploit\\
+\link{http://www.fastandeasyhacking.com/}
+\item Recommened training Metasploit Unleashed\\
+\link{http://www.offensive-security.com/metasploit-unleashed/Main_Page}
+%\item Bog: Metasploit: The Penetration Tester's Guide, No Starch Press\\
+%ISBN-10: 159327288X
+\end{list1}
+
+
+\slide{Defense: Attack overview}
+
+\hlkimage{18cm}{sicherheitstacho.png}
+
+\centerline{\small\link{http://www.sicherheitstacho.eu/?lang=en}}
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{20cm}{observium-screenshot.png}
+\centerline{Observium}
+\slide{Observium example router overview}
+
+\hlkimage{24cm}{srx-cph-02-ipv6.png}
+
+\centerline{More useful information than default vendor interface! (flash)}
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{25cm}{Logstash1.png}
+
+\vskip 2cm
+\begin{list2}
+\item Screenshot from Peter Manev, OISF
+\item Shown are Suricata IDS alerts processed by Logstash and Kibana
+\end{list2}
+
+
+\slide{Networks today}
+\hlkimage{20cm}{overview-routing-customer-2015.pdf}
+
+
+
+\slide{Defense in depth - multiple layers of security}
+
+\hlkimage{23cm}{network-layers-1.pdf}
+
+\slide{ Netflow NFSen}
+
+\hlkimage{22cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{16cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\end{list1}
+
+
+
+
+\slide{Network tools - examples}
+
+\hlkimage{16cm}{kibana-solido.png}
+\begin{list1}
+\item Net: Bro \link{http://www.bro-ids.org} Suricata \link{http://suricata-ids.org}
+\item DNS: DSC and PacketQ \link{https://github.com/dotse/packetq/wiki}
+\item Syslog: Elasticsearch, Logstash, and Kibana
+\item Packetbeat \link{https://www.elastic.co/products/beats/packetbeat}
+\end{list1}
+\centerline{Collect and present data more easily - non-programmers}
+
+
+\slide{Security devops}
+
+\begin{list1}
+\item We need devops skillz in security - automate, security is also big data
+\item integrate tools, transfer, sort, search, pattern matching, statistics, ...
+\item tools, languages, databases, protocols, data formats
+\item Example introductions:
+\begin{list2}
+\item Seven languages/database/web frameworks in Seven Weeks
+\item Elasticsearch the definitive guide\\
+\link{http://www.elastic.co/guide/en/elasticsearch/guide/current/index.html}
+\item \link{https://www.elastic.co/products/kibana}
+\item \link{https://www.elastic.co/products/logstash}
+\end{list2}
+\end{list1}
+
+\centerline{We are all Devops now, even security people!}
+
+Do you even Github? \smiley \link{https://github.com/stars}
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{6cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security Through Data Analysis: Building Situational Awareness\\
+By Michael Collins\\
+Publisher: O'Reilly Media
+Released: February 2014 Pages: 348
+
+
+
+\slide{BRO IDS}
+
+\hlkimage{14cm}{bro-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Bro provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Bro has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.bro.org/}
+
+\slide{BRO more than an IDS}
+
+\begin{quote}
+	The key point that helped me understand was the explanation that Bro is a
+               domain-specific language for networking applications and that Bro-IDS
+               (http://bro-ids.org/) is an application written with Bro.
+\end{quote}
+
+Why I think you should try Bro\\
+\link{https://isc.sans.edu/diary.html?storyid=15259}\\
+
+\slide{Bro scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+	\{
+	++dns_A_reply_count;
+	\}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+	\{
+	++dns_AAAA_reply_count;
+	\}
+\end{alltt}
+
+Source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}}
+
+\slide{Example, Using tools similar to PacketQ}
+
+\hlkimage{20cm}{using-packetq.png}
+
+Are you using your brain and existing tools? Building own specialised tools?\\
+Discussion: bridging the gaps between Devops and Security? Good thing, easy?
+
+{\footnotesize
+\link{http://securityblog.switch.ch/2013/01/22/using-packetq/}\\
+\link{http://jpmens.net/2013/05/27/server-agnostic-logging-of-dns-queries-responses/}
+}
+
+\slide{Storing query logs, old school or needed?}
+
+\hlkimage{7cm}{bro-sample-ssl-scripts.png}
+
+Looking at DNS PacketQ it was an Older link, but thinking the time is now for doing:
+
+\begin{list2}
+\item DNS query logs, keep it for at least a week? - with DSC and PacketQ
+\item SSL/TLS full logs over sessions, certs, keys - with Bro/Suricata\\
+\link{https://www.bro.org/sphinx-git/script-reference/scripts.html}
+\item Log and search with Elasticsearch?\\
+\link{https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html}
+\item Even netflow session logging, full 1:1 - NFSen, Suricata Flow mode?
+%\item Moloch \link{https://github.com/aol/moloch}
+\end{list2}
+
+%\centerline{Why go to this extreme, storing information about past sessions?}
+
+\slide{February 2015: Finding infected sources}
+
+\begin{quote}
+"We were contacted by a client to help with their incident response in tracking down an
+infection on a clients machine with the new CTB-Locker ransomware (Curve-Tor-Bitcoin Locker)
+aka Critroni which had no signatures available at the time of infection for this variant.
+
+LANGuardian includes a file share activity monitoring module which provided a very
+detailed forensic analysis of the ransomware and the paths it had taken in order to
+encrypt the clients system and also the fileserver in which it was connected to, the
+initial infection came from the opening of an attachment in an e-mail."
+\end{quote}
+
+\vskip 1cm
+
+\centerline{It has become critical to identify vulnerable or infected ASAP!}
+
+Source:
+{\tiny\link{https://www.netfort.com/support-team-stories-detecting-the-source-of-ransomware/}}
+
+
+\slide{Security Onion}
+
+\hlkimage{10cm}{security-onion.png}
+\begin{list2}
+\item Security Onion is a Linux distro for IDS, NSM, and log management
+%\item Security Onion 12.04.5.1 ISO image now available
+%\item Suricata IDS engine 2.0.7 updated packages for SO released
+\item Learn NSM with Security Onion today - its free
+%{\small\link{http://blog.securityonion.net/2015/03/suricata-207.html}\\
+%\link{http://blog.securityonion.net/2015/02/security-onion-120451-iso-image-now.html}}
+\end{list2}
+
+\centerline{Nice starting point for researching dashboards/network packets}
+
+\slide{Moloch}
+
+\hlkimage{16cm}{moloch-sessions.png}
+
+Picture from \link{https://github.com/aol/moloch}
+
+% Suricata, Logstash, Elasticsearch, D3JShttp://d3js.org/
+\slide{Suricata with Dashboards}
+
+\hlkimage{12cm}{kibana-suricata.png}
+
+Picture from Twitter\\
+\link{https://twitter.com/nullthreat/status/445969209840128000}\\
+
+New link March 2014: 10Gbits\\
+{\small\link{http://pevma.blogspot.se/2014/03/suricata-prepearing-10gbps-network.html}}
+
+\link{http://suricata-ids.org/2014/03/25/suricata-2-0-available/}
+
+\slide{Big Data tools: Elasticsearch}
+
+
+{\color{green}\Large elasticsearch}
+
+the definitive guide
+
+clinton gormley
+zachary tong
+Copyright © 2014 Elasticsearch
+
+This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+
+{\small
+\link{http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/index.html}
+
+\link{http://www.elasticsearch.org/overview/kibana/}
+
+\link{http://www.elasticsearch.org/overview/logstash/}
+}
+
+\centerline{We are all Devops now, even security people!}
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+- name: Move elasticsearch data into /data
+  command: creates=/data/elasticsearch mv /var/lib/elasticsearch /data/
+- name: Make link to /data/elasticsearch
+  file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+
+% Suricata, Logstash, Elasticsearch, D3JShttp://d3js.org/
+\slide{Kibana 4 february 2015}
+
+\hlkimage{14cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+
+
+\slide{Next steps}
+
+In our network we are always improving things:
+\begin{list1}
+\item Suricata IDS \link{http://www.openinfosecfoundation.org/}
+\item More graphs, with {\bf automatic identification} of IPs under attack
+\item Identification of {\bf short sessions without data} - spoofed addresses
+\item Alerting from {\bf existing} devices
+\item Dashboards with key measurements
+\end{list1}
+
+\vskip 2cm
+\centerline{\bf\Large Conclusion: Combine tools!}
+
+
+
+\slide{Lets get to work!}
+
+\begin{list2}
+\item Get Kibana working
+\item Get access to Kibana
+\item Produce some data
+\item Create dashboards
+\end{list2}
+
+While demoing Ansible, and vagrant
+
+Lots of examples\\
+\link{https://github.com/geerlingguy/ansible-vagrant-examples/}
+
+\slide{Grok expresssions}
+
+
+og vise hvordan man kan lave sine egne Grok expressions til at splitte loglinier til felter.
+
+
+
+\myquestionspage
+
+
+
+%\slide{Books}
+
+%D3.js, Interactive Data Visualization for the Web, og Network Security Through Data Analysis: Building Situational Awareness - den slags
+
+%Stay safe
+
+
+\end{document}

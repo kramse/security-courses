@@ -16,6 +16,10 @@ I have moved to latexmk, so you may want to add the following to your $HOME/.lat
 $pdf_mode = 1;
 
 
+I have decided to use ONLY UTF-8 too, so some files need to be converted - work in progress
+iconv −f ISO−8859−1 −t UTF−8
+
+
 
 ## February 2014
 

@@ -1,0 +1,228 @@
+\documentclass[17pt,Screen16to9,footrule]{foils}
+
+%\documentclass[20pt,landscape,a4paper,footrule]{foils}
+
+\usepackage{pasientsky-slides}
+
+
+%
+% Arrangement:	Penetration testing I - basale pentest metoder og introduktion
+% Mål:	Introduktion til penetrationstest.
+% Forudsætninger:	Der forventes kendskab til TCP/IP på brugerniveau.
+% Beskrivelse:	Denne foredragsrække består af tre uafhængige dele.
+
+% Denne del introducerer emnet penetrationstest, hvad er det og hvad
+% er værdien for dig. Emner der gennemgås er blandt andet:
+
+% * Regler og etik for penetrationstest (ISC)² Code of Ethics
+% * Informationsindsamling - aktiv og passiv
+% * Portscan med nmap - TCP og UDP portscanning
+% * Servicescanning - identifikation af porte og protokoller
+% * Sårbarheder
+% * Exploits og introduktion til buffer overflows
+% * Bruteforcing online og offline værktøjer
+% * Opsamling og præsentation af data
+
+% Der vil være demonstrationer af sårbarheder på alle foredragene -
+% typisk med open source programmer, således at deltagerne kan afprøve
+% de selvsamme demoer hjemme.
+
+% Note: der tages udgangspunkt i open source og Unix, men resultater og principper kan overføres til ASP og .NET teknologierne.
+
+\begin{document}
+
+%\slide{}
+
+\mytitlepage
+{Controlling a High Security \\Environment with Ansible}
+
+
+\LogoOn
+
+\slide{En enklere hverdag med PasientSky}
+
+%\hlkrightimage{12cm}{intro-pasientsky.png}
+%.
+\ThisLRCornerWallPaper{0.8}{intro-pasientsky.png}
+
+\begin{list1}
+\item Health data
+\item Doctors appointment
+\item Doctors Journals
+\item Medical data
+\item Prescriptions
+\item ...
+\item Obviously this means personal data
+\end{list1}
+
+
+\slide{Ansible: provisioning, configuration management, security}
+
+%\hlkrightimage{10cm}{bad-monitor.png}
+\ThisLRCornerWallPaper{0.6}{bad-monitor.png}
+
+\begin{list1}
+\item Open Source \smiley
+\item Simple playbooks and ad-hoc commands
+\item Well supported on mainstream OSs
+\item over 200 modules in the core
+\item Supports almost anything which has SSH+Python
+\item Currently 100s of servers
+\end{list1}
+
+\link{http://www.ansible.com/}
+
+Note: we dont use Tower
+
+\slide{What we learnt about Ansible}
+
+\hlkrightimage{13cm}{mini-ansible.png}
+.
+\begin{list1}
+\item Easy to get started - YAML playbooks
+\item Easy to configure services
+\item Roles sometimes suck
+\item - too many files in too many directories
+\item Using more flat playbooks nice
+\item Long lists of settings like sysctl
+\item We will continue with Ansible
+\end{list1}
+
+
+
+\slide{Why Ansible brings Higher Security}
+
+{\small\begin{verbatim}
+# VPN tunnels via customer VPN server
+pass quick proto { esp, ah } from any to {{ public_ip_prefix }}.59
+pass quick proto { esp, ah } from {{ public_ip_prefix }}.59 to any
+\end{verbatim}}
+
+
+\begin{list1}
+\item We can rebuild advanced servers in 15 minutes
+\item Example complete Log environment from single playbook:
+\begin{list2}
+\item Syslog servers, PostgreSQL database, Logstash parser, software and rules, Elasticsearch indexing servers
+\item with Kibana frontend - in about 150-200 lines of playbook!
+\end{list2}
+\item From a base Ubuntu install with no manual steps, other than starting Ansible
+\item Settings are saved in playbooks - documented and readable
+\item Config files are templated and
+\item testing, staging and production use {\bf the exact same playbooks/configs}
+\end{list1}
+
+
+\slide{What Ansible brings in a High Security Environment}
+
+\begin{list1}
+\item We can deploy a complete IDS solution in 15 minutes
+\item A complete Suricata IDS environment from a single playbook,
+\begin{list2}
+\item Suricata IDS
+\item Rulesets - configuration files the same across environments
+\item Cron - jobs for updating rules
+\item Elasticsearch indexing servers
+\item Kibana front end
+\end{list2}
+\item Consistency
+\item From a base Ubuntu install with no manual steps, other than starting Ansible
+
+\item Audit servers? Run Ansible - anything changed manually? \verb$ --check --diff$
+\vskip 5mm
+\item Plan-Do-Check-Act process - very ISO 27001 compatible
+\end{list1}
+
+
+\slide{Templates}
+
+{\small\begin{verbatim}
+  jdbc \{
+    # Postgres jdbc connection string to our database
+    jdbc_driver_library => "/usr/share/java/postgresql-jdbc4-9.2.jar"
+    jdbc_driver_class => "org.postgresql.Driver"
+    jdbc_connection_string => "jdbc:postgresql://{{ private_ip_prefix }}.22.100:5432/Syslog"
+\end{verbatim}}
+
+
+\begin{list1}
+\item We can test the SAME CONFIGS in multiple environments
+\item Using variable group vars, host vars, templates
+\begin{list2}
+\item Site specific data,
+\item RFC1918 subnets, IPs, port numbers, DNS, NTP
+\item Domain names, updates servers,
+\item environment: development, staging, production
+\item Passwords, S3 access keys, administrative users
+\item Service names: ssh (Debian), sshd (OpenBSD)
+\item ...
+\end{list2}
+\item No untested changes brought into production
+\end{list1}
+
+
+\slide{Update security parameters}
+
+\begin{alltt}\small
+- lineinfile:
+    dest=/etc/ssh/sshd_config state=present
+    regexp='PasswordAuthentication'
+    line='PasswordAuthentication no'
+  notify: restart sshd
+  tags:
+    - sshd
+\end{alltt}
+
+Combined with:
+\begin{alltt}
+- name: restart sshd
+    service: name={{ service_sshd }} state=restarted
+\end{alltt}
+
+\vskip 1cm
+\centerline{Never forget to restart a service after changing config}
+
+\slide{Cluster firewalls always consistent}
+
+\ThisLRCornerWallPaper{1.0}{network-overview-cluster-firewalls.png}
+
+\begin{alltt}\footnotesize
+  - name: copy PF tables
+    template:
+      src=roles/infrastructure-firewall/files/pf-tables/{{ item | basename }}
+      dest=/etc/pf/{{ item | basename }} owner=root group=wheel mode=0600
+    with_fileglob:
+        - roles/infrastructure-firewall/files/pf-tables/*.list
+    notify:
+      - reload pf
+\end{alltt}
+
+\begin{list1}
+\item Updating firewall tables
+\item Updating rulesets
+\item Updating BGP import filters
+\item Update all parameters and roll-out made easy
+\item Skills required to update production systems, low complexity
+\item Less manual steps $=>$ more reliable
+\end{list1}
+
+\slide{Golden rules}
+
+\begin{list1}
+\item Always use descriptive name: so people know why/what is being done
+\item Dont use lineinfile, if changing more than a few lines, use a template
+\item Dont use copy, always use a template (if syntax permits)
+\item Manual changes should be banned
+\item Use tags liberally, tags: pf.conf, only update THIS thing
+\item Try to gather a project/feature/setup in single playbook
+\item Example: logging setup with both PostgreSQL and Elasticsearch in same
+\item Use versioning for your playbooks, we use Git
+\end{list1}
+
+\vskip 1cm
+
+\centerline{\hlkbig And learn your \$EDITOR - search and replace in lots of files \smiley }
+
+\myquestionspage
+
+\end{document}

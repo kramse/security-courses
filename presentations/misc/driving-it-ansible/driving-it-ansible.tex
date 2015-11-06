@@ -36,7 +36,9 @@
 \mytitlepage
 {Controlling a High Security \\Environment with Ansible}
 
+\ThisLRCornerWallPaper{0.8}{apps.png}
 
+BTW we are looking to hire! Sysadmin, Security, Operations
 \LogoOn
 
 \slide{En enklere hverdag med PasientSky}
@@ -100,16 +102,16 @@ pass quick proto { esp, ah } from {{ public_ip_prefix }}.59 to any
 
 
 \begin{list1}
-\item We can rebuild advanced servers in 15 minutes
+\item We can rebuild advanced servers easily
 \item Example complete Log environment from single playbook:
 \begin{list2}
 \item Syslog servers, PostgreSQL database, Logstash parser, software and rules, Elasticsearch indexing servers
-\item with Kibana frontend - in about 150-200 lines of playbook!
-\end{list2}
+\item Nginx with Kibana frontend - in about 150-200 lines of playbook!
 \item From a base Ubuntu install with no manual steps, other than starting Ansible
+\end{list2}
 \item Settings are saved in playbooks - documented and readable
 \item Config files are templated and
-\item testing, staging and production use {\bf the exact same playbooks/configs}
+\item Across testing, staging and production use {\bf the exact same playbooks/configs}
 \end{list1}
 
 
@@ -119,15 +121,13 @@ pass quick proto { esp, ah } from {{ public_ip_prefix }}.59 to any
 \item We can deploy a complete IDS solution in 15 minutes
 \item A complete Suricata IDS environment from a single playbook,
 \begin{list2}
-\item Suricata IDS
+\item Suricata IDS Intrusion Detection System
 \item Rulesets - configuration files the same across environments
 \item Cron - jobs for updating rules
 \item Elasticsearch indexing servers
 \item Kibana front end
 \end{list2}
-\item Consistency
-\item From a base Ubuntu install with no manual steps, other than starting Ansible
-
+\item Consistency and tracking, when combined with Git
 \item Audit servers? Run Ansible - anything changed manually? \verb$ --check --diff$
 \vskip 5mm
 \item Plan-Do-Check-Act process - very ISO 27001 compatible
@@ -151,9 +151,9 @@ pass quick proto { esp, ah } from {{ public_ip_prefix }}.59 to any
 \begin{list2}
 \item Site specific data,
 \item RFC1918 subnets, IPs, port numbers, DNS, NTP
-\item Domain names, updates servers,
+\item Domain names, update servers,
 \item environment: development, staging, production
-\item Passwords, S3 access keys, administrative users
+\item Passwords, S3 access keys, administrative users - using Ansible Vault
 \item Service names: ssh (Debian), sshd (OpenBSD)
 \item ...
 \end{list2}
@@ -161,8 +161,9 @@ pass quick proto { esp, ah } from {{ public_ip_prefix }}.59 to any
 \end{list1}
 
 
-\slide{Update security parameters}
+\slide{Operational benefits: Updating daemons and security parameters}
 
+Updating a Secure Shell daemon config:
 \begin{alltt}\small
 - lineinfile:
     dest=/etc/ssh/sshd_config state=present
@@ -186,42 +187,60 @@ Combined with:
 
 \ThisLRCornerWallPaper{1.0}{network-overview-cluster-firewalls.png}
 
+Updating multiple files on multiple systems:
 \begin{alltt}\footnotesize
   - name: copy PF tables
     template:
-      src=roles/infrastructure-firewall/files/pf-tables/{{ item | basename }}
-      dest=/etc/pf/{{ item | basename }} owner=root group=wheel mode=0600
+      src=.../pf-tables/{{ item | basename }}
+      dest=/etc/pf/{{ item | basename }}
     with_fileglob:
-        - roles/infrastructure-firewall/files/pf-tables/*.list
+        - .../pf-tables/*.list
     notify:
       - reload pf
 \end{alltt}
 
 \begin{list1}
-\item Updating firewall tables
-\item Updating rulesets
+\item Updating firewall tables and rules
 \item Updating BGP import filters
-\item Update all parameters and roll-out made easy
-\item Skills required to update production systems, low complexity
+\item Roll-out made easy
+\item Less skills required to update
 \item Less manual steps $=>$ more reliable
 \end{list1}
 
-\slide{Golden rules}
+\slide{Problems with Ansible / configuration management}
 
 \begin{list1}
+\item Major problem
+\item 1) Insert configuration option with playbook
+\item 2) Remove that task from playbook
+\item 3) Some servers still have the option
+\vskip 5mm
+\item Removing stuff from playbooks does not remove it from servers!
+\item End up having tasks that do cleanup
+\item So always test lineinfile - they sometimes surprise
+\item Also when not logged into systems, do you miss problems?
+\end{list1}
+
+
+
+\slide{Golden rules}
+
+Some things we picked up using Ansible:
+\begin{list2}
 \item Always use descriptive name: so people know why/what is being done
 \item Dont use lineinfile, if changing more than a few lines, use a template
 \item Dont use copy, always use a template (if syntax permits)
-\item Manual changes should be banned
+\item Manual changes should be banned and monitored
 \item Use tags liberally, tags: pf.conf, only update THIS thing
 \item Try to gather a project/feature/setup in single playbook
-\item Example: logging setup with both PostgreSQL and Elasticsearch in same
+\item Example: logging setup with both PostgreSQL and Elasticsearch in same playbook
 \item Use versioning for your playbooks, we use Git
-\end{list1}
+\item Run playbooks often, like maybe daily
+\end{list2}
 
 \vskip 1cm
 
-\centerline{\hlkbig And learn your \$EDITOR - search and replace in lots of files \smiley }
+\centerline{\hlkbig And learn your \$EDITOR - search/replace in lots of files/dirs \smiley }
 
 \myquestionspage
 

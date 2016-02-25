@@ -15,9 +15,14 @@ I have moved to latexmk, so you may want to add the following to your $HOME/.lat
 
 $pdf_mode = 1;
 
+This should make it easy to produce PDF files just by doing:
+  hlk@kunoichi:pentest-I-foredrag$ latexmk
+  Latexmk: This is Latexmk, John Collins, 5 February 2015, version: 4.43a.
+  Latexmk: applying rule 'pdflatex'...
 
 I have decided to use ONLY UTF-8 too, so some files need to be converted - work in progress
 iconv −f ISO−8859−1 −t UTF−8
+
 
 
 

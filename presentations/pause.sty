@@ -1,0 +1,74 @@
+%% pause.sty                                      12 Jun 2000
+%%-----------------------------------------------------------
+%% History:
+%% The initial version was created                11 Jun 1999
+%% Updated to allow options                       10 Mar 2000
+%% Restructured after tests                       03 Apr 2000
+%% Added procesing for random builds              07 May 2000
+%% Supply test for new enough pdftex              09 May 2000
+%% No need for pdftex 14 any more                 31 May 2000
+%% Added commands for highligthing etc.           12 Jun 2000
+%%
+%%   Because we need a color definition this can be used
+%%   primarily with LaTeX. Thus we can also rely on \@ifnextchar
+%%
+%% insert small colored chunks to mark spots in the pdf file,
+%% where a break should be made during display.
+%% This method needs postprocessing by another program.
+%% But one can preview the formatted text, where stops are indicated
+%% as small colored chunks. These will vanish during postprocessing.
+%% As this is specific for pdf, we will ignore \pause tags, if we do
+%% not create pdf.
+%%
+%% Take care: because we have to insert pdf comments starting with
+%% the letter '%' the catcode of '%' will be changed temporarily.
+%% We still need an option to make us ineffective even with pdflatex.
+
+%% must define all optional variants to support creating a file
+%% without pdf elements
+\def\pauseDissolve{\pause[trans='Dissolve']}
+\def\pauseReplace{\pause[trans='Replace']}
+\def\pauseHBlinds{\pause[trans='Blinds,H']}
+\def\pauseVBlinds{\pause[trans='Blinds,V']}
+\def\pauseHOSplit{\pause[trans='Split,H,O']}
+\def\pauseHISplit{\pause[trans='Split,H,I']}
+\def\pauseVOSplit{\pause[trans='Split,V,O']}
+\def\pauseVISplit{\pause[trans='Split,V,I']}
+\def\pauseOBox{\pause[trans='Box,O']}
+\def\pauseIBox{\pause[trans='Box,I']}
+\def\pauseWipe#1{\pause[trans='Wipe,#1']}
+\def\pauseGlitter#1{\pause[trans='Glitter,#1']}
+\def\pause{\@ifnextchar [{\pppp@pause}{\pppp@pause[]}}
+
+%% define dummies, if not creating pdf
+\ifx\pdfoutput\undefined
+\def\pauselevel#1{\relax}%
+\def\pppp@pause[#1]{\relax}%
+\def\pausecolors#1#2#3{}%
+\let\pausebuild=\relax
+\let\pausehighlight=\relax
+\expandafter\endinput
+\fi
+\RequirePackage{color}
+\definecolor{pp4red}{rgb}{0.9,0.5,0}
+%% now we need a section where % can be written to pdf files.
+%% thus make ! a comment character
+{\catcode`\%=11\catcode`\!=14
+ \gdef\pauselevel#1{\pdfliteral{%pauselevel #1}}!
+ \gdef\pppp@marker#1{\pdfliteral{%pause}!
+       \color{pp4red}\vrule width 2truemm height 5truemm\hss ! the marker
+       \pdfliteral{%esuap #1}}!
+ \gdef\pppp@pause[#1]{\ifvmode
+  \vbox to 0pt{\vss\hsize0pt\noindent\hbox to 0pt{\pppp@marker{#1}}}\else!hmode or mmode
+  \null\hbox to 0pt{\pppp@marker{#1}}\null
+  \fi}
+ \gdef\pausecolors#1#2#3{!
+   \pdfliteral{%pausecolor \csname\string\color@#1\endcsname\space \csname\string\color@#2\endcsname\space \csname\string\color@#3\endcsname}}!
+ \gdef\pausecolorreset{!
+   \pdfliteral{%pausecolor reset}}!
+ \gdef\pausebuild{!
+   \pdfliteral{%pausecolor appear}}!
+ \gdef\pausehighlight{!
+   \pdfliteral{%pausecolor highlight}}!
+}
+

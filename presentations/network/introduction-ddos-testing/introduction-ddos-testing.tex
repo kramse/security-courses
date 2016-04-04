@@ -1,28 +1,18 @@
 \documentclass[20pt,landscape,a4paper,footrule]{foils}
-\usepackage{solido-network-slides}
-
-
-%Taler: Henrik Kramshøj
-%Teaser: DDoS er kommet på alles læber specielt efter NemID ikke havde beskyttelse mod selv små angreb. Denne DDoS %workshop fortæller om kategorierne af DoS og demonstrerer med programmer i et lukket miljø hvordan det kan udføres.
-%Niveauet er middel og du forventes at kende begreber som webserver, IP-adresser, altså basal internetviden. Implementation af beskyttelse vil fordre BGP, men ikke mere end du kan nå at lære på The Camp.
-
-%Om taleren: Henrik Kramshøj (HLK) er cand.scient i datalogi og til daglig internet samurai hos Solido Networks ApS. Han administrerer større netværk og sikrer mod DDoS efter bedste evne.
-
-% links
-% http://staff.washington.edu/dittrich/misc/ddos/
+\usepackage{zencurity-slides}
 
 
 \begin{document}
 \selectlanguage{english}
-\mytitlepage{DDoS Workshop}
-{The Camp 2013}
+\mytitlepage{DDoS Testing Introduction}
+{}
 
 \slide{Agenda}
 
 \begin{list1}
 \item Intro
 \item Graphs and Dashboards!
-\item Taxonomy of DDoS Attacks 
+\item Taxonomy of DDoS Attacks
 \item Netflow NFSen
 \item Defense in depth - multiple layers of security
 \item Routing RTBH
@@ -31,10 +21,10 @@
 
 \slide{Intro}
 
-\hlkimage{7cm}{thecamp-2012-hlk.jpg}
+%\hlkimage{7cm}{thecamp-2012-hlk.jpg}
 
 \begin{quote}
-DDoS is very much in the media 
+DDoS is very much in the media
 
 Vendors say:\\
 Prolexic did mitigate a 130 Gbps attack in March and more than 10 percent of attacks directed at Prolexic's global client base exceeded 60 Gigabits per second (Gbps). Source: Prolexic Quarterly Global DDoS Attack Report Q1 2013
@@ -43,7 +33,7 @@ Prolexic did mitigate a 130 Gbps attack in March and more than 10 percent of att
 
 \slide{Attack overview}
 
-\hlkimage{22cm}{sicherheitstacho.png}
+\hlkimage{19cm}{sicherheitstacho.png}
 
 {\small\link{http://www.sicherheitstacho.eu/?lang=en}}
 
@@ -58,7 +48,7 @@ Title: Massive DDoS against Spamhaus reaches 300Gbps
 Description: Following a dispute between Dutch hosting provider
 Cyberbunker and anti-spam group Spamhous, the latter suffered what
 initially began as a relatively small - 10 Gbps - DDoS, which escalated
-over the course of last week to a 300Gbps flood. 
+over the course of last week to a 300Gbps flood.
 \end{quote}
 
 {\small Source:
@@ -92,7 +82,7 @@ Source: Prolexic CEO: Biggest Cyber Attack Ever Was Built On Lies\\
 \item Denial of Service attack - prevents authorized users access to resources
 \item Can be a single request to HTTP service, sequence of network packets
 \item Distributed Denial of Service attack - many (spoofed) sources
-\item \link{https://en.wikipedia.org/wiki/Denial-of-service_attack}	
+\item \link{https://en.wikipedia.org/wiki/Denial-of-service_attack}
 \end{list1}
 
 \slide{Denial of Service description}
@@ -102,7 +92,7 @@ Source: Prolexic CEO: Biggest Cyber Attack Ever Was Built On Lies\\
 
 \slide{Cisco DoS \emph{exploit} script}
 
-\begin{alltt}    
+\begin{alltt}
 \small
 #!/bin/sh
 # 2003-07-21 pdonahue
@@ -111,9 +101,9 @@ Source: Prolexic CEO: Biggest Cyber Attack Ever Was Built On Lies\\
 #    with the parameters necessary to fill the input queue on
 # exploitable IOS device
 # -- refer to "Cisco Security Advisory: Cisco IOS Interface Blocked by
-# IPv4 Packets" 
+# IPv4 Packets"
 # (http://www.cisco.com/warp/public/707/cisco-sa-20030717-blocked.shtml)
-#for more information 
+#for more information
 ...
 for protocol in $PROT
     do
@@ -146,7 +136,7 @@ for protocol in $PROT
 
 \slide{Defense in depth - multiple layers of security}
 
-\hlkimage{23cm}{network-layers-1.pdf}
+\hlkimage{20cm}{network-layers-1.pdf}
 
 \slide{DDoS traffic before filtering}
 \hlkimage{26cm}{ddos-before-filtering}
@@ -230,7 +220,6 @@ term some-server-block-unneeded \{
         protocol-except icmp;
     \}
     then \{
-        count some-server-block;
         discard;
     \}
 \}
@@ -243,7 +232,7 @@ Wut - no UDP, yes UDP service is not used on these servers
 
 When you know regular traffic you can decide:
 
-\begin{alltt}\small
+\begin{alltt}\footnotesize
 hlk@srx-kas-05# show security screen ids-option untrust-screen
 icmp \{
     ping-death;
@@ -261,7 +250,7 @@ tcp \{    Note: UDP flood setting also exist
         timeout 20;
     \}
     land;
-\} 
+\}
 \end{alltt}
 
 Always select your own settings YMMV
@@ -289,7 +278,7 @@ Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
 %{\bf Understanding Unicast Reverse Path Forwarding}\\
 %IP spoofing can occur during a denial-of-service (DoS) attack. IP spoofing allows an intruder to pass IP packets to a destination as genuine traffic, when in fact the packets are not actually meant for the destination. This type of spoofing is harmful because it consumes the destination's resources.
 
-%A unicast reverse-path-forwarding (RPF) check is a tool to reduce forwarding of IP packets that might be spoofing an address. A unicast RPF check performs a route table lookup on an IP packet's source address, and checks the incoming interface. 
+%A unicast reverse-path-forwarding (RPF) check is a tool to reduce forwarding of IP packets that might be spoofing an address. A unicast RPF check performs a route table lookup on an IP packet's source address, and checks the incoming interface.
 %\end{quote}
 
 %Source:\\ {\footnotesize\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/topic-map/unicast-rpf.html}\\
@@ -361,8 +350,8 @@ Picture from packetlife.net showing  R9 as a standalone "management" router for 
 
        [   ]  Please set up a BGP peer on the Cogent Black Hole server
 
-       Black Hole server password:  
-       Black Hole server peer IP:  
+       Black Hole server password:
+       Black Hole server peer IP:
 
        North American Black Hole Peer:  66.28.8.1
        European Black Hole Peer:  130.117.20.1
@@ -413,7 +402,7 @@ Source:
 \link{http://www.bcp38.info/index.php/Main_Page}
 
 
-\slide{Remember those BGP import filters, perhaps try bgpq3} 
+\slide{Remember those BGP import filters, perhaps try bgpq3}
 
 \begin{alltt}
 hlk@katana:bgpq3-0.1.16$ ./bgpq3 -Jl larsen-data AS197495

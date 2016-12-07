@@ -1,0 +1,556 @@
+\documentclass[20pt,landscape,a4paper]{foils}
+
+% HLK/ security6
+%\usepackage{sec6slides}
+\usepackage{zencurity-slides}
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+
+% nyheder:
+% http://portswigger.net/proxy/download.html Burp proxy kan Øndre
+% requests
+% husk
+% mindre tcpdump, mere "Øvelse 1" "Øvelse 2" osv.
+% mine setups med John the ripper fra sylvester, evt kombineret med googlehacking?
+% lidt cutenews?
+% lidt mindre om dcom
+% input fra Grey Hat Hacking bogen metasploit intro? kan mØske
+% erstatte/udvide dcom som eksempel?
+
+% Basic things that we need are below
+\begin{document}
+\selectlanguage{danish}
+
+\mytitlepage
+{Basic hacking - black/white hat
+
+Dark Net og personlige oplysninger}
+
+
+
+\slide{Formålet med foredraget}
+\vskip 2 cm
+
+
+\hlkimage{5cm}{dont-panic.png}
+\centerline{\color{titlecolor}\LARGE Don't Panic!}
+
+\begin{list1}
+\item Skabe en forståelse for hackerværktøjer hacking historie
+\item The Darknet: hvad er det for en størrelse?
+\item skal vi være bekymrede for vores personlig oplysninger?
+\end{list1}
+
+
+
+\slide{Aftale om test af netværk}
+
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel
+  indtil 6 måneder
+straffes den, som uberettiget skaffer sig adgang til en andens
+oplysninger eller programmer, der er bestemt til at bruges i et anlæg
+til elektronisk databehandling.}
+
+Hacking kan betyde:
+\begin{list2}
+\item At man skal betale erstatning til personer eller virksomheder
+\item At man får konfiskeret sit udstyr af politiet
+\item At man, hvis man er over 15 år og bliver dømt for hacking, kan
+  få en bøde - eller fængselsstraf i alvorlige tilfælde
+\item At man, hvis man er over 15 år og bliver dømt for hacking, får
+en plettet straffeattest. Det kan give problemer, hvis man skal finde
+et job eller hvis man skal rejse til visse lande, fx USA og
+Australien
+\item Frit efter: \link{http://www.stophacking.dk} Det
+  Kriminalpræventive Råd, siden er væk
+\item Frygten for terror har forstærket ovenstående - så lad være!
+\end{list2}
+
+
+
+\slide{Internet idag}
+
+\hlkimage{14cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Klienter og servere
+\item Rødder i akademiske miljøer
+\item Protokoller hvor nogle er mere end 20 år gamle
+\item Meget lidt kryptering, mest på http til brug ved e-handel
+\end{list1}
+
+\slide{Teknisk hvad er hacking}
+
+\hlkimage{17cm}{buffer-overflow-3.pdf}
+
+
+\slide{Trinity breaking in}
+
+\hlkimage{20cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+\link{http://nmap.org/movies.html}\\
+Meget realistisk \link{http://www.youtube.com/watch?v=51lGCTgqE_w}
+
+
+
+\slide{Hacking er magi}
+
+\hlkimage{7cm}{wizard_in_blue_hat.png}
+
+\vskip 1 cm
+
+\centerline{Hacking ligner indimellem  magi}
+
+
+\slide{Hacking er ikke magi}
+
+\hlkimage{17cm}{ninjas.png}
+
+\vskip 1 cm
+\centerline{Hacking kræver blot lidt ninja-træning}
+
+
+\slide{Hackerværktøjer}
+
+\begin{list1}
+\item \emph{Improving the Security of Your Site by Breaking Into it} af
+Dan Farmer og Wietse Venema i 1993
+\item De udgav i 1995 så en softwarepakke med navnet SATAN
+\emph{Security Administrator Tool for Analyzing Networks}
+\item De forårsagede en del panik og furore, alle kan hacke, verden bryder sammen
+
+\vskip 1cm
+\begin{quote}
+We realize that SATAN is a two-edged sword - like
+many tools, it can be used for good and for evil
+purposes. We also realize that intruders (including
+wannabees) have much more capable (read intrusive)
+tools than offered with SATAN.
+\end{quote}
+\end{list1}
+
+\vskip 1cm
+Kilde:
+\link{http://www.fish2.com/security/admin-guide-to-cracking.html}
+
+
+\slide{Bøger og resourcer}
+
+\centerline{Konsulentens udstyr - vil du være sikkerhedskonsulent}
+
+\begin{list1}
+\item Sikkerhedskonsulenterne bruger typisk Open Source værktøjer på Linux og
+enkelte systemer med Windows - jeg bruger helst Windows 7 idag
+\item Laptops, gerne flere, men een er nok til at lære!
+\begin{list2}
+\item \emph{A Hands-On Introduction to Hacking
+by Georgia Weidman}, June 2014\\
+ \link{http://www.nostarch.com/pentesting}
+\item \emph{Metasploit The Penetration Tester's Guide}
+by David Kennedy, Jim O'Gorman, Devon Kearns, and Mati Aharoni\\
+\link{http://nostarch.com/metasploit}
+\item Metasploit Unleashed - gratis kursus i Metasploit\\
+\link{http://www.offensive-security.com/metasploit-unleashed/}
+\end{list2}
+\end{list1}
+
+
+\slide{Hackerværktøjer}
+\hlkimage{3cm}{hackers_JOLIE+1995.jpg}
+
+\begin{list2}
+\item Nmap, Nping - tester porte, godt til firewall admins \link{http://nmap.org}
+\item Metasploit Framework gratis på \link{http://www.metasploit.com/}
+\item Wireshark avanceret netværkssniffer - \link{http://http://www.wireshark.org/}
+\item Burpsuite \link{http://portswigger.net/burp/}
+\item OpenBSD operativsystem med fokus
+  på sikkerhed  \link{http://www.openbsd.org}
+\end{list2}
+
+Kilde: billedet er Angelina Jolie fra Hackers 1995
+\centerline{Kræver en mere struktureret tilgang end de viser på film \smiley}
+
+\slide{Hackerlab opsætning}
+
+\hlkimage{10cm}{hacklab-1.png}
+
+\begin{list2}
+\item Tænk som en hacker, rekognoscering, angreb, udnyt
+\item Hardware: en moderne laptop med CPU der kan bruge virtualiseting\\
+Husk at slå virtualisering til i BIOS
+\item Software: Windows, Mac, Linux og virtualiseringssoftware: VMware, Virtual box, vælg selv
+\item Hackersoftware: Kali Linux som en virtuel maskine
+\item Soft targets: Metasploitable, Windows 2000, Windows Xp, ...
+\end{list2}
+
+\slide{Kali Linux the new backtrack}
+
+\hlkimage{20cm}{kali-linux.png}
+
+\begin{list1}
+\item BackTrack \link{http://www.backtrack-linux.org}
+\item Kali \link{http://www.kali.org/}
+\item Wireshark - \link{http://www.wireshark.org} avanceret netværkssniffer
+\end{list1}
+
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{The Internet Worm 2. nov 1988}
+
+\begin{list1}
+\item Udnyttede følgende sårbarheder
+\begin{list2}
+\item buffer overflow i fingerd - VAX kode, Sendmail - DEBUG, Tillid mellem systemer: rsh, rexec, ...
+\item dårlige passwords
+\end{list2}
+\item Avanceret + camouflage!
+\begin{list2}
+\item Programnavnet sat til 'sh', Brugte fork() til at skifte PID jævnligt
+\item Fandt systemer i /etc/hosts.equiv, .rhosts, .forward, netstat ...
+\item Password cracking med intern liste med 432 ord og /usr/dict/words
+\end{list2}
+\item Lavet af Robert T. Morris, Jr.
+\item Medførte dannelsen af CERT, \link{http://www.cert.org}
+\end{list1}
+
+\centerline{1980'erne - det er vel fixet så?}
+
+
+\slide{2016 botnets Internet of things (IoT)}
+
+\begin{quote}
+  This is bad news for cybersecurity as the IoT devices market heats up as people buy into the smart, automated systems. Gartner Inc. projects connected devices to rise to 6.4 billion worldwide in 2016 with almost 5.5 million devices being connected daily.
+\end{quote}
+
+\begin{list1}
+\item 2016: Mirai Botnet Internet of things (IoT), 60 common factory default usernames and passwords\\
+"Mirai was used in the DDoS attack on 20 September 2016 on the Krebs on Security site which reached 620 Gbps."
+
+\item 2016: Currently, “Bashlight” is creating an army of a million IoT devices.\\
+Eeen million enheder!
+
+\end{list1}
+
+Sources: \link{https://en.wikipedia.org/wiki/Mirai_(malware)}\\
+{\footnotesize\link{http://heavy.com/tech/2016/10/mirai-iot-botnet-internet-of-things-ddos-attacks-internet-outage-blackout-why-is-internet-down/}}
+
+
+
+\slide{Real life bruteforce? Found in on real server}
+\begin{alltt}
+root:admin:87.x.202.63
+admin:admin:91.x.104.207
+admin:0767390145:x.72.110.84
+admin:0767390145:89.xx.163.73
+admin:0767390145:89.x.142.153
+root:root:186.x.39.228
+admin:admin:189.x.160.98
+root:dumn3z3u:189.x.216.232
+admin:0767390145:189.x.36.247
+root:admin:169.x.34.145
+root:default:66.x.33.138
+root:default:66.x.33.138
+root:111111:213.x.89.250
+admin:admin:91.x.52.114
+admin:0767390145:195.x.246.131
+admin:0767390145:195.x.246.131
+\end{alltt}
+
+
+\slide{Demo: Metasploit Armitage }
+
+\hlkimage{14cm}{armitage-overview.png}
+
+Armitage GUI fast and easy hacking for Metasploit\\
+\link{http://www.fastandeasyhacking.com/} og lidt wireshark
+
+\slide{Informationsindsamling}
+
+\begin{list1}
+\item Det vi har udført er informationsindsamling
+\item Indsamlingen kan være aktiv eller passiv indsamling i forhold
+  til målet for angrebet
+\item passiv kunne være at lytte med på trafik eller søge i databaser
+  på Internet
+\item aktiv indsamling er eksempelvis at sende netværkspakker og portscanne
+\end{list1}
+
+
+
+\slide{Darknet /  dark web / deep web}
+
+\begin{quote}
+  As of 2015, "The Darknet" is often used interchangeably with the dark web due to the quantity of hidden services on Tor's darknet. The term is often used inaccurately and interchangeably with the deep web due to Tor's history as a platform that could not be search indexed.
+\end{quote}
+
+\begin{list2}
+\item The dark web is the World Wide Web content that exists on darknets,
+\item The deep web,invisible web, or hidden web are parts of the World Wide Web whose contents are not indexed by standard search engines for any reason
+\item Indhold på darknet/dark web er ofte ikke lettilgængeligt, kræver speciel software eller direkte links
+\item Populære Darknets Freenet, I2P, and Tor, Kendt deep web site: det lukkede narko m.m. Silk Road \link{https://da.wikipedia.org/wiki/Silk_Road}
+\end{list2}
+
+\centerline{Advarsel: Der ER grimme ting på Darknets/Deep web}
+
+Source: \link{https://en.wikipedia.org/wiki/Darknet}
+\link{https://en.wikipedia.org/wiki/Deep_web}
+
+
+\slide{Tor project anonym webbrowsing}
+
+\hlkimage{23cm}{tor-project.png}
+
+\centerline{\link{https://www.torproject.org/}}
+
+\vskip 2cm
+\centerline{Der findes alternativer, men Tor er mest kendt}
+
+\slide{Facebook over Tor}
+
+\hlkimage{20cm}{facebook-onion.png}
+
+Eksempel site: Facebook over Tor\\ \link{https://facebookcorewwwi.onion/}
+
+
+
+\slide{Tor project - how it works 1}
+
+\hlkimage{21cm}{how-tor-works-1.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 2}
+
+\hlkimage{21cm}{how-tor-works-2.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 3}
+
+\hlkimage{21cm}{how-tor-works-3.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Why use Tor?}
+.
+\hlkrightimage{7cm}{tor-uses.png}
+\begin{list2}
+\item Your public IP is {\color{red}Red Information}, often lead directly to you
+\item You like to browse things, without telling your ISP, the\\
+government, your teacher, ... everyone, Avoid censorship
+\item You want to avoid stalkers
+\item You are an investigative journalist or high school student\\
+researching Al Qaeda, Daesh, ISIS for school
+\item Consider getting the book \emph{The Smart Girl's Guide to Privacy}\\ \link{http://smartprivacy.tumblr.com/}
+\end{list2}
+
+Shameless plug: we are starting up danish information page\\
+and more \link{https://www.torservers.dk/}
+
+Pic from \link{https://www.torproject.org/}
+
+
+\slide{Smart Girl's Guide to Privacy}
+
+\link{https://www.nostarch.com/smartgirlsguide}
+\hlkrightimage{7cm}{sggp_frontcvr_final.png}
+%{sggp_frontcvr_final.png}
+
+\emph{Practical Tips for Staying Safe Online}
+by Violet Blue
+
+August 2015, 176 pp.
+ISBN: 978-1-59327-648-5
+
+Kan varmt anbefales!
+
+Søg også på Emma Holten
+
+
+\slide{Fuld Disk Kryptering: Bitlocker}
+
+\begin{list2}
+\item Microsoft tilbyder Bitlocker fuld disk kryptering
+\item Åbnes med dit Windows kodeord
+\item Meget transparent - data krypteres når det skrives ned
+\item Nedsætter ikke hastigheden mærkbart, ofte forbedres den endda
+\item Genetableringsnøgle - er slået til på FT computere\\
+Giver mulighed for at IT-afd kan åbne din computer hvis du glemmer koden
+\item Fungerer på både roterende diske og SSD, \\
+men pas på SSD kan have data fra før kryptering slået til
+\end{list2}
+
+Kilde: mere information om Bitlocker\\
+{\footnotesize \link{http://windows.microsoft.com/en-us/windows-vista/bitlocker-drive-encryption-overview}}
+
+\slide{Bitlocker}
+
+\hlkimage{16cm}{bitlocker-ms.jpg}
+
+Kilde: {\small
+\link{https://technet.microsoft.com/en-us/library/cc512654.aspx}}
+
+\slide{Bonus: Full Disk Encryption Mac OS X}
+
+\hlkimage{16cm}{apple-filevault-enabled.png}
+
+\centerline{Indbygget, gratis, stærk - slå det til når I kommer hjem}
+
+
+\slide{Brug flere browsere}
+
+\hlkimage{24cm}{multi-browser-strategy.png}
+
+
+\slide{Fordele ved flere browsere}
+\begin{list1}
+\item Flere browsere giver højere sikkerhed
+\item Data kan ikke flyde mellem flere browsere, cookies m.m.
+\item Mit forslag:
+\begin{list2}
+\item En browser til \emph{sikre sites} banken, intranet
+\item En browser til generel internet surfing
+\item En browser med alle mulige plugins, web udvikling eksempelvis
+\end{list2}
+\item Installer gerne plugins til højere sikkerhed i allesammen:\\
+HTTPS Everywhere, NoScript/ScriptBlock m.fl.
+
+\end{list1}
+
+\vskip 1cm
+\centerline{Det anbefales at disse installeres og vedligeholdes fra IT-afdelingen}
+
+
+\vskip 1cm
+\centerline{\bf\Large Alle browsere har mange fejl!}
+
+
+\slide{Chrome en rimeligt sikker browser}
+
+\hlkimage{10cm}{clicktoflash.png}
+
+\begin{list1}
+\item Generelt er internet browsing en risikofyldt aktivitet
+\item Drive-by-download hacking er reel trussel
+\item {\bf Opdaterer sig selv løbende}
+\item Egen Sand-box til Flash
+\item Denne browser kan indstilles rimeligt sikkert
+\end{list1}
+
+
+\slide{Generelt indstillinger for browsere}
+
+\begin{list1}
+\item Skal være indstillet på den sikre browser til generel surf
+\begin{list2}
+\item Slå JavaScript fra generelt med NoScript/ScriptBlock
+\item Slå click-to-play til for aktivt indhold
+\item Slå "Do Not Track" til
+\item Slå Java helt fra, afinstaller evt. Java helt fra computeren
+\item Installer en AdBlocker - jeg bruger AdBlock\\
+Vigtigt: servere der viser reklamer er ofte mål for hacking
+\end{list2}
+\end{list1}
+
+\slide{Hvor ændrer man indstillingerne}
+
+\hlkimage{20cm}{firefox-settings.png}
+
+De fleste findes under:
+\begin{list2}
+\item Chrome \link{chrome://settings/} og \link{chrome://extensions/}
+\item Firefox Indstillingerne og for enkelte ting: \link{about:config}
+\end{list2}
+
+\centerline{Kig også gerne på Safari eller Internet Explorer indstillingerne}
+
+
+
+\slide{HTTPS Everywhere}
+
+\hlkimage{5cm}{HTTPS_Everywhere_new_logo.jpg}
+\begin{quote}
+HTTPS Everywhere is a Firefox extension produced as a collaboration between The Tor Project and the Electronic Frontier Foundation. It encrypts your communications with a number of major websites.
+\end{quote}
+
+\centerline{\link{https://www.eff.org/https-everywhere}}
+
+Also in Chrome web store!
+
+
+\slide{NoScript Firefox and ScriptBlock Chrome}
+
+\hlkimage{18cm}{scriptblock.png}
+
+\vskip 2cm
+NoScripts for Firefox eller ScriptBlock for Chrome\\
+Tillader kun JavaScript på sider hvor det er OK
+
+
+\slide{Opsummering }
+
+\begin{list1}
+\item Husk følgende:
+\begin{list2}
+\item Husk: IT-sikkerhed er ikke kun netværkssikkerhed!
+\item God sikkerhed kommer fra langsigtede intiativer
+\item Hvad er informationssikkerhed?
+\item Data på elektronisk form, USB drev
+\item Data på fysisk form, køb en makulator
+\item Lav backup af data I vil gemme! Køb en ekstern USB disk til offline\\
+3-2-1 backup 3 kopier i 2 programmer med 1 offline/slukket
+\end{list2}
+\end{list1}
+\vskip 1cm
+\centerline{\color{titlecolor}\LARGE Informationssikkerhed er en proces}
+
+
+\myquestionspage
+
+\slide{Hacker - cracker}
+
+{\bfseries Det korte svar - drop diskussionen}
+
+Det havde oprindeligt en anden betydning, men medierne har taget
+udtrykket til sig - og idag har det begge betydninger.
+
+{\color{red}\hlkbig Idag er en hacker stadig en der bryder ind i systemer!}
+
+ref. Spafford, Cheswick, Garfinkel, Stoll, ...
+- alle kendte navne indenfor sikkerhed
+
+Hvis man vil vide mere kan man starte med:
+\begin{list2}
+\item \emph{Cuckoo's Egg: Tracking a Spy Through the Maze of Computer
+ Espionage},  Clifford Stoll
+\item \emph{Hackers: Heroes of the Computer Revolution},
+Steven Levy
+\item \emph{Practical Unix and Internet Security},
+Simson Garfinkel, Gene Spafford, Alan Schwartz
+\end{list2}
+
+
+\slide{Definition af hacking, oprindeligt}
+
+\begin{quote}
+Eric Raymond, der vedligeholder en ordbog over computer-slang (The Jargon File) har blandt andet fØlgende forklaringer pØ ordet hacker:
+\begin{list2}
+\item En person, der nyder at undersØge detaljer i programmerbare systemer og hvordan man udvider deres anvendelsesmuligheder i modsØtning til de fleste brugere, der bare lØrer det mest nØdvendige
+\item En som programmerer lidenskabligt (eller enddog fanatisk) eller en der foretrØkker at programmere fremfor at teoretiserer om det
+\item En ekspert i et bestemt program eller en der ofter arbejder med eller pØ det; som i "en Unixhacker".
+\end{list2}
+\end{quote}
+
+\begin{list1}
+\item Kilde: Peter Makholm, \link{http://hacking.dk}
+\item Benyttes stadig i visse sammenhØnge se \link{http://labitat.dk}
+\end{list1}
+
+
+
+
+\end{document}

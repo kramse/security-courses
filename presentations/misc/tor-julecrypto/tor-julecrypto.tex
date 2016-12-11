@@ -324,7 +324,6 @@ RTFM! Read them again, and decide if you really want to run exit-node
 \small
 hlk@kunoichi $ grep -v "^#" torrc.txt
 Log notice file /var/log/tor/notices.log
-
 ORPort 9001
 ORPort [2a06:d380:0:3700::63]:9001
 Address tor02.zencurity.dk
@@ -337,6 +336,16 @@ MyFamily ACDD9E85A0...47212E8A38F,A44AE029...1E22B,F94A7BAC5D...625B8B533
 ExitPolicy reject 31.28.24.114:* # you can still configure rejects
 ExitRelay 1
 IPv6Exit 1
+\end{alltt}
+FreeBSD has \verb+tor_enable="YES"+ in \verb+/etc/rc.conf+
+
+\slide{PF.conf redirecting port 80}
+
+\hlkimage{15cm}{tor-exit-router-html.png}
+
+It is recommended to show a tor-exit-notice.html on exit nodes \verb+/etc/pf.conf+:
+\begin{alltt}\small
+rdr pass on $ext_if proto tcp from any to any port 80 -> 127.0.0.1 port 9030
 \end{alltt}
 
 \slide{Tor relay config - non-exit node}
@@ -357,6 +366,11 @@ MyFamily ACDD9E...12E8A38F,A44AE029015BA6F...D1E22B,F94A7BAC5D1E3...5B8B533
 ExitPolicy reject *:* # no exits allowed
 User tor
 \end{alltt}
+
+BandwidthRate and BandwidthBurst are in Bytes, not Bits, and you can limit the total amount of bandwidth used
+
+\link{https://www.torproject.org/docs/faq.html.en\#BandwidthShaping}
+
 
 \slide{What to expect - abuse mails}
 

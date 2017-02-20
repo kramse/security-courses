@@ -1,0 +1,989 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+\usepackage{pdf14}
+%\usepackage{ulem}
+
+% Basic things that we need are below
+\selectlanguage{danish}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+
+%\slide{Pause}
+%Er det tid til en lille pause?
+%\hlkimage{15cm}{300px-Fozziecurtain.JPG}
+
+% Titel: Infrastruktursikkerhed og hacking
+
+% Forventet varighed: 2-2½ times varighed
+
+% Indhold:
+% Foredrag omkring infrastruktursikkerhed, netværkssikkerhed og værktøjer til at undersøge netværk.
+
+% Agenda - ikke 100% færdig
+% * Pentest intro, kort, men med demo af sårbarhed med Armitage og Metasploit, øjenåbner
+% * Hacking, hvordan kommer man videre fra system til system, baseret på mine egne penetration testing eskapader i folks netværk
+% * Pentestværktøjer til forsvar, med Heartbleed Nmap scripts som eksempel gennemgås hvordan man vil bruge pentest til at undersøge større netvæk
+% * Forsvarsværktøjer, henvisninger til ELK stacken, Elasticsearch Logstash Kibana som eksempler på effektive logsystemer og IDS
+
+% * Defense in depth - forslag til opdeling af netværk, VLAN bruges formentlig allerede til management netværk, men måske skal man udbrede dette yderligere.
+% Her tænker jeg også de ansatte kan komme med input og forslag i dialog
+
+
+
+\begin{document}
+
+\mytitlepage
+{Infrastruktursikkerhed og hacking}{Passende Paranoia for IT-folk}
+\vskip 1 cm
+
+%\hlkprofil
+
+% Husk:
+% Agenda med pauser, to pauser 16:00 og 17:00 - 10 minutter hver, hvis det passer
+
+\slide{Goals: Infrastructure security, what is that?}
+
+\begin{list1}
+\item Pentest introduction, hacking introduction
+\item Using hacker tools for protection
+\item Defense in depth using big data - inspiration
+\item Please give feedback and join me in discussions, dialogue \smiley
+\end{list1}
+
+\slide{Agenda for today}
+
+\hlkimage{10cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Kl 15:00-18:00 with breaks
+\item Less presentation, more talk, towards the end
+\end{list1}
+
+\centerline{Trying to fit in demo and workshop-like stuff}
+
+
+\slide{Generic advice}
+
+Recommendations \hlkrightimage{8cm}{Encrypt_all_the_things.png}
+\begin{list2}
+\item Lock your devices, phones, tables and computers
+\item Update software and apps
+\item Do NOT use the same password everywhere
+\item Watch out when using open wifi-networks
+\item Multiple browsers: one for Facebook, one for banking apps?
+\item Multiple laptops? One for private data, one for work?
+\item Think of the data you produce - where is it stored
+\item Use pseudonyms and aliases, do not use your real name everywhere
+\item Enable encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} and full disk encryption
+\item Use Tor \link{http://torproject.org/}
+\end{list2}
+
+
+
+
+\slide{The current situation}
+
+\hlkimage{8cm}{homer-end-is-near.jpg}
+\begin{list1}
+\item Internet security sucks, laptops suck at security
+\item Mobile devices suck even more at security - less CPU/MEM/storage
+\item We depend on cloud services and underfunded infrastructure - OpenSSL
+\item We depend on others and the whole internet - DDoS
+\item New vulnerabilities, while we are already dealing with those from yesterday
+\end{list1}
+
+
+\slide{Challenges}
+
+\begin{list1}
+\item Less resources available for IT and infosec
+\item Lots of new malware, virus, vulnerabilities and hacking
+\item Dataloss ransomware, theft
+\item Loss of confidentiality, 2014: 700 million lost accounts, now even more
+\item Infosec charlatans, hype and lies
+\end{list1}
+
+\vskip 2cm
+\centerline{Your boss wants: No cost, and please show us great results}
+
+\slide{Internet - Here be dragons}
+
+\vskip 2cm
+\hlkimage{24cm}{dragon-drawing-6.jpg}
+
+
+\slide{Solutions}
+
+\begin{list1}
+\item Automate your job, Ansible is our preferred tool
+\item Backup your life, help others backup, Duplicity is my choice
+\item Use hackertools to detect and identify
+\item Categorise, sort, prioritize, group problems - solve more
+\item Measure, collect and present - make it pretty
+\item Learn from devops, Elasticsearch Logstash Kibana D3.js
+\item \link{http://ssd.eff.org} Learn self-defense for yourself, practice infosec war
+\end{list1}
+
+
+\slide{Matrix style hacking anno 2003}
+
+\hlkimage{17cm}{trinity-hacking-hd-cropscale-302x250.jpg}
+
+\slide{Trinity breaking in}
+
+\hlkimage{20cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+\link{http://nmap.org/movies.html}\\
+Meget realistisk \link{http://www.youtube.com/watch?v=Zy5_gYu_isg}
+
+\slide{Demo: Wireless hacking}
+
+But before we get to the tools, lets try something
+
+% Lidt sjov med 722N kortet
+
+\hlkimage{10cm}{WCG200v2_med.jpg}
+
+\begin{list1}
+\item Typical 802.11 based wireless network with Access-Point (AP)
+\item Using a TP-LINK TL-WN722N Wireless USB Adapter\\
+cheap and great for demo - only 2.4GHz
+\end{list1}
+
+\slide{Demo: Hacking by pressing enter}
+
+% Zenmap portscan, finder Metasploitable
+% Armitage, direkte - hurtigt og kort
+\hlkimage{14cm}{armitage-overview.png}
+
+Even script kiddies today can download the newest exploits and run them
+
+\slide{Paranoia defined}
+
+\hlkimage{15cm}{paranoia-definition.png}
+
+Source: google paranoia definition
+
+\slide{Face reality}
+
+From the definition:
+\begin{quote}
+suspicion and mistrust of people or their actions {\bf without evidence or justification}.
+\bf "the global paranoia about hackers and viruses"
+\end{quote}
+
+\begin{list1}
+\item It is not paranoia when:
+\begin{list2}
+\item Criminals sell your credit card information and identity theft
+\item Trade infected computers like a commodity
+\item Governments write laws that allows them to introduce back-doors - and use these
+\item Governments do blanket surveillance of their population
+\item Governments implement censorship, threaten citizens and journalist
+\end{list2}
+\end{list1}
+
+\vskip 1cm
+\centerline{You are not paranoid when there are people actively attacking you!}
+
+
+\slide{Security is not magic}
+
+%\vskip 2cm
+
+\hlkimage{4cm}{wizard_in_blue_hat.png}
+
+\hlkrightimage{5cm}{003scawebgoshindomanicon.png}
+.
+%{\large Superheltegerninger}
+
+\begin{list1}
+\item Think security, it may seem like magic - but it is not
+\item Follow news about security
+\item Support communities, join and learn
+\end{list1}
+
+
+\slide{Hackertools are for everyone!}
+
+\hlkimage{2cm}{hackers_JOLIE+1995.jpg}
+
+
+\begin{list2}
+\item Hackers work all the time to break stuff, Use hackertools:
+\item Nmap, Nping \link{http://nmap.org}
+\item Wireshark - \link{http://www.wireshark.org/}
+\item Aircrack-ng \link{http://www.aircrack-ng.org/}
+\item Metasploit Framework \link{http://www.metasploit.com/}
+\item Burpsuite \link{http://portswigger.net/burp/}
+\item Skipfish \link{http://code.google.com/p/skipfish/}
+\item Kali Linux \link{http://www.kali.org}
+\end{list2}
+
+\vskip 5mm
+\centerline{Most popular hacker tools \link{http://sectools.org/}}
+
+\slide{Kali Linux the pentest toolbox}
+
+\hlkimage{\linewidth-8cm}{kali-linux.png}
+
+\begin{list1}
+\item  Kali \link{http://www.kali.org/}
+\item 100.000s of videos on youtube alone, searching for kali and \$TOOL
+\item Also versions for Raspberry Pi, mobile and other small computers
+\end{list1}
+
+\slide{Hackerlab opsætning}
+
+\hlkimage{10cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: en moderne laptop med CPU der kan bruge virtualisering\\
+Husk at slå virtualisering til i BIOS
+\item Software: dit favoritoperativsystem, Windows, Mac, Linux
+\item Virtualiseringssoftware: VMware, Virtual box, vælg selv
+\item Hackersoftware: Kali som Virtual Machine \link{https://www.kali.org/}
+\item Soft targets: Metasploitable, Windows 2000, Windows XP, ...
+\end{list2}
+
+\slide{Metasploit and Armitage Still rocking the internet}
+
+
+%\hlkimage{20cm}{metasploit-about.png}
+\hlkimage{10cm}{armitage-overview.png}
+
+\begin{list1}
+\item \link{http://www.metasploit.com/}
+\item Armitage GUI fast and easy hacking for Metasploit\\
+\link{http://www.fastandeasyhacking.com/}
+\item Recommened training Metasploit Unleashed\\
+\link{http://www.offensive-security.com/metasploit-unleashed/Main_Page}
+%\item Bog: Metasploit: The Penetration Tester's Guide, No Starch Press\\
+%ISBN-10: 159327288X
+\end{list1}
+
+\slide{Portscan med Zenmap GUI}
+
+\hlkimage{15cm}{nmap-zenmap.png}
+\centerline{Zenmap følger med i pakken når man henter Nmap \link{https://nmap.org}}
+
+
+\slide{Nmap port sweep efter webservere}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries  nmap -p80,443 172.29.0.0/24}
+
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:31 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00016s latency).
+PORT    STATE    SERVICE
+{\color{darkgreen}80/tcp  open     http}
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00012s latency).
+PORT    STATE  SERVICE
+{\color{darkgreen}80/tcp  open   http}
+443/tcp closed https
+MAC Address: 00:0C:29:46:22:FB (VMware)
+
+\end{alltt}
+
+\slide{Nmap port sweep efter SNMP port 161/UDP}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries nmap -sU -p 161 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:30 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00015s latency).
+PORT    STATE         SERVICE
+{\color{darkgreen}161/udp open|filtered snmp}
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00011s latency).
+PORT    STATE  SERVICE
+{\bf{161/udp closed snmp}}
+MAC Address: 00:0C:29:46:22:FB (VMware)
+...
+Nmap done: 256 IP addresses (5 hosts up) scanned in 2.18 seconds
+\end{alltt}
+
+\slide{Scan for Heartbleed and SSLv2/SSLv3}
+
+\hlkimage{8cm}{nmap-sslv2.png}
+
+\begin{list1}
+\item \verb+nmap -p 443 --script ssl-heartbleed <target>+\\
+\link{https://nmap.org/nsedoc/scripts/ssl-heartbleed.html}
+\item \verb+masscan 0.0.0.0/0 -p0-65535  --heartbleed+\\
+\link{https://github.com/robertdavidgraham/masscan}
+\end{list1}
+
+
+\slide{September 2015: Heartbleed vulnerable servers}
+
+\hlkimage{14cm}{heartbleed-vulnerab-2015-sept.png}
+
+Source: Data from Shodan and Shodan Founder John Matherly
+
+
+\slide{2016: Heartbleed vulnerable servers}
+
+\hlkimage{20cm}{heartbleed-vulnerab-2016.png}
+
+Source: Data from Shodan and Shodan Founder John Matherly
+
+\link{https://www.shodan.io/report/89bnfUyJ}
+
+\slide{Good security}
+
+\hlkimage{15cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\end{list1}
+
+Running Nmap requires almost nothing, verifies and checks a lot by itself!
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+\slide{First advice}
+
+\begin{list1}
+\item Use technology
+\item Learn the technology - read the freaking manual
+\item Think about the data you have, upload, facebook license?! WTF!
+\item Think about the data you create - nude pictures taken, where will they show up?
+\begin{list2}
+\item Turn off features you don't use
+\item Turn off network connections when not in use
+\item Update software and applications
+\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
+\item Lock devices automatically when not used for 10 minutes
+\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
+\end{list2}
+\end{list1}
+
+
+
+\slide{Jumping through networks and systems}
+
+\begin{list1}
+\item Hackers break into systems they can reach
+\item and hackers break into systems they can reach from hacked systems \smiley
+\item In real life networks, a remote root exploit from the internet to the main database is rare
+\item but jumping through others can possibly break the whole network
+\item There are a lot of hackers which have presented how they hacked companies, example\\
+{\tiny\url{https://arstechnica.com/security/2016/04/how-hacking-team-got-hacked-phineas-phisher/}}
+\end{list1}
+
+\slide{Example hacks we have done during testing}
+
+\begin{list1}
+\item My own examples include pentest assignments where we:
+\begin{list2}
+\item Two servers under test, Solaris\\
+had NFS world export, we could mount, found a backup of the other system, extracted /etc/passwd from backip, user logins with empty password, Solaris Telnet allows login, your password is empty - enter one
+\item Another test had SRX firewall as a core component. Due to misconfiguration we could access with SNMP, and thereby found the complete network structure revealed, how many network segments, subnets, netmask, ARP, interface counters - which lead to access files with password pictures, it was a bank
+\item Countless times we have found either a password file for a database, and used the same passwords for the operating system, or vice versa
+\item Countless times we have found either a password file in test systems, and people have used the same password in production, or vice versa
+\end{list2}
+\end{list1}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{20cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Chroot, Jails and Zones}
+
+\begin{list1}
+\item Many types of \emph{jails} in Unix-like operating systems
+\item Ideas from Unix chroot, not a security feature originally
+\begin{list2}
+\item Unix chroot - still used, but often combined with other things privsep
+\item FreeBSD Jails
+\item SELinux Mandatory Access Controls
+\item Solaris Containers og Zones
+\item VMware virtual servers, is that a jail?
+\item Docker, is that a jail or just a process?
+\end{list2}
+\end{list1}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{8cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{First advice use the modern operating systems}
+
+\begin{list1}
+\item Newer versions of Microsoft Windows, Mac OS X and Linux
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Note: these still have errors and bugs, but are better than older versions
+\item OpenBSD has shown the way in many cases\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\vskip 1cm
+
+\centerline{Always try to make life worse and more costly for attackers}
+
+
+% Big data
+
+
+
+
+\slide{Security devops}
+
+\begin{list1}
+\item We need devops skillz in security - automate, security is also big data
+\item integrate tools, transfer, sort, search, pattern matching, statistics, ...
+\item tools, languages, databases, protocols, data formats
+\item Example introductions:
+\begin{list2}
+\item Seven languages/database/web frameworks in Seven Weeks
+\item Elasticsearch the definitive guide\\
+\link{http://www.elastic.co/guide/en/elasticsearch/guide/current/index.html}
+\item \link{https://www.elastic.co/products/kibana}
+\item \link{https://www.elastic.co/products/logstash}
+\end{list2}
+\end{list1}
+
+\centerline{We are all Devops now, even security people!}
+
+Do you even Github? \smiley \link{https://github.com/stars}
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{6cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security Through Data Analysis: Building Situational Awareness\\
+By Michael Collins\\
+Publisher: O'Reilly Media
+Released: February 2014 Pages: 348
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{25cm}{Logstash1.png}
+
+\vskip 2cm
+\begin{list2}
+\item Screenshot from Peter Manev, OISF
+\item Shown are Suricata IDS alerts processed by Logstash and Kibana
+\end{list2}
+
+
+\slide{Networks today}
+\hlkimage{20cm}{overview-routing-customer-2015.pdf}
+
+
+
+\slide{Defense in depth - multiple layers of security}
+
+\hlkimage{21cm}{network-layers-1.pdf}
+
+\slide{Network visibility: Netflow with NFSen}
+
+\hlkimage{22cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{14cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+\slide{Network tools - examples}
+
+\hlkimage{16cm}{kibana-solido.png}
+\begin{list1}
+\item Net: Bro \link{http://www.bro-ids.org} Suricata \link{http://suricata-ids.org}
+\item DNS: DSC and PacketQ \link{https://github.com/dotse/packetq/wiki}
+\item Syslog: Elasticsearch, Logstash, and Kibana, called ELK stack or Elastic stack
+\item Packetbeat \link{https://www.elastic.co/products/beats/packetbeat}
+\end{list1}
+\centerline{Collect and present data more easily - non-programmers}
+
+
+\slide{Example tool, let see what BRO IDS is}
+
+\hlkimage{14cm}{bro-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Bro provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Bro has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.bro.org/}
+
+\slide{BRO more than an IDS}
+
+\begin{quote}
+	The key point that helped me understand was the explanation that Bro is a
+               domain-specific language for networking applications and that Bro-IDS
+               (http://bro-ids.org/) is an application written with Bro.
+\end{quote}
+
+Why I think you should try Bro\\
+\link{https://isc.sans.edu/diary.html?storyid=15259}\\
+
+\slide{Bro scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+	\{
+	++dns_A_reply_count;
+	\}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+	\{
+	++dns_AAAA_reply_count;
+	\}
+\end{alltt}
+
+Source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}}
+
+Trust me, this IS better than having to write network parsers in C \smiley
+
+%\slide{Bro with ELK}
+
+%\url{http://knowm.org/integrate-bro-ids-with-elk-stack/}
+
+\slide{Bro demo (on a Mac)}
+
+\begin{alltt}\small
+kunoichi:~ root# brew install bro
+
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+\end{alltt}
+
+\slide{Bro demo: Run bro}
+
+\begin{alltt}\small
+kunoichi:etc root# pwd
+/usr/local/etc
+kunoichi:etc root# grep eth0 node.cfg
+interface=eth0
+#interface=eth0
+#interface=eth0
+// My mac is not a Linux system, uses another interface naming scheme
+kunoichi:etc root# vi node.cfg
+kunoichi:etc root# grep en7 node.cfg
+interface=en7
+\end{alltt}
+
+\slide{Bro demo: Run bro}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+
+\slide{Example, Using tools similar to PacketQ}
+
+\hlkimage{20cm}{using-packetq.png}
+
+Are you using existing tools? or build your own specialised tools from scratch?\\
+
+{\footnotesize
+\link{http://securityblog.switch.ch/2013/01/22/using-packetq/}\\
+\link{http://jpmens.net/2013/05/27/server-agnostic-logging-of-dns-queries-responses/}
+}
+
+\slide{Storing query logs, old school or needed?}
+
+\hlkimage{7cm}{bro-sample-ssl-scripts.png}
+
+Looking at DNS PacketQ it was an Older link, but thinking the time is now for doing:
+
+\begin{list2}
+\item DNS query logs, keep it for at least a week? - with DSC and PacketQ
+\item SSL/TLS full logs over sessions, certs, keys - with Bro/Suricata\\
+\link{https://www.bro.org/sphinx-git/script-reference/scripts.html}
+\item Log and search with Elasticsearch?\\
+\link{https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html}
+\item Even netflow session logging, full 1:1 - NFSen or Suricata Flow mode
+%\item Moloch \link{https://github.com/aol/moloch}
+\end{list2}
+
+%\centerline{Why go to this extreme, storing information about past sessions?}
+
+\slide{February 2015: Finding infected sources}
+
+\begin{quote}
+"We were contacted by a client to help with their incident response in tracking down an
+infection on a clients machine with the new CTB-Locker ransomware (Curve-Tor-Bitcoin Locker)
+aka Critroni which had no signatures available at the time of infection for this variant.
+
+LANGuardian includes a file share activity monitoring module which provided a very
+detailed forensic analysis of the ransomware and the paths it had taken in order to
+encrypt the clients system and also the fileserver in which it was connected to, the
+initial infection came from the opening of an attachment in an e-mail."
+\end{quote}
+
+\vskip 1cm
+
+\centerline{It has become critical to identify vulnerable or infected ASAP!}
+
+Source:
+{\tiny\link{https://www.netfort.com/support-team-stories-detecting-the-source-of-ransomware/}}
+
+\slide{Case: Maltrail}
+
+\hlkimage{20cm}{maltrail.png}
+
+\link{https://github.com/stamparm/maltrail}, demo hvis tid
+
+
+
+% Suricata, Logstash, Elasticsearch, D3JShttp://d3js.org/
+\slide{Suricata with Dashboards}
+
+\hlkimage{12cm}{kibana-suricata.png}
+
+Picture from Twitter\\
+\link{https://twitter.com/nullthreat/status/445969209840128000}\\
+
+\link{http://suricata-ids.org/}
+
+
+\slide{Security Onion}
+
+\hlkimage{8cm}{security-onion.png}
+\begin{list2}
+\item Security Onion is a Linux distro for IDS, NSM, and log management
+\item \link{http://securityonion.blogspot.dk}
+\item \link{http://blog.securityonion.net/p/securityonion.html}
+\item Not so great in production, focus on fewer tools, or buy BIG CPU \smiley
+\end{list2}
+
+\centerline{Nice starting point for researching dashboards/network packets}
+
+
+\slide{Next steps}
+
+In our network we are always improving things:
+\begin{list1}
+\item Suricata IDS \link{http://www.openinfosecfoundation.org/}
+\item More graphs, with {\bf automatic identification} of IPs under attack
+\item Identification of {\bf short sessions without data} - spoofed addresses
+\item Alerting from {\bf existing} devices
+\item Dashboards with key measurements
+\end{list1}
+
+\vskip 2cm
+\centerline{\bf\Large Conclusion: Combine tools!}
+
+
+\slide{Logstash pipeline }
+
+\begin{verbatim}
+input { stdin { } }
+output {
+  elasticsearch { host => localhost }
+  stdout { codec => rubydebug }
+}
+\end{verbatim}
+
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+\begin{list2}
+\item Logstash receives via {\bf input}
+\item Processes with {\bf filters} - grok
+\item Forward events with {\bf output}
+\end{list2}
+
+\slide{Logstash as SNMPtrap and syslog server}
+
+{\footnotesize
+\begin{verbatim}
+input {
+  snmptrap {
+    host => "0.0.0.0"
+    type => "snmptrap"
+    port => 1062
+    community => "xxxxx"
+  }
+  tcp {
+    port => 5000
+    type => syslog
+  }
+  udp {
+    port => 5000
+    type => syslog
+  }
+}
+\end{verbatim}
+}
+
+\begin{list2}
+\item We run logstash on port 5000 - but use IPtables port forwarding
+\end{list2}
+
+\centerline{Have you even configured SNMP traps?}
+
+Maybe you have a device sending SNMP traps right now ...
+
+\slide{IPtables forwarding}
+
+{\footnotesize
+\begin{verbatim}
+*nat
+:PREROUTING ACCEPT [0:0]
+# redirect all incoming requests on port 514 to port 5000
+-A PREROUTING -p tcp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 162 -j REDIRECT --to-port 1062
+COMMIT
+\end{verbatim}
+}
+
+\centerline{Inserted near beginning of /etc/ufw/before.rules on Ubuntu}
+
+Remember defense in depth, dont run a priveleged Java VM as root \smiley
+
+\slide{Grok expresssions}
+
+{\footnotesize
+\begin{verbatim}
+  filter {
+    if [type] == "syslog" {
+      grok {
+        match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp}
+        %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}
+        (?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Grok expresssions, sample from my archive}
+
+{\footnotesize
+\begin{verbatim}
+filter {
+# decode some SSHD
+if [syslog_program] == "sshd" {
+  grok {
+# May 20 10:27:08 odn1-nsm-01 sshd[4554]: Accepted publickey for hlk from
+10.50.11.17 port 50365 ssh2: DSA 9e:fd:3b:3d:fc:11:0e:b9:bd:22:71:a9:36:d8:06:c7
+
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: Accepted publickey for %{USERNAME:username} from
+  %{IP:src_ip} port %{BASE10NUM:port} ssh2" }
+
+# "May 20 10:27:08 odn1-nsm-01 sshd[4554]: pam_unix(sshd:session):
+session opened for user hlk by (uid=0)"
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: pam_unix\(sshd:session\): session opened for user
+%{USERNAME:username}" }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+
+\slide{Are passwords dead?}
+
+google: passwords are dead\\
+About 6,580,000 results (0.22 seconds)
+
+
+Can we stop using passwords?
+
+Muffett on Passwords has a long list of password related information, from the author of crack \link{http://en.wikipedia.org/wiki/Crack_(password_software)}
+
+\link{http://dropsafe.crypticide.com/muffett-passwords}
+
+\slide{Storing passwords}
+
+\hlkimage{20cm}{images/passwordsafe-yubico.png}
+
+
+\begin{list1}
+\item PasswordSafe \link{http://passwordsafe.sourceforge.net/}
+\item Apple Keychain provides an encrypted storage
+\item Browsere, Firefox Master Password, Chrome passwords, ... who do YOU trust
+\end{list1}
+
+
+\slide{Google looks to ditch passwords for good}
+
+\hlkimage{10cm}{yubico-neo-v1-454x284.jpg}
+
+"Google is currently running a pilot that uses a YubiKey cryptographic card developed by Yubico
+
+The YubiKey NEO can be tapped on an NFC-enabled smartphone, which reads an encrypted one-time password emitted from the key fob."
+
+{\footnotesize Source:
+\link{http://www.zdnet.com/google-looks-to-ditch-passwords-for-good-with-nfc-based-replacement-7000010073/}
+}
+
+\slide{Yubico Yubikey}
+
+\hlkimage{20cm}{yubico-overview.png}
+\begin{quote}
+A Yubico OTP is unique sequence of characters generated every time the YubiKey button is touched. The Yubico OTP is comprised of a sequence of 32 Modhex characters representing information encrypted with a 128 bit AES-128 key
+\end{quote}
+
+\link{http://www.yubico.com/products/yubikey-hardware/}
+
+\slide{Duosecurity}
+
+\hlkimage{12cm}{duosecurity-overview.png}
+Video
+\link{https://www.duosecurity.com/duo-push}
+
+\link{https://www.duosecurity.com/}
+
+\slide{Low tech 2-step verification }
+
+\centerline{\Large Printing code on paper, low level pragmatic }
+
+\hlkimage{9cm}{google-backup-codes.png}
+
+\begin{list1}
+\item Login from new devices today often requires two-factor - email sent to user
+\item Google 2-factor auth. SMS with backup codes
+\item Also read about S/KEY developed at Bellcore {\bf in the late 1980s}\\ \link{http://en.wikipedia.org/wiki/S/KEY}
+\end{list1}
+
+\centerline{Conclusion passwords: integrate with authentication, not reinvent}
+
+\slide{Integrate or develop?}
+
+From previous slide:\\
+\centerline{Conclusion passwords: integrate with authentication, not reinvent}
+
+
+\begin{list1}
+\item Dont:
+\begin{list2}
+\item Reinvent the wheel - too many times, unless you can maintain it afterwards
+\item Never invent cryptography yourself
+\item No copy paste of functionality, harder to maintain in the future
+\end{list2}
+\item Do:
+\begin{list2}
+\item Integrate with existing solutions
+\item Use existing well-tested code: cryptography, authentication, hashing
+\item Centralize security in your code
+\item Fine to hide which authentication framework is being used, easy to replace later
+\end{list2}
+\end{list1}
+
+\slide{Conclusion}
+
+\begin{list1}
+\item If there is any conclusion ... it might be
+\item There are existing - free tools
+\item Open Source tools may integrate better with other open source tools
+\item Syslog is de facto, but standards in other areas are coming along
+\item Dont use block lists alone, but they may help in identifying problems
+\end{list1}
+
+
+\myquestionspage
+
+\end{document}

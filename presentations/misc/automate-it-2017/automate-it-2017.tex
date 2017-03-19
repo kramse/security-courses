@@ -1,0 +1,414 @@
+\documentclass[18pt,landscape,a4paper,footrule]{foils}
+%\usepackage{solido-network-slides}
+\usepackage{pasientsky-slides}
+\usepackage[normalem]{ulem}
+
+\usepackage{multicol}
+
+% PatientSky is rolling out a network based on OpenBSD used as CPE routers for a health infrastructure of connected clinics in Norway. This network supports both ordinary web traffic and VoIP, so must be prioritised accordingly. PatientSky has optimised OpenBSD for this task and created their own configuration tool which from a simple config file format configures the router with BGP, PF and service daemons. This includes prefixes learned from BGP being put into PF firewall tables and multiple routing domains, allowing a drop-in of the router in existing networks. Multiple routing domains allow the use of the same IP space in front and behind the device.
+
+% Keywords:
+% OpenBSD, BGP, routing, IEEE 802.1q, VLAN, IEEE802.1p, CoS/QoS, VoIP, firewalling, JSON config
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{Drift af en infrastruktur med Ansible}
+
+
+\vskip 1cm
+\centerline{\footnotesize Slides are available as PDF kramshoej@Github}
+
+\hlkimage{16cm}{openbsd.png}
+
+\centerline{\footnotesize Not affiliated with the OpenBSD project, but a long time and very happy user}
+
+\slide{Goal}
+
+PatientSky is rolling out new health infrastructure of connected clinics in Norway.
+
+We use OpenBSD as a CPE in a network with ordinary internet traffic and VoIP
+
+We use Juniper MX and OpenBSD in the datacenter, all firewalls are OpenBSD
+
+\begin{list1}
+
+\item Pasientsky.no - the environment and services
+\item BGP, PF and service daemons
+\item Juniper configuration and OpenBSD configs
+\item BGP to PF Tables, firewalling/NAT based on BGP updates
+\item OpenBSD niceness, why choosing OpenBSD made a lot of things easier
+\item Keywords:
+OpenBSD, BGP, routing, IEEE 802.1q, VLAN, IEEE802.1p, CoS/QoS, VoIP, firewalling, JSON config
+\end{list1}
+
+\centerline{I really can't explain everything in 40min, so ask us questions after}
+
+\slide{Thank you OpenBSD}
+
+Before I get started I need to say hi, and a big thank you to Peter Hessler
+
+I have had the pleasure of help from him getting all this working!
+
+
+I am also sure he can interrupt me if I say something wrong or stupid about OpenBSD, OpenBGP and the rest. \smiley
+
+Peter, if you need a drink today, just say so to me or my boss Andreas!
+
+\vskip 2cm
+Andreas:
+\hlkimage{4cm}{andreas.jpg}
+
+
+
+\slide{ Pasientsky.no - the environment and services}
+
+\hlkimage{12cm}{pasientsky-no.png}
+
+\begin{quote}
+Connected Clinic from PasientSky provides modern and revolutionary solutions meeting the special communication needs in the health sector. A small and smart box provides quick and stable internet connection with integrated telephony and time book.
+\end{quote}
+
+\slide{Overview}
+
+\hlkimage{20cm}{patientsky-net-overview.png}
+
+\slide{Core Network - Juniper}
+
+\hlkimage{20cm}{core-network-01.png}
+
+Mostly 10G links backhauling Ethernet Connect Layer 2 into our network, provide Transit and Norsk Helsenett (Health)
+
+
+\slide{OpenBSD CPE: BGP, PF and service daemons}
+
+\hlkimage{23cm}{openbsd-cpe.png}
+
+\begin{list2}
+\item Soekris Net6501-50 1 Ghz CPU, 1024 Mbyte DDR2-SDRAM, 4 x 1Gbit Ethernet
+\item OpenBSD operating system
+\item Yes, Telenor uses ASR920 as CPE for 8Mbit SHDSL too\smiley
+\item We install new Smartboxes every week
+\end{list2}
+
+\slide{OpenBSD stats}
+\begin{alltt}\footnotesize
+top output:
+load averages:  0.14,  0.09,  0.08                  smartbox-xxx-01 11:19:15
+37 processes: 36 idle, 1 on processor                     up 106 days,  3:49
+CPU0 states:  0.0% user,  0.0% nice,  0.2% system,  0.0% interrupt, 99.8% idle
+CPU1 states:  1.0% user,  0.0% nice,  0.4% system,  0.4% interrupt, 98.2% idle
+Memory: Real: 34M/225M act/tot Free: 757M Cache: 110M Swap: 0K/2048M
+
+# bgpctl show
+Neighbor              AS    MsgRcvd    MsgSent  OutQ Up/Down  State/PrfRcvd
+185.161.12xx.x     50033     105419      67948     0 01w2d08h   9754
+
+# wc -l /etc/pf.conf
+      86 /etc/pf.conf
+
+root@smartbox-son-01:root# grep -v "^#" /etc/sysctl.conf
+net.inet.ip.forwarding=1
+ddb.panic=0
+\end{alltt}
+
+Sorry, no IPv6 yet, my fault, already configured in data center interfaces
+
+\slide{Important processes and components}
+
+\begin{list2}
+\item OpenBSD Kernel - does routing, thank you
+\item OpenBSD kernel - multiple routing tables, allow drop-in replacement in networks
+\item OpenNTP - time keeping
+\item OpenBGP - BGP to get NHN prefixes
+\item relayd - provides failover, change default route
+\item OpenSSHD - secure remote access
+\item DHCPD - dhcp service to LAN
+\item OpenBSD PF - awesome firewall connecting it all nicely
+\item OpenBSD PF queue - allow detailed control of bandwidth
+\item OpenBSD PF prio into VLAN header - QoS/CoS of VoIP traffic
+\item Python - we have a few scripts to configure the above with templates from single JSON config
+\end{list2}
+
+\centerline{Almost all parts are in OpenBSD base!}
+
+\slide{OpenBSD queue pf.conf - from 20/20Mbit customer}
+
+\begin{alltt}\footnotesize
+# Queue to fix TCP originating from our smartbox, if we send more than
+# bandwidth the shaping done by Telenor cause huge backoffs
+queue root on em3 bandwidth 20M max 20M
+
+# Currently used for VoIP and PatientSky Hosting
+# Note: VoIP Max 25% of bandwidth, excess dropped by provider!
+queue high parent root bandwidth 5M max 5M
+queue normal parent root bandwidth 20M max 20M default
+queue low parent root bandwidth 15M max 15M
+
+# {\bf Download queues} on inside interface to LAN
+# by limiting this, we end up receiving less than max from outside
+queue dn_parent on em2 bandwidth 20M max 20M
+queue dn_high parent dn_parent bandwidth 20M max 20M
+queue dn_default parent dn_parent bandwidth 15M max 15M default
+
+# Wifi
+queue guest_parent on em0 bandwidth 15M max 15M
+queue guest_default parent guest_parent bandwidth 15M max 15M default
+\end{alltt}
+
+You can only limit what you send, download queues remove need for
+specific queue in data center for EACH customer!
+
+\slide{OpenBSD use queueing in rules}
+
+\begin{alltt}\footnotesize
+table <HOSTED_NETWORKS> const \{ 185.60.160.0/22 \}
+
+# Rules start here
+block all
+
+# Normal would be 3 and patientsky higher priority
+pass out set queue normal set prio 3
+pass out to <HOSTED_NETWORKS> set queue high set prio 5
+
+# High prio on all traffic originating from us and our <HOSTED_NETWORKS> address space
+pass in on egress from <HOSTED_NETWORKS> to (egress:0) set queue dn_high set prio 5
+\end{alltt}
+
+\begin{list2}
+\item When you limit outgoing - to the LAN, results is because of TCP it limits what you receive :-)
+\item Not really doing queuing inside LAN, some switches not controlled, customer responsibility
+\item If internal LAN with gigabit switches cannot handle VoIP, expect other problems
+\end{list2}
+
+\slide{Existing infrastructure, in some places}
+
+\hlkimage{10cm}{bad-rack.jpg}
+
+\centerline{Pretty nice heh, not always this bad, but usually not good}
+
+\slide{OpenBGP download prefixes to PF Tables}
+
+\begin{alltt}\footnotesize
+...
+# neighbors and peers
+psnet="50033"
+group "nhn" \{
+# peering to get NHN network
+        remote-as $psnet
+        neighbor 185.161.xxx.xx
+\}
+
+# Our local network
+network 172.22.xxx.0/27
+
+# Filtering
+allow from any
+allow from AS 50033
+match from group "nhn" community $psnet:56828 set pftable "NHN"
+\end{alltt}
+
+Two functions, announce our local NHN prefix, internal LAN IP
+
+and getting a table of almost 10.000 prefixes
+
+\slide{OpenBSD multiple routing domains are cool}
+
+with BGP running we can use the prefixes in rules, here no-NAT rule:
+\begin{alltt}\footnotesize
+# towards end of pf.conf
+# Routing Domain 1 used for LAN
+anchor "inside" on rdomain 1 \{
+    # Allow administrative access when on-site
+    pass in quick on em2 inet proto tcp from any to em2 port 34
+    # Internal LAN must be allowed out
+    pass in on em2
+    # Guest network, no access to internal LAN or NHN
+    # Prio 0 in Telenor is Best Effort
+    pass in on em0 to \{ !(em2:network) !<NHN> \} set queue low set prio 0
+    # Make sure our Hosted networks have priority and NHN traffic is sent through unharmed
+    pass out quick to <HOSTED_NETWORKS> nat-to (egress:0) rtable 0 set queue high set prio 5
+    pass out quick to <NHN> rtable 0 set queue normal set prio 3
+    pass out to !<INSIDE_NETWORKS> nat-to (egress:0) rtable 0 set queue normal set prio 3
+\}
+\end{alltt}
+
+and check using:
+\begin{alltt}\footnotesize
+echo "Checking NHN DNS from routing table"
+NHNIP=`ifconfig em2 | grep inet | cut -f 2 -d ' '`
+route -T 1 exec dig @172.21.1.2 +short -b $NHNIP smtp.nhn.no || exit 1
+\end{alltt}
+
+
+\slide{OpenBSD priority}
+
+\begin{alltt}\footnotesize
+pass out quick to <HOSTED_NETWORKS> nat-to (egress:0) rtable 0 set queue high set prio 5
+
+pass in proto tcp to port 25 set prio 2
+pass in proto tcp to port 22 set prio (2, 5)
+\end{alltt}
+
+\begin{list1}
+\item Prio is copied directly into IEEE 802.1q header, making it easy to use IEEE 802.1p
+\end{list1}
+
+\begin{quote}
+If the packet is transmitted on a vlan(4) interface, the queueing priority will also be written as
+the priority code point in the 802.1Q VLAN header.  If two
+priorities are given, packets which have a TOS of lowdelay and
+TCP ACKs with no data payload will be assigned to the second one.
+\end{quote}
+
+Hint: OpenSSH \verb+sshd_config+ using IPQoS can achieve the same
+
+\slide{Junos MX config, show configuration class-of-service }
+
+\begin{alltt}\small
+rewrite-rules \{
+    ieee-802.1 telenor \{
+        forwarding-class assured-forwarding \{
+            loss-priority low code-point 101;
+            loss-priority high code-point 101;
+            loss-priority medium-high code-point 101;
+            loss-priority medium-low code-point 101;
+        \}
+        forwarding-class expedited-forwarding \{
+            loss-priority low code-point 011;
+            loss-priority high code-point 011;
+            loss-priority medium-high code-point 011;
+            loss-priority medium-low code-point 011;
+        \}
+    \}
+\}
+\end{alltt}
+
+Pro tip: this requires traffic to already be classified into these classes.
+We solved it by sending VLAN traffic with prio from OpenBSD in data center to MX
+
+\slide{Junos outgoing, show configuration class-of-service}
+
+\begin{alltt}\small
+interfaces \{
+    ae0 \{
+        ...
+        unit 1008 \{
+            classifiers \{
+                ieee-802.1 default;
+            \}
+            rewrite-rules \{
+                ieee-802.1 telenor vlan-tag outer-and-inner;
+            \}
+        \}
+\}
+\end{alltt}
+
+Note: We use double vlan-tags outer 1008 inner 100 in data center.\\
+This ends up with VLAN 100 on ALL smartboxes/sites
+
+Result: We have the same simple config on all smartboxes
+
+\slide{ OpenBSD niceness}
+
+Why choosing OpenBSD made a lot of things easier
+
+\begin{list2}
+\item Free to install routers, firewalls, where we need them, no license
+\item Secure and stable, less worries, stable network yay!
+\item Nifty tricks with OpenBGP makes for a very elegant PF config
+\item PF integrated with IEEE 802.1p - on VLAN interfaces
+\item PF has a very readable format with syntactic sugar and dynamic constructs like \verb+(em2:network)+ the network on interface em2
+\item OpenBSD has stable release schedule, every 6 months
+\end{list2}
+
+TL;DR Full control with easy transparent configs
+
+\slide{OpenBSD CPE JSON config}
+
+\begin{multicols}{2}
+\begin{alltt}\scriptsize
+\{
+    "system": \{
+        "config-version": "1.0",
+        "nameserver1": "185.161.125.241",
+        "nameserver2": "185.161.127.241",
+        "ntpserver1": "185.161.125.241",
+        "ntpserver2": "185.161.127.241",
+        "firmware-version": "590",
+        "hostname": "smartbox-xxx-01",
+        "package-repository": "http://...",
+        "update-server": "http://...",
+        "guest-network": "false"
+    \},
+    "network-primary": \{
+        "gateway": "185.161.12x.xxx",
+        "ipaddress": "185.161.12x.xxy",
+        "subnet-mask": "255.255.255.248",
+        "vlan": "100",
+        "bandwidth": "20M"
+    \},
+    "network-secondary": \{
+        "enabled": "false",
+        "gateway": "192.168.8.1",
+        "ipaddress": "192.168.8.10",
+        "subnet-mask": "255.255.255.0"
+    \},
+    "lan": \{
+        "ipaddress": "172.22.xxx.1",
+        "subnet-mask": "255.255.255.224",
+        "local-nhn": "172.22.xxx.0/27"
+    \},
+    "dhcp": \{
+        "enabled": "true",
+        "domain-name": "patientsky.com",
+        "network": "172.22.xxx.0",
+        "range": "172.22.xxx.3 172.22.xxx.30",
+        "subnet-mask": "255.255.255.224"
+    \},
+    "bgp": \{
+        "enabled": "true",
+        "neighbor": "185.161.1xx.xxx"
+    \}
+\}
+\end{alltt}
+\end{multicols}
+
+Python tool: \verb+pxeboot, ./sbimport conf/smartbox.conf && reboot+
+
+Custom config of PF on some sites, currently using Ansible template push
+
+\slide{Conclusion}
+
+\begin{center}
+\vskip 5mm
+{\color{titlecolor}\LARGE \bf OpenBSD is here already - use it}
+\vskip 5mm
+
+\hlkimage{20cm}{openbgpd-logo.png}
+Logo from \url{http://www.openbgpd.org/}
+
+\end{center}
+
+\slide{NHN BGP routing table}
+
+\hlkimage{20cm}{nhn-prefixes-length.png}
+
+\centerline{Sure, put 3.000 prefixes with length /30 into the table, linknets?}
+
+\slide{Relayd failover to 4G router}
+
+\begin{alltt}\footnotesize
+# cat /etc/relayd.conf
+primary = "185.161.124.9"
+secondary = "192.168.8.1"
+interval 10
+table <gateways> \{ $primary ip ttl 1 priority 10, $secondary ip ttl 1 priority 50 \}
+router "uplinks" \{
+        route 0.0.0.0/0
+        forward to <gateways> check icmp
+\}
+\end{alltt}
+
+Easy to understand, easy to implement
+
+\end{document}

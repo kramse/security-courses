@@ -99,16 +99,25 @@ Ansible has thousands of users, hundreds of customers and over 2,400 community c
 \centerline{We have been using Ansible for about 2 years}
 
 \vskip 2cm
-{\bf Warning: we dont really use the roles in Ansible sorry}
+Alternatives: (cfengine), Chef, Puppet or Salt
+
+
+\slide{Who uses Ansible}
+
+\begin{list2}
+\item PatientSky Danmark Aps
+\item Bornhack - Thomas Tykling Rasmussen
+\end{list2}
 
 \slide{How Ansible Works: inventory files}
 
+List your hosts in one or multiple text files:
 \begin{alltt}\footnotesize
 [all:vars]
 ansible_ssh_port=34443
 
 [office]
-fw-ps-dk-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
+fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
 ansible_python_interpreter=/usr/local/bin/python
 
 [infrastructure]
@@ -120,11 +129,14 @@ vpnmon-01   ansible_ssh_host=10.50.22.18
 \begin{list2}
 \item Inventory files specify the hosts we work with
 \item Linux and OpenBSD servers shown here
-\item Real inventory for this site with development and staging approx 500 lines
+\item Real inventory for the site with development and staging approx 500 lines
+\item office and infradstructure are group names
 \end{list2}
 
 
 \slide{How Ansible Works: ad hoc parallel execution }
+
+Using the inventory file you can run commands with Ansible:
 
 \begin{alltt}\footnotesize
   ansible -m ping new-server
@@ -133,11 +145,13 @@ vpnmon-01   ansible_ssh_host=10.50.22.18
 \end{alltt}
 
 \begin{list2}
-\item Running a command on multiple servers is easy now
+\item Running commands on multiple servers is easy now
 \end{list2}
 
 
 \slide{How Ansible Works: Playbooks}
+
+The benefit comes with tasks - do something:
 
 \begin{alltt}\footnotesize
   - hosts: smartbox-*
@@ -155,7 +169,10 @@ vpnmon-01   ansible_ssh_host=10.50.22.18
 \end{alltt}
 
 \begin{list2}
-\item Almost directly from our ansible repo
+\item Specify the end result, more than the steps, also restarts daemons
+\item Use the modules from\\
+\link{https://docs.ansible.com/ansible/modules_by_category.html}
+\item Jinja templates - ooooooh so great!
 \end{list2}
 
 \slide{How Ansible Works: typical execution}
@@ -201,10 +218,18 @@ What are the benefits of Ansible?
 \begin{list2}
 \item Central configuration management - git repo
 \item Same playbook - different inventory file, what happens
-\item
+\item Already using Ansible, tell us why and how
 \end{list2}
 
+\slide{Life of a server}
 
+\begin{list2}
+\item Create VM
+\item Network install - with pxeboot
+\item Standard settings: hostname, LDAP, SSH, timezone,  ...
+\item Configure this server: application installation, settings, etc.
+\item Configure monitoring: like Smokeping
+\end{list2}
 
 % Get started with Ansible
 
@@ -228,47 +253,218 @@ Prequisites for Ansible:
 \begin{list2}
 \item Ubuntu server: \verb+apt install python+
 \item OpenBSD: \verb+pkg_add python+\\
-Requires \verb+PKG_PATH+ set, see next slide
+Requires \verb+PKG_PATH+ set, see below
 \end{list2}
 
 
-\slide{OpenBSD python}
-
-\verb+/root/.profile+
+OpenBSD package path can be set in \verb+/root/.profile+
 \begin{alltt}\footnotesize
-
 PKG_PATH=ftp://mirror.one.com/pub/OpenBSD/`uname -r`/packages/`uname -m`
 PKG_PATH=https://stable.mtier.org/updates/$(uname -r)/$(arch -s):${PKG_PATH}
 export PKG_PATH
 \end{alltt}
 
+
+\slide{Exercise: trying Ansible}
+
+Create inventory file, and then:
+\begin{alltt}
+  ansible -m ping new-server
+  ansible -a "date" new-server
+  ansible -m shell -a "grep a /etc/something" new-server
+\end{alltt}
+
 \begin{list2}
-\item
-\item
+\item Lets try running Ansible!
+\item Hopefully there is a small getting started repo to clone from Github \smiley
+\item Server to use should be shown on the whiteboard (or similar)
+\item Dont forget you can override user with \verb+ansible -u+\\
+very usefull if you are bringing up a server from PXE boot using user \verb+manager+
+\item Trouble? Try running with \verb+-vvv+, try manual ssh, is Python ready?
+\end{list2}
+
+
+\slide{Exercise: try fetching facts}
+
+\begin{alltt}
+ ansible -i hosts.odn1 -m setup $HOST | grep hostname
+        "ansible_hostname": "odn1-fw-odn1-01",
+\end{alltt}
+
+\begin{list2}
+\item Facts are fetched by default from servers
+\item Can be fetched / investigated using the setup module
+\item Returns JSON
 \item
 \item
 \end{list2}
 
-\exercise{}
 
+\slide{Important notes about tasks}
 
+\begin{quote}
+Ansible Tasks are {\bf idempotent}. Without a lot of extra coding, bash scripts are usually not safety run again and again. Ansible uses "Facts", which is system and environment information it gathers ("context") before running Tasks.
 
-\slide{}
+Ansible uses these facts to check state and see if it needs to change anything in order to get {\bf the desired outcome}. This makes it safe to run Ansible Tasks against a server over and over again.
+\end{quote}
+
+Also not describing what to do, but what you want the result to be!
+
+Quote from:\\
+\link{https://serversforhackers.com/an-ansible-tutorial}
+
+\slide{Exercise: try adding you own user}
 
 \begin{list2}
-\item
-\item
+\item Copy or edit the create-user.yml
+\item Run this task so your own user is created
 \item
 \item
 \end{list2}
 
 
+\slide{Structure of Ansible repos}
+
+Listing of dirs
+
+\begin{alltt}
+host_vars/
+group_vars/
+roles/
+library/
+tasks/
+handlers/
+tools/
+\end{alltt}
+
+Warning: we do not use the roles much, our fault, YMMV
+
+
+
+\slide{Group vars basics}
+
+\begin{alltt}
+---
+# file: group_vars/osl1
+
+location_name : "osl1"
+country_code : "no"
+city : "Oslo"
+timezone : "Europe/Oslo"
+\end{alltt}
+
+\begin{list2}
+\item Group variables get loaded automatically
+\item Can be used for site specific things, Odense or Oslo for us
+\item Host vars work the same way, we prefer groups
+\item Note: secrets can use Ansible vault, \link{https://docs.ansible.com/ansible/playbooks_vault.html}
+\end{list2}
+
+\slide{Group vars - grouping hosts dynamically}
+
+
+\begin{alltt}
+  # talk to all hosts just so we can learn about them,
+  # and save dynamic group os_OpenBSD etc.
+  - group_by: key=os_{{ ansible_os_family }}
+    tags:
+        - always
+\end{alltt}
+
+with \verb+group_vars+ files:
+\begin{alltt}
+group_vars/os_Debian:service_sshd: ssh
+group_vars/os_FreeBSD:service_sshd: sshd
+group_vars/os_OpenBSD:service_sshd: sshd
+\end{alltt}
+
+Then the handler script can use:
+\begin{alltt}
+  - name: restart sshd
+    service: name={{ service_sshd }} state=restarted
+\end{alltt}
+
+
+\slide{Exercise: which operating system}
+
+
+\begin{alltt}
+tasks/common.yml
+tasks/common-ubuntu.yml - include: common.yml
+tasks/common-openbsd.yml - include: common.yml
+tasks/common-freebsd.yml - include: common.yml
+\end{alltt}
+
+\begin{list2}
+\item Service ssh vs sshd was just an example, we can add more to files
+\item Different operating systems have small differences
+\end{list2}
+
+
+\slide{Templates}
+
+Go back to example with packet filter config
+
+ src=pf/pf.conf.j2
+        dest=/etc/pf.conf owner=root group=wheel mode=0600
 
 
 
 
+\slide{Exercise: play with lineinfile}
+
+Try doing changes to your .profile using lineinfile
+
+\begin{list2}
+\item Copy or edit the edit-profile.yml
+\item Run this task so your own user profile is updated
+\item Advanced users: copy a file like /etc/services to \verb+$HOME+ and try modifying that
+\item
+\end{list2}
+
+Use the documentation:\\
+\link{https://docs.ansible.com/ansible/lineinfile_module.html}
+
+\slide{Special cases}
 
 
+\slide{Templates and the groups}
+
+if/endif, else etc. NRPE example with default part and specials
+
+firewalls differences between dev and prod, things that are not ready yet
+
+smokeping loops over the group vars smartboxes
+
+the smartboxes custom files, with neat trick if file does not exist
+
+
+\slide{Adopting a server}
+
+\begin{list2}
+\item Copy files from server: like relevant ones from /etc/
+\item Create basic playbook(s) to copy back to server
+\item Generalize by making it templates and moving stuff to \verb+group_vars+
+\end{list2}
+
+\centerline{Use the check and diff a lot \smiley}
+
+
+\slide{Bad stuff with Ansible}
+
+\begin{list2}
+\item Worst, slow speed - solved by running specific tags, but annoying
+\item Nasty problem with Notify on Macs - did not notify and restart services!
+\end{list2}
+
+
+Other problems when using Ansible
+
+\begin{list2}
+\item Log rotate - easy to install and configure a lot, and forget this
+\item Requires monitoring, especially if you have many servers *duuuuh*
+\item Central logging, also recommended for other reasons
+\end{list2}
 
 
 \slide{Conclusion}

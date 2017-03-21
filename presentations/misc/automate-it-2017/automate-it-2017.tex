@@ -12,7 +12,7 @@
 
 \begin{document}
 \selectlanguage{english}
-\mytitlepage{Drift af en infrastruktur med Ansible}
+\mytitlepage{Using Ansible to run a small hosting infrastructure}
 
 
 \vskip 1cm
@@ -20,19 +20,18 @@
 
 \slide{Goal and Agenda: Ansible and more}
 
-PatientSky is rolling out new health infrastructure of connected clinics in Norway.
+Our company is rolling out a new health infrastructure of connected clinics in Norway.
 
-We are very few people running the systems, so we need to automate.
+We are very few people running the systems, so we need to automate
 
-... but automation has other benefits.
+... but automation bring other benefits.
 
 \begin{list1}
 \item Prerequisites: Python, SSH, SSH keys, sudo
 \item Ansible introduction, what is this Ansible
 \item Ansible targets: Linux hosts, ESXi, network devices
 \item Ansible examples, and workshop
-\item Keywords:
-Ansible, YAML, automating boring stuff
+\item Keywords: workshop, Ansible, YAML, automating boring stuff
 \end{list1}
 
 \centerline{For optimal fun, use your laptop, fetch it in next break!}
@@ -68,7 +67,7 @@ Most servers are Linux, percentage is OpenBSD, running on VMware ESXi
 \begin{list2}
 \item Setup hardware
 \item Connect cables
-\vskip 5mm
+\vskip 1cm
 \item Setup development environment
 \item Setup staging environment - like development
 \item Setup production environment - like staging
@@ -98,8 +97,21 @@ Ansible has thousands of users, hundreds of customers and over 2,400 community c
 \vskip 2cm
 \centerline{We have been using Ansible for about 2 years}
 
+and we dont use it \emph{correctly}
 \vskip 2cm
 Alternatives: (cfengine), Chef, Puppet or Salt
+
+\slide{Ansible at Patientsky}
+
+\begin{list2}
+\item We use Ansible - mostly 1.9 on Mac
+\item We use Git repo on bitbucket - keeping it private
+\item Ansible used for OpenBSD version 6.0, but since hmm 5.5?
+\item Ansible used for Ubuntu Linux, multiple versions
+\item Really a standard setup
+\item Also a few select FreeBSD, some CentOS for testing OpenStack etc.
+\item We could actually use Ansible for Junos devices, hmm perhaps soon \smiley
+\end{list2}
 
 
 \slide{Who uses Ansible}
@@ -154,12 +166,12 @@ Using the inventory file you can run commands with Ansible:
 The benefit comes with tasks - do something:
 
 \begin{alltt}\footnotesize
-  - hosts: smartbox-*
+  - hosts: infra
     become: yes
     tasks:
     - name: Create a template pf.conf
       template:
-        src=pf/pf.conf.j2
+        src=roles/common/files/openbsd/default-pf.conf.j2
         dest=/etc/pf.conf owner=root group=wheel mode=0600
      notify:
         - reload pf
@@ -235,9 +247,7 @@ What are the benefits of Ansible?
 
 \slide{Up and running with Ansible}
 
-Prequisites for Ansible:
-
-
+Prequisites for Ansible - you need a Linux machine:
 \begin{list2}
 \item python language - Ansible uses this
 \item ssh keys - remote login without passwords
@@ -245,13 +255,46 @@ Prequisites for Ansible:
 \item Recommended tool: \verb+ssh-copy-id+ for getting your key on new server
 \item Recommended Change: \verb+sshd_config+ - no passwords allowed, no bruteforce
 \item Recommended to use: jump hosts/ProxyCommand in \verb+ssh_config+
+\item Highly recommended: Git and/or github for version control
 \end{list2}
 
+Official docs:
+\link{https://docs.ansible.com/ansible/intro_installation.html}
+
+\slide{Installation options}
+Options:
+\begin{enumerate}
+\item use your laptop, easy if you run Mac or Linux
+\item use my virtual jump host you can run commands - but editing files troublesome
+\item install a local virtual machine, like Kali Linux and use graphical editor
+\end{enumerate}
+
+Windows users need to checkout:\\
+\link{https://docs.ansible.com/ansible/intro_windows.html}\\
+"Starting in version 1.7, Ansible also contains support for managing Windows\\
+ machines. This uses native PowerShell remoting, rather than SSH."
+
+\slide{Install Ansible on Ubuntu Linux clients}
+
+\begin{list2}
+\item Mac OS X \verb+brew install ansible19+
+\item Ubuntu Linux try something like:
+\begin{alltt}
+$ sudo apt-get install software-properties-common
+$ sudo apt-add-repository ppa:ansible/ansible
+$ sudo apt-get update
+$ sudo apt-get install ansible openssh-client
+\end{alltt}
+
+\item Other platforms - sorry google it
+\end{list2}
+
+\centerline{Yes, I expect OpenSSH client is also installed :-D}
 
 \slide{Install python on servers}
 
 \begin{list2}
-\item Ubuntu server: \verb+apt install python+
+\item Ubuntu server: \verb+apt install python openssh-server+
 \item OpenBSD: \verb+pkg_add python+\\
 Requires \verb+PKG_PATH+ set, see below
 \end{list2}
@@ -264,6 +307,62 @@ PKG_PATH=https://stable.mtier.org/updates/$(uname -r)/$(arch -s):${PKG_PATH}
 export PKG_PATH
 \end{alltt}
 
+\vskip 2 cm
+\centerline{Yes, I expect OpenSSH server is also installed :-D}
+
+
+\slide{Create OpenSSH compatible private / public key pair }
+
+\begin{alltt}\footnotesize
+hlk@generic:~$ ssh-keygen -f .ssh/kramse
+Generating public/private rsa key pair.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in .ssh/kramse.
+Your public key has been saved in .ssh/kramse.pub.
+The key fingerprint is:
+SHA256:chCjaP6BHaoPy/EMDlP6xKAP4aGAX2mknGA/ZoAzU3o hlk@generic
+The key's randomart image is:
++---[RSA 2048]----+
+|  .   o          |
+|.o . . o         |
+|BoE + .          |
+|oXoB o .         |
+|=.O=* . S        |
+|=O++.. o         |
+|X++ .            |
+|+X=              |
+|.o+o             |
++----[SHA256]-----+
+\end{alltt}
+
+\verb+/home/hlk/.ssh/kramse.pub+ is the public key in this example
+
+
+
+\slide{SSH utility ssh-copy-id}
+
+You need to copy your SSH public key to the server to use SSH+Ansible:
+
+\begin{alltt}\footnotesize
+hlk@kunoichi:hlk$ ssh-copy-id -i .ssh/kramse hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\centerline{This is the best tool for the job!}
 
 \slide{Exercise: trying Ansible}
 
@@ -283,11 +382,20 @@ very usefull if you are bringing up a server from PXE boot using user \verb+mana
 \item Trouble? Try running with \verb+-vvv+, try manual ssh, is Python ready?
 \end{list2}
 
+\slide{Success looks like this}
+
+\begin{alltt}
+$ ansible -i hosts.sitename -m ping server01{\color{green}
+server01 | success >> \{
+    "changed": false,
+    "ping": "pong"
+\} }
+\end{alltt}
 
 \slide{Exercise: try fetching facts}
 
 \begin{alltt}
- ansible -i hosts.odn1 -m setup $HOST | grep hostname
+ansible -i hosts.odn1 -m setup $HOST | grep hostname
         "ansible_hostname": "odn1-fw-odn1-01",
 \end{alltt}
 
@@ -295,8 +403,6 @@ very usefull if you are bringing up a server from PXE boot using user \verb+mana
 \item Facts are fetched by default from servers
 \item Can be fetched / investigated using the setup module
 \item Returns JSON
-\item
-\item
 \end{list2}
 
 
@@ -345,12 +451,12 @@ Warning: we do not use the roles much, our fault, YMMV
 
 \begin{alltt}
 ---
-# file: group_vars/osl1
+# file: group_vars/all
 
-location_name : "osl1"
-country_code : "no"
-city : "Oslo"
-timezone : "Europe/Oslo"
+location_name : "mydatacenter"
+country_code : "dk"
+city : "Copenhagen"
+timezone : "Europe/Copenhagen"
 \end{alltt}
 
 \begin{list2}
@@ -407,6 +513,23 @@ Go back to example with packet filter config
 
  src=pf/pf.conf.j2
         dest=/etc/pf.conf owner=root group=wheel mode=0600
+
+
+
+\slide{Exercise: check with lineinfile}
+
+Try checking SSH \verb+sshd_config+ settings using check and diff
+
+\begin{list2}
+\item Edit the file tasks/common.yml
+\item Uncomment the task with \verb+UseDNS+
+\item Run this task with \verb+--check --diff+
+\item Yes, you may run this - and change the line
+\item Only the first one will see: Changed, others see OK
+\end{list2}
+
+Use the documentation:\\
+\link{https://docs.ansible.com/ansible/lineinfile_module.html}
 
 
 
@@ -475,5 +598,41 @@ Other problems when using Ansible
 \vskip 5mm
 
 \end{center}
+
+
+\slide{Extras}
+
+I have brought a Cisco IOS device, anyone want to try it?\\
+\link{https://docs.ansible.com/ansible/ios_config_module.html}
+
+I may have brought a Juniper Junos device\\
+\link{https://docs.ansible.com/ansible/junos_config_module.html}
+
+\slide{OpenBSD python install}
+
+I still use Python 2.7, also I recommend running the ln commands:
+\begin{alltt}\footnotesize
+# pkg_add python
+quirks-2.241 signed on 2016-07-26T16:56:10Z
+quirks-2.241: ok
+Ambiguous: choose package for python
+a       0: <None>
+        1: python-2.7.12
+        2: python-3.4.5
+        3: python-3.5.2
+Your choice: 1
+python-2.7.12:bzip2-1.0.6p8: ok
+python-2.7.12:libffi-3.2.1p2: ok
+python-2.7.12:libiconv-1.14p3: ok
+python-2.7.12:gettext-0.19.7: ok
+python-2.7.12: ok
+--- +python-2.7.12 -------------------
+If you want to use this package as your default system python, as root
+create symbolic links like so (overwriting any previous default):
+ ln -sf /usr/local/bin/python2.7 /usr/local/bin/python
+ ln -sf /usr/local/bin/python2.7-2to3 /usr/local/bin/2to3
+ ln -sf /usr/local/bin/python2.7-config /usr/local/bin/python-config
+ ln -sf /usr/local/bin/pydoc2.7  /usr/local/bin/pydoc
+\end{alltt}
 
 \end{document}

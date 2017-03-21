@@ -48,3 +48,12 @@ Måske lave øvelserne fra rPi’erne? Så de er ens? en slags “jump host"
 Resourcer - nogle inspiration til materialet
 
 https://serversforhackers.com/an-ansible-tutorial
+
+https://ansible-tips-and-tricks.readthedocs.io/en/latest/
+Maybe some neat tricks
+
+KVM Laptop
+https://help.ubuntu.com/community/KVM/Installation
+sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+
+sudo adduser `id -un` libvirtd

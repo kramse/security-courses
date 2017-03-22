@@ -18,25 +18,27 @@ Note: Very important that Hosts file - the inventory is updated with correct inf
 
 ### Exercises pre-requisites
 
-- [ ] Install python on your laptop
-- [ ] Install OpenSSH compatible software
-- [ ] Optional: install your own virtual server using Ubuntu Xenial 16.04, dont forget to install python on the server you just created
+- [ ] Use a Linux or Mac OS X, sorry
 - [ ] Install Ansible on your laptop
+- [ ] Install OpenSSH compatible software
+- [ ] Optional: install your own virtual server using Ubuntu Xenial 16.04, dont forget to install python on the server you just created, and openssh-server
 
 ### Exercises configure tools
 
-- [ ] Create SSH key, ssh-keygen -f .ssh/yourname
-- [ ] Install SSH key on server01,  ssh-copy-id -i .ssh/yourname manager@10.0.45.xxxx
-- [ ] Run: ansible -i hosts.sitename -m ping server01
+- [ ] Create your SSH key pair, ssh-keygen -f .ssh/yourname
+- [ ] Install your SSH public key on server01,  ssh-copy-id -i .ssh/yourname manager@10.0.45.xxxx
+- [ ] Run test: ansible -i hosts.sitename -m ping server01
 - [ ] Optional: continue to install key on other servers/devices
 
 ### Exercises run playbooks
 
 Which parts of this to run is up to you
 
-- [ ] Start looking at the supplied playbooks
+Start looking at the supplied playbooks.
+
 - [ ] ansible -i hosts.odn1 -m setup $HOST | grep hostname
 - [ ] Edit and run create-user.yml
 - [ ] Edit and run tasks/common.yml to check sshd_config
+- [ ] Work with group_vars
 
 Be curious read the playbooks, make changes, run them

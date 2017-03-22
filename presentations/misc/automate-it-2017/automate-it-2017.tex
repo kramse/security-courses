@@ -158,6 +158,9 @@ Using the inventory file you can run commands with Ansible:
 
 \begin{list2}
 \item Running commands on multiple servers is easy now
+\item This alone has value, you can start
+\item Checking settings on servers
+\item Making changes to servers
 \end{list2}
 
 
@@ -220,14 +223,6 @@ ansible -i ../smartboxes.osl1 --become --ask-become-pass -m shell
 \item The normal -K did not work, but the above does for ad hoc commands
 \end{list2}
 
-
-\slide{Structure of Ansible repos}
-
-\hlkimage{20cm}{ansible-dir-layout.png}
-
-Recommended dir layout - partial, from:\\
-\link{https://docs.ansible.com/ansible/playbooks_best_practices.html}
-
 \slide{Stop: discussion benefits of Ansible}
 
 Do we even need to run the same command on multiple servers?
@@ -237,6 +232,30 @@ What are the benefits of Ansible?
 \item Central configuration management - git repo
 \item Same playbook - different inventory file, what happens
 \item Already using Ansible, tell us why and how
+\end{list2}
+
+\slide{Structure of Ansible repos}
+
+\hlkimage{20cm}{ansible-dir-layout.png}
+
+Recommended dir layout - partial, from:\\
+\link{https://docs.ansible.com/ansible/playbooks_best_practices.html}
+
+\slide{Our setup}
+
+\begin{list2}
+\item Central configuration management - git repo
+\item Same playbook - different inventory file, staging and production run from SAME tasks
+\item Have playbooks per server type: front end firewalls, back end firewalls, etc.
+\item Some 130 playbooks in main production server config repo
+\item Another 9 files with total 1200 lines (sort -u = 530 unique lines) for a small ISP-like setup, firewalls, network security monitoring, network management systems, name servers and a few services
+\begin{alltt}
+infrastructure-firewall-mda.yml		infrastructure-nameserver.yml
+infrastructure-firewall1.yml		infrastructure-netflow-syslog.yml
+infrastructure-firmwareserver.yml	infrastructure-nms.yml*
+infrastructure-ipam.yml*		infrastructure-nsm-master.yml*
+infrastructure-nagios.yml*
+\end{alltt}
 \end{list2}
 
 \slide{Life of a server}
@@ -264,7 +283,7 @@ Prequisites for Ansible - you need a Linux machine:
 \item Highly recommended: Git and/or github for version control
 \end{list2}
 
-Official docs:
+Official docs:\\
 \link{https://docs.ansible.com/ansible/intro_installation.html}
 
 \slide{Installation options}
@@ -275,7 +294,7 @@ Options:
 \item install a local virtual machine, like Kali Linux and use graphical editor
 \end{enumerate}
 
-Windows users need to checkout:\\
+BTW Windows users need to checkout:\\
 \link{https://docs.ansible.com/ansible/intro_windows.html}\\
 "Starting in version 1.7, Ansible also contains support for managing Windows\\
  machines. This uses native PowerShell remoting, rather than SSH."
@@ -382,16 +401,23 @@ Create inventory file, and then:
 \begin{list2}
 \item Lets try running Ansible!
 \item Hopefully there is a small getting started repo to clone from Github \smiley
+\item Install software: ansible and openssh-client
+\item Generate SSH key pair
 \item Server to use should be shown on the whiteboard (or similar)
-\item Dont forget you can override user with \verb+ansible -u+\\
-very usefull if you are bringing up a server from PXE boot using user \verb+manager+
+\item You can override user with \verb+ansible -u manager+\\
+very useful if you are bringing up a server from PXE boot using user \verb+manager+
 \item Trouble? Try running with \verb+-vvv+, try manual ssh, is Python ready?
 \end{list2}
 
-\slide{Success looks like this}
+\slide{Success looks something like this}
 
 \begin{alltt}
-$ ansible -i hosts.sitename -m ping server01{\color{green}
+$ ssh-keygen -f .ssh/kramse
+... generates key pair and saves public key in .ssh/kramse.pub
+$ ssh-copy-id -i .ssh/kramse manager@10.0.42.147
+... asks for password "henrik42" and installs key
+
+$ ansible -i hosts.sitename -u manager -m ping server01{\color{green}
 server01 | success >> \{
     "changed": false,
     "ping": "pong"
@@ -400,8 +426,8 @@ server01 | success >> \{
 
 \slide{Exercise: try fetching facts}
 
-\begin{alltt}
-ansible -i hosts.odn1 -m setup $HOST | grep hostname
+\begin{alltt}\footnotesize
+ansible -i hosts.odn1 -u manager -m setup server01 | grep hostname
         "ansible_hostname": "odn1-fw-odn1-01",
 \end{alltt}
 
@@ -409,6 +435,34 @@ ansible -i hosts.odn1 -m setup $HOST | grep hostname
 \item Facts are fetched by default from servers
 \item Can be fetched / investigated using the setup module
 \item Returns JSON
+\item Try saving the output in a file and look at it:\\
+\verb+ansible -i hosts.odn1 -u manager -m setup server01 > facts.txt+\\
+\verb+less facts.txt+
+\end{list2}
+
+
+
+\slide{Exercise: try adding you own user}
+
+\begin{alltt}
+---
+- hosts: all:!*openbsd*
+  become: true
+  serial: 10
+tasks:
+  - group: name=hlk state=present
+  - user: name=hlk shell=/bin/bash group=sudo
+\end{alltt}
+
+\begin{list2}
+\item Copy above or edit the create-user.yml
+\item Replace "hlk" with your username, the one you want
+\item Run this task / playbook so your own user is created\\
+\verb+ansible-playbook -i hosts.sitename -K -u manager create-user.yml+
+\item Dont forget to install your key on this user!
+\item Try running multiple times, and try adding check and diff:
+\verb+ansible-playbook -i hosts.sitename -K -u yourusername create-user.yml --check --diff+
+\item Congratulations: you are now running Ansible!
 \end{list2}
 
 
@@ -424,17 +478,6 @@ Also not describing what to do, but what you want the result to be!
 
 Quote from:\\
 \link{https://serversforhackers.com/an-ansible-tutorial}
-
-\slide{Exercise: try adding you own user}
-
-\begin{list2}
-\item Copy or edit the create-user.yml
-\item Run this task so your own user is created
-\item
-\item
-\end{list2}
-
-
 
 \slide{Group vars basics}
 
@@ -461,7 +504,7 @@ timezone : "Europe/Copenhagen"
 \begin{alltt}
   # talk to all hosts just so we can learn about them,
   # and save dynamic group os_OpenBSD etc.
-  - group_by: key=os_{{ ansible_os_family }}
+  - group_by: key=os_\{\{ ansible_os_family \}\}
     tags:
         - always
 \end{alltt}
@@ -476,7 +519,7 @@ group_vars/os_OpenBSD:service_sshd: sshd
 Then the handler script can use:
 \begin{alltt}
   - name: restart sshd
-    service: name={{ service_sshd }} state=restarted
+    service: name=\{\{ service_sshd \}\} state=restarted
 \end{alltt}
 
 
@@ -491,8 +534,9 @@ tasks/common-freebsd.yml - include: common.yml
 \end{alltt}
 
 \begin{list2}
-\item Service ssh vs sshd was just an example, we can add more to files
+\item Service ssh vs sshd was just an example, we can add more to these files
 \item Different operating systems have small differences
+\item Ansible handles this quite nicely
 \end{list2}
 
 
@@ -500,10 +544,31 @@ tasks/common-freebsd.yml - include: common.yml
 
 Go back to example with packet filter config
 
- src=pf/pf.conf.j2
+\begin{alltt}
+  - name: Create a template pf.conf
+    template:
+        src=roles/common/files/openbsd/default-pf.conf.j2
         dest=/etc/pf.conf owner=root group=wheel mode=0600
+\end{alltt}
 
+Pro tip: always use template for text files, sooner or later you need to insert vars
 
+\begin{alltt}\scriptsize
+\{% if inventory_hostname_short == "fw-01" or inventory_hostname_short == "fw-02" %\}
+# Allow something to something
+pass quick from 10.1.2.3 to 10.1.0.0/22
+\{% endif %\}
+\end{alltt}
+These files can use lots of crazy, and crazy useful features
+
+\slide{Template can include files}
+
+In some devices we may want to include another file, custom firewall rules:
+\begin{alltt}\footnotesize
+\{% include "custom-pf/" + inventory_hostname ignore missing %\}
+\end{alltt}
+
+This works very nicely, if the file is there, include it.
 
 \slide{Exercise: check with lineinfile}
 
@@ -528,20 +593,18 @@ Use the documentation:\\
 Try doing changes to your .profile using lineinfile
 
 \begin{list2}
-\item Copy or edit the edit-profile.yml
-\item Run this task so your own user profile is updated
+\item Copy or edit the edit-hosts.yml, see tasks/common* for examples
+\item Run this task so you add a hostname to the /etc/hosts
 \item Advanced users: copy a file like /etc/services to \verb+$HOME+ and try modifying that
-\item
+\item Common problem: the line gets added on every run
+\item Sometimes we delete the line first, and then add - on every run
+\item Personally I often prefer having the complete file as a template in repo\\
+\link{https://xkcd.com/1171/}
 \end{list2}
 
 Use the documentation:\\
 \link{https://docs.ansible.com/ansible/lineinfile_module.html}
 
-
-
-\slide{Investigate the existing playbooks}
-
-Make changes to the playbooks, read them
 
 \slide{Ansible roles}
 
@@ -552,19 +615,29 @@ So forget everything you learnt until now \smiley
 ... not really, but make sure to visit:\\
 \link{https://docs.ansible.com/ansible/playbooks_best_practices.html}
 
-\slide{Special cases}
 
+\slide{Exercise Investigate the existing playbooks}
 
-\slide{Templates and the groups}
+Ideas for this exercise:
+\begin{list2}
+\item Make more changes to the playbooks, read them, execute
+\item Feel free to install: Nginx server01, Apache server02, Tomcat server03 etc.
+\item Research your favourite application server, does a playbook / role exist?
+\item Consider the steps that would be needed to deploy Ansible\\
+Which blockers do you see? Mostly technical problems or human resistance?
+\end{list2}
 
-if/endif, else etc. NRPE example with default part and specials
+\centerline{This was an introduction and hopefully enough to get you started}
 
-firewalls differences between dev and prod, things that are not ready yet
+\slide{Special cases: Templates and the groups}
 
-smokeping loops over the group vars smartboxes
-
-the smartboxes custom files, with neat trick if file does not exist
-
+We will now work through a couple of advanced template examples from our production:
+\begin{list2}
+\item Control statements if/endif, else etc. NRPE example with default part and specials
+\item Firewall differences between dev and prod, things that are not ready yet
+\item Smokeping loops over the group vars smartboxes
+\item The smartboxes custom files, with neat trick if file does not exist
+\end{list2}
 
 \slide{Adopting a server}
 
@@ -572,6 +645,9 @@ the smartboxes custom files, with neat trick if file does not exist
 \item Copy files from server: like relevant ones from /etc/
 \item Create basic playbook(s) to copy back to server
 \item Generalize by making it templates and moving stuff to \verb+group_vars+
+\item List packages, dpkg -l on Ubuntu/Debian
+\item Try installing packages on new server until it matches
+\item The whole process takes very little time, and you now have config backup!
 \end{list2}
 
 \centerline{Use the check and diff a lot \smiley}
@@ -591,6 +667,8 @@ Other problems when using Ansible
 \item Log rotate - easy to install and configure a lot, and forget this
 \item Requires monitoring, especially if you have many servers *duuuuh*
 \item Central logging, also recommended for other reasons
+\item Not running complete playbooks, gets outdated
+\item If you copy a playbook, which one is the most recent one to run?
 \end{list2}
 
 
@@ -612,10 +690,36 @@ I have brought a Cisco IOS device, anyone want to try it?\\
 I may have brought a Juniper Junos device\\
 \link{https://docs.ansible.com/ansible/junos_config_module.html}
 
+\slide{OpenSSH client config with jump host}
+
+My recommended SSH client settings, put in \verb+$HOME/.ssh/config+:
+\begin{alltt}\footnotesize
+Host *
+    ServerAliveInterval=30
+    ServerAliveCountMax=30
+    NoHostAuthenticationForLocalhost yes
+    HashKnownHosts yes
+    UseRoaming no
+
+Host jump-01
+  Hostname 10.1.2.3
+  Port 12345678
+
+Host fw-site-01 10.1.2.5
+  User hlk
+  Port 34
+  Hostname 10.1.2.5
+  ProxyCommand ssh -q -a -x jump-01 -W %h:%p
+\end{alltt}
+
+I configure fw using both hostname and IP,\\
+then I can use name, and any program using IP get this config
+
+
 \slide{OpenBSD python install}
 
 I still use Python 2.7, also I recommend running the ln commands:
-\begin{alltt}\footnotesize
+\begin{alltt}\scriptsize
 # pkg_add python
 quirks-2.241 signed on 2016-07-26T16:56:10Z
 quirks-2.241: ok

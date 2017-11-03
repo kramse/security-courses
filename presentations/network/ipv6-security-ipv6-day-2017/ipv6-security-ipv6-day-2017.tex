@@ -22,11 +22,188 @@
 oh well, not everything I guess, but hopefully a little overview
 
 \begin{list2}
-\item
-\item
-\item
-\item
-la\item
+\item Parallels relevant for security
+\item Known IPv6 problems
+\item IPv4 attack kits and tools
+\item IPv6 attack kits and tools
+\item Resources
 \end{list2}
+
+\slide{Implications}
+
+\hlkimage{2cm}{IPv6ready.png}
+
+\begin{list1}
+\item For an IPv4 enterprise network, the existence of an IPv6 overlay network has several of implications:
+\begin{list2}
+\item The IPv4 firewalls can be bypassed by the IPv6 traffic, and leave the security door wide open.
+\item Intrusion detection mechanisms not expecting IPv6 traffic may be confused and allow intrusion
+\item In some cases (for example, with the IPv6 transition technology known as 6to4), an internal PC can communicate directly with another internal PC and evade all intrusion protection and detection systems (IPS/IDS). Botnet command and control channels are known to use these kind of tunnels.
+\end{list2}
+\end{list1}
+
+\vskip 1cm
+\centerline{You ALREADY have IPv6, so better check it!}
+
+\slide{Parallels relevant for security}
+
+IPv4 came from the old internet, IPv6 is also quite old
+\begin{list2}
+\item IPv4 has ARP, IPv6 has NDP - layer 2
+\item IPv4 firewalls dont care about ARP
+\item IPv6 firewalls must allow ICMPv6\\
+\link{https://home.nuug.no/~peter/pf/newest/icmp6.html}
+\item IPv4 has small subnets, typically /24s on LAN
+\item IPv6 has /64s - which are quite a lot of addresses
+\end{list2}
+
+\vskip 1cm
+\centerline{and of course all higher level attacks, PHP and SQL injections stay the same}
+
+\slide{ICMPv6 has more}
+
+Starting from the bottom
+\begin{list2}
+\item Autoconfiguration - what is the network prefix
+\item Duplicate Address Detection - can I use this address
+\item Neighbor Discovery - which neighbors exist
+\item Link layer addresses - ”ARP” for IPv6
+\item Neighbor Unreachability Detection, or NUD - neighbors still alive
+\end{list2}
+
+\vskip 1cm
+\centerline{all of these can of course be a target}
+
+Hint: segmentation is always good
+
+\slide{ICMPv6 sample rules}
+
+\begin{alltt}\footnotesize
+## allow icmp6 for getting address using IPv6 autoconfiguration from router
+pass inet6 proto ipv6-icmp all icmp6-type routeradv
+pass inet6 proto ipv6-icmp all icmp6-type routersol
+
+## allow icmp6 for getting neighbor addresses
+pass inet6 proto ipv6-icmp all icmp6-type neighbradv
+pass inet6 proto ipv6-icmp all icmp6-type neighbrsol
+
+## allow icmp6 echo, not required, but sometimes nice
+pass in inet6 proto ipv6-icmp all icmp6-type echoreq
+
+## pass icmp-types: unreachable, time exceeded, parameter problem
+pass in inet6 proto ipv6-icmp all icmp6-type {1 3 4}
+\end{alltt}
+
+{\small
+Also, ICMPv4 allow types 3,4,11,12 thank you!\\
+3      unreach       Destination unreachable \\
+4      squench       Packet loss, slow down\\
+11     timex         Time exceeded \\
+12     paramprob     Invalid IP header\\
+}
+\slide{Known IPv6 problems}
+
+
+\begin{list2}
+\item Type 0 routing header - was a problem, could inject traffic\\
+Deprecation of Type 0 Routing Headers in IPv6 RFC-5095\\
+https://tools.ietf.org/html/rfc5095
+\item Big subnets, on linknets, use smaller such as /126
+\end{list2}
+
+\slide{IPv4 attack kits and tools}
+
+We had lots of hacker tools earlier for IPv4, oldish, libnet based:
+\begin{list2}
+\item libnet network packet assembly/injection library
+\item ISIC IP stack integrity checker
+\item SING Send ICMP Nasty Garbage
+\item Nemesis command line IP stack, send IP without coding
+\item Scapy Python interface to network packets, generic
+\end{list2}
+
+\slide{IPv6 attack kits and tools}
+
+Generic tools which support IPv6:
+\begin{list2}
+\item hping3 \link{http://www.hping.org/}
+\item Nping \link{https://nmap.org/nping/}
+\item Scapy \link{http://www.secdev.org/projects/scapy/}
+\item ERNW Loki \link{https://www.ernw.de/research/loki.html}
+\end{list2}
+
+Specialised tools:
+
+\begin{list2}
+\item THC IPv6 attack toolkit \link{https://github.com/vanhauser-thc/thc-ipv6}
+\item SI6 Networks' IPv6 Toolkit A security assessment and troubleshooting tool for the IPv6 protocols\\
+\link{https://www.si6networks.com/tools/ipv6toolkit/}
+\item Chiron is a multi-threaded tool written in Python and based on Scapy. \link{https://www.secfu.net/tools-scripts/}
+\end{list2}
+
+\slide{THC IPv6 [0x03] some example tools}
+
+\begin{list2}
+\item - parasite6: icmp neighbor solitication/advertisement spoofer, puts you
+   as man-in-the-middle, same as ARP mitm (and parasite)
+\item - alive6: an effective alive scanng, which will detect all systems
+   listening to this address
+\item - dnsdict6: parallized dns ipv6 dictionary bruteforcer
+\item - fake\_router6: announce yourself as a router on the network, with the
+  highest priority
+\item - redir6: redirect traffic to you intelligently (man-in-the-middle) with
+    a clever icmp6 redirect spoofer
+\item - toobig6: mtu decreaser with the same intelligence as redir6
+\item - detect-new-ip6: detect new ip6 devices which join the network, you can
+    run a script to automatically scan these systems etc.
+\item - dos-new-ip6: detect new ip6 devices and tell them that their chosen IP
+    collides on the network (DOS).
+\item - trace6: very fast traceroute6 with supports ICMP6 echo request and TCP-SYN
+\item - flood\_router6: flood a target with random router advertisements
+\item - flood\_advertise6: flood a target with random neighbor advertisements
+\item - exploit6: known ipv6 vulnerabilities to test against a target
+\item - denial6: a collection of denial-of-service tests againsts a target
+\item - fuzz\_ip6: fuzzer for ipv6
+\item - implementation6: performs various implementation checks on ipv6
+\item - implementation6d: listen daemon for implementation6 to check behind a fw
+\item - fake\_mld6: announce yourself in a multicast group of your choice on the net
+\item - fake\_mld26: same but for MLDv2
+\item - fake\_mldrouter6: fake MLD router messages
+\item - fake\_mipv6: steal a mobile IP to yours if IPSEC is not needed for authentication
+\item - fake\_advertiser6: announce yourself on the network
+\item - smurf6: local smurfer
+\item - rsmurf6: remote smurfer, known to work only against linux at the moment
+\item - sendpees6: a tool by willdamn(ad)gmail.com, which generates a neighbor
+          solicitation requests with a lot of CGAs (crypto stuff ;-) to keep the CPU busy. nice.
+\item         - thcping6: sends a hand crafted ping6 packet
+\item         [and more tools for you to discover]
+
+\end{list2}
+
+
+\slide{IPv6 scanner tools }
+
+Regular pentesting scanner tools with IPv6 support:
+
+\begin{list2}
+\item Nmap ("Network Mapper") port scanner and accompanying software Nping, Ndiff, Ncat https://nmap.org/ has support for IPv6. Due to most subnets being /64 it cannot perform a full subnet scan, just too many IPs.
+\item Metasploit Framework, a tool for developing and executing exploit code against a remote target machine.
+\end{list2}
+
+\myquestionspage
+
+
+\slide{Further IPv6 Security Resources}
+
+\begin{list2}
+\item TROOPERS conference \link{https://www.troopers.de/}
+\item Good article with more links\\ \link{https://insinuator.net/2015/06/is-ipv6-more-secure-than-ipv4-or-less/}
+\item ERNW - excellent information about security and IPv6 too \link{https://www.ernw.de/tag/ipv6/index.html}
+\end{list2}
+
+
+
+Feel free to send me information about packet tools, love learning new ones \smiley
+
 
 \end{document}

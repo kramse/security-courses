@@ -12,7 +12,7 @@
 
 \begin{document}
 \selectlanguage{english}
-\mytitlepage{Using Ansible to run a small hosting infrastructure}
+\mytitlepage{Using Ansible to run a hosting infrastructure}
 
 
 \vskip 1cm
@@ -20,45 +20,38 @@
 
 \slide{Goal and Agenda: Ansible and more}
 
-Our company is rolling out a new health infrastructure of connected clinics in Norway.
+PatientSky is rolling out a new health infrastructure of connected clinics in Norway. \\
+I was working there when I wrote these slides \smiley
 
-We are very few people running the systems, so we need to automate
-
+Very few people running the systems, so we need to automate\\
 ... but automation bring other benefits.
 
-\begin{list1}
-\item Prerequisites: Python, SSH, SSH keys, sudo
+Our plan for today:
+\begin{list2}
+\item Prerequisites for using Ansible: Python, SSH, SSH keys, sudo
 \item Ansible introduction, what is this Ansible
 \item Ansible targets: Linux hosts, ESXi, network devices
 \item Ansible examples, and workshop
 \item Keywords: workshop, Ansible, YAML, automating boring stuff
-\end{list1}
+\end{list2}
 
-\centerline{For optimal fun, use your laptop, fetch it in next break!}
+\centerline{For optimal fun, use your laptop and a small Linux}
 
 
-\slide{ Pasientsky.no - the environment and services}
-
-\hlkimage{12cm}{pasientsky-no.png}
-
-\begin{quote}
-Connected Clinic from PasientSky provides modern and revolutionary solutions meeting the special communication needs in the health sector. A small and smart box provides quick and stable internet connection with integrated telephony and time book.
-\end{quote}
-
-\slide{Overview}
+\slide{Overview - could be any infrastructure}
 
 \hlkimage{20cm}{patientsky-net-overview.png}
 
 Most servers are Linux, percentage is OpenBSD, running on VMware ESXi
 
-\slide{OpenBSD CPE: BGP, PF and service daemons}
+\slide{Example OpenBSD CPE: BGP, PF and service daemons}
 
 \hlkimage{23cm}{openbsd-cpe.png}
 
 \begin{list2}
 \item Soekris Net6501-50 1 Ghz CPU, 1024 Mbyte DDR2-SDRAM, 4 x 1Gbit Ethernet
-\item OpenBSD operating system
-\item We install new Smartboxes every week
+\item OpenBSD operating system, but could be any Unix-like system
+\item If you have many servers then Ansible may be for you!
 \end{list2}
 
 
@@ -73,6 +66,7 @@ Most servers are Linux, percentage is OpenBSD, running on VMware ESXi
 \item Setup production environment - like staging
 \item Setup firewalls, security, LDAP servers
 \item Setup other surrounding infrastructure
+\item Replicate it all for the next setup! TIME SAVED here!
 \end{list2}
 
 \vskip 5mm
@@ -94,32 +88,31 @@ Ansible has thousands of users, hundreds of customers and over 2,400 community c
 
 \link{https://www.ansible.com/}
 
-\vskip 2cm
-\centerline{We have been using Ansible for about 2 years}
+\slide{Ansible in PatientSky}
+\centerline{I have been using Ansible for about 3 years}
 
-and we dont use it \emph{correctly}
+and we dont exactly use it \emph{correctly}. Simplified, flatter structure.  Learning this way makes it easier, I think ... YMMV.
 \vskip 2cm
-Alternatives: (cfengine), Chef, Puppet or Salt
+Alternatives: (cfengine oooold), Chef, Puppet or Salt,
 
-\slide{Ansible at Patientsky}
+maybe try them all? Choose the one you like best.
+
+\vskip 1cm
+\centerline{I have chosen Ansible for my own projects too}
+
+\slide{Ansible I use}
 
 \begin{list2}
-\item We use Ansible - mostly 1.9 on Mac
-\item We use Git repo on bitbucket - keeping it private
-\item Ansible used for OpenBSD version 6.0, but since hmm 5.5?
-\item Ansible used for Ubuntu Linux, multiple versions
-\item Really a standard setup
-\item Also a few select FreeBSD, some CentOS for testing OpenStack etc.
-\item We could actually use Ansible for Junos devices, hmm perhaps soon \smiley
+\item Mostly on Mac clients towards Linux and OpenBSD
+\item Nowadays also from Linux
+\item Use private Git repo for playbooks and templates
+\item Ansible used for OpenBSD since version 5.5
+\item Ansible used for Ubuntu Linux, Kali Linux, multiple versions
+\item Really a standard setup like others
+\item Also a few select FreeBSD, some CentOS
+\item I could actually use Ansible for Junos devices, hmm perhaps soon \smiley
 \end{list2}
 
-
-\slide{Who uses Ansible}
-
-\begin{list2}
-\item PatientSky Danmark Aps
-\item Bornhack - Thomas Tykling Rasmussen
-\end{list2}
 
 \slide{How Ansible Works: inventory files}
 
@@ -133,20 +126,21 @@ fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
 ansible_python_interpreter=/usr/local/bin/python
 
 [infrastructure]
-smtp-01     ansible_ssh_host=185.60.160.37 ansible_python_interpreter=/usr/local/bin/python
-vpnmon-01   ansible_ssh_host=10.50.22.18
+smtp-01     ansible_ssh_host=192.0.2.10
+ansible_python_interpreter=/usr/local/bin/python
+vpnmon-01   ansible_ssh_host=10.50.60.18
 
 \end{alltt}
 
 \begin{list2}
 \item Inventory files specify the hosts we work with
 \item Linux and OpenBSD servers shown here
-\item Real inventory for the site with development and staging approx 500 lines
-\item office and infradstructure are group names
+\item Real inventory for a site with development and staging may be 500 lines
+\item office and infrastructure are group names
 \end{list2}
 
 
-\slide{How Ansible Works: ad hoc parallel execution }
+\slide{How Ansible Works: ad hoc commands }
 
 Using the inventory file you can run commands with Ansible:
 
@@ -160,13 +154,13 @@ Using the inventory file you can run commands with Ansible:
 \item Running commands on multiple servers is easy now
 \item This alone has value, you can start
 \item Checking settings on servers
-\item Making changes to servers
+\item Making small changes to servers
 \end{list2}
 
 
 \slide{How Ansible Works: Playbooks}
 
-The benefit comes with tasks - do something:
+The benefit comes with tasks listed in playbooks - do something:
 
 \begin{alltt}\footnotesize
   - hosts: smartbox-*
@@ -193,17 +187,18 @@ The benefit comes with tasks - do something:
 \slide{How Ansible Works: typical execution}
 
 \begin{alltt}\footnotesize
-ansible-playbook -i hosts.odn1 -K infrastructure-firewalls.yml -t pf.conf --check --diff
+ansible-playbook -i hosts.cph1 -K infrastructure-firewalls.yml -t pf.conf --check --diff
 
-ansible-playbook -i hosts.odn1 -K infrastructure-firewalls.yml -t pf.conf
+ansible-playbook -i hosts.cph1 -K infrastructure-firewalls.yml -t pf.conf
 
-ansible-playbook -i hosts.odn1 -K infrastructure-nagios.yml -t config-only
+ansible-playbook -i hosts.cph1 -K infrastructure-nagios.yml -t config-only
 
 ansible-playbook -i smartboxes -K create-pf-conf.yml -l smartbox-xxx-01
 \end{alltt}
 
 \begin{list2}
 \item Pro tip: check before you push out changes to production networks \smiley
+\item Check will see if something needs changing
 \item Diff will show the changes about to be made
 \end{list2}
 
@@ -223,7 +218,7 @@ ansible -i ../smartboxes.osl1 --become --ask-become-pass -m shell
 \item The normal -K did not work, but the above does for ad hoc commands
 \end{list2}
 
-\slide{Stop: discussion benefits of Ansible}
+\slide{Stop: lets discuss benefits of Ansible}
 
 Do we even need to run the same command on multiple servers?
 
@@ -233,6 +228,14 @@ What are the benefits of Ansible?
 \item Same playbook - different inventory file, what happens
 \item Already using Ansible, tell us why and how
 \end{list2}
+ Other options, compared to:
+\begin{list2}
+\item Docker
+\item Vagrant
+\item Chroot, Jails etc.
+\end{list2}
+
+Often Ansible does not replace things, but can be used to just automate it
 
 \slide{Structure of Ansible repos}
 
@@ -270,7 +273,7 @@ infrastructure-nagios.yml*
 
 % Get started with Ansible
 
-\slide{Up and running with Ansible}
+\slide{Get ready, Up and running with Ansible}
 
 Prequisites for Ansible - you need a Linux machine:
 \begin{list2}
@@ -286,25 +289,32 @@ Prequisites for Ansible - you need a Linux machine:
 Official docs:\\
 \link{https://docs.ansible.com/ansible/intro_installation.html}
 
-\slide{Installation options}
+\slide{Get set, Installation options}
 Options:
 \begin{enumerate}
 \item use your laptop, easy if you run Mac or Linux
-\item use my virtual jump host you can run commands - but editing files troublesome
-\item install a local virtual machine, like Kali Linux and use graphical editor
+\item install and use a local virtual machine, like Kali Linux and use graphical editor like leafpad for playbooks
+\item you also need Git installed
 \end{enumerate}
 
-BTW Windows users need to checkout:\\
-\link{https://docs.ansible.com/ansible/intro_windows.html}\\
-"Starting in version 1.7, Ansible also contains support for managing Windows\\
- machines. This uses native PowerShell remoting, rather than SSH."
+We will use:
+\link{https://github.com/kramse/ansible-workshop}
 
-\slide{Install Ansible on Ubuntu Linux clients}
+\slide{Install Ansible on Mac and Ubuntu Linux clients}
+
+Official instructions!\\
+\link{http://docs.ansible.com/ansible/latest/intro_installation.html}
 
 \begin{list2}
-\item Mac OS X \verb+brew install ansible19+
+\item Mac OS X \verb+brew install ansible+ or use pip
+\begin{alltt}
+$ sudo easy_install pip
+$ sudo pip install ansible
+\end{alltt}
+
 \item Ubuntu Linux try something like:
 \begin{alltt}
+$ sudo apt-get update
 $ sudo apt-get install software-properties-common
 $ sudo apt-add-repository ppa:ansible/ansible
 $ sudo apt-get update
@@ -315,6 +325,10 @@ $ sudo apt-get install ansible openssh-client
 \end{list2}
 
 \centerline{Yes, I expect OpenSSH client is also installed :-D}
+
+\slide{Kali Linux as Ansible client}
+
+\hlkimage{17cm}{kali-ansible.png}
 
 \slide{Install python on servers}
 
@@ -333,7 +347,7 @@ export PKG_PATH
 \end{alltt}
 
 \vskip 2 cm
-\centerline{Yes, I expect OpenSSH server is also installed :-D}
+\centerline{Yes, I expect OpenSSH server is also installed \smiley}
 
 
 \slide{Create OpenSSH compatible private / public key pair }
@@ -387,6 +401,8 @@ Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0
 and check to make sure that only the key(s) you wanted were added.
 \end{alltt}
 
+\vskip 5mm
+
 \centerline{This is the best tool for the job!}
 
 \slide{Exercise: trying Ansible}
@@ -398,15 +414,15 @@ Create inventory file, and then:
   ansible -m shell -a "grep a /etc/something" new-server
 \end{alltt}
 
+Lets try running Ansible!
 \begin{list2}
-\item Lets try running Ansible!
 \item Hopefully there is a small getting started repo to clone from Github \smiley
 \item Install software: ansible and openssh-client
-\item Generate SSH key pair
+\item Generate SSH key pair - see previous slides
 \item Server to use should be shown on the whiteboard (or similar)
 \item You can override user with \verb+ansible -u manager+\\
-very useful if you are bringing up a server from PXE boot using user \verb+manager+
-\item Trouble? Try running with \verb+-vvv+, try manual ssh, is Python ready?
+very useful if you are bringing up a server from PXE boot using predefined user \verb+manager+
+\item Trouble? Try running with \verb+-vvv+, try manual ssh, is Python installed on server and ready?
 \end{list2}
 
 \slide{Success looks something like this}
@@ -417,6 +433,10 @@ $ ssh-keygen -f .ssh/kramse
 $ ssh-copy-id -i .ssh/kramse manager@10.0.42.147
 ... asks for password "henrik42" and installs key
 
+$ cd ansible-workshop
+
+$ leafpad hosts.sitename \emph{# add the host server01 for your group}
+
 $ ansible -i hosts.sitename -u manager -m ping server01{\color{green}
 server01 | success >> \{
     "changed": false,
@@ -424,11 +444,14 @@ server01 | success >> \{
 \} }
 \end{alltt}
 
+\vskip 5mm
+\centerline{Congratulations you are now running Ansible!}
+
 \slide{Exercise: try fetching facts}
 
 \begin{alltt}\footnotesize
-ansible -i hosts.odn1 -u manager -m setup server01 | grep hostname
-        "ansible_hostname": "odn1-fw-odn1-01",
+$ ansible -i hosts.cph1 -u manager -m setup server01 | grep hostname
+        "ansible_hostname": "cph1-fw-cph1-01",
 \end{alltt}
 
 \begin{list2}
@@ -436,22 +459,24 @@ ansible -i hosts.odn1 -u manager -m setup server01 | grep hostname
 \item Can be fetched / investigated using the setup module
 \item Returns JSON
 \item Try saving the output in a file and look at it:\\
-\verb+ansible -i hosts.odn1 -u manager -m setup server01 > facts.txt+\\
+\verb+ansible -i hosts.cph1 -u manager -m setup server01 > facts.txt+\\
 \verb+less facts.txt+
 \end{list2}
 
+\vskip 5mm
+\centerline{Goal is to learn basics of Ansible by seeing some server facts}
 
 
 \slide{Exercise: try adding you own user}
 
-\begin{alltt}
+\begin{alltt}\footnotesize
 ---
 - hosts: all:!*openbsd*
   become: true
   serial: 10
 tasks:
-  - group: name=hlk state=present
-  - user: name=hlk shell=/bin/bash group=sudo
+  - group: name=yourusername state=present
+  - user: name=yourusername shell=/bin/bash group=sudo
 \end{alltt}
 
 \begin{list2}
@@ -460,16 +485,18 @@ tasks:
 \item Run this task / playbook so your own user is created\\
 \verb+ansible-playbook -i hosts.sitename -K -u manager create-user.yml+
 \item Dont forget to install your key on this user!
-\item Try running multiple times, and try adding check and diff:
-\verb+ansible-playbook -i hosts.sitename -K -u yourusername create-user.yml --check --diff+
-\item Congratulations: you are now running Ansible!
+\item Try running multiple times, and try adding check and diff:\\
+{\footnotesize\verb+ansible-playbook -i hosts.sitename -K -u yourusername create-user.yml --check --diff+}
 \end{list2}
+
+\vskip 5mm
+\centerline{Congratulations: you can now do real work with Ansible!}
 
 
 \slide{Important notes about tasks}
 
 \begin{quote}
-Ansible Tasks are {\bf idempotent}. Without a lot of extra coding, bash scripts are usually not safety run again and again. Ansible uses "Facts", which is system and environment information it gathers ("context") before running Tasks.
+Ansible Tasks are usually {\bf idempotent}. Without a lot of extra coding, bash scripts are usually not safety run again and again. Ansible uses "Facts", which is system and environment information it gathers ("context") before running Tasks.
 
 Ansible uses these facts to check state and see if it needs to change anything in order to get {\bf the desired outcome}. This makes it safe to run Ansible Tasks against a server over and over again.
 \end{quote}
@@ -477,9 +504,9 @@ Ansible uses these facts to check state and see if it needs to change anything i
 Also not describing what to do, but what you want the result to be!
 
 Quote from:\\
-\link{https://serversforhackers.com/an-ansible-tutorial}
+\link{https://serversforhackers.com/an-ansible-tutorial} but added "usually" since it is easy to mess up with lineinfile tasks
 
-\slide{Group vars basics}
+\slide{Variables: Group vars basics}
 
 \begin{alltt}
 ---
@@ -495,7 +522,7 @@ timezone : "Europe/Copenhagen"
 \item Group variables get loaded automatically
 \item Can be used for site specific things, Odense or Oslo for us
 \item Host vars work the same way, we prefer groups
-\item Note: secrets can use Ansible vault, \link{https://docs.ansible.com/ansible/playbooks_vault.html}
+\item Note: secrets can use Ansible vault,\\ \link{https://docs.ansible.com/ansible/playbooks_vault.html}
 \end{list2}
 
 \slide{Group vars - grouping hosts dynamically}
@@ -713,7 +740,7 @@ Host fw-site-01 10.1.2.5
 \end{alltt}
 
 I configure fw using both hostname and IP,\\
-then I can use name, and any program using IP get this config
+then I can use name, and any program using IP get this config too
 
 
 \slide{OpenBSD python install}

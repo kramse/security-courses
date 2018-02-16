@@ -1,0 +1,183 @@
+\documentclass[18pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+\usepackage[normalem]{ulem}
+
+\usepackage{multicol}
+
+% Henrik vil holde et olæg om hvordan data kan misbruges.
+% Ole Tange foreslog at vi spurgte dig, om du havde lyst til at sige et par ord om behovet for privatliv og datasikkerhed? Tanken var at du er så attraktivt et navn, at det måske ville trække flere til :-)
+
+
+\begin{document}
+\selectlanguage{danish}
+\mytitlepage{Data misbrug 2018}{Ulovlig logning møde}
+
+
+\vskip 1cm
+\centerline{\footnotesize slides are available on Github}
+
+\slide{Målet: data kan misbruges, men hvilke}
+
+Der tales om data misbrug og data logning
+
+Planen for idag:
+\begin{list2}
+\item Fokus på bestemte typer data, netværksdata
+\item Eksempelvis åbne trådløse netværk
+\item ... det er de samme data din internetudbyder har adgang til
+\end{list2}
+
+\vskip 2cm
+\centerline{Hvis du har lyst kan du være med til at vise data}
+
+
+
+\slide{IPv4 pakken - header - RFC-791}
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{Eksempler}
+
+Jeg vil nu gennemgå nogle få eksempler på information som man kan samle op.
+
+Det hele starter eksempelvis med:
+\begin{list2}
+  \item IP-adresser - den adresse som din enhed har
+  \item Eksterne IP-adresse, oftest har du en privat adresse internt, lokalnummer og så går du på internet ud igennem en router - med ekstern/offentlig IP.\\
+  Kan være flere niveauer med Carrier Grade NAT, som Interpol er kede af!
+  \item Operativsystemer, bruger du Windows fremgår det af dine internetpakker
+  \item Applikationer, dine browsere og andre programmer fortæller gerne hvad version det er
+\end{list2}
+
+
+
+\slide{Lufthavns wifi}
+
+Åbne trådløse netværk er dejlige, vi bruger dem allesammen.
+
+\begin{alltt}\small
+http://wifi.aal.dk/fs/customwebauth/login.html?
+switch_url=http://wifi.aal.dk/login.html&ap_mac=70:db:98:73:e5:a0&
+\bf{client_mac=30:10:b3:XX:YY:ZZ}&wlan=AALfree&redirect=www.gstatic.com/generate_204
+\end{alltt}
+
+\begin{list2}
+\item Når du forbinder til netværket, bruger din enhed sin MAC adresse
+\item Denne indeholder en OUI som er den første halvdel af de 48-bit
+\item Dette ID er gemt i din enhed, fra fabrikken, kan sjældent ændres
+\item Alle i nærheden kan se denne MAC, og dermed din enheds unikke hardwareadresse.
+\item Kendere ved at man kan skifte sin MAC midlertidigt, og det gør telefoner ofte når de scanner efter netværk idag - hvis de overhovedet scanner
+\end{list2}
+
+\slide{Telefonnumre}
+
+\hlkimage{15cm}{curl-example-host.png}
+
+
+\begin{list2}
+\item Christian Panton har tidlige vist hvordan telefonnummer blev sendt med
+\item Applikationer kan snildt sende data med
+\item ... men gør de det sikkert - med kryptering
+\end{list2}
+
+
+\slide{TLS Server Name Indication extension}
+
+HTTPS skal der til!
+
+\hlkimage{5cm}{Encrypt_all_the_things.png}
+
+
+Vi skal kryptere, men desværre så skjuler vores HTTPS ikke hvad site vi tilgår.
+
+\begin{list2}
+\item HTTPS er idag TLS Transport Layer Security
+\item Verifikation sker med certifikater der præsenteres af server
+\item Der kan være flere sites på en enkelt IP - med SNI
+\item Desværre vælges det rigtige certifikat før krypteringen starter
+\end{list2}
+
+\slide{TLS Server Name Indication example}
+
+\hlkimage{15cm}{wireshark-sni-twitter.png}
+
+
+\slide{Metadata}
+
+\begin{list2}
+\item Data er det vi udveksler
+\item Meta data er data om data, nødvendige data for kunne sende eksempelvis IP-adresser
+\end{list2}
+
+
+\slide{Enhederne er forskellige}
+
+\begin{list2}
+\item Mine enheder er selvfølgelig forskellige
+\item MAC adresser er forskellige
+\item De data mine enheder er også forskellige
+\item Qubes spørger fedora.pool.ntp.org, min Turris router openwrt.pool.ntp.org
+\item Et TV spørger måske efter opdateringer fra Samsung, mens en laptop henter fra Apple (via CDN)
+\end{list2}
+
+\slide{Hosting og internet-udbydere}
+
+\hlkimage{15cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item Jeg var engang i en position hvor vi transporterede data for mange kunder
+\item Det var data som information, just eat, kino.dk
+\item ... er vi trygge ved snifferbokse foran vores allesammens statslige netværk?
+\end{list2}
+
+
+Var data fra kun een hosting udbyder, med mange kunder/portaler
+
+
+\slide{Etherape demo, hvis vi har tid}
+
+\hlkimage{15cm}{etherape-2018.png}
+
+\begin{list2}
+\item Etherape er et smart demoprogram
+\item men tcpdump er virkelig også \emph{sjovt}
+\end{list2}
+
+
+
+\slide{Spørgsmål og mere debat}
+
+
+\hlkimage{10cm}{idog.jpg}
+
+\begin{center}
+\hlkbig
+
+\myname
+
+\end{center}}
+
+
+
+
+\end{document}

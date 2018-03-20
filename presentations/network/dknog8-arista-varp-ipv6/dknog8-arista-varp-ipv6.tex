@@ -1,0 +1,212 @@
+\documentclass[18pt,landscape,a4paper,footrule]{foils}
+\usepackage{nordunet-slides}
+\usepackage[normalem]{ulem}
+
+\usepackage{multicol}
+
+
+% Arista VARP, IPv6 and fall-out
+% 9 Mar 2018, 10:45
+% 15m
+% Park Inn by Radisson Copenhagen Airport Hotel
+% DKNOG8 Lightning Talks
+% Speaker
+% Mr. Henrik Kramshøj (Yes)
+% Description
+
+% During switch replacement we lost IPv6 access on some VLANs. Investigation provided some interesting
+% insights into Arista VARP as well as some fall-out afterwards. This talk will present Arista VARP
+% quickly, explain our specific problem - configuring only ipv6 virtual router on /some/ routers,
+% and the fun coincidence between other devices and the rest of the network.
+
+% In conclusion how will discuss how to ensure operation in the future of this configuration and part of the network.
+
+
+% Keywords:
+% Arista VARP, IPv6 operations
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{Arista VARP, IPv6 and fall-out}
+
+
+\slide{Why Arista VARP}
+
+\quote{Although HSRP and VRRP provide redundancy, they are active-standby FHRR protocols and do not provide a balanced data traffic distribution over Multi Chassis Link Aggregated topologies.}
+
+\vskip 1cm
+\begin{list2}
+\item Virtual Router Redundancy Protocol (VRRP) RFC-5798 is not good enough
+
+\item Arista VARP is great
+\end{list2}
+
+Source for quote:\\
+https://eos.arista.com/active-active-router-redundancy-using-varp/
+
+
+\slide{Overview VARP}
+
+\hlkimage{6cm}{FHRR_Active-Active.png}
+
+How does it work?
+
+\begin{list2}
+\item Router 1 has MAC address aa:aa:aa:aa:aa:aa
+\item Router 2 has MAC address aa:aa:aa:aa:aa:aa
+\item These MACs are used for the default gateway IP addresses
+\item Nearest switch/router pick up traffic, and forwards it on Layer 3
+\end{list2}
+
+
+\slide{How to configure Arista VARP}
+
+Site 1:
+\begin{alltt}\small
+ip virtual-router mac-address aa:aa:aa:aa:aa:aa
+interface Vlan123
+   description NDN-Testnet
+   ip address 109.105.123.2/25
+   ip virtual-router address 109.105.123.1
+\end{alltt}
+
+Site 2:
+\begin{alltt}\small
+ip virtual-router mac-address aa:aa:aa:aa:aa:aa
+interface Vlan123
+   description NDN-Testnet
+   ip address 109.105.123.3/25
+   ip virtual-router address 109.105.123.1
+   ipv6 address 2001:948:123:4::3/64
+   ipv6 virtual-router address 2001:948:123:4::1
+\end{alltt}
+
+\vskip 5mm
+\centerline{Yeah, sorry site 1 uses 7150 and did not support IPv6 like we wanted or something \smiley}
+
+\slide{Back Story}
+
+\begin{list2}
+\item NORDUnet has used Arista switches for some time, before I started
+\item At some point it was decided to replace Arista 7150 with Arista 7050SX
+\item \emph{something to do with IPv6 support}
+\item Don't mention the war
+\item We only needed to upgrade hardware in one site, Site 1
+\item We planned and announced service windows, like usual
+\end{list2}
+
+\slide{Service Window What Happened}
+
+\begin{list2}
+\item We backed up configs, always nice
+\item Upgraded hardware 7150 to 7050 - very similar config, actually the same
+\item Made sure the config was in place
+\item Moved cables, turned up services one-by-one
+\end{list2}
+
+Everything went smoothly, ... but it wasn't
+\begin{list2}
+\item Lost IPv6 connectivity to hosts - which should send from site 1 to site 2
+\item We didn't change config, less changes in one go
+\item We didn't change virtual addresses, we didn't add the IPv6 virtual address to site 1
+\item We could ping6 the switch, 2001:948:123:4::3 - so IPv6 packets go through, WTF
+\end{list2}
+
+\slide{Further debugging}
+
+\begin{list2}
+\item Client hosts had the right MAC / ARP entries
+\item IPv4 gateway ARP
+\item IPv6 gateway NDP, neighbor discovery protocol
+\item Something was obviously working, but no outside connectivity
+\end{list2}
+
+The MAC was aa:aa:aa:aa:aa:aa \smiley
+
+Suspicion arose, if the new switch has \emph{better IPv6 support} it might eat the packets!
+
+Verify and fix
+\begin{list2}
+\item How to verify?
+\item Easy add the virtual IPv6 address to the new switches, 7050SX
+\item Yay! Everything works
+\item Next, start a support case to confirm with Arista, maybe get them to update documentation?
+\end{list2}
+
+
+
+\slide{Arista support topology}
+
+\hlkimage{10cm}{images/arista-support.png}
+
+\slide{Arista support debuggging}
+
+\begin{alltt}\footnotesize
+
+Ping results:
+Ping to physical IP (2001:2::2) on switch do500 was successful from host up441:
+up441#ping ipv6 2001:2::2
+PING 2001:2::2(2001:2::2) 72 data bytes
+80 bytes from 2001:2::2: icmp_seq=1 ttl=64 time=0.372 ms
+80 bytes from 2001:2::2: icmp_seq=2 ttl=64 time=0.127 ms
+20
+However, ping to IPv6 virtual address failed from the host:
+up441#ping ipv6 2001:2::1
+PING 2001:2::1(2001:2::1) 72 data bytes
+--- 2001:2::1 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 4003ms
+
+\end{alltt}
+
+
+
+\slide{How to really configure Arista VARP!!!!1111}
+
+Site 1:
+\begin{alltt}\small
+ip virtual-router mac-address aa:aa:aa:aa:aa:aa
+interface Vlan123
+   description NDN-Testnet
+   ip address 109.105.123.2/25
+   ip virtual-router address 109.105.123.1\bf
+      ipv6 address 2001:948:123:4::2/64
+      ipv6 virtual-router address 2001:948:123:4::1
+\end{alltt}
+
+Site 2:
+\begin{alltt}\small
+ip virtual-router mac-address aa:aa:aa:aa:aa:aa
+interface Vlan123
+   description NDN-Testnet
+   ip address 109.105.123.3/25
+   ip virtual-router address 109.105.123.1\bf
+      ipv6 address 2001:948:123:4::3/64
+      ipv6 virtual-router address 2001:948:123:4::1
+\end{alltt}
+
+
+
+\slide{Arista response}
+
+Arista support later wrote:\\
+After digging deeper, I found that we are treating this as an expected behavior with the current code implementation. I also found RFE40072: 'Packets to VARP MAC should be switched if SVI is down', which has been already filed to change this behavior and have added Nordunet as an interested customer for this feature request. Since it is expected for the Arista switch to consume packets destined to VMAC if the SVI has not been configured on the VLAN
+
+\vskip 1cm
+\centerline{Arista support was very forthcoming, and nice}
+
+\slide{Lessons learned}
+
+\begin{list2}
+\item When using Arista VARP and both IPv4 and IPv6
+\item Make sure to add virtual address on ALL routers
+\item Was the fault adding IPv6 to site 2 before replacing the last hardware?
+\item Should we have removed the virtual address in site 1 altogether? - only L2 switched there
+\item Was the fault running with mixed hardware for some time?
+\item Was the fault NOT adding the IPv6 virtual address when replacing the hardware?
+\item Should we have taken the Arista training before doing this? \\
+(spoiler it does not really cover this specific use-case)
+\end{list2}
+
+Really, help me, what IS the right answer? \smiley
+
+\end{document}

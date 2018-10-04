@@ -1,0 +1,256 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Lund Kramshoej, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-network-exercises}
+
+\begin{document}
+
+\rm
+\selectlanguage{english}
+
+\newcommand{\emne}[1]{hacker workshop}
+\newcommand{\kursus}[1]{ethical hacker workshop}
+\newcommand{\kursusnavn}[1]{ethical hacker workshop\\ exercises}
+
+\mytitle{Nmap Hackerworkshop}{exercises}
+
+\pagenumbering{roman}
+
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Preface}
+\markboth{Preface}{}
+
+This material is prepared for use in \emph{\kursus} and was prepared by
+Henrik Lund Kramshoej, \link{http://www.zencurity.com} .
+It describes the networking setup and
+applications for trainings and workshops where hands-on exercises are needed.
+
+\vskip 1cm
+Further a presentation is used which is available as PDF from kramse@Github\\
+Look for \jobname in the repo security-courses.
+
+These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
+
+\url{https://github.com/kramse/kramse-labs}
+
+
+
+\section*{\color{titlecolor}Prerequisites}
+
+This material expect that participants have a working knowledge of
+TCP/IP from a user perspective. Basic concepts such as web site addresses and email should be known as well as IP-addresses and common protocols like DHCP.
+
+\vskip 1cm
+Have fun and learn
+\eject
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+
+
+\chapter*{\color{titlecolor}Introduction to networking}
+%\markboth{Introduktion til netværk}{}
+\label{chap:intro}
+
+\section*{\color{titlecolor}IP - Internet protocol suite}
+
+It is extremely important to have a working knowledge about IP to implement
+secure and robust infrastructures. Knowing about the alternatives while doing
+implementation will allow the selection of the best features.
+
+\section*{\color{titlecolor}ISO/OSI reference model}
+A very famous model used for describing networking is the ISO/OSI model
+of networking which describes layering of network protocols in stacks.
+
+This model divides the problem of communicating into layers which can
+then solve the problem as smaller individual problems and the solution
+later combined to provide networking.
+
+Having layering has proven also in real life to be helpful, for instance
+replacing older hardware technologies with new and more efficient technologies
+without changing the upper layers.
+
+In the picture the OSI reference model is shown along side with
+the Internet Protocol suite model which can also be considered to have different layers.
+
+
+\begin{figure}[H]
+\label{fig:osi}
+\begin{center}
+\colorbox{white}{\includegraphics[width=8cm,angle=90]{images/compare-osi-ip.pdf}}
+\end{center}
+\caption{OSI og Internet Protocol suite}
+\end{figure}
+
+
+\chapter*{\color{titlecolor}Exercise content}
+\markboth{Exercise content}{}
+
+Most exercises follow the same procedure and has the following content:
+\begin{itemize}
+\item {\bf Objective:} What is the exercise about, the objective
+\item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
+\item {\bf Suggested method:} suggest a way to get started
+\item {\bf Hints:} one or more hints and tips or even description how to
+do the actual exercises
+\item {\bf Solution:} one possible solution is specified
+\item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
+\end{itemize}
+
+Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
+
+
+
+\chapter{Wireshark install}
+\label{ex:wireshark-install}
+
+\hlkimage{10cm}{wireshark-http.png}
+
+
+{\bf Objective:}\\
+Install the program Wireshark locally your workstation
+
+If you already have Kali installed you have Wireshark. Done.
+
+{\bf Purpose:}\\
+Installing Wireshark will allow you to analyse packets and protocols
+
+{\bf Suggested method:}\\
+Download and install the program, either download from web server locally or from \link{http://www.wireshark.org}\\
+Wireshark requires a packet capture library to be installed
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network. Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+{\bf Solution:}\\
+When Wireshark is installed sniff some packets, also see next exercise.
+
+{\bf Discussion:}\\
+Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
+
+
+\chapter{Lookup Whois and DNS data}
+\label{ex:whois-dns}
+
+
+{\bf Objective:} \\
+Learn to use DNS and Whois databases - lookup the IP address of your current connection. The IP of the main web server of www.zencurity.com, the mail server for zencurity.com
+
+{\bf Purpose:}\\
+Knowing who to contact in case of problems on the internet is important, and also verifying before starting scanning is required.
+
+{\bf Suggested method:}\\
+Use the website of RIPE NCC \url{https://www.ripe.net/} or their other site
+
+\url{https://stat.ripe.net/}
+
+Use command line tools host and dig on Kali Linux.
+\begin{alltt}
+host www.zencurity.com
+host -t mx zencurity.com
+\end{alltt}
+
+{\bf Hints:}\\
+Whois databases are distributed to Regional Internet Registries such as ARIN, AfriNIC, RIPE, LACNIC and APNIC.
+
+{\bf Solution:}\\
+If you are using Linux or Mac you have a command line tool too:\\
+Use the command whois with an IP address, \verb+whois 185.129.60.130+.
+
+{\bf Discussion:}\\
+The whois system was implemented after the Morris Worm affected the internet in November 1988, because it was realized that the internet had grown to a size that required more management.
+
+
+\chapter{Capturing network packets}
+\label{ex:wireshark-capture}
+
+\hlkimage{4cm}{tcp-three-way.pdf}
+
+
+{\bf Objective:}\\
+Sniff packets and dissect them using Wireshark
+
+{\bf Purpose:}\\
+See real network traffic, also know that a lot of information is available and not encrypted.
+
+Note the three way handshake between hosts
+
+{\bf Suggested method:}\\
+Open Wireshark and start a capture\\
+Then in another window execute the ping program while sniffing
+
+or perform a Telnet connection while capturing data
+
+{\bf Hints:}\\
+When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some packets you are done.
+
+{\bf Discussion:}
+Is it ethical to collect packets from an open wireless network?
+
+Also note the TTL values in packets from different operating systems
+
+
+\appendix
+\rhead{\fancyplain{}{\bf \leftmark}}
+%\setlength{\parskip}{5pt}
+
+\normal
+
+\chapter{\color{titlecolor}Host information}
+
+\begin{itemize}
+\item You should note the IP-addresses used for servers and devices
+\item The web server for installing programs:\\
+http:// \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm
+/public/windows/
+\item Server used for team login: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm \\
+Available usernames: team1, team2, ... team10
+password: \verb+team+
+\item You can obtain root access using: \verb+sudo -s+
+\end{itemize}
+
+\section*{\color{titlecolor}Available servers and devices:}
+\begin{itemize}
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - OpenBSD router
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Your laptop
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Your laptop VM
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm -
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm -
+\end{itemize}
+
+
+\bibliographystyle{alpha}
+%\bibliography{../ipv6-reference/security6-net.bib,../ipv6-reference/rfc.bib,../ipv6-reference/std.bib,../ipv6-reference/fyi.bib}
+\bibliography{kramse.bib,rfc.bib,std.bib,fyi.bib}
+%,internet.bib}
+
+
+%\printindex
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

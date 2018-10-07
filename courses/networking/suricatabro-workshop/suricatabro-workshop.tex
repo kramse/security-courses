@@ -42,7 +42,6 @@
 
 
 \slide{Goal}
-\vskip 2 cm
 
 %{\hlkbig En 3 dages workshop, hvor du lærer at angribe dit netværk!}
 \hlkimage{3cm}{dont-panic.png}
@@ -53,6 +52,7 @@ Spend an evening using automated packet dissecting tools, multiple tools:
 \item Try different ways to parse packets
 \item Try The Bro Network Security Monitor
 \item Try Suricata a network threat detection engine
+\item How to get started using packet capture tools in an enterprise
 \end{list1}
 
 \centerline{We try to do a lot, feel free to focus on specific parts}
@@ -68,8 +68,10 @@ Spend an evening using automated packet dissecting tools, multiple tools:
 \item ntopng High-speed web-based traffic analysis.
 \end{list1}
 
-\vskip 1cm
+\vskip 5mm
 \centerline{Often a combination of tools and methods used in practice}
+
+Full packet capture big data tools also exist
 
 \slide{Kali Linux the pentest toolbox}
 
@@ -148,17 +150,14 @@ May need to enale it in BIOS
 
 \hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
 
-\slide{Wireshark -- capture and dissect network packets}
-
-\hlkimage{20cm}{images/wireshark-website.png}
-
-\centerline{\link{https://www.wireshark.org}}
-
 \slide{Using Wireshark}
 
 \hlkimage{18cm}{images/wireshark-http.png}
 
-\centerline{Filtering is a basic but advanced function}
+\centerline{\link{https://www.wireshark.org}}
+
+\exercise{ex:wireshark-install}
+\exercise{ex:wireshark-capture}
 
 \slide{Network mapping}
 
@@ -199,9 +198,6 @@ tcpdump: listening on en0
 \vskip 5mm
 \centerline{Low TTL, UDP, high ports above 33000 = Unix traceroute signature}
 
-\exercise{ex:wireshark-capture}
-
-
 
 \slide{Experiences gathered}
 
@@ -219,6 +215,149 @@ tcpdump: listening on en0
 \item Beware when doing scans it is possible to make routers, firewalls and devices perform badly or even crash!
 \end{list1}
 
+\slide{The Bro Network Security Monitor}
+
+\hlkimage{18cm}{bro-homepage.png}
+
+The Bro Network Security Monitor is not a single tool, but more of a
+powerful network analysis framework
+
+Source \url{https://www.bro.org/}
+
+\slide{Bro scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_A_reply_count;
+        \}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_AAAA_reply_count;
+        \}
+\end{alltt}
+
+source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}
+\url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
+
+
+\exercise{ex:broweb}
+
+\slide{Exercise setup}
+
+We will use a combination of your virtual servers, and mine
+
+Another way of running exercises might be:
+\url{https://github.com/jonschipp/ISLET}
+
+\slide{Get Started with Bro}
+
+\begin{list1}
+\item To run in “base” mode:
+ \verb+bro -r traffic.pcap+
+\item To run in a “near broctl” mode:
+\verb+bro -r traffic.pcap local+
+\item To add extra scripts:
+\verb+bro -r traffic.pcap /home/seth/myscript.bro+
+\end{list1}
+
+\slide{Bro demo: Run}
+
+\begin{alltt}\small
+// install bro first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+kunoichi:etc root# grep eth0 node.cfg
+interface=eth0
+\end{alltt}
+
+\slide{Bro demo: Run bro}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+\exercise{ex:brodnsbasic}
+\exercise{ex:brotlsbasic}
+
+\slide{DNS is important}
+
+Another tool that provides a basic SQL-frontend to PCAP-files https://www.dns-oarc.net/tools/packetq
+\url{https://github.com/DNS-OARC/PacketQ}
+
+Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
+
+Deciding on which tool to use, Bro or PacketQ depends on the situation.
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{8cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a
+ community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by th
+e OISF and its supporting vendors.
+\end{quote}
+
+\begin{list2}
+\item \link{http://suricata-ids.org/}
+\item \link{http://openinfosecfoundation.org}
+\end{list2}
+
+
+\exercise{ex:suricatastartstop}
+\exercise{ex:suricataeve1}
+\exercise{ex:mirrorport}
+\exercise{ex:suricatahasboards}
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+\exercise{ex:suricatanetflow}
+\exercise{ex:brojson}
+\exercise{ex:}
+
+
+\exercise{ex:broioc}
+\exercise{ex:vxlandetect}
+
+\slide{Commercial Support}
+
+You can and should use updated rulesets for Suricata.
+
+I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year per sensor. So two sites with Suricata running in both, 2x USD 900
 
 
 \myquestionspage

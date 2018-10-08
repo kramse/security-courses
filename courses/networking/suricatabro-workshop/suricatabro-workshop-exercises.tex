@@ -200,7 +200,6 @@ Show a couple of examples of Bro scripting, the built-in language found in Bro N
 
 
 {\bf Suggested method:}\\
-
 Go to \url{http://try.bro.org/#/?example=hello}
 
 {\bf Hints:}\\
@@ -239,7 +238,7 @@ We will now start using Bro on our systems.
 
 
 {\bf Purpose:}\\
-Try Bro with traffic, and see what happens.
+Try Bro with example traffic, and see what happens.
 
 
 {\bf Suggested method packet capture file:}\\
@@ -500,8 +499,7 @@ If the output looks OK, then re-run without -c and let it update files.
 \begin{alltt}\small
 root@debian:~# oinkmaster -i -C /etc/suricata/suricata-oinkmaster.conf -o /etc/suricata/rules/
 ...
-[+] Added files (consider updating your snort.conf to include them if needed): [+]
-
+[+] Added files (consider updating your snort.conf to include them if needed):
     -> botcc.portgrouped.rules
     -> botcc.rules
     -> BSD-License.txt
@@ -514,11 +512,6 @@ root@debian:~# oinkmaster -i -C /etc/suricata/suricata-oinkmaster.conf -o /etc/s
     -> emerging-dos.rules
     -> emerging-exploit.rules
     -> emerging-ftp.rules
-...
-    -> suricata-2.0-enhanced-open.txt
-    -> tor.rules
-    -> unicode.map
-
 Do you approve these changes? [Yn]
 \end{alltt}
 
@@ -542,6 +535,19 @@ In a real deployment it is advised to automate the update of rules, and also som
 Emerging Threats is a well-known ruleset provider, with commercial support.
 
 Whenever there is a new internet wide security incident there are people providing IDS rules in Snort or Suricata format. Since Suricata can read snort rules, this is a good way to add up-to-date rules to your installation.
+
+Note: we haven't mentioned it, but the config files for both Bro and Suricata allows one to specify your home network.
+
+Checkout the files: Bro \verb+/etc/bro/networks.cfg+ and \verb+/etc/suricata/suricata.yaml+
+
+
+\begin{alltt}\small
+vars:
+  # more specifc is better for alert accuracy and performance
+  address-groups:
+    HOME_NET: "[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]"
+    #HOME_NET: "[192.168.0.0/16]"
+\end{alltt}
 
 \chapter{Configure Mirror Port}
 \label{ex:mirrorport}
@@ -608,8 +614,7 @@ Open the Suricata config file suricata.yml and make sure eve-log is turned on.
     enabled: yes
 \end{alltt}
 
-It might be enabled by default.
-
+It might be enabled by default. So you can run the (complex) playbook to install database and supporting tools:
 \begin{alltt}
 ansible-playbook -v elasticstack.yml
 \end{alltt}
@@ -632,17 +637,21 @@ However, running a big installation is harder than it looks. Make sure to have m
 When we have a few running installations we are done. Kibana should be available on port 5601 on localhost (127.0.0.1) only though!
 
 Using Firefox visit Kibana on http://127.0.0.1:5601 first time you need to
- select logstash-* as a default index. Note: Kibana is an advanced and powerful tool in itself.
+ select \verb+logstash-*+ as a default index. Note: Kibana is an advanced and powerful tool in itself.
 
 Don't be discouraged if something goes wrong, there are a lot of moving pieces.
 
 A very common problem is the permissions to read files, from logstash log:
-\begin{alltt}
-[2018-10-08T18:22:33,105][WARN ][filewatch.tailmode.handlers.createinitial] failed to open /var/log/suricata/eve.json: #<Errno::EACCES: Permission denied - /var/log/suricata/eve.json>, ["org/jruby/RubyFile.java:366:in `initialize'", "org/jruby/RubyIO.java:1154:in `open'", "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/logstash-input-file-4.1.6/lib/filewatch/watched_file.rb:204:in `open'"]
+\begin{alltt}\small
+[2018-10-05T18:22:33,105][WARN ][filewatch.tailmode.handlers.createinitial] failed to open
+/var/log/suricata/eve.json: #<Errno::EACCES: Permission denied - /var/log/suricata/eve.json>,
+["org/jruby/RubyFile.java:366:in `initialize'", "org/jruby/RubyIO.java:1154:in `open'",
+ "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/logstash-input-file-4.1.6
+ /lib/filewatch/watched_file.rb:204:in `open'"]
 \end{alltt}
 
 {\bf Discussion:}\\
-Making dashboard are an art form. We will NOT start creating beautiful dashboard.
+Making dashboard are an art form. We will NOT start creating beautiful dashboards.
 
 There are a lot of Dashboards available, such as:\\
 \url{https://github.com/StamusNetworks/KTS6}
@@ -688,36 +697,6 @@ When you have configured Suricata for netflow, you are done.
 Specialized tools exist for collecting and visualizing netflow data. If you have nothing, then Suricata may be a good start.
 
 
-
-\chapter{Bro JSON}
-\label{ex:brojson}
-
-
-{\bf Objective:} \\
-Turning back to Bro wouldn't it be nice to have that data in a database.
-
-
-{\bf Purpose:}\\
-
-
-
-{\bf Suggested method:}\\
-
-
-
-{\bf Hints:}\\
-
-
-
-{\bf Solution:}\\
-
-
-
-{\bf Discussion:}\\
-
-
-
-
 \chapter{Extending Bro and Suricata}
 \label{ex:}
 
@@ -728,7 +707,7 @@ Sometimes Bro and Suricata by themselves will not be enough.
 Investigate how to extend Bro and Suricata, by some examples.
 
 {\bf Purpose:}\\
-
+See examples of scripts and rules, evaluate the complexity.
 
 
 {\bf Suggested method:}\\
@@ -741,15 +720,17 @@ Earlier it was quite hard to write C programs for creating and analyzing network
 
 
 {\bf Solution:}\\
-
+Which tool is easiest to expand, what are you missing from them?
 
 
 {\bf Discussion:}\\
 
+To repeat:\\
+Whenever there is a new internet wide security incident there are people providing IDS rules in Snort or Suricata format. Since Suricata can read snort rules, this is a good way to add up-to-date rules to your installation.
 
+Would you be able to write a rule for something attacking your network?
 
-
-\chapter{Indicators of Compromise}
+\chapter{Bonus: Indicators of Compromise}
 \label{ex:broioc}
 
 
@@ -761,31 +742,33 @@ This could be a known DNS domain where a specifc malware is downloaded from, a s
 \url{https://en.wikipedia.org/wiki/Indicator_of_compromise}
 
 {\bf Purpose:}\\
-The purpose of this exercice is to look at the data gathered and to start planning how one could use this with IOCs to perform after-the-fact analysis of your network.
+The purpose of this exercise is to look at the data gathered and to start planning how one could use this with IOCs to perform after-the-fact analysis of your network.
 
 Goal is to answer how an attack got in, when was the first device compromised etc.
 
 
 {\bf Suggested method:}\\
+Look at the data provided by Bro and Suricata, list the files again.
 
+Which parts will be of greatest interest in your networks? Could some of these facts have helped prevent, restrict, limit or otherwise improve your security stance?
 
 
 {\bf Hints:}\\
-
+I think Suricata and Bro has excellent value just by turning them on.
 
 
 {\bf Solution:}\\
-
-
+There is no one solution fits all, results are expected to vary from network to network.
 
 {\bf Discussion:}\\
-
-Bro can include data from other sources, check the intel module
+Bro can include data from other sources, check the intel module\\
 \url{https://www.bro.org/sphinx/frameworks/intel.html}
 
 and the exercise \url{https://www.bro.org/current/exercises/intel/index.html}
 
-\chapter{VXLAN Detection}
+Would this need to be updated every day to have value? How do we demonstrate return on investment and benefit from looking at traffic?
+
+\chapter{Bonus: VXLAN Detection}
 \label{ex:vxlandetect}
 
 
@@ -798,7 +781,7 @@ So, do you have any VXLAN traffic in your network?
 
 
 {\bf Purpose:}\\
-
+The main idea of this exercise is to talk about unknown traffic, that which you dont even know exist in your network. Some networks have tunnels and IPv6, but the network and security might not be fully aware of this.
 
 
 {\bf Suggested method:}\\
@@ -812,11 +795,11 @@ The conn.log might show you interesting things about such traffic.
 
 
 {\bf Solution:}\\
-
+We dont have a VXLAN tunnel, but it is very easy to add a VXLAN interface to a Linux server, and start sending data out.
 
 
 {\bf Discussion:}\\
-
+Which protocols are the most dangerous, and why?
 
 
 \appendix

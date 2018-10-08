@@ -150,7 +150,7 @@ When Wireshark is installed sniff some packets. We will be working with both liv
 {\bf Discussion:}\\
 Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
 
-We can download a lot of packet traces, we might use examples from 
+We can download a lot of packet traces from around the internet, we might use examples from\\
 \url{https://www.bro.org/community/traces.html}
 
 \chapter{Capturing network packets}
@@ -192,11 +192,11 @@ Also note the TTL values in packets from different operating systems
 
 
 {\bf Objective:} \\
-
+Try Bro Network Security Monitor - without installing it.
 
 
 {\bf Purpose:}\\
-Show a couple of examples of Bro scripting, the built-in language
+Show a couple of examples of Bro scripting, the built-in language found in Bro Network Security Monitor
 
 
 {\bf Suggested method:}\\
@@ -207,46 +207,115 @@ Go to \url{http://try.bro.org/#/?example=hello}
 The exercise
 \emph{The Summary Statistics Framework} can be run with a specifc PCAP.
 
-\begin{alltt}
-192.168.1.201 did 402 total and 2 unique DNS requests in the last 6 hours.
-\end{alltt}
+\verb+192.168.1.201 did 402 total and 2 unique DNS requests in the last 6 hours.+
 
 {\bf Solution:}\\
 You should read the example \emph{Raising a Notice}. Getting output for certain events may be interesting to you.
 
 
 {\bf Discussion:}\\
+Bro Network Security Monitor is an old/mature tool, but can still be hard to get started using. I would suggest that you always start out using the packages available in your Ubuntu/Debian package repositories.
 
+They work, and will give a first impression of Bro. If you later want specific features not configured into the binary packet, then install from source.
 
+Also Bro uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
 
+\begin{alltt}
+root@NMS-VM:/etc/bro# ls -la
+drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
+drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
+-rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
+-rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
+-rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
+drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
+\end{alltt}
 
 \chapter{Bro DNS capturing domain names}
 \label{ex:brodnsbasic}
 
 
 {\bf Objective:} \\
-
+We will now start using Bro on our systems.
 
 
 {\bf Purpose:}\\
-
+Try Bro with traffic, and see what happens.
 
 
 {\bf Suggested method:}\\
+Make sure Bro is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
 
+\begin{alltt}
+root@NMS-VM:/etc/bro# cat node.cfg
+# Example BroControl node configuration.
+#
+# This example has a standalone node ready to go except for possibly changing
+# the sniffing interface.
+
+# This is a complete standalone configuration.  Most likely you will
+# only need to change the interface.
+[bro]
+type=standalone
+host=localhost
+interface=eth0
+...
+\end{alltt}
 
 
 {\bf Hints:}\\
+There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
 
-
-
+Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
 {\bf Solution:}\\
+When you either run Bro using a packet capture or using live traffic
 
+Running with a capture can be done using a command line such as:
+\verb+bro -r traffic.pcap+
 
+Using broctl to start it would be like this:
+\begin{alltt}\small
+// install bro first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+\end{alltt}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# cd /var/spool/bro/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+You should be able to spot entries like this:
+\begin{alltt}\small
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
+     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Bro, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
 
 {\bf Discussion:}\\
-
-
+Why is DNS interesting?
 
 
 \chapter{Bro TLS capturing certificates}
@@ -254,27 +323,43 @@ You should read the example \emph{Raising a Notice}. Getting output for certain 
 
 
 {\bf Objective:} \\
-
+Run more traffic through Bro, see the various files.
 
 
 {\bf Purpose:}\\
-
+See that even though HTTPS and TLS traffic is encrypted it often show names and other values from the certificates and servers.
 
 
 {\bf Suggested method:}\\
-
+Run bro capturing live traffic, start https towards some sites. A lot of common sites today has shifted to HTTPS/TLS.
 
 
 {\bf Hints:}\\
+use broctl start and watch the output directory
 
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# ls *.log
+communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
+stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
+stderr.log weird.log
+\end{alltt}
 
+We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
+
+\begin{alltt}
+root@NMS-VM:/var/spool/bro/bro# grep dr.dk ssl.log
+1538983060.546122	CtKYZ625cq3m3jUz9k	10.xxx.0.145	49932	2.17.212.93	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	www.dr.dk	F	-	h2	T	FzmZCt3o9EYcmNaxIi,FKXcmxQHT3znDDMSj	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
+1538983060.674217	CLjZo51fzuTcvPT0lg	200xxxxb:89b0:5cbf	49933	2a02:26f0:2400:2a1::3f46	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	asset.dr.dk	F	-	h2	TFEpW9a1IFe6NTUZNpb,FwV50B4CHIwF1CPlul	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
+\end{alltt}
 
 {\bf Solution:}\\
-
+When you have multiple log files with data from Bro, and have looked into some of them. You are welcome to ask questions and look into more files.
 
 
 {\bf Discussion:}\\
+How can you hide that you are going to HTTPS sites?
 
+Hint: VPN
 
 
 
@@ -348,31 +433,40 @@ https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.htm
 
 {\bf Objective:} \\
 Mirror ports are a way to copy traffic to Suricata and other devices - for analyzing it. We will go through the steps on a Juniper switch to show how.
-
 Most switches which are configurable have this possibility.
 
 
 {\bf Purpose:}\\
+We want to capture traffic for multiple systems, so we select an appropriate port and copy the traffic. In our setup, we select the uplink port to the internet/router.
 
+It is also possible to buy passive taps, like a fiber splitter, which then takes part of the signal, and is only observable if you look for signal strength on the physical layer.
 
 
 {\bf Suggested method:}\\
+We will configure a mirror port on a Juniper EX2200-C running Junos.
 
+\begin{alltt}
+root@ex2200-c# show ethernet-switching-options | display set
+set ethernet-switching-options analyzer mirror01 input ingress interface ge-0/1/1.0
+set ethernet-switching-options analyzer mirror01 input egress interface ge-0/1/1.0
+set ethernet-switching-options analyzer mirror01 output interface ge-0/1/0.0
+set ethernet-switching-options storm-control interface all
+\end{alltt}
 
 
 {\bf Hints:}\\
-When checking your own devices this is often called
+When checking your own devices this is often called SPAN ports, Mirror ports or similar.
 
 \url{https://en.wikipedia.org/wiki/Port_mirroring}
 
 Cisco has called this Switched Port Analyzer (SPAN) or Remote Switched Port Analyzer (RSPAN), so many will refer to them as SPAN-ports.
 
 {\bf Solution:}\\
-
+When we can see the traffic from the network, we have the port configured - and can run any tool we like. Note: specialized capture cards can often be configured to spread the load of incoming packets onto separate CPU cores for performance. Capturing 100G and more can also be done using switches like the example found on the Bro web site using an Arista switch 7150.
 
 
 {\bf Discussion:}\\
-
+When is it ethical to capture traffic?
 
 
 \chapter{Save Suricata Output in Database}

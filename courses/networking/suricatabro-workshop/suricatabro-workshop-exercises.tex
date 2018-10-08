@@ -242,7 +242,22 @@ We will now start using Bro on our systems.
 Try Bro with traffic, and see what happens.
 
 
-{\bf Suggested method:}\\
+{\bf Suggested method packet capture file:}\\
+Note: a dollar sign is the Linux prompt, showing the command after
+\begin{alltt}\small
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ mkdir tmp;cd tmp; bro -r ../nitroba.pcap
+... bro reads the packets
+~/tmp$ ls
+conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
+sip.log  ssl.log  weird.log  x509.log
+$ less *
+\end{alltt}
+
+Use :n to jump to the next file in less, go through all of them.
+
+{\bf Suggested method Live traffic:}\\
 Make sure Bro is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
 
 \begin{alltt}
@@ -368,15 +383,59 @@ Hint: VPN
 
 
 {\bf Objective:} \\
-
+Start using Suricata IDS engine with some traffic.
 
 
 {\bf Purpose:}\\
+Show how to get started, meet some obstacles - missing files etc.
+
+Discuss how to solve problems, why do we miss them, how to fix
 
 
+{\bf Suggested method packet capture file:}\\
+Note: a dollar sign is the Linux prompt, showing the command after
+\begin{alltt}\small
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ mkdir tmp2;cd tmp2;  suricata -r ../nitroba.pcap -c /etc/suricata/suricata.yaml -l .
+... Suricata reads the packets
+~/tmp2$ ls
+eve.json  fast.log  stats.log
+$ less *
+\end{alltt}
 
-{\bf Suggested method:}\\
+{\bf Suggested method live capture:}\\
+Make sure the config file \verb+/etc/suricata/suricata.yaml+ has the right interface eth0 - or maybe ens192?. Check using \verb+ifconfig -a+
 
+Try starting the service
+
+\begin{alltt}\small
+hlk@debian:~$ sudo service suricata start
+hlk@debian:~$ cd /var/log/suricata/
+hlk@debian:/var/log/suricata$ ls
+eve.json  fast.log  stats.log  suricata.log
+hlk@debian:/var/log/suricata$
+
+hlk@debian:/var/log/suricata$ tail -3 suricata.log
+8/10/2018 -- 17:15:58 - <Warning> - [ERRCODE: SC_ERR_AFP_CREATE(190)] - Can not open iface 'eth0'
+8/10/2018 -- 17:15:58 - <Warning> - [ERRCODE: SC_ERR_AFP_CREATE(190)] - Can not open iface 'eth0'
+8/10/2018 -- 17:16:19 - <Warning> - [ERRCODE: SC_ERR_AFP_CREATE(190)] - Can not open iface 'eth0'
+\end{alltt}
+
+Yeah my network card is called \verb+ens33+, and I should replace eth0 with ens33 in the config file.
+
+\begin{alltt}\small
+perl -pi -e "s/eth0/ens33/g" /etc/suricata/suricata.yaml
+\end{alltt}
+
+\begin{alltt}\small
+hlk@debian:/var/log/suricata$ sudo service suricata stop
+hlk@debian:/var/log/suricata$ sudo service suricata start
+hlk@debian:/var/log/suricata$ tail -3 suricata.log
+8/10/2018 -- 17:23:20 - <Warning> - [ERRCODE: SC_ERR_NO_RULES(42)] - No rule files match the pattern /etc/suricata/rules/emerging-worm.rules
+8/10/2018 -- 17:23:20 - <Warning> - [ERRCODE: SC_ERR_NO_RULES(42)] - No rule files match the pattern /etc/suricata/rules/tor.rules
+8/10/2018 -- 17:23:20 - <Notice> - all 2 packet processing threads, 4 management threads initialized, engine started.
+\end{alltt}
 
 {\bf Hints:}\\
 \url{https://redmine.openinfosecfoundation.org/projects/suricata/wiki/Quick_Start_Guide}
@@ -384,48 +443,105 @@ and
 \url{https://redmine.openinfosecfoundation.org/projects/suricata/wiki/Basic_Setup}
 
 {\bf Solution:}\\
-
+When you can start and stop suricata, and it only complains about missing rules, you are done with this exercise.
 
 
 {\bf Discussion:}\\
+What was the main problems in this exercise?
 
 
 
-
-\chapter{Basic Suricata configuration}
+\chapter{Basic Suricata rule configuration}
 \label{ex:suricataeve1}
 
 
 {\bf Objective:} \\
-See the Suricata configuration files, and turn on EVE log.
+See the Suricata configuration files, and get some rules.
+
+The best IDS is nothing without good rules.
 
 
 {\bf Purpose:}\\
-
+The rules make Suricata usefull, and we will learn how to get a ruleset installed, and to keep it updated.
 
 
 {\bf Suggested method:}\\
+Check the file \verb+/etc/suricata/suricata-oinkmaster.conf+
 
-Open the Suricata config file suricata.yml and make sure eve-log is turned on.
-https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.html
-\begin{alltt}
-# Extensible Event Format (nicknamed EVE) event log in JSON format
-- eve-log:
-    enabled: yes
+It contains this:
+\begin{alltt}\small
+hlk@debian:/etc/suricata$ cat suricata-oinkmaster.conf
+# This is a Debian specific config file for oinkmaster crafted for suricata,
+# you should read oinkmaster documentation to modify this file.
+# This config is loaded by default from the suricata-oinkmaster-updater binary
+# which is called daily from a cronjob by default
+
+skipfile local.rules
+skipfile deleted.rules
+skipfile snort.conf
+use_external_bins = 0
+
+url = https://rules.emergingthreats.net/open/suricata-3.0/emerging.rules.tar.gz
+\end{alltt}
+
+Then try running the oinkmaster program in "dry run" with -c
+
+\begin{alltt}\small
+root@debian:~# oinkmaster -i -c -C /etc/suricata/suricata-oinkmaster.conf -o /etc/suricata/rules/
+Loading /etc/suricata/suricata-oinkmaster.conf
+Downloading file from https://rules.emergingthreats.net/open/suricata-3.0/emerging.rules.tar.gz... done.
+Archive successfully downloaded, unpacking... done.
+Setting up rules structures... done.
+Processing downloaded rules... disablesid 0, enablesid 0, modifysid 0, localsid 0, total rules 26212
+\end{alltt}
+
+If the output looks OK, then re-run without -c and let it update files.
+
+\begin{alltt}\small
+root@debian:~# oinkmaster -i -C /etc/suricata/suricata-oinkmaster.conf -o /etc/suricata/rules/
+...
+[+] Added files (consider updating your snort.conf to include them if needed): [+]
+
+    -> botcc.portgrouped.rules
+    -> botcc.rules
+    -> BSD-License.txt
+    -> ciarmy.rules
+...
+    -> emerging-chat.rules
+    -> emerging-current_events.rules
+    -> emerging-deleted.rules
+    -> emerging-dns.rules
+    -> emerging-dos.rules
+    -> emerging-exploit.rules
+    -> emerging-ftp.rules
+...
+    -> suricata-2.0-enhanced-open.txt
+    -> tor.rules
+    -> unicode.map
+
+Do you approve these changes? [Yn]
 \end{alltt}
 
 {\bf Hints:}\\
+You need to restart Suricata for the rules to be found. In the example below I remove the long log with errors, and restart:
 
-
+\begin{alltt}\small
+root@debian:~# service suricata stop
+root@debian:~# rm /var/log/suricata/suricata.log
+root@debian:~# service suricata start
+root@debian:~# cat /var/log/suricata/suricata.log
+8/10/2018 -- 17:45:19 - <Notice> - This is Suricata version 3.2.1 RELEASE
+\end{alltt}
 
 {\bf Solution:}\\
+When you have the ruleset downloaded and Suricata is happy when starting you are done with this exercise.
 
-
+In a real deployment it is advised to automate the update of rules, and also some rules are probably not needed in you environments, YMMV. We will not go through all the rules provided.
 
 {\bf Discussion:}\\
+Emerging Threats is a well-known ruleset provider, with commercial support.
 
-
-
+Whenever there is a new internet wide security incident there are people providing IDS rules in Snort or Suricata format. Since Suricata can read snort rules, this is a good way to add up-to-date rules to your installation.
 
 \chapter{Configure Mirror Port}
 \label{ex:mirrorport}
@@ -469,7 +585,7 @@ When we can see the traffic from the network, we have the port configured - and 
 When is it ethical to capture traffic?
 
 
-\chapter{Save Suricata Output in Database}
+\chapter{Save Suricata JSON Output in Database}
 \label{ex:suricatahasboards}
 
 
@@ -485,7 +601,15 @@ This will enable us to use browser based methods and dashboards to analyse more 
 
 {\bf Suggested method:}\\
 
+Open the Suricata config file suricata.yml and make sure eve-log is turned on.
+https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.html
+\begin{alltt}
+# Extensible Event Format (nicknamed EVE) event log in JSON format
+- eve-log:
+    enabled: yes
+\end{alltt}
 
+It might be enabled by default.
 
 {\bf Hints:}\\
 

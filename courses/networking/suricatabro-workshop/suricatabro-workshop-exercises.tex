@@ -9,11 +9,11 @@
 \rm
 \selectlanguage{english}
 
-\newcommand{\emne}[1]{hacker workshop}
-\newcommand{\kursus}[1]{ethical hacker workshop}
-\newcommand{\kursusnavn}[1]{ethical hacker workshop\\ exercises}
+\newcommand{\emne}[1]{Suricata, Bro og DNS Capture workshop}
+\newcommand{\kursus}[1]{Suricata, Bro og DNS Capture workshop}
+\newcommand{\kursusnavn}[1]{Suricata, Bro og DNS Capture workshop\\ exercises}
 
-\mytitle{Nmap Hackerworkshop}{exercises}
+\mytitle{Suricata, Bro og DNS Capture}{exercises}
 
 \pagenumbering{roman}
 
@@ -32,7 +32,7 @@
 \markboth{Preface}{}
 
 This material is prepared for use in \emph{\kursus} and was prepared by
-Henrik Lund Kramshoej, \link{http://www.zencurity.com} .
+Henrik Lund Kramshoej, \url{http://www.zencurity.com} .
 It describes the networking setup and
 applications for trainings and workshops where hands-on exercises are needed.
 
@@ -136,7 +136,7 @@ Installing Wireshark will allow you to analyse packets and protocols
 Tcpdump is a feature included in many operating systems and devices to allow packet capture and saving network traffic into files.
 
 {\bf Suggested method:}\\
-Download and install the program, either download from web server locally or from \link{http://www.wireshark.org}\\
+Download and install the program, either download from web server locally or from \url{http://www.wireshark.org}\\
 Wireshark requires a packet capture library to be installed
 
 {\bf Hints:}\\
@@ -462,7 +462,7 @@ The best IDS is nothing without good rules.
 
 
 {\bf Purpose:}\\
-The rules make Suricata usefull, and we will learn how to get a ruleset installed, and to keep it updated.
+The rules make Suricata useful, and we will learn how to get a ruleset installed, and to keep it updated.
 
 
 {\bf Suggested method:}\\
@@ -596,13 +596,12 @@ This will enable us to use browser based methods and dashboards to analyse more 
 
 
 {\bf Purpose:}\\
-
+Flat files show that we can collect data, but processing big files when trying to solve problems or handling security incidents is slow. Using databases and document stores like Elasticsearch can help a lot.
 
 
 {\bf Suggested method:}\\
-
 Open the Suricata config file suricata.yml and make sure eve-log is turned on.
-https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.html
+\url{https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.html}
 \begin{alltt}
 # Extensible Event Format (nicknamed EVE) event log in JSON format
 - eve-log:
@@ -611,18 +610,47 @@ https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.htm
 
 It might be enabled by default.
 
+\begin{alltt}
+ansible-playbook -v elasticstack.yml
+\end{alltt}
+
+Run the playbook, that installs:
+\begin{itemize}
+\item Logstash for reading the EVE JSON log
+\item Elasticsearch the database / document store
+\item Kibana for showing data
+\item Nginx, because we really should put this in front of Kibana
+\end{itemize}
+
+
 {\bf Hints:}\\
+Logstash and Elastic stack are a great way to get started with dashboarding.
 
-
+However, running a big installation is harder than it looks. Make sure to have multiple servers and good monitoring.
 
 {\bf Solution:}\\
+When we have a few running installations we are done. Kibana should be available on port 5601 on localhost (127.0.0.1) only though!
 
+Using Firefox visit Kibana on http://127.0.0.1:5601 first time you need to
+ select logstash-* as a default index. Note: Kibana is an advanced and powerful tool in itself.
 
+Don't be discouraged if something goes wrong, there are a lot of moving pieces.
+
+A very common problem is the permissions to read files, from logstash log:
+\begin{alltt}
+[2018-10-08T18:22:33,105][WARN ][filewatch.tailmode.handlers.createinitial] failed to open /var/log/suricata/eve.json: #<Errno::EACCES: Permission denied - /var/log/suricata/eve.json>, ["org/jruby/RubyFile.java:366:in `initialize'", "org/jruby/RubyIO.java:1154:in `open'", "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/logstash-input-file-4.1.6/lib/filewatch/watched_file.rb:204:in `open'"]
+\end{alltt}
 
 {\bf Discussion:}\\
+Making dashboard are an art form. We will NOT start creating beautiful dashboard.
 
+There are a lot of Dashboards available, such as:\\
+\url{https://github.com/StamusNetworks/KTS6}
 
+Note: they require Suricata 4.1+ so we cannot use them immediately.
 
+If you want, there is a SELKS LiveCD dedicated to suricata which also includes more tools for administration of rules and getting alerts:\\
+\url{https://www.stamus-networks.com/open-source/}
 
 \chapter{Suricata Netflow}
 \label{ex:suricatanetflow}
@@ -638,18 +666,26 @@ In some cases we dont know what traffic we need to analyze, but if we collect ne
 
 {\bf Suggested method:}\\
 
+uncomment netflow in the config file \verb+/etc/suricata/suricata.yaml+
+by removing the "\#" in front of this line:
+
+\begin{alltt}
+#- netflow
+\end{alltt}
+
+and restart Suricata.
 
 
 {\bf Hints:}\\
-
+Netflow logging allows efficient logging of summary data, which can be very useful.
 
 
 {\bf Solution:}\\
-
+When you have configured Suricata for netflow, you are done.
 
 
 {\bf Discussion:}\\
-
+Specialized tools exist for collecting and visualizing netflow data. If you have nothing, then Suricata may be a good start.
 
 
 

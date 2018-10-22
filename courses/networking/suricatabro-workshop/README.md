@@ -5,5 +5,7 @@ http://blog.bro.org/2018/10/renaming-bro-project_11.html
 
 I have renamed my materials, and you can find it in ../suricatazeek-workshop
 
-The new home for Zeek is zeek.org
-- which currently redirect to https://www.bro.org/zeek.html
+The new home for Zeek is zeek.org:
+which currently redirect to https://www.bro.org/zeek.html
+
+This dir will go away soon.

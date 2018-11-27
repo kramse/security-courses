@@ -6,7 +6,7 @@
 % Netværk idag er ofte blevet uoverskuelige, men kritiske for vores
 % IT-brug. Foredraget indeholder beskrivelse af et baseline setup med
 % Ansible opskrifter til konfiguration af et komplet logging setup med
-% Suricata, Bro og passiv DNS opsamling. Formålet er at kunne gå tilbage
+% Suricata, Zeek og passiv DNS opsamling. Formålet er at kunne gå tilbage
 % i tiden og identificere inficerede maskiner, angrebsforsøg, men også
 % blot dokumentere en baseline for netværket.
 
@@ -33,7 +33,7 @@
 \rm
 \selectlanguage{english}
 \mytitlepage
-{Suricata, Bro og DNS Capture}
+{Suricata, Zeek og DNS Capture}
 {An Evening with Packets}
 
 \LogoOn
@@ -50,7 +50,7 @@
 Spend an evening using automated packet dissecting tools, multiple tools:
 \begin{list1}
 \item Try different ways to parse packets
-\item Try The Bro Network Security Monitor
+\item Try The Zeek Network Security Monitor
 \item Try Suricata a network threat detection engine
 \item How to get started using packet capture tools in an enterprise
 \end{list1}
@@ -62,7 +62,7 @@ Spend an evening using automated packet dissecting tools, multiple tools:
 \begin{list1}
 \item Tcpdump for capturing packets
 \item Wireshark for dissecting packets manually with GUI
-\item Bro Network Security Monitor
+\item Zeek Network Security Monitor
 \item Snort, old timer Intrusion Detection Engine (IDS)
 \item Suricata, modern robust capable of IDS and IPS (prevention)
 \item ntopng High-speed web-based traffic analysis
@@ -99,6 +99,15 @@ May need to enale it in BIOS
 \item Install sniffing VM - put into \emph{bridge mode}
 \end{list2}
 
+\slide{Your lab setup}
+
+\begin{list2}
+\item Go to Github, Find user Kramse, click through security-courses, courses, suricatazeek and download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
+\end{list2}
+
+\exercise{ex:basicVM}
 
 \slide{What happens today?}
 
@@ -216,16 +225,16 @@ tcpdump: listening on en0
 \item Beware when doing scans it is possible to make routers, firewalls and devices perform badly or even crash!
 \end{list1}
 
-\slide{The Bro Network Security Monitor}
+\slide{The Zeek Network Security Monitor}
 
-\hlkimage{18cm}{bro-homepage.png}
+\hlkimage{18cm}{zeek-overview.png}
 
-The Bro Network Security Monitor is not a single tool, but more of a
-powerful network analysis framework
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework (former name Bro)
 
-Source \url{https://www.bro.org/}
+{\small Source \url{https://www.zeek.org/}, redirects to \url{https://www.bro.org/zeek.html}}
 
-\slide{Bro scripts}
+\slide{Zeek scripts}
 
 \begin{alltt}\small
 global dns_A_reply_count=0;
@@ -247,7 +256,7 @@ source: dns-fire-count.bro from\\
 \url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
 
 
-\exercise{ex:broweb}
+\exercise{ex:zeekweb}
 
 \slide{Exercise setup}
 
@@ -262,9 +271,9 @@ We try to mimic what you would do in your own networks during the exercises.
 Another way of running exercises might be:\\
 \url{https://github.com/jonschipp/ISLET}
 
-Recommended and used by Bro and Suricata projects.
+Recommended and used by Zeek and Suricata projects.
 
-\slide{Get Started with Bro}
+\slide{Get Started with Zeek}
 
 \begin{list1}
 \item To run in “base” mode:
@@ -275,10 +284,11 @@ Recommended and used by Bro and Suricata projects.
 \verb+bro -r traffic.pcap myscript.bro+
 \end{list1}
 
+\centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
 \slide{Bro demo: Run}
 
 \begin{alltt}\small
-// install bro first
+// install zeek first
 kunoichi:~ root# broctl
 Hint: Run the broctl "deploy" command to get started.
 
@@ -297,7 +307,7 @@ kunoichi:etc root# grep eth0 node.cfg
 interface=eth0
 \end{alltt}
 
-\slide{Bro demo: Run bro}
+\slide{Zeek demo: Run Zeek}
 
 \begin{alltt}\small
 // back to Broctl and start it
@@ -312,8 +322,8 @@ kunoichi:bro root# tail -f dns.log
 More examples at:\\
 \url{https://www.bro.org/sphinx/script-reference/log-files.html}
 
-\exercise{ex:brodnsbasic}
-\exercise{ex:brotlsbasic}
+\exercise{ex:zeekdnsbasic}
+\exercise{ex:zeektlsbasic}
 
 \slide{DNS is important}
 
@@ -323,7 +333,7 @@ Another tool that provides a basic SQL-frontend to PCAP-files\\
 
 Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
 
-Deciding on which tool to use, Bro or PacketQ depends on the situation.
+Deciding on which tool to use, Zeek or PacketQ depends on the situation.
 
 \slide{Suricata IDS/IPS/NSM}
 \hlkimage{8cm}{suricata.png}
@@ -357,7 +367,7 @@ e OISF and its supporting vendors.
 
 
 
-\slide{Bro JSON}
+\slide{Zeek JSON}
 
 As shown with Suricata, it is also possible to insert Bro output into Elasticsearch.
 
@@ -373,13 +383,13 @@ I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year
 
 \slide{Summary}
 
-We started from a basic Ubuntu/Debian server, and using Bro and Suricata we now know more about our network.
+We started from a basic Ubuntu/Debian server, and using Zeek and Suricata we now know more about our network.
 
 We can collect logs about network traffic based on generic netflow, specific types DNS/TLS/protocols, and traffic matching advanced rulesets.
 
 We know it is possible to create dashboards and visualizing the data.
 
-What are the next steps?  
+What are the next steps?
 
 
 \myquestionspage

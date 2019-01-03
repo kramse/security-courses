@@ -1,0 +1,2822 @@
+\documentclass[Screen16to9,17pt,footrule]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{TCP/IP and Security in TCP/IP protocol suite}
+{Communication and Network Security 2019}
+
+
+
+\hlkimage{22cm}{images/kursus-netvaerk.pdf}
+
+
+\slide{Netværk til routning}
+
+\hlkimage{27cm}{basic-ipv6-network.pdf}
+
+\vskip 2cm
+
+
+\slide{Internet idag}
+
+
+\hlkimage{12cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Klienter og servere
+\item Rødder i akademiske miljøer
+\item Protokoller der er op til 20 år gamle
+\item Meget lidt kryptering, mest på http til brug ved e-handel
+\item Kurset omhandler udelukkende netværk baseret på IP protokollerne
+\end{list1}
+
+\slide{Internet er åbne standarder!}
+
+{\hlkbig \color{titlecolor}
+We reject kings, presidents, and voting.\\
+We believe in rough consensus and running code.\\
+-- The IETF credo Dave Clark, 1992.}
+
+\begin{list1}
+\item Request for comments - RFC - er en serie af dokumenter
+\item RFC, BCP, FYI, informational\\
+de første stammer tilbage fra 1969
+\item Ændres ikke, men får status Obsoleted når der udkommer en nyere
+  version af en standard
+\item Standards track:\\
+Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
+\item  Åbne standarder = åbenhed, ikke garanti for sikkerhed
+\end{list1}
+
+
+\slide{Hvad er Internet}
+
+\begin{list1}
+\item Kommunikation mellem mennesker!
+\item Baseret på TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 kalder det packets, ikke datagram)
+\item forbindelsesorienteret, \emph{connection-oriented}
+\item forbindelsesløs, \emph{connection-less}
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+
+\slide{IP netværk: Internettet historisk set}
+
+\begin{list2}
+\item[1961]  L. Kleinrock, MIT packet-switching teori
+\item[1962]  J. C. R. Licklider, MIT - notes
+\item[1964]  Paul Baran: On Distributed Communications
+\item[1969]  ARPANET startes 4 noder
+\item[1971]  14 noder
+\item[1973]  Arbejde med IP startes
+\item[1973]  Email er ca. 75\% af ARPANET traffik
+\item[1974]  TCP/IP: Cerf/Kahn: A protocol for Packet
+        Network Interconnection
+\item[1983]  EUUG $\rightarrow$ DKUUG/DIKU forbindelse
+\item[1988]  ca. 60.000 systemer på Internettet
+        The Morris Worm rammer ca. 10\%
+\item[2000]  Maj I LOVE YOU ormen rammer
+%\item[2001]  August Code Red ~600.000 servere
+\item[2002]  Ialt ca. 130 millioner på Internet
+\end{list2}
+
+\slide{Internet historisk set -  anno 1969}
+\hlkimage{9cm}{1969_4-node_map.png}
+%size 2
+
+\begin{list2}
+\item Node 1: University of California Los Angeles
+\item Node 2: Stanford Research Institute
+\item Node 3: University of California Santa Barbara
+\item Node 4: University of Utah
+%\item Kilde: \link{http://www.zakon.org/robert/internet/timeline/}
+\end{list2}
+
+\slide{De tidlige notater om Internet}
+
+\begin{list1}
+\item L. Kleinrock \emph{Information Flow in Large Communication nets}, 1961
+\item J.C.R. Licklider, MIT noter fra 1962 \emph{On-Line Man Computer
+  Communication}
+\item Paul Baran, 1964 \emph{On distributed Communications}
+12-bind serie af rapporter\\
+\link{http://www.rand.org/publications/RM/baran.list.html}
+\item V. Cerf og R. Kahn, 1974
+\emph{A protocol for Packet Network Interconnection}
+IEEE Transactions on Communication, vol. COM-22, pp. 637-648, May 1974
+\item De tidlige notater kan findes på nettet!
+\end{list1}
+
+Læs evt. mere i mit speciale \link{http://www.inet6.dk/thesis.pdf}
+
+\slide{BSD UNIX}
+
+\hlkimage{4cm}{implementation_freebsd.jpg}
+
+\begin{list1}
+  \item UNIX kildeteksten var nem at få fat i for universiteter og
+  mange andre
+\item Bell Labs/AT\&T var et telefonselskab - ikke et software hus
+\item På Berkeley Universitetet blev der udviklet en del på UNIX og
+  det har givet anledning til en hel gren kaldet BSD UNIX
+\item BSD står for Berkeley Software Distribution
+\item BSD UNIX har blandt andet resulteret i virtual memory management
+  og en masse TCP/IP relaterede applikationer
+\end{list1}
+
+\slide{Open Source definitioner - uddrag}
+
+\begin{list1}
+\item Free Redistribution - der må ikke lægges begrænsninger på om
+  softwaren gives væk eller sælges
+\item Source Code - kildeteksten skal være tilgængelig
+\item Derived Works - det skal være muligt at arbejde videre på
+\item Integrity of The Author's Source Code - det skal være muligt at
+  beskytte sit navn og rygte, ved at kræve ændret navn for
+  afledte projekter
+\item Softwaren kaldes ofte også Free Software, nogle bruger endda Libre
+\item Eksempler er BSD licensen, Apache, GNU GPL og mange andre
+\item Kilder: \link{http://www.opensource.org/}\\
+\link{http://en.wikipedia.org/wiki/FLOSS} Free/Libre/Open-Source Software
+\end{list1}
+
+\slide{BSD licensen er pragmatisk}
+
+\begin{list1}
+ \item BSD licensen kræver ikke at man offentliggør sine ændringer,
+ man kan altså bruge BSD kildetekst og stadig lave et kommercielt
+ produkt!
+\item GNU GPL bliver af nogle omtalt som en virus - der
+  \emph{inficerer} softwaren, og afledte projekter
+\end{list1}
+
+
+
+\slide{Hvad er Internet}
+
+\begin{list1}
+\item 80'erne IP/TCP starten af 80'erne
+\item 90'erne IP version 6 udarbejdes
+  \begin{list2}
+  \item IPv6 ikke brugt i Europa og US
+  \item IPv6 er ekstremt vigtigt i Asien
+  \item historisk få adresser tildelt til 3.verdenslande
+  \item Større Universiteter i USA har ofte større allokering end Kina!
+  \end{list2}
+\item 1991 WWW "opfindes" af Tim Berners-Lee hos CERN
+\item E-mail var hovedparten af traffik
+  - siden overtog web/http førstepladsen
+\end{list1}
+
+\slide{Hvad er Internet}
+
+\vskip 1 cm
+
+\centerline{Antallet af hosts på Internet}
+
+\hlkimage{16cm}{images/Count_Host.png}
+
+\begin{list1}
+\item Kilde:
+Hobbes' Internet Timeline v5.6\\
+\link{http://www.zakon.org/robert/internet/timeline/}
+\end{list1}
+
+\slide{Hvad er Internet}
+
+\vskip 1 cm
+
+\centerline{Antallet af World Wide Web servere}
+
+\hlkimage{16cm}{images/Count_WWW.png}
+
+\begin{list1}
+\item Kilde: Hobbes' Internet Timeline v5.6\\
+\link{http://www.zakon.org/robert/internet/timeline/}
+\end{list1}
+
+
+% IP-adresser
+
+\slide{Fælles adresserum}
+
+\vskip 2 cm
+\hlkimage{17cm}{IP-address.pdf}
+
+\begin{list1}
+\item Hvad kendetegner internet idag
+\item Der er et fælles adresserum baseret på 32-bit adresser
+\item En IP-adresse kunne være 10.0.0.1
+\end{list1}
+
+\slide{IPv4 addresser og skrivemåde}
+
+\begin{alltt}
+hlk@bigfoot:hlk$ ipconvert.pl 127.0.0.1
+Adressen er: 127.0.0.1
+Adressen er: 2130706433
+hlk@bigfoot:hlk$ ping 2130706433
+PING 2130706433 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.135 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.144 ms
+\end{alltt}
+
+\begin{list1}
+\item IP-adresser skrives typisk som decimaltal adskilt af punktum
+\item Kaldes {\bf dot notation}: 10.1.2.3
+\item Kan også skrive som oktal eller heksadecimale tal
+\end{list1}
+
+
+
+\slide{IP-adresser som bits}
+
+\begin{alltt}
+IP-adresse: 127.0.0.1
+Heltal:	2130706433
+Binary:	1111111000000000000000000000001
+\end{alltt}
+
+\begin{list1}
+\item IP-adresser kan også konverteres til bits
+\item Computeren regner binært, vi bruger dot-notationen
+\end{list1}
+
+\slide{Internet ABC}
+
+\begin{list1}
+\item Tidligere benyttede man klasseinddelingen af IP-adresser: A, B, C, D og E
+\item Desværre var denne opdeling ufleksibel:
+\begin{list2}
+\item A-klasse kunne potentielt indeholde 16 millioner hosts
+\item B-klasse kunne potentielt indeholder omkring 65.000 hosts
+\item C-klasse kunne indeholde omkring 250 hosts
+\end{list2}
+\item Derfor bad de fleste om adresser i B-klasser - så de var ved at løbe tør!
+\item D-klasse benyttes til multicast
+\item E-klasse er blot reserveret
+\item Se evt. \link{http://en.wikipedia.org/wiki/Classful\_network}
+\end{list1}
+
+
+\slide{CIDR Classless Inter-Domain Routing}
+
+\hlkimage{15cm}{CIDR-aggregation.pdf}
+
+\begin{list1}
+\item Subnetmasker var oprindeligt indforstået
+\item Dernæst var det noget man brugte til at opdele sit A, B eller C net med
+\item Ved at tildele flere C-klasser kunne man spare de resterende B-klasser - men det betød en routing table explosion
+\item Idag er subnetmaske en sammenhængende række 1-bit der angiver størrelse på nettet
+\item 10.0.0.0/24 betyder netværket 10.0.0.0 med subnetmaske 255.255.255.0
+\item Nogle få steder kaldes det tillige supernet, supernetting
+\end{list1}
+
+
+\slide{Subnet calculator, CIDR calculator}
+
+\hlkimage{10cm}{subnet-calculator.png}
+
+\begin{list1}
+\item Der findes et væld af programmer som kan hjælpe med at udregne
+subnetmasker til IPv4
+\item Screenshot fra \link{http://www.subnet-calculator.com/}
+\end{list1}
+
+
+\slide{RFC-1918 private netværk}
+
+\begin{list1}
+\item Der findes et antal adresserum som alle må benytte frit:
+\begin{list2}
+\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
+\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
+\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
+\end{list2}
+\item Address Allocation for Private Internets RFC-1918 adresserne!
+\item NB: man må ikke sende pakker ud på internet med disse som afsender, giver ikke mening
+\end{list1}
+
+\slide{IPv4 addresser opsummering}
+
+\begin{list2}
+\item Altid 32-bit adresser
+\item Skrives typisk med 4 decimaltal dot notation 10.1.2.3
+\item Netværk angives med CIDR Classless Inter-Domain Routing RFC-1519
+\item CIDR notation 10.0.0.0/8 -
+  fremfor 10.0.0.0 med subnet maske 255.0.0.0
+\item Specielle adresser\\
+127.0.0.1 localhost/loopback\\
+0.0.0.0  default route
+\item RFC-1918 angiver private adresser som alle kan bruge
+
+\end{list2}
+
+
+\slide{Stop - netværket idag}
+
+\begin{list1}
+\item Bemærk hvilket netværk vi bruger idag
+\item Primære server fiona har IP-adressen 10.0.45.36
+\item Primære router luffe har IP-adressen 10.0.45.2 (og flere andre)
+\item Sekundære router idag er Bianca som har IP-adressen 10.0.46.2 (og flere andre)
+\item Hvis du kender til IP i forvejen så udforsk gerne på egen hånd netværket
+\item Det er tilladt at logge ind på alle systemer, undtagen Henrik's laptop bigfoot :-)
+\item {\bf Det er forbudt at ændre IP-konfiguration og passwords}
+\item Nu burde I kunne forbinde jer til netværket fysisk, check med \verb+ping 10.0.45.2+
+\item Det er nok at en PC i hver gruppe er på kursusnetværket
+\end{list1}
+
+\centerline{Pause for dem hvor det virker, mens vi ordner resten}
+
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{14cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{Netværkshardware}
+
+\begin{list1}
+\item Der er mange muligheder med IP netværk, IP kræver meget lidt
+\item Ofte benyttede idag er:
+\begin{list2}
+\item Ethernet - varianter 10mbit, 100mbit, gigabit, 10 Gigabit findes, men er dyrt
+\item Wireless 802.11 teknologier
+\item ADSL/ATM teknologier til WAN forbindelser
+\item MPLS ligeledes til WAN forbindelser
+\end{list2}
+\item Ethernet kan bruge kobberledninger eller fiber
+\item WAN forbindelser er typisk fiber på grund af afstanden mellem routere
+\item Tidligere benyttede inkluderer: X.25, modem, FDDI, ATM, Token-Ring
+\end{list1}
+
+\slide{Ethernet stik, kabler og dioder}
+
+\hlkimage{20cm}{ethernetLights.jpg}
+
+\centerline{Dioder viser typisk om der er link, hastighed samt aktivitet}
+
+\slide{Trådløse teknologier}
+
+\hlkimage{10cm}{WCG200v2_med.jpg}
+
+\begin{list1}
+\item Et typisk 802.11 Access-Point (AP) der har Wireless og Ethernet stik/switch
+\end{list1}
+
+\slide{MAC adresser}
+%\hlkimage{10cm}{apple-oui.png}
+
+\begin{alltt}
+00-03-93   (hex)        Apple Computer, Inc.
+000393     (base 16)    Apple Computer, Inc.
+                        20650 Valley Green Dr.
+                        Cupertino CA 95014
+                        UNITED STATES
+\end{alltt}
+\begin{list1}
+\item Netværksteknologierne benytter adresser på lag 2
+\item Typisk svarende til 48-bit MAC adresser som kendes fra Ethernet MAC-48/EUI-48
+\item Første halvdel af adresserne er Organizationally Unique Identifier (OUI)
+\item Ved hjælp af OUI kan man udlede hvilken producent der har produceret netkortet
+\item \link{http://standards.ieee.org/regauth/oui/index.shtml}
+\end{list1}
+
+\slide{Half/full-duplex og speed}
+
+\hlkimage{20cm}{half-full-duplex.pdf}
+
+\begin{list1}
+\item Hvad hastighed overføres data med?
+\item De fleste nyere Ethernet netkort kan køre i fuld-duplex
+\item med full-duplex kan der både sendes og modtages data samtidigt
+\item Ethernet kan benytte auto-negotiation - der ofte virker\\
+Klart bedre i gigabitnetkort men pas på
+\end{list1}
+
+
+
+
+
+\slide{Broer og routere}
+
+\hlkimage{20cm}{wan-network.pdf}
+\centerline{Fysisk er der en begrænsing for hvor lange ledningerne må være}
+
+\slide{Bridges}
+
+\begin{list1}
+\item Ethernet er broadcast teknologi, hvor data sendes ud på et delt medie - Æteren
+\item Broadcast giver en grænse for udbredningen vs hastighed
+\item Ved hjælp af en bro kan man forbinde to netværkssegmenter på layer-2
+\item Broen kopierer data mellem de to segmenter
+\item Virker som en forstærker på signalet, men mere intelligent
+\item Den intelligente bro kender MAC adresserne på hver side
+\item Broen kopierer kun hvis afsender og modtager er på hver sin side
+\end{list1}
+
+Kilde: For mere information søg efter Aloha-net\\ \link{http://en.wikipedia.org/wiki/ALOHAnet}
+
+
+\slide{En switch}
+
+\hlkimage{15cm}{switch-1.pdf}
+
+\begin{list1}
+\item Ved at fortsætte udviklingen kunne man samle broer til en switch
+\item En switch idag kan sende og modtage på flere porte samtidig, og med full-duplex
+\item Bemærk performance begrænses af backplane i switchen
+\end{list1}
+
+\slide{Topologier og Spanning Tree Protocol}
+
+\hlkimage{18cm}{switch-STP.pdf}
+
+Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
+
+
+\slide{Core, Distribution og Access net}
+
+\hlkimage{20cm}{core-dist.pdf}
+
+\centerline{Det er ikke altid man har præcis denne opdeling, men den er ofte brugt}
+
+
+
+
+\slide{Pakker i en datastrøm}
+
+\hlkimage{23cm}{ethernet-frame-1.pdf}
+\begin{list1}
+\item Ser vi data som en datastrøm er pakkerne blot et mønster lagt henover data
+\item Netværksteknologien definerer start og slut på en frame
+\item Fra et lavere niveau modtager vi en pakke, eksempelvis 1500-bytes fra Ethernet driver
+\end{list1}
+
+
+
+\slide{IPv4 pakken - header - RFC-791}
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{IP karakteristik}
+
+\begin{list1}
+\item Fælles adresserum
+\item Best effort - kommer en pakke fra er det fint, hvis ikke må højere lag klare det
+\item Kræver ikke mange services fra underliggende teknologi \emph{dumt netværk}
+\item Defineret gennem åben standardiseringsprocess og RFC-dokumenter
+\end{list1}
+
+
+
+\slide{Fragmentering og PMTU}
+
+\hlkimage{20cm}{fragments-1.pdf}
+\begin{list1}
+\item Hidtil har vi antaget at der blev brugt Ethernet med pakkestørrelse på 1500 bytes
+\item Pakkestørrelsen kaldes MTU Maximum Transmission Unit
+\item Skal der sendes mere data opdeles i pakker af denne størrelse, fra afsender
+\item Men hvad hvis en router på vejen ikke bruger 1500 bytes, men kun 1000
+\end{list1}
+
+\slide{ICMP Internet Control Message Protocol}
+
+\begin{list1}
+\item Kontrolprotokol og fejlmeldinger
+\item Nogle af de mest almindelige beskedtyper
+\begin{list2}
+\item echo
+\item netmask
+\item info
+\end{list2}
+\item Bruges generelt til \emph{signalering}
+\item Defineret i RFC-792
+\end{list1}
+
+\centerline{\bf NB: nogle firewall-administratorer blokerer alt ICMP - det er forkert!}
+
+\slide{ICMP beskedtyper}
+
+\begin{list1}
+\item Type
+\begin{list2}
+\item 0 = net unreachable;
+\item 1 = host unreachable;
+\item 2 = protocol unreachable;
+\item 3 = port unreachable;
+\item 4 = fragmentation needed and DF set;
+\item 5 = source route failed.
+\end{list2}
+\item Ved at fjerne ALT ICMP fra et net fjerner man nødvendig funktionalitet!
+\item Tillad ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\slide{Hvordan virker ARP?}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
+\end{center}
+
+%server 00:30:65:22:94:a1\\
+%client 00:40:70:12:95:1c\\
+%hacker 00:02:03:04:05:06\\
+
+\slide{Hvordan virker ARP? - 2}
+\begin{list1}
+\item {\bfseries ping 10.0.0.2} udført på server medfører
+\item ARP Address Resolution Protocol request/reply:
+  \begin{list2}
+  \item ARP request i broadcast - Who has 10.0.0.2 Tell 10.0.0.1
+  \item ARP reply (fra 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
+  \end{list2}
+\item IP ICMP request/reply:
+  \begin{list2}
+    \item Echo (ping) request fra 10.0.0.1 til 10.0.0.2
+\item Echo (ping) reply fra 10.0.0.2 til 10.0.0.1
+\item ...
+  \end{list2}
+\item ARP udføres altid på Ethernet før der kan sendes IP trafik
+\item (kan være RARP til udstyr der henter en adresse ved boot)
+\end{list1}
+
+
+\slide{ARP cache}
+
+\begin{alltt}
+\small
+hlk@bigfoot:hlk$ arp -an
+? (10.0.42.1) at 0:0:24:c8:b2:4c on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+\end{alltt}
+
+\begin{list1}
+\item ARP cache kan vises med kommandoen \verb+arp -an+
+\item -a viser alle
+\item -n viser kun adresserne, prøver ikke at slå navne op - typisk hurtigere
+\item ARP cache er dynamisk og adresser fjernes automatisk efter 5-20 minutter hvis de ikke bruges mere
+\item Læs mere med \verb+man 4 arp+
+\end{list1}
+
+
+\slide{Manualsystemet}
+
+\begin{quote}
+ It is a book about a Spanish guy called Manual. You should read it.
+       -- Dilbert
+\end{quote}
+
+\begin{list1}
+\item Manualsystemet i UNIX er utroligt stærkt!
+\item Det SKAL altid installeres sammen med værktøjerne!
+\item Det er næsten identisk på diverse UNIX varianter!
+\item \verb+man -k+ søger efter keyword, se også \verb+apropos+
+\end{list1}
+
+Prøv \verb+man crontab+ og \verb+man 5 crontab+
+
+\hlkimage{10cm}{images/unix-command-1.pdf}
+
+\slide{En manualside}
+
+\begin{alltt}
+\small
+CAL(1)                BSD General Commands Manual                CAL(1)
+NAME
+     cal - displays a calendar
+SYNOPSIS
+     cal [-jy] [[month]  year]
+DESCRIPTION
+   cal displays a simple calendar.  If arguments are not specified, the cur-
+   rent month is displayed.  The options are as follows:
+   -j      Display julian dates (days one-based, numbered from January 1).
+   -y      Display a calendar for the current year.
+
+The Gregorian Reformation is assumed to have occurred in 1752 on the 3rd
+of September.  By this time, most countries had recognized the reforma-
+tion (although a few did not recognize it until the early 1900's.)  Ten
+days following that date were eliminated by the reformation, so the cal-
+endar for that month is a bit unusual.
+
+HISTORY
+     A cal command appeared in Version 6 AT&T UNIX.
+\end{alltt}
+
+\slide{Kommandolinien på UNIX}
+
+\begin{list1}
+\item Shells kommandofortolkere:
+  \begin{list2}
+    \item sh - Bourne Shell
+\item bash - Bourne Again Shell
+\item ksh - Korn shell, lavet af David Korn
+\item csh - C shell, syntaks der minder om C sproget
+\item flere andre, zsh, tcsh
+  \end{list2}
+\item Svarer til command.com og cmd.exe på Windows
+\item Kan bruges som komplette programmeringssprog
+\end{list1}
+
+\slide{Kommandoprompten}
+
+
+\begin{alltt}
+\small
+[hlk@fischer hlk]$ id
+uid=6000(hlk) gid=20(staff) groups=20(staff),
+0(wheel), 80(admin), 160(cvs)
+[hlk@fischer hlk]$
+
+[root@fischer hlk]# id
+uid=0(root) gid=0(wheel) groups=0(wheel), 1(daemon),
+2(kmem), 3(sys), 4(tty), 5(operator), 20(staff),
+31(guest), 80(admin)
+[root@fischer hlk]#
+\end{alltt}
+
+\begin{list1}
+\item typisk viser et dollartegn at man er logget ind som almindelig bruge
+\item mens en havelåge at man er root - superbruger
+\end{list1}
+
+\slide{Kommandoliniens opbygning}
+
+
+\begin{alltt}
+echo [-n] [string ...]
+\end{alltt}
+
+\begin{list1}
+\item Kommandoerne der skrives på kommandolinien skrives sådan:
+\begin{list2}
+\item Starter altid med kommandoen, man kan ikke skrive \verb+henrik echo+
+\item Options skrives typisk med bindestreg foran, eksempelvis \verb+-n+
+\item Flere options kan sættes sammen, \verb+tar -cvf+ eller \verb+tar cvf+
+\item I manualsystemet kan man se valgfrie options i firkantede
+  klammer \verb+[]+
+\item Argumenterne til kommandoen skrives typisk til sidst (eller der
+  bruges redirection)
+\end{list2}
+\end{list1}
+
+
+\slide{Adgang til UNIX}
+
+\begin{center}
+\includegraphics[width=4cm]{images/kde.png}
+\includegraphics[width=4cm]{images/gnome-logo-large.png}
+\end{center}
+
+\begin{list1}
+%\item Systemer der minder om UNIX kan idag nemt skaffes
+\item Adgang til UNIX kan ske via grafiske brugergrænseflader
+  \begin{list2}
+%  \item X11 \link{http://www.x.org}
+  \item KDE \link{http://www.kde.org}
+  \item GNOME \link{http://www.gnome.org}
+  \end{list2}
+\item eller kommandolinien
+\end{list1}
+\centerline{\includegraphics[width=17cm]{images/unix-cmdline.pdf}}
+
+
+\exercise{ex:wireshark-install}
+\exercise{ex:traceroute}
+
+
+
+\slide{TCP/IP basiskonfiguration}
+
+\begin{alltt}
+ifconfig en0 10.0.42.1 netmask 255.255.255.0
+route add default gw 10.0.42.1
+\end{alltt}
+
+\begin{list1}
+\item konfiguration af interfaces og netværk på UNIX foregår med:
+\item \verb+ifconfig+, \verb+route+ og \verb+netstat+
+\item - ofte pakket ind i konfigurationsmenuer m.v.
+\item fejlsøgning foregår typisk med \verb+ping+ og \verb+traceroute+
+\item På Microsoft Windows benyttes ikke \verb+ifconfig+\\
+men kommandoerne \verb+ipconfig+ og \verb+ipv6+
+\end{list1}
+
+
+\slide{Små forskelle}
+
+\begin{alltt}
+$ route add default 10.0.42.1
+\emph{uden gw keyword!}
+
+$ route add default gw 10.0.42.1
+\emph{Linux kræver gw med}
+\end{alltt}
+
+\vskip 1cm
+
+\centerline{\bf NB: UNIX varianter kan indbyrdes være forskellige!}
+
+
+
+\slide{Flere små forskelle}
+
+\vskip 1cm
+\centerline{ping eller ping6}
+
+\begin{list1}
+\item Nogle systemer vælger at ping kommandoen kan ping'e både IPv4 og Ipv6
+\item Andre vælger at \verb+ping+ kun benyttes til IPv4, mens IPv6 ping kaldes for \verb+ping6+
+\item Læg også mærke til jargonen \emph{at pinge}
+\end{list1}
+
+
+\slide{OpenBSD}
+
+Netværkskonfiguration på OpenBSD:
+\begin{alltt}
+# cat /etc/hostname.sk0
+inet 10.0.0.23 0xffffff00 NONE
+# cat /etc/mygate
+10.0.0.1
+# cat /etc/resolv.conf
+domain security6.net
+lookup file bind
+nameserver 212.242.40.3
+nameserver 212.242.40.51
+\end{alltt}
+
+\slide{FreeBSD}
+
+Netværkskonfiguration på FreeBSD \verb+/etc/rc.conf+:
+\begin{alltt}
+\small
+# This file now contains just the overrides from /etc/defaults/rc.conf.
+hostname="freebsd.security6.net
+#ifconfig_vr0="DHCP"
+ifconfig_vr0="inet 10.20.30.75 netmask 255.255.255.0"
+router_enable="NO"
+defaultrouter="10.20.30.65"
+keyrate="fast"
+moused_enable="YES"
+ntpdate_enable="NO"
+ntpdate_flags="none"
+saver="blank"
+sshd_enable="YES"
+usbd_enable="YES"
+...
+\end{alltt}
+
+
+\slide{GUI værktøjer - autoconfiguration}
+
+\hlkimage{20cm}{osx-network-automatic.png}
+
+\slide{GUI værktøjer - manuel konfiguration}
+
+\hlkimage{20cm}{osx-network-manual.png}
+
+\slide{ifconfig output}
+
+\begin{alltt}\small
+hlk@bigfoot:hlk$ ifconfig -a
+lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
+        inet 127.0.0.1 netmask 0xff000000
+        inet6 ::1 prefixlen 128
+        inet6 fe80::1%lo0 prefixlen 64 scopeid 0x1
+gif0: flags=8010<POINTOPOINT,MULTICAST> mtu 1280
+stf0: flags=0<> mtu 1280
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+        ether 00:0a:95:db:c8:b0
+        media: autoselect (none) status: inactive
+        supported media: none autoselect 10baseT/UTP <half-duplex> 10baseT/UTP <full-duplex> 10baseT/UTP <full-duplex,hw-loopback> 100baseTX <half-duplex> 100baseTX <full-duplex> 100baseTX <full-duplex,hw-loopback> 1000baseT <full-duplex> 1000baseT <full-duplex,hw-loopback> 1000baseT <full-duplex,flow-control> 1000baseT <full-duplex,flow-control,hw-loopback>
+en1: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+        ether 00:0d:93:86:7c:3f
+        media: autoselect (<unknown type>) status: inactive
+        supported media: autoselect
+\end{alltt}
+%$
+\vskip 1 cm
+\centerline{ifconfig output er næsten ens på tværs af UNIX}
+
+
+
+
+\slide{Vigtigste protokoller}
+
+
+\begin{list1}
+\item ARP Address Resolution Protocol
+\item IP og ICMP Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list1}
+\vskip 1cm
+\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
+
+% allerede gennemgået ovenfor
+%\slide{ICMP}
+
+%\begin{list1}
+%\item 	Internet Control Message Protocol
+%	Defineret i RFC-792
+
+%\end{list1}
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{20cm}{udp-1.pdf}
+\begin{list1}
+\item Forbindelsesløs RFC-768, \emph{connection-less} - der kan tabes pakker
+\item Kan benyttes til multicast/broadcast - flere modtagere
+\end{list1}
+
+
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{20cm}{tcp-1.pdf}
+
+\begin{list1}
+\item Forbindelsesorienteret RFC-791 September 1981, \emph{connection-oriented}
+\item Enten overføres data eller man får fejlmeddelelse
+\end{list1}
+
+
+
+
+\slide{TCP three way handshake}
+
+\hlkimage{7cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item Tidligere loggede systemer kun når der var etableret en fuld TCP
+  forbindelse - dette kan/kunne udnyttes til \emph{stealth}-scans
+\item Hvis en maskine modtager mange SYN pakker kan dette fylde
+  tabellen over connections op - og derved afholde nye forbindelser
+  fra at blive oprette - {\bfseries SYN-flooding}
+\end{list2}
+
+\slide{Well-known port numbers}
+
+\hlkimage{10cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA vedligeholder en liste over magiske konstanter i IP
+\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
+\item En liste af interesse er port numre, hvor et par eksempler er:
+\begin{list2}
+\item Port 25 SMTP Simple Mail Transfer Protocol
+\item Port 53 DNS Domain Name System
+\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
+\item Port 443 HTTP over TLS/SSL
+\end{list2}
+\item Se flere på \link{http://www.iana.org}
+\end{list1}
+
+\slide{Hierarkisk routing}
+
+\hlkimage{18cm}{routing-1.pdf}
+Hvordan kommer pakkerne frem til modtageren
+
+\slide{IP default gateway}
+
+\hlkimage{13cm}{routing-2.pdf}
+
+\begin{list1}
+\item IP routing er nemt
+\item En host kender en default gateway i nærheden
+\item En router har en eller flere upstream routere, få adresser den sender videre til
+\item Core internet har default free zone, kender \emph{alle netværk}
+\end{list1}
+
+
+
+\slide{DHCP Dynamic Host Configuration Protocol}
+
+\hlkimage{13cm}{dhcp-1.pdf}
+
+\begin{list1}
+\item Hvordan får man information om default gateway
+\item Man sender et DHCP request og modtager et svar fra en DHCP server
+\item Dynamisk konfiguration af klienter fra en centralt konfigureret server
+\item Bruges til IP adresser og meget mere
+\end{list1}
+
+
+\slide{Routing}
+
+
+\begin{list1}
+  \item routing table - tabel over netværkskort og tilhørende adresser
+\item default gateway - den adresse hvortil man sender
+  \emph{non-local} pakker\\kaldes også default route, gateway of last
+  resort
+\item routing styres enten manuelt - opdatering af route tabellen,
+  eller konfiguration af adresser og subnet maske på netkort
+\item eller automatisk ved brug af routing protocols - interne og
+  eksterne route protokoller
+\item de lidt ældre routing protokoller har ingen sikkerhedsmekanismer
+\item {\bf IP benytter longest match i routing tabeller!}
+\item Den mest specifikke route gælder for forward af en pakke!
+\end{list1}
+
+
+\slide{Routing forståelse}
+
+\begin{alltt}
+\small
+$ netstat -rn
+Routing tables
+
+Internet:
+Destination    Gateway         Flags  Refs      Use  Netif
+default        10.0.0.1        UGSc    23        7    en0
+10/24          link#4          UCS      1        0    en0
+10.0.0.1       0:0:24:c1:58:ac UHLW    24       18    en0
+10.0.0.33      127.0.0.1       UHS      0        1    lo0
+10.0.0.63      127.0.0.1       UHS      0        0    lo0
+127            127.0.0.1       UCS      0        0    lo0
+127.0.0.1      127.0.0.1       UH       4     7581    lo0
+169.254        link#4          UCS      0        0    en0
+\end{alltt}
+
+\vskip 1 cm
+\centerline{Start med kun at se på Destination, Gateway og Netinterface}
+
+
+\exercise{ex:network-ifconfig}
+\exercise{ex:network-netstat}
+\exercise{ex:network-lsof}
+
+
+\slide{whois systemet}
+
+\begin{list1}
+\item IP adresserne administreres i dagligdagen af et antal Internet
+  registries, hvor de største er:
+\begin{list2}
+\item RIPE (Réseaux IP Européens)  \link{http://ripe.net}
+\item ARIN American Registry for Internet Numbers \link{http://www.arin.net}
+\item Asia Pacific Network Information Center \link{http://www.apnic.net}
+\item LACNIC (Regional Latin-American and Caribbean IP Address Registry) - Latin America and some Caribbean Islands
+\end{list2}
+\item disse fire kaldes for Regional Internet Registries (RIRs) i
+  modsætning til Local Internet Registries (LIRs) og National Internet
+  Registry (NIR)
+\end{list1}
+
+\slide{whois systemet-2}
+
+\begin{list1}
+\item ansvaret for Internet IP adresser ligger hos ICANN The Internet
+  Corporation for Assigned Names and Numbers\\
+\link{http://www.icann.org}
+\item NB: ICANN må ikke forveksles med IANA Internet Assigned Numbers
+  Authority \link{http://www.iana.org/} som bestyrer portnumre m.v.
+\end{list1}
+
+\exercise{ex:whois}
+
+
+% basic ping og traceroute
+
+\slide{Ping}
+
+\begin{list1}
+\item ICMP - Internet Control Message Protocol
+\item Benyttes til fejlbeskeder og til diagnosticering af forbindelser
+\item ping programmet virker ved hjælp af ICMP ECHO request og
+  forventer ICMP ECHO reply
+\item
+\begin{alltt}
+\small {\bfseries
+$ ping 192.168.1.1}
+PING 192.168.1.1 (192.168.1.1): 56 data bytes
+64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
+\end{alltt}
+\end{list1}
+
+\slide{traceroute}
+
+\begin{list1}
+  \item traceroute programmet virker ved hjælp af TTL
+\item levetiden for en pakke tælles ned i hver router på vejen og ved at sætte denne lavt
+  opnår man at pakken \emph{timer ud} - besked fra hver router på vejen
+\item default er UDP pakker, men på UNIX systemer er der ofte mulighed
+  for at bruge ICMP
+\item
+\begin{alltt}
+\small{\bfseries
+$ traceroute 217.157.20.129}
+traceroute to 217.157.20.129 (217.157.20.129),
+30 hops max, 40 byte packets
+ 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
+ 2  router (217.157.20.129)  1.481 ms  1.374 ms  1.261 ms
+\end{alltt}
+\end{list1}
+
+%DNS
+\slide{Domain Name System}
+
+\hlkimage{12cm}{dns-1.pdf}
+
+\begin{list1}
+\item Gennem DHCP får man typisk også information om DNS servere
+\item En DNS server kan slå navne, domæner og adresser op
+\item Foregår via query og response med datatyper kaldet resource records
+\item DNS er en distribueret database, så opslag kan resultere i flere opslag
+\end{list1}
+
+
+\slide{DNS systemet}
+
+\begin{list1}
+\item navneopslag på Internet
+\item tidligere brugte man en {\bfseries hosts} fil\\
+hosts filer bruges stadig lokalt til serveren - IP-adresser
+\item UNIX: /etc/hosts
+\item Windows \verb+c:\windows\system32\drivers\etc\hosts+
+\item Eksempel: www.security6.net har adressen 217.157.20.131
+\item skrives i database filer, zone filer
+\end{list1}
+
+\begin{alltt}
+ns1     IN      A       217.157.20.130
+        IN      AAAA    2001:618:433::1
+www     IN      A       217.157.20.131
+        IN      AAAA    2001:618:433::14
+\end{alltt}
+
+\slide{Mere end navneopslag}
+
+\begin{list1}
+  \item består af resource records med en type:
+    \begin{list2}
+\item adresser A-records
+\item IPv6 adresser AAAA-records
+\item autoritative navneservere NS-records
+\item post, mail-exchanger MX-records
+\item flere andre: md ,  mf ,  cname ,  soa ,
+                  mb , mg ,  mr ,  null ,  wks ,  ptr ,
+                  hinfo ,  minfo ,  mx ....
+\end{list2}
+\end{list1}
+\begin{alltt}
+        IN      MX      10      mail.security6.net.
+        IN      MX      20      mail2.security6.net.
+\end{alltt}
+
+\slide{Basal DNS opsætning på klienter}
+
+\begin{list1}
+\item \verb+/etc/resolv.conf+
+\item NB: denne fil kan hedde noget andet på UNIX varianter!
+\item eksempelvis \verb+/etc/netsvc.conf+
+\item typisk indhold er domænenavn og IP-adresser for navneservere
+\end{list1}
+
+\begin{alltt}
+domain security6.net
+nameserver 212.242.40.3
+nameserver 212.242.40.51
+\end{alltt}
+
+\slide{DNS root servere}
+\begin{list1}
+  \item Root-servere - 13 stk geografisk distribueret fordelt på Internet
+\end{list1}
+
+\begin{alltt}
+I.ROOT-SERVERS.NET.     3600000 A       192.36.148.17
+E.ROOT-SERVERS.NET.     3600000 A       192.203.230.10
+D.ROOT-SERVERS.NET.     3600000 A       128.8.10.90
+A.ROOT-SERVERS.NET.     3600000 A       198.41.0.4
+H.ROOT-SERVERS.NET.     3600000 A       128.63.2.53
+C.ROOT-SERVERS.NET.     3600000 A       192.33.4.12
+G.ROOT-SERVERS.NET.     3600000 A       192.112.36.4
+F.ROOT-SERVERS.NET.     3600000 A       192.5.5.241
+B.ROOT-SERVERS.NET.     3600000 A       128.9.0.107
+J.ROOT-SERVERS.NET.     3600000 A       198.41.0.10
+K.ROOT-SERVERS.NET.     3600000 A       193.0.14.129
+L.ROOT-SERVERS.NET.     3600000 A       198.32.64.12
+M.ROOT-SERVERS.NET.     3600000 A       202.12.27.33
+\end{alltt}
+
+\slide{DK-hostmaster}
+
+\begin{list1}
+\item bestyrer .dk TLD - top level domain
+
+\item man registrerer ikke .dk-domæner hos DK-hostmaster, men hos en
+  registrator
+\item Et domæne bør have flere navneservere og flere postservere
+\item autoritativ navneserver - ved autoritativt om IP-adresse for
+  maskine.domæne.dk findes
+\item ikke-autoritativ - har på vegne af en klient slået en adresse op
+\item Det anbefales at overveje en service som
+  \link{http://www.gratisdns.dk} der har 5 navneservere distribueret
+  over stor geografisk afstand - en udenfor Danmark
+\end{list1}
+
+\slide{Navngivning af servere}
+
+\begin{list1}
+  \item Hvordan skal vi kunne huske og administrere servere?
+\item Det er ikke nemt at navngive hverken brugere eller servere!
+\item Selvom det lyder smart med A01S13, som forkortelse af Afdeling
+  01's Server nr 13, er det umuligt at huske
+\item ... men måske nødvendigt i de største netværk
+  \begin{list2}
+
+\item Windows serveren er domænecontroller - skal hedde:
+\item Linux server som er terminalserver - skal hedde:
+\item PC-system med NetBSD skal måske være vores ene server - skal hedde: ?
+\item PC-system 1 med en Linux server - skal hedde:
+\item PC-system 2 med en Linux server - skal hedde:
+  \end{list2}
+\end{list1}
+
+
+
+% NAT
+\slide{NAT Network Address Translation}
+\hlkimage{20cm}{nat-1.pdf}
+
+
+\vskip 2 cm
+\begin{list2}
+\item NAT bruges til at forbinde et privat net (RFC-1918 adresser) med internet
+\item NAT gateway udskifter afsender adressen med sin egen
+\item En quick and dirty fix der vil forfølge os for resten af vores
+  liv
+\item Ødelægger en del protokoller :-(
+\item Lægger state i netværket - ødelægger fate sharing
+\end{list2}
+
+
+
+
+\slide{NAT is BAD}
+
+
+\hlkimage{20cm}{nat-is-bad.pdf}
+
+
+\begin{list2}
+\item NAT ødelægger end-to-end transparency!
+\item Problemer med servere bagved NAT
+\item "løser" problemet "godt nok" (tm) for mange
+\item Men idag ser vi multilevel NAT! - eeeeeeewwwwww!
+\item Se RFC-2775 Internet Transparency for mere om dette emne
+\end{list2}
+
+
+\exercise{ex:ping}
+\exercise{ex:icmpush}
+
+\slide{Dag 2 IPv6, Management, diagnosticering}
+
+%\hlkimage{18cm}{nagios-status-overview.jpg}
+\hlkimage{18cm}{cricket-mini-graph.png}
+
+
+% IPv6
+\slide{IPv4 Adresserummet er ved at løbe ud}
+
+\begin{list1}
+\item Adresserummet er ved at løbe ud! faktum!
+\item 32-bit - der ikke kan udnyttes fuldt ud
+\item Tidligere brugte man begreberne A,B og C klasser af IP-adresser
+\begin{list2}
+\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
+\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
+\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
+\end{list2}
+\item Address Allocation for Private Internets RFC-1918 adresserne!
+\item Husk at idag benyttes Classless Inter-Domain Routing CIDR\\
+\link{http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing}
+\item Notation: 192.168.1.0/24\\
+det sædvanlige hjemmenet med subnet maske 255.255.255.0
+\end{list1}
+
+\slide{Status idag}
+\hlkimage{10cm}{map_of_the_internet.jpg}
+
+\slide{Tidslinie for IPv6 (forkortet)}
+
+\begin{list2}
+\item 1990 Vancouver IETF meeting
+det estimeres at klasse B vil løbe ud ca. marts 1994
+
+\item 1990 ultimo
+initiativer til at finde en afløser for IPv4
+
+\item 1995 januar
+RFC-1752 Recommendation for the IP NG Protocol
+
+\item 1995 september
+RFC-1883, RFC-1884, RFC-1885, RFC-1886 1. generation
+
+\item 1998 10. august
+"core" IPv6 dokumenter bliver Draft Standard
+\item
+Kilde: RFC-2460, RFC-2461, RFC-2463, RFC-1981 - m.fl.
+\end{list2}
+
+\slide{IPv6: Internet redesigned? - nej!}
+
+\begin{list1}
+\item Målet var at bevare de gode egenskaber
+\begin{list2}
+\item basalt set Internet i gamle dage
+\item back to basics!
+\item fate sharing
+\item kommunikationen afhænger ikke af state i netværket
+\item end-to-end transparency
+\end{list2}
+\item Idag er Internet blevet en nødvendighed for mange!
+\end{list1}
+
+\centerline{\bf IP er en forretningskritisk ressource}
+
+IPv6 basis i RFC-1752 The Recommendation for the IP Next Generation Protocol
+
+
+
+
+\slide{KAME - en IPv6 reference implementation}
+
+\hlkimage{6cm}{kame-noanime-small.png}
+
+%center
+\centerline{\link{http://www.kame.net}}
+
+\begin{list2}
+\item Er idag at betragte som en reference implementation\\
+- i stil med BSD fra Berkeley var det
+\item KAME har været på forkant med implementation af draft dokumenter
+\item KAME er inkluderet i OpenBSD, NetBSD, FreeBSD og BSD/OS
+- har været det siden version 2.7, 1.5, 4.0 og 4.2
+
+\item Projektet er afsluttet, men nye projekter fortsætter i
+WIDE regi \link{http://www.wide.ad.jp/}
+\item Der er udkommet to bøger som i detaljer gennemgår IPv6 protokollerne i KAME
+\end{list2}
+
+\slide{Hvordan bruger man IPv6}
+
+
+\begin{center}
+\hlkbig
+\vskip 2 cm
+www.inet6.dk
+
+hlk@inet6.dk
+
+\end{center}
+
+\pause
+DNS AAAA record tilføjes
+
+\begin{alltt}
+www     IN A    91.102.91.17
+        IN AAAA 2001:16d8:ff00:12f::2
+mail    IN A    91.102.91.17
+        IN AAAA 2001:16d8:ff00:12f::2
+\end{alltt}
+
+\slide{IPv6 addresser og skrivemåde}
+
+\hlkimage{20cm}{ipv6-address-1.pdf}
+
+\begin{list2}
+\item 128-bit adresser, subnet prefix næsten altid 64-bit
+\item skrives i grupper af 4 hexcifre ad gangen adskilt af kolon :
+\item foranstillede 0 i en gruppe kan udelades, en række 0 kan erstattes med ::
+\item dvs 0:0:0:0:0:0:0:0 er det samme som \\
+0000:0000:0000:0000:0000:0000:0000:0000
+\item Dvs min webservers IPv6 adresse kan skrives som:
+2001:16d8:ff00:12f::2
+\item Specielle adresser:
+::1 localhost/loopback og
+::  default route
+\item Læs mere i RFC-3513
+\end{list2}
+
+\slide{IPv6 addresser - prefix notation}
+
+
+\begin{list1}
+\item CIDR Classless Inter-Domain Routing RFC-1519
+\item Aggregatable Global Unicast
+\item 2001::/16 RIR subTLA space
+\begin{list2}
+\item 2001:200::/23 APNIC
+\item 2001:400::/23 ARIN
+\item 2001:600::/23 RIPE
+\end{list2}
+\item 2002::/16 6to4 prefix
+\item 3ffe::/16 6bone allocation
+\item link-local unicast addresses\\
+fe80::/10 genereres udfra MAC addresserne EUI-64
+\end{list1}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{IPv6 addresser - multicast}
+
+\begin{list1}
+\item Unicast - identificerer ét interface
+pakker sendes til en modtager
+
+\item Multicast - identificerer flere interfaces
+pakker sendes til flere modtagere
+
+\item Anycast - indentificerer en "gruppe"
+en pakke sendes til et vilkårligt interface med denne adresse typisk det nærmeste
+
+\item Broadcast?
+er væk, udeladt, finito, gone!
+
+\item Husk også at site-local er deprecated, se RFC-3879
+\end{list1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{IPv6 pakken - header - RFC-2460}
+
+\begin{list2}
+\item Simplere - fixed size - 40 bytes
+\item Sjældent brugte felter (fra v4) udeladt (kun 6 vs 10 i IPv4)
+\item Ingen checksum!
+\item Adresser 128-bit
+\item 64-bit aligned, alle 6 felter med indenfor første 64
+\end{list2}
+
+Mindre kompleksitet for routere på vejen medfører
+mulighed for flere pakker på en given router
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{IPv6 pakken - header - RFC-2460}
+
+
+\begin{alltt}
+\footnotesize
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+
+\slide{IPv4 pakken - header - RFC-791}
+
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{IPv6 pakken - extension headers RFC-2460}
+
+\begin{list1}
+\item Fuld IPv6 implementation indeholder:
+\begin{list2}
+\item Hop-by-Hop Options
+\item Routing (Type 0)
+\item Fragment - fragmentering KUN i end-points!
+\item Destination Options
+\item Authentication
+\item Encapsulating Security Payload
+\end{list2}
+\item Ja, IPsec er en del af IPv6!
+\end{list1}
+
+\slide{Placering af extension headers}
+
+\begin{alltt}
+\small
+  +---------------+----------------+------------------------
+  |  IPv6 header  | Routing header | TCP header + data
+  |               |                |
+  | Next Header = |  Next Header = |
+  |    Routing    |      TCP       |
+  +---------------+----------------+------------------------
+
+
+  +---------------+----------------+-----------------+-----------------
+  |  IPv6 header  | Routing header | Fragment header | fragment of TCP
+  |               |                |                 |  header + data
+  | Next Header = |  Next Header = |  Next Header =  |
+  |    Routing    |    Fragment    |       TCP       |
+  +---------------+----------------+-----------------+-----------------
+\end{alltt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{IPv6 configuration - kom igang}
+
+\begin{list1}
+\item Router bagved NAT
+	skal blot kunne forwarde protokoltype 0x41\\
+	Cisco 677: \verb+set nat entry add 10.1.2.3 0 41+
+
+\item Teredo - the Shipworm er også en mulighed og benyttes aktivt på Windows Vista idag
+
+\item Officiel IPv4 addresse kan bruges med 6to4 til at lave prefix og router
+
+\item DNS nameserver anbefales!!
+	tænk på om den skal svare IPv6 AAAA record
+	OG svare over IPv6 sockets - er måske ikke nødvendigt
+
+\item IPv6-only netværk er sikkert sjældne indtil videre men det er
+  muligt at lave dem nu
+\item Jeg bruger \link{http://www.sixxs.net} som har vejledninger  til diverse operativsystemer
+\end{list1}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{IPv6 configuration - klienter}
+
+\begin{alltt}
+\footnotesize$ ping6 ::1
+PING6(56=40+8+8 bytes) ::1 --> ::1
+16 bytes from ::1, icmp_seq=0 hlim=64 time=0.254 ms
+16 bytes from ::1, icmp_seq=1 hlim=64 time=0.23 ms
+^C
+	--- ::1 ping6 statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.230/0.242/0.254 ms
+\end{alltt}
+
+\begin{list1}
+
+
+\item Microsoft Windows XP
+\verb+ipv6 install+ fra kommandolinien eller brug kontrolpanelet
+
+\item ipv6 giver mulighed for at konfigurere tunnel
+svarer omtrent til 'ifconfig' på Unix
+
+\item Migrering er vigtigt i IPv6!
+Hvis I aktiverer IPv6 nu på en router, vil I
+pludselig have IPv6 på alle klienter ;-)
+
+
+\item Se evt. appendix F Enabling IPv6 functionality i
+\link{http://inet6.dk/thesis.pdf}
+\end{list1}
+
+
+\slide{ifconfig med ipv6 - Unix}
+
+Næsten ingen forskel på de sædvanlige kommandoer ifconfig, netstat,
+\begin{alltt}
+\small
+root# ifconfig en1 inet6 2001:1448:81:beef::1
+root# ifconfig en1
+en1: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500{\color{security6blue}
+        inet6 fe80::230:65ff:fe17:94d1 prefixlen 64 scopeid 0x5
+        inet6 2001:1448:81:beef::1 prefixlen 64 }
+        inet 169.254.32.125 netmask 0xffff0000 broadcast 169.254.255.255
+        ether 00:30:65:17:94:d1
+        media: autoselect status: active
+        supported media: autoselect
+\end{alltt}
+
+%size 4
+Fjernes igen med:\\
+\verb+ifconfig en1 inet6 -alias 2001:1448:81:beef::1+\\
+Prøv også:\\ \verb+ifconfig en1 inet6+
+
+
+\slide{GUI værktøjer - autoconfiguration}
+
+\hlkimage{20cm}{osx-network-automatic.png}
+
+\centerline{De fleste moderne operativsystemer er efterhånden opdateret med menuer til IPv6}
+
+\slide{GUI værktøjer - manuel konfiguration}
+
+\hlkimage{20cm}{osx-network-manual.png}
+
+\centerline{Bemærk hvorledes subnetmaske nu blot er en prefix length}
+
+\slide{ping til IPv6 adresser}
+
+
+\begin{alltt}
+\small
+root# ping6 ::1
+PING6(56=40+8+8 bytes) ::1 --> ::1
+16 bytes from ::1, icmp_seq=0 hlim=64 time=0.312 ms
+16 bytes from ::1, icmp_seq=1 hlim=64 time=0.319 ms
+^C
+--- localhost ping6 statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max = 0.312/0.316/0.319 ms
+\end{alltt}
+
+Nogle operativsystemer kalder kommandoen ping6, andre bruger blot ping
+
+\slide{ping6 til global unicast adresse}
+
+
+\begin{alltt}
+\footnotesize
+root# ping6 2001:1448:81:beef:20a:95ff:fef5:34df
+PING6(56=40+8+8 bytes) 2001:1448:81:beef::1 --> 2001:1448:81:beef:20a:95ff:fef5:34df
+16 bytes from 2001:1448:81:beef:20a:95ff:fef5:34df, icmp_seq=0 hlim=64 time=10.639 ms
+16 bytes from 2001:1448:81:beef:20a:95ff:fef5:34df, icmp_seq=1 hlim=64 time=1.615 ms
+16 bytes from 2001:1448:81:beef:20a:95ff:fef5:34df, icmp_seq=2 hlim=64 time=2.074 ms
+^C
+--- 2001:1448:81:beef:20a:95ff:fef5:34df ping6 statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 1.615/4.776/10.639 ms
+\end{alltt}
+
+
+\slide{ ping6 til specielle adresser}
+
+
+\begin{alltt}
+\small
+root# ping6 -I en1 ff02::1
+PING6(56=40+8+8 bytes) fe80::230:65ff:fe17:94d1 --> ff02::1
+16 bytes from fe80::230:65ff:fe17:94d1, icmp_seq=0 hlim=64 time=0.483 ms
+16 bytes from fe80::20a:95ff:fef5:34df, icmp_seq=0 hlim=64 time=982.932 ms
+16 bytes from fe80::230:65ff:fe17:94d1, icmp_seq=1 hlim=64 time=0.582 ms
+16 bytes from fe80::20a:95ff:fef5:34df, icmp_seq=1 hlim=64 time=9.6 ms
+16 bytes from fe80::230:65ff:fe17:94d1, icmp_seq=2 hlim=64 time=0.489 ms
+16 bytes from fe80::20a:95ff:fef5:34df, icmp_seq=2 hlim=64 time=7.636 ms
+^C
+--- ff02::1 ping6 statistics ---
+4 packets transmitted, 4 packets received, +4 duplicates, 0% packet loss
+round-trip min/avg/max = 0.483/126.236/982.932 ms
+\end{alltt}
+
+\begin{list2}
+%\item ff00::0         ipv6-mcastprefix
+\item ff02::1         ipv6-allnodes
+\item ff02::2         ipv6-allrouters
+\item ff02::3         ipv6-allhosts
+\end{list2}
+
+\slide{Stop - tid til leg}
+
+\begin{list1}
+\item Der findes et trådløst netværk med IPv6
+\item Join med en laptop og prøv at pinge lidt
+\begin{enumerate}
+\item Virker \verb+ping6 ::1+ eller \verb+ping ::1+, fortsæt
+\item Virker kommando svarende til: \verb+ping6 -I en1 ff02::1+\\
+- burde vise flere maskiner
+\item Kig på dine egne adresser med: \verb+ipv6+ (Windows) eller \verb+ifconfig+ (Unix)
+\item Prøv at trace i netværket
+\end{enumerate}
+\item Hvordan fik I IPv6 adresser?
+\end{list1}
+
+\slide{ router advertisement daemon}
+
+
+\begin{alltt}
+/etc/rtadvd.conf:
+en0:
+      :addrs#1:addr="2001:1448:81:b00f::":prefixlen#64:
+en1:
+      :addrs#1:addr="2001:1448:81:beef::":prefixlen#64:
+
+root# /usr/sbin/rtadvd -Df en0 en1
+root# sysctl -w net.inet6.ip6.forwarding=1
+net.inet6.ip6.forwarding: 0 -> 1
+\end{alltt}
+
+\begin{list1}
+\item Stateless autoconfiguration er en stor ting i IPv6
+\item Kommandoen starter den i debug-mode og i forgrunden\\
+- normalt vil man starte den fra et script
+\item Typisk skal forwarding aktiveres, som vist med BSD sysctl kommando
+\end{list1}
+
+
+
+
+
+\slide{IPv6 og andre services}
+
+
+\begin{alltt}
+\small
+root# netstat -an | grep -i listen
+
+tcp46  0  0  *.80             *.*    LISTEN
+tcp4   0  0  *.6000           *.*    LISTEN
+tcp4   0  0  127.0.0.1.631    *.*    LISTEN
+tcp4   0  0  *.25             *.*    LISTEN
+tcp4   0  0  *.20123          *.*    LISTEN
+tcp46  0  0  *.20123          *.*    LISTEN
+tcp4   0  0  127.0.0.1.1033   *.*    LISTEN
+\end{alltt}
+
+ovenstående er udført på Mac OS X
+
+
+\slide{IPv6 output fra kommandoer - inet6 family}
+
+
+\begin{alltt}
+\small
+root# netstat -an -f inet6
+
+Active Internet connections (including servers)
+Proto Recv Send  Local  Foreign   (state)
+tcp46  0   0     *.80     *.*     LISTEN
+tcp46  0   0     *.22780  *.*     LISTEN
+udp6   0   0     *.5353   *.*
+udp6   0   0     *.5353   *.*
+udp6   0   0     *.514    *.*
+icm6   0   0     *.*      *.*
+icm6   0   0     *.*      *.*
+icm6   0   0     *.*      *.*
+\end{alltt}
+
+ovenstående er udført på Mac OS X og tilrettet lidt
+
+
+\slide{IPv6 er default for mange services}
+
+
+\begin{alltt}
+\small
+root# telnet localhost 80
+
+{\color{security6blue}Trying ::1...
+Connected to localhost.}
+Escape character is '^]'.
+GET / HTTP/1.0
+
+HTTP/1.1 200 OK
+Date: Thu, 19 Feb 2004 09:22:34 GMT
+Server: Apache/2.0.43 (Unix)
+Content-Location: index.html.en
+Vary: negotiate,accept-language,accept-charset
+...
+\end{alltt}
+
+\slide{IPv6 er default i OpenSSH}
+
+\begin{alltt}
+\small
+hlk$ ssh -v localhost -p 20123
+OpenSSH_3.6.1p1+CAN-2003-0693, SSH protocols 1.5/2.0, OpenSSL 0x0090702f
+debug1: Reading configuration data /Users/hlk/.ssh/config
+debug1: Applying options for *
+debug1: Reading configuration data /etc/ssh_config
+debug1: Rhosts Authentication disabled, originating port will not be trusted.{\color{security6blue}
+debug1: Connecting to localhost [::1] port 20123.}
+debug1: Connection established.
+debug1: identity file /Users/hlk/.ssh/id_rsa type -1
+debug1: identity file /Users/hlk/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_3.6.1p1+CAN-2003-0693
+debug1: match: OpenSSH_3.6.1p1+CAN-2003-0693 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_3.6.1p1+CAN-2003-0693
+\end{alltt}
+
+
+
+\slide{Apache access log}
+
+
+\begin{alltt}
+\footnotesize
+root# tail -f access_log
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/IPv6ready.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/valid-html401.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/snowflake1.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /~hlk/security6.net/images/logo-1.png
+HTTP/1.1" 304 0
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:35 +0100]
+"GET / HTTP/1.1" 200 1456
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:35 +0100]
+"GET /apache_pb.gif HTTP/1.1" 200 2326
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:36 +0100]
+"GET /favicon.ico HTTP/1.1" 404 209
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:36 +0100]
+"GET /favicon.ico HTTP/1.1" 404 209
+\end{alltt}
+\vskip 1cm
+\centerline{Apache konfigureres nemt til at lytte på IPv6}
+
+\slide{Apache HTTPD server}
+
+\begin{list1}
+\item
+\item Mange bruger HTTPD fra Apache projektet\\
+  \link{http://httpd.apache.org} - netcraft siger omkring 70\%
+\item konfigureres gennem \verb+httpd.conf+
+\end{list1}
+
+\begin{alltt}
+Listen 0.0.0.0:80
+Listen [::]:80
+...
+Allow from 127.0.0.1
+Allow from 2001:1448:81:0f:2d:9ff:f86:3f
+Allow from 217.157.20.133
+\end{alltt}
+
+
+
+
+
+\slide{OpenBSD fast IPv6 adresse}
+
+Netværkskonfiguration på OpenBSD - flere filer:
+\begin{alltt}
+\small
+# cat /etc/hostname.sk0
+inet 10.0.0.23 0xffffff00 NONE
+inet6 2001:1448:81:30::2
+# cat /etc/mygate
+10.0.0.1
+# grep 2001 /etc/rc.local
+route add -inet6 default 2001:1448:81:30::1
+# cat /etc/resolv.conf
+domain security6.net
+lookup file bind
+nameserver 212.242.40.3
+nameserver 212.242.40.51
+nameserver 2001:1448:81:30::10
+\end{alltt}
+
+\slide{Basal DNS opsætning}
+
+
+
+\begin{alltt}
+domain security6.net
+nameserver 212.242.40.3
+nameserver 212.242.40.51
+nameserver 2001:1448:81:30::2
+\end{alltt}
+
+\begin{list1}
+\item \verb+/etc/resolv.conf+ angiver navneservere og søgedomæner
+\item typisk indhold er domænenavn og IP-adresser for navneservere
+\item Filen opdateres også automatisk på DHCP klienter
+\item {\bf Husk at man godt kan slå AAAA records op over IPv4}
+\item NB: denne fil kan hedde noget andet på UNIX varianter!
+\item eksempelvis \verb+/etc/netsvc.conf+
+\end{list1}
+
+\slide{DNS systemet}
+
+\begin{list1}
+\item Navneopslag på Internet - centralt for IPv6
+\item Tidligere brugte man en {\bfseries hosts} fil\\
+hosts filer bruges stadig lokalt til serveren - IP-adresser
+\item UNIX: /etc/hosts
+\item Windows \verb+c:\windows\system32\drivers\etc\hosts+
+\item Eksempel: www.security6.net har adressen 217.157.20.131
+\item skrives i database filer, zone filer
+\end{list1}
+
+\begin{alltt}
+ns1     IN      A       217.157.20.130
+        IN      AAAA    2001:618:433::1
+www     IN      A       217.157.20.131
+        IN      AAAA    2001:618:433::14
+\end{alltt}
+
+\slide{Mere end navneopslag}
+
+\begin{list1}
+  \item består af resource records med en type:
+    \begin{list2}
+\item adresser A-records
+\item IPv6 adresser AAAA-records
+\item autoritative navneservere NS-records
+\item post, mail-exchanger MX-records
+\item flere andre: md ,  mf ,  cname ,  soa ,
+                  mb , mg ,  mr ,  null ,  wks ,  ptr ,
+                  hinfo ,  minfo ,  mx ....
+\end{list2}
+\end{list1}
+\begin{alltt}
+        IN      MX      10      mail.security6.net.
+        IN      MX      20      mail2.security6.net.
+\end{alltt}
+
+
+\slide{BIND DNS server}
+
+\begin{list1}
+\item Berkeley Internet Name Daemon server
+\item Mange bruger BIND fra Internet Systems Consortium
+   - altså Open Source
+\item konfigureres gennem \verb+named.conf+
+\item det anbefales at bruge BIND version 9
+\end{list1}
+
+\begin{list2}
+\item \emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 4th
+  edition Maj 2001
+\item \emph{DNS and BIND cookbook}, Cricket Liu, O'Reilly, 4th
+  edition Oktober 2002
+\end{list2}
+
+Kilde: \link{http://www.isc.org}
+
+\slide{BIND konfiguration - et udgangspunkt}
+
+\begin{alltt}
+\small
+acl internals \{ 127.0.0.1; ::1; 10.0.0.0/24; \};
+options \{
+        // the random device depends on the OS !
+        random-device "/dev/random"; directory "/namedb";
+        {\bf listen-on-v6 { any; };}
+        port 53; version "Dont know"; allow-query \{ any; \};
+\};
+view "internal" \{
+   match-clients \{ internals; \}; recursion yes;
+   zone "." \{
+       type hint;   file "root.cache"; \};
+   // localhost forward lookup
+   zone "localhost." \{
+        type master; file "internal/db.localhost";   \};
+   // localhost reverse lookup from IPv4 address
+   zone "0.0.127.in-addr.arpa" \{
+        type master; file "internal/db.127.0.0"; notify no;   \};
+...
+\}
+\end{alltt}
+
+
+
+\slide{Routing forståelse - IPv6}
+\begin{alltt}
+\small
+$ netstat -f inet6 -rn
+Routing tables
+
+Internet6:
+Destination                 Gateway           Flags      Netif
+default             fe80::200:24ff:fec1:58ac  UGc         en0
+::1                         ::1               UH          lo0
+2001:1448:81:cf0f::/64      link#4            UC          en0
+2001:1448:81:cf0f::1        0:0:24:c1:58:ac   UHLW        en0
+fe80::/64                   fe80::1           Uc          lo0
+fe80::1                     link#1            UHL         lo0
+fe80::/64                   link#4            UC          en0
+fe80::20d:93ff:fe28:2812    0:d:93:28:28:12   UHL         lo0
+fe80::/64                   link#5            UC          en1
+fe80::20d:93ff:fe86:7c3f    0:d:93:86:7c:3f   UHL         lo0
+ff01::/32                   ::1               U           lo0
+ff02::/32                   ::1               UC          lo0
+ff02::/32                   link#4            UC          en0
+ff02::/32                   link#5            UC          en1
+\end{alltt}
+
+
+
+\slide{ IPv6 neighbor discovery protocol (NDP)}
+
+\hlkimage{20cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item ARP er væk
+\item NDP erstatter og udvider ARP, Sammenlign \verb+arp -an+ med \verb+ndp -an+
+\item Til dels erstatter ICMPv6 således DHCP i IPv6, DHCPv6 findes dog
+\item {\bf NB: bemærk at dette har stor betydning for firewallregler!}
+\end{list1}
+
+\slide{ARP vs NDP}
+
+\begin{alltt}
+\small
+hlk@bigfoot:basic-ipv6-new$ arp -an
+? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+hlk@bigfoot:basic-ipv6-new$ ndp -an
+Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
+::1                           (incomplete)         lo0 permanent R
+2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
+fe80::1%lo0                   (incomplete)         lo0 permanent R
+fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
+fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+\end{alltt}
+
+
+
+
+
+
+
+\slide{Fremtiden er nu}
+\label{slide:future}
+
+\begin{list1}
+\item Det er sagt mange gange at nu skal vi igang med IPv6
+\item Der er sket store ændringer fra starten af 2007 til nu
+\item Hvor det i starten af 2007 var status quo er flere begyndt at presse på
+\item Selv på version2.dk omtales det \link{http://www.version2.dk/artikel/6147}\\
+\emph{Seks DNS-rodservere tænder for IPv6
+ICANN har nu aktiveret IPv6 på seks af internettets 13 rodservere. Med det rigtige udstyr kan man nu køre helt uden om IPv4.}
+\end{list1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{Hvorfor implementere IPv6 i jeres netværk?}
+
+\begin{list1}
+\item Addresserummet
+\begin{list2}
+\item end-to-end transparancy
+\item 	nemmere administration
+\end{list2}\item Autoconfiguration
+\begin{list2}
+\item stateless autoconfiguration
+\item automatisk routerconfiguration!
+(router renumbering)
+\end{list2}
+\item Performance
+\begin{list2}
+\item simplere format
+\item kortere behandlingstid i routere
+\end{list2}
+\item Fleksibilitet - generelt
+\item Sikkerhed
+\begin{list2}
+\item IPsec er et krav!
+\item Afsender IP-adressen ændres ikke igennem NAT!
+\end{list2}
+\end{list1}
+
+\slide{Hvorfor migrere til IPv6?}
+
+\begin{list1}
+\item IPv4 er mere end 25 år gammel - fra 1981 til idag
+\item Idag har folk ønsker/krav til kommunikationen
+\begin{list2}
+\item båndbredde
+\item latency
+\item Quality-of-service
+\item sikkerhed
+\end{list2}
+
+\item Meget af dette er, eller kan, implementeres med IPv4 - men det bliver lappeløsninger
+
+\item NB: IPv6 er designet til at løse SPECIFIKKE problemer
+\end{list1}
+
+\slide{The Internet has done this before!}
+
+
+\begin{quote}
+   Because all hosts can not be converted to TCP simultaneously, and
+   some will implement only IP/TCP, it will be necessary to provide
+   temporarily for communication between NCP-only hosts and TCP-only
+   hosts.  To do this certain hosts which implement both NCP and IP/TCP
+   will be designated as relay hosts.  These relay hosts will support
+   Telnet, FTP, and Mail services on both NCP and TCP.  These relay
+   services will be provided  beginning in November 1981, and will be
+   fully in place in January 1982.
+
+
+   Initially there will be many NCP-only hosts and a few TCP-only hosts,
+   and the load on the relay hosts will be relatively light.  As time
+   goes by, and the conversion progresses, there will be more TCP
+   capable hosts, and fewer NCP-only hosts, plus new TCP-only hosts.
+   But, presumably most hosts that are now NCP-only will implement
+   IP/TCP in addition to their NCP and become "dual protocol" hosts.
+   So, while the load on the relay hosts will rise, it will not be a
+   substantial portion of the total traffic.
+\end{quote}
+
+\centerline{NCP/TCP Transition Plan November 1981 RFC-801}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\slide{Er IPv6 klar? - Korte svar - ja}
+
+\begin{list1}
+\item Det bruges idag aktivt, især i dele af verden der ikke har store dele
+af v4 adresserummet
+
+\item Kernen af IPv6 er stabil
+
+\item IPv6 er inkluderet i mange operativsystemer idag\\
+AIX, Solaris, BSD'erne, Linux, Mac OS X og Windows XP
+Cisco IOS, Juniper Networks\\
+Juniper har haft hardware support for IPv6 i mange år!
+
+\item IPv6 TCP/IP stakke til indlejrede systemer er klar
+
+\item prøv at lave \verb+ping6 ::1+ på jeres maskiner - det er IPv6
+
+\item Se listen over IPv6 implementationer på
+http://playground.sun.com/ipv6/ipng-implementations.html
+\end{list1}
+
+
+
+\slide{IPv6 bruges idag}
+
+\begin{list1}
+\item Listen over brugere vokser konstant
+\item Store nye netværk designes alle med IPv6
+en liste kan eksempelvis ses på addressen:
+\link{http://www.ipv6.ac.uk/gtpv6/eu.html}
+
+\item Andre links kan vise statistik for internet og IPv4/IPv6
+\item \link{http://www.bgpexpert.com/addrspace2007.php}
+\item \link{https://wiki.caida.org/wiki/iic/bin/view/Main/WebHome}
+\item \link{http://bgp.he.net/ipv6-progress-report.cgi}
+\item Se også:
+\link{http://www.eu.ipv6tf.org/}
+
+
+\end{list1}
+
+\slide{5 dårlige argumenter for ikke at bruge IPv6 nu}
+
+\begin{list1}
+\item Det er ikke færdigt\\
+- IPv4 har ALDRIG været færdigt ;-)
+
+\item Ikke nødvendigt\\
+- man kan stikke hovedet i busken
+
+\item NAT løser alle problemer og er meget sikkert ...\\
+- NAT er en lappeløsning
+
+\item Udskiftning af HELE infrastrukturen er for dyrt\\
+- man opgraderer/udskifter jævnligt udstyr
+
+\item Vent til det er færdigt!\\
+- man mister muligheden for at påvirke resultatet!
+\end{list1}
+
+\exercise{ex:ping6}
+\exercise{ex:basic-dns-lookup6}
+
+
+
+\slide{Færdig med IPv6}
+
+\begin{list1}
+\item I resten af kurset vil vi ikke betragte IPv6 eller IPv4 som noget specielt
+\item Vi vil indimellem bruge det ene, indimellem det andet
+\item Alle subnets er konfigureret ens på IPv4 og IPv6
+\item Subnets som i IPv4 hedder prefix.45 vil således i IPv6 hedde noget med prefix:45:
+\item At have ens routing på IPv4 og IPv6 vil typisk IKKE være tilfældet i praksis
+\item Man kan jo lige så godt forbedre netværket mens man går over til IPv6 :-)
+\end{list1}
+
+\slide{Nu skal vi til management og diagnosticering}
+
+\begin{list1}
+\item Always check the spark plugs!
+\item Når man skal spore fejl i netværk er det essentielt at starte fra bunden:
+\begin{list2}
+\item Er der link?
+\item Er der IP-adresse?
+\item Er der route?
+\item Modtager systemet pakker
+\item Er der en returvej fra systemet! Den her kan snyde mange!
+\item Lytter serveren på den port man vil forbinde til, UDP/TCP
+\end{list2}
+\item Hvis der ikke er link vil man aldrig få svar fra databasen/webserveren/postserveren
+\end{list1}
+
+\slide{Udtræk af netværkskonfigurationen}
+
+\begin{list1}
+\item De vigtigste kommandoer til udtræk af netværkskonfigurationen:
+\begin{list2}
+\item cat - til at vise tekstfiler
+\item ifconfig - interface configuration
+\item netstat - network statistics
+\item lsof - list open files
+\end{list2}
+\end{list1}
+
+\slide{Basale testværktøjer TCP - Telnet og OpenSSL}
+
+\begin{list1}
+\item Telnet blev tidligere brugt til login og er en klartekst forbindelse
+over TCP
+\item Telnet kan bruges til at teste forbindelsen til mange ældre serverprotokoller som benytter ASCII kommandoer
+\begin{list2}
+\item \verb+telnet mail.kramse.dk 25+ laver en forbindelse til port 25/tcp
+\item \verb+telnet www.kramse.dk 80+ laver en forbindelse til port 80/tcp
+\end{list2}
+\item Til krypterede forbindelser anbefales det at teste med openssl
+\begin{list2}
+\item \verb+openssl s_client -host www.kramse.dk -port 443+\\
+laver en forbindelse til port 443/tcp med SSL
+\item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
+ laver en forbindelse til port 993/tcp med SSL
+\end{list2}
+\item Med OpenSSL i client-mode kan services tilgås med samme tekstkommandoer som med telnet
+\end{list1}
+
+
+\slide{Basale testværktøjer UDP}
+
+\begin{list1}
+\item UDP er lidt drilsk, for de fleste services er ikke \emph{ASCII protokoller}
+\item Der findes dog en række testprogrammer, a la ping
+\begin{list2}
+\item nsping - name server ping
+\item dhcping - dhcp server ping
+\item ...
+\end{list2}
+\item Derudover kan man bruge de sædvanlige programmer som \verb+host+ til navneopslag osv.
+\end{list1}
+
+
+\slide{IP netværkstuning}
+
+\hlkimage{8cm}{712a.png}
+
+\begin{list1}
+\item IP har eksisteret mange år
+\item Vi har udskiftet langsommme forbindelser med hurtige forbindelser
+\item Vi har udskiftet langsomme MHz maskiner med Quad-core GHz maskiner
+\item IP var tidligere meget konservativt, for ikke at overbelaste modtageren
+\item Billedet er en HP arbejdsstation med 19" skærm og en 60MHz HP PA-RISC processor
+\end{list1}
+
+\slide{Anbefalet netværkstuning - hvad skal tunes}
+
+\begin{list1}
+\item Der er visse indstillinger som tidligere var standard, de bør idag slås fra
+\item En del er allerede tunet i nyere versioner af IP-stakkene, men check lige
+\item Ideer til ting som skal slås fra:
+\begin{list2}
+\item broadcast ICMP, undgå smurfing
+\item Source routing, kan måske omgå firewalls og filtre
+\end{list2}
+\item Ideer til ting som skal slås til/ændres:
+\begin{list2}
+\item Bufferstørrelser - hvorfor have en buffer på 65535 bytes på en maskine med 32GB ram?
+\item Nye funktioner som RFC-1323 TCP Extensions for High Performance
+\end{list2}
+\item Det anbefales at finde leverandørens vejledning til hvad der kan tunes
+\end{list1}
+
+\slide{Netværkskonfiguration med sysctl}
+
+\begin{alltt}\small
+	# tuning
+	net.inet.tcp.recvspace=65535
+	net.inet.tcp.sendspace=65535
+	net.inet.udp.recvspace=65535
+	net.inet.udp.sendspace=32768
+	# postgresql tuning
+	kern.seminfo.semmni=256
+	kern.seminfo.semmns=2048
+	kern.shminfo.shmmax=50331648\end{alltt}
+\begin{list1}
+\item På mange UNIX varianter findes et specielt tuningsprogram,
+  sysctl
+\item Findes blandt andet på alle BSD'erne: FreeBSD, OpenBSD, NetBSD
+  og Darwin/OSX
+\item Ændringerne skrives ind i filen \verb+/etc/sysctl.conf+
+\item På Linux erstatter det til dels konfiguration med echo \\
+\verb+echo 1 > /proc/net/ip/forwarding+
+\item På AIX benyttes kommandoen network options \verb+no+
+\end{list1}
+
+\slide{Tuning}
+
+\begin{list1}
+\item Hvad er flaskehalsen for programmet?
+\item I/O bundet - en enkelt disk eller flere
+\item CPU bundet - regnekraften
+\item Netværket - 10Mbit half-duplex adapter
+\item Memory - begynder systemet at \emph{swappe} eller \emph{thrashe}
+\item brug top og andre statistikprogrammer til at se disse data
+\end{list1}
+
+
+\slide{Måling af througput}
+
+\begin{list1}
+\item Når der skal tunes er det altid nødvendigt med en baseline
+\item Man kan ikke begynde at tune ud fra subjektive målinger
+\item \emph{Det kører langsomt}, \emph{Svartiden er for høj}
+\item Målinger der giver præcise tal er nødvendige, før og efter målinger!
+\item Der findes et antal værktøjer til, blandt andet Iperf
+\end{list1}
+
+\slide{Målinger med Iperf}
+
+\begin{alltt}\small
+hlk@fluffy:hlk$ iperf -s
+------------------------------------------------------------
+Server listening on TCP port 5001
+TCP window size: 64.0 KByte (default)
+------------------------------------------------------------
+[  4] local 10.0.42.23 port 5001 connected with 10.0.42.67 port 51148
+[  4]  0.0-10.2 sec  6.95 MBytes  5.71 Mbits/sec
+[  4] local 10.0.42.23 port 5001 connected with 10.0.42.67 port 51149
+[  4]  0.0-10.2 sec  7.02 MBytes  5.76 Mbits/sec
+\end{alltt}
+
+Ovenstående er set fra server, client kaldes med \verb+iperf -c fluffy+
+
+\slide{Stop - vi prøver i fællesskab Iperf}
+
+\begin{list1}
+\item Vi prøver lige Iperf sammen
+\item hvis alle prøver samtidig giver det stor variation i resultaterne
+\end{list1}
+
+
+
+
+
+\slide{Apache benchmark og andre programmer}
+
+\begin{alltt}
+\footnotesize
+hlk@bigfoot:hlk$ ab -n 100 http://www.kramse.dk/
+This is ApacheBench, Version 2.0.41-dev <$Revision: 1.121.2.12 $> apache-2.0
+Copyright (c) 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Copyright (c) 2006 The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking www.kramse.dk (be patient)...
+...
+\end{alltt}
+
+\begin{list1}
+\item Der findes specialiserede værktøjer til mange protokoller
+\item Eksempelvis følger der et apache benchmark med Apache HTTPD serveren
+\item Mange andre værktøjer til at simulere flere samtidige brugere
+\end{list1}
+
+\slide{Apache Benchmark output - 1 }
+
+\begin{alltt}
+\footnotesize
+Server Software:        Apache
+Server Hostname:        www.kramse.dk
+Server Port:            80
+
+Document Path:          /
+Document Length:        7547 bytes
+
+Concurrency Level:      1
+Time taken for tests:   13.84924 seconds
+Complete requests:      100
+Failed requests:        0
+Write errors:           0
+Total transferred:      778900 bytes
+HTML transferred:       754700 bytes
+Requests per second:    7.64 #/sec (mean)
+Time per request:       130.849 ms (mean)
+Time per request:       130.849 ms (mean, across all concurrent requests)
+Transfer rate:          58.08 Kbytes/sec received
+\end{alltt}
+
+\slide{Apache Benchmark output - 3}
+
+\begin{alltt}
+\footnotesize
+Connection Times (ms)
+              min  mean+/-sd median   max
+Connect:       22   24   4.0     24      58
+Processing:    96  105  33.0     99     421
+Waiting:       63   71  32.7     65     386
+Total:        119  130  33.5    124     446
+
+Percentage of the requests served within a certain time (ms)
+  50%    124
+  66%    126
+  75%    128
+  80%    130
+  90%    143
+  95%    153
+  98%    189
+  99%    446
+ 100%    446 (longest request)
+\end{alltt}
+
+
+
+\exercise{ex:sysctl}
+\exercise{ex:iperf}
+\exercise{ex:apache-benchmark}
+
+\slide{Antal pakker per sekund}
+
+\begin{list1}
+\item Til tider er det ikke båndbredden som sådan man vil måle
+\item Specielt for routere er det vigtigt at de kan behandle mange pakker per sekund, pps
+\item Til dette kan man lege med det indbyggede Ping program i flooding mode
+\item Når programmet kaldes (som systemadministrator) med \verb+ping -f server+ vil den sende ping pakker så hurtigt som netkortet tillader
+\item Programmer der kan teste pakker per sekund kaldes generelt for blaster tools
+\end{list1}
+
+\slide{traceroute}
+
+\begin{list1}
+  \item traceroute programmet virker ved hjælp af TTL
+\item levetiden for en pakke tælles ned i hver router på vejen og ved at sætte denne lavt
+  opnår man at pakken \emph{timer ud} - besked fra hver router på vejen
+\item default er UDP pakker, men på UNIX systemer er der ofte mulighed
+  for at bruge ICMP
+\end{list1}
+
+\begin{alltt}
+{\bfseries\$ traceroute 217.157.20.129}
+traceroute to 217.157.20.129 (217.157.20.129),
+30 hops max, 40 byte packets
+ 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
+ 2  router (217.157.20.129)  1.481 ms  1.374 ms  1.261 ms
+\end{alltt}
+
+
+\slide{traceroute - med UDP}
+
+\begin{alltt}
+\tiny
+# {\bfseries tcpdump -i en0 host 217.157.20.129 or host 10.0.0.11}
+tcpdump: listening on en0
+23:23:30.426342 10.0.0.200.33849 > router.33435: udp 12 [ttl 1]
+23:23:30.426742 safri > 10.0.0.200: icmp: time exceeded in-transit
+23:23:30.436069 10.0.0.200.33849 > router.33436: udp 12 [ttl 1]
+23:23:30.436357 safri > 10.0.0.200: icmp: time exceeded in-transit
+23:23:30.437117 10.0.0.200.33849 > router.33437: udp 12 [ttl 1]
+23:23:30.437383 safri > 10.0.0.200: icmp: time exceeded in-transit
+23:23:30.437574 10.0.0.200.33849 > router.33438: udp 12
+23:23:30.438946 router > 10.0.0.200: icmp: router udp port 33438 unreachable
+23:23:30.451319 10.0.0.200.33849 > router.33439: udp 12
+23:23:30.452569 router > 10.0.0.200: icmp: router udp port 33439 unreachable
+23:23:30.452813 10.0.0.200.33849 > router.33440: udp 12
+23:23:30.454023 router > 10.0.0.200: icmp: router udp port 33440 unreachable
+23:23:31.379102 10.0.0.200.49214 > safri.domain:  6646+ PTR? \\
+200.0.0.10.in-addr.arpa. (41)
+23:23:31.380410 safri.domain > 10.0.0.200.49214:  6646 NXDomain* 0/1/0 (93)
+14 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+\slide{Værdien af traceroute}
+
+\begin{list1}
+\item Diagnosticering af netværksproblemer - formålet med traceroute
+\item Indblik i netværkets opbygning!
+\item Svar fra hosts - en modtaget pakke fremfor et \emph{sort hul}
+
+\item Traceroute er ikke et angreb - det er også vigtigt at kunne
+  genkende normal trafik!
+\end{list1}
+
+\slide{Network mapping}
+
+\hlkimage{23cm}{images/network-example.pdf}
+
+\begin{list1}
+\item Ved brug af traceroute og tilsvarende programmer kan man ofte
+  udlede topologien i det netværk man undersøger
+\end{list1}
+
+
+\slide{Flere traceprogrammer}
+
+\begin{list1}
+\item mtr My traceroute - grafisk \link{http://www.bitwizard.nl/mtr/}
+\item lft - \emph{layer four trace} benytter TCP SYN og FIN prober
+\item trace ved hjælp af TCP og andre protokoller findes
+\item paratrace - \emph{Parasitic Traceroute via Established TCP Flows
+    and IPID Hopcount}
+\item Der findes webservices hvor man kan trace fra, eksempelvis: \link{http://www.samspade.org}
+\end{list1}
+
+\slide{TCPDUMP - protokolanalyse pakkesniffer}
+
+\hlkimage{14cm}{images/tcpdump-manual.pdf}
+
+
+\centerline{\link{http://www.tcpdump.org}
+- både til Windows og UNIX}
+\slide{tcpdump - normal brug}
+
+\begin{list2}
+  \item tekstmode
+\item kan gemme netværkspakker i filer
+\item kan læse netværkspakker fra filer
+\item er de-facto standarden for at gemme netværksdata i filer
+\end{list2}
+
+\begin{alltt}
+\tiny [root@otto hlk]# tcpdump -i en0
+tcpdump: listening on en0
+13:29:39.947037 fe80::210:a7ff:fe0b:8a5c > ff02::1: icmp6: router advertisement
+13:29:40.442920 10.0.0.200.49165 > dns1.cybercity.dk.domain:  1189+[|domain]
+13:29:40.487150 dns1.cybercity.dk.domain > 10.0.0.200.49165:  1189 NXDomain*[|domain]
+13:29:40.514494 10.0.0.200.49165 > dns1.cybercity.dk.domain:  24765+[|domain]
+13:29:40.563788 dns1.cybercity.dk.domain > 10.0.0.200.49165:  24765 NXDomain*[|domain]
+13:29:40.602892 10.0.0.200.49165 > dns1.cybercity.dk.domain:  36485+[|domain]
+13:29:40.648288 dns1.cybercity.dk.domain > 10.0.0.200.49165:  36485 NXDomain*[|domain]
+13:29:40.650596 10.0.0.200.49165 > dns1.cybercity.dk.domain:  4101+[|domain]
+13:29:40.694868 dns1.cybercity.dk.domain > 10.0.0.200.49165:  4101 NXDomain*[|domain]
+13:29:40.805160 10.0.0.200 > mail: icmp: echo request
+13:29:40.805670 mail > 10.0.0.200: icmp: echo reply
+...
+\end{alltt}
+
+\slide{TCPDUMP syntaks - udtryk}
+
+\begin{list1}
+\item filtre til husbehov
+  \begin{list2}
+\item type - host, net og port
+\item src pakker med afsender IP eller afsender port
+\item dst pakker med modtager IP eller modtager port
+\item host - afsender eller modtager
+\item proto - protokol: ether, fddi, tr, ip, ip6, arp,  rarp,  decnet,
+tcp og udp
+\end{list2}
+\item IP adresser kan angives som dotted-decimal eller navne
+\item porte kan angives med numre eller navne
+\item komplekse udtryk opbygges med logisk and,  or,  not
+\end{list1}
+
+\slide{tcpdump udtryk eksempler}
+
+\begin{list1}
+  \item Host 10.1.2.3\\
+Alle pakker hvor afsender eller modtager er 10.1.2.3
+\item host 10.2.3.4 and not host 10.3.4.5\\
+Alle pakker til/fra 10.2.3.4 undtagen dem til/fra 10.3.4.5\\
+- meget praktisk hvis man er logget ind på 10.2.3.4 via netværk fra 10.3.4.5
+\item host foo and not port ftp  and not  port  ftp-data\\
+trafik til/fra maskine \emph{foo} undtagen hvis det er FTP trafik
+\end{list1}
+
+\slide{Wireshark - grafisk pakkesniffer}
+
+\hlkimage{20cm}{images/wireshark-website.png}
+
+\centerline{\link{http://www.wireshark.org}}
+\centerline{både til Windows og UNIX, tidligere kendt som Ethereal}
+
+\slide{Programhygiejne!}
+
+\begin{list1}
+  \item {\color{red}Download, installer - kør!} - farligt!
+\item Sådan gøres det:
+  \begin{list2}
+    \item download program OG signaturfil/MD5
+\item verificer signatur eller MD5
+\item installer
+\item brug programmet
+\item hold programmet opdateret!\\
+Se eksempelvis teksten på hjemmesiden:\\
+\emph{Wireshark 0.99.2 has been released. Several security-related vulnerabilities have been fixed and several new features have been added.}
+  \end{list2}
+\item NB: ikke alle programmer har signaturer :(
+\item MD5 er en envejs hash algoritme - mere om det senere
+\end{list1}
+
+
+\slide{Brug af Wireshark}
+
+\hlkimage{13cm}{images/ethereal-capture-options.png}
+
+\centerline{Man starter med Capture - Options}
+
+\slide{Brug af Wireshark}
+
+\hlkimage{24cm}{images/ethereal-main-window.png}
+
+\centerline{Læg mærke til filtermulighederne}
+
+\exercise{ex:wireshark}
+
+\slide{syslog}
+
+\begin{list1}
+\item syslog er system loggen på UNIX og den er effektiv
+  \begin{list2}
+\item man kan definere hvad man vil se og hvor man vil have det
+  dirigeret hen
+\item man kan samle det i en fil eller opdele alt efter programmer og
+  andre kriterier
+\item man kan ligeledes bruge named pipes - dvs filer i filsystemet
+  som tunneller fra chroot'ed services til syslog i det centrale system!
+\item man kan nemt sende data til andre systemer
+  \end{list2}
+\item Hvis man vil lave en centraliseret løsning er følgende link
+  vigtigt: \\
+Tina Bird, Counterpane\\
+\link{http://loganalysis.org}
+\end{list1}
+
+\slide{syslogd.conf eksempel}
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+\slide{Andre syslogs syslog-ng}
+
+\begin{list1}
+\item der findes andre syslog systemer eksempelvis syslog-ng
+\item konfigureres gennem \verb+/etc/syslog-ng/syslog-ng.conf+
+\item Eksempel på indholdet af filen kunne være:
+\end{list1}
+
+\begin{alltt}
+\small
+options \{
+        long_hostnames(off);
+        sync(0);
+        stats(43200);
+\};
+
+source src { unix-stream("/dev/log"); internal(); pipe("/proc/kmsg"); };
+destination messages { file("/var/log/messages"); };
+destination console_all { file("/dev/console"); };
+log { source(src); destination(messages); };
+log { source(src); destination(console_all); };
+\end{alltt}
+
+\exercise{ex:syslogd-basic}
+
+\slide{Logfiler og computer forensics}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:
+\begin{list2}
+\item routere
+\item firewalls
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+\slide{Simple Network Management Protocol}
+
+\begin{list1}
+\item SNMP er en protokol der supporteres af de fleste professionelle
+  netværksenheder, såsom switche, routere
+\item hosts - skal slås til men følger som regel med
+\item SNMP bruges til:
+  \begin{list2}
+    \item \emph{network management}
+    \item statistik
+    \item rapportering af fejl - SNMP traps
+  \end{list2}
+\item {\bfseries sikkerheden baseres på community strings der sendes
+    som klartekst ...}
+\item det er nemmere at brute-force en community string end en
+  brugerid/kodeord kombination
+\end{list1}
+
+\slide{SNMP - \emph{hacking}}
+
+\vskip 2 cm
+
+\begin{list1}
+\item Simple Network Management Protocol
+\item sikkerheden afhænger alene af en Community string SNMPv2
+\item typisk er den nem at gætte:
+  \begin{list2}
+    \item public - default til at aflæse statistik
+\item private - default når man skal ændre på enheden, skrive
+\item cisco
+\item ...
+  \end{list2}
+\item Der findes lister og ordbøger på nettet over kendte default communities
+\end{list1}
+
+\slide{Systemer med SNMP}
+
+\begin{list1}
+  \item kan være svært at finde ... det er UDP 161
+\item Hvis man finder en så prøv at bruge {\bfseries snmpwalk}
+  programmet - det kan vise alle tilgængelige SNMP oplysninger fra den
+  pågældende host
+\item det kan være en af måderne at identificere uautoriserede WLAN
+  Access Points på - sweep efter port 161/UDP
+\item snmpwalk er et af de mest brugte programmer til at hente snmp
+  oplysninger - i forbindelse med hackning og penetrationstest
+\end{list1}
+
+\slide{snmpwalk}
+
+\begin{list1}
+\item Typisk brug er:
+\item \verb+snmpwalk -v 1 -c secret switch1+
+\item \verb+snmpwalk -v 2c -c secret switch1+
+\item Eventuelt bruges \verb+snmpget+ og \verb+snmpset+
+\item Ovenstående er en del af Net-SNMP pakken, \link{http://net-snmp.sourceforge.net/}
+\end{list1}
+
+\exercise{ex:snmpwalk}
+
+\slide{brute force}
+
+\begin{list1}
+\item hvad betyder bruteforcing?\\
+afprøvning af alle mulighederne
+\end{list1}
+
+\begin{alltt}
+\small
+Hydra v2.5 (c) 2003 by van Hauser / THC <vh@thc.org>
+Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]]
+[-o FILE] [-t TASKS] [-g TASKS] [-T SERVERS] [-M FILE] [-w TIME]
+[-f] [-e ns] [-s PORT] [-S] [-vV] server service [OPT]
+Options:
+  -S        connect via SSL
+  -s PORT   if the service is on a different default port, define it here
+  -l LOGIN  or -L FILE login with LOGIN name, or load several logins from FILE
+  -p PASS   or -P FILE try password PASS, or load several passwords from FILE
+  -e ns     additional checks, "n" for null password, "s" try login as pass
+  -C FILE   colon seperated "login:pass" format, instead of -L/-P option
+  -M FILE   file containing server list (parallizes attacks, see -T)
+  -o FILE   write found login/password pairs to FILE instead of stdout
+...
+\end{alltt}
+
+
+\slide{Eksempler på SNMP og management}
+
+\begin{list1}
+\item Ofte foregår administration af netværksenheder via HTTP, Telnet eller SSH
+\begin{list2}
+\item små dumme enheder er idag ofte web-enablet
+\item bedre enheder giver både HTTP og kommandolinieadgang
+\item de bedste giver mulighed for SSH, fremfor Telnet
+\end{list2}
+\end{list1}
+
+
+\slide{Tobi Oetiker's MRTG The Multi Router Traffic Grapher}
+
+\hlkimage{15cm}{rrdtool-demo.png}
+
+\begin{list1}
+\item Monitorering af SNMP enheder og grafer
+\item Inkluderer en nem configmaker og benytter idag RRDTool til data
+\item Hjemmesiden: \link{http://oss.oetiker.ch/mrtg/}
+\end{list1}
+
+\slide{RRDTool Round Robin Database Tool}
+
+\hlkimage{12cm}{rrdtool-demo.png}
+
+\begin{list1}
+\item Round Robin Database Tool er en måde at gemme data på
+\item Med RRDTool kan man derefter få lavet grafer
+\item Typisk bruger man et andet værktøj som benytter RRDTool til data
+\item \link{http://oss.oetiker.ch/rrdtool/doc/index.en.html}
+\end{list1}
+
+Kan bruges til temperaturmålinger og alt muligt andet
+
+\slide{Smokeping}
+
+\hlkimage{15cm}{smokeping-demo.jpg}
+
+\begin{list1}
+\item Måling af latency for netværksservice
+\item Understøtter et stort antal prober: ICMP, DNS, HTTP, LDAP, SMTP, ...
+\item Min SmokePing server \link{http://pumba.kramse.dk/smokeping/}
+\item Hjemmesiden for SmokePing \link{http://oss.oetiker.ch/smokeping/}
+\item Lavet af Tobias Oetiker og Niko Tyni
+\end{list1}
+
+
+\slide{Nagios}
+
+\begin{list1}
+\item Overvågningsværktøj der giver godt overblik
+\begin{list2}
+\item Monitoring af diverse services (SMTP, POP3, HTTP, NNTP, PING, etc.)
+\item Monitoring af host resources (processor load, disk and memory usage, running processes, log files, etc.)
+\item Monitoring af andre ressourcer som temperatur
+\item Simpel plugin design som gør det nemt at udvide
+\item Kan sende e-mail, SMS m.v.
+\end{list2}
+\item Benyttes mange steder
+\item Hjemmesiden for Nagios \link{http://www.nagios.org/}
+\end{list1}
+
+\slide{Stop - overvågningsværktøjer}
+
+\begin{list1}
+\item Brug lidt tid på at se på vores netværk
+\item Valgfrit om I vil se på Administrationsinterface på switche, SNMP indstillinger eksempelvis
+\item Eller Nagios og SmokePing på mine servere
+\end{list1}
+
+\end{document}

@@ -1,0 +1,314 @@
+\documentclass[Screen16to9,17pt,footrule]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Encrypting the Network Layer}
+{Communication and Network Security 2019}
+
+
+\slide{IPsec}
+
+\begin{itemize}
+\item Sikkerhed i netværket
+\item RFC-2401 Security Architecture for the Internet Protocol
+\item RFC-2402 IP Authentication Header (AH)
+\item RFC-2406 IP Encapsulating Security Payload (ESP)
+\item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
+\item Både til IPv4 og IPv6
+\item {\bfseries MANDATORY} i IPv6! - et krav hvis man implementerer
+  fuld IPv6 support
+\item god præsentation på \link{http://www.hsc.fr/presentations/ike/}
+\item Der findes IKEscan til at scanne efter IKE
+  porte/implementationer\\
+\link{http://www.nta-monitor.com/ike-scan/index.htm}
+\end{itemize}
+
+\slide{IPsec er ikke simpelt!}
+
+\hlkimage{16cm}{images/ipsec-hsc.png}
+\centerline{Kilde: \link{http://www.hsc.fr/presentations/ike/}}
+
+
+\slide{RFC-2402 IP AH}
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | Next Header   |  Payload Len  |          RESERVED             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 Security Parameters Index (SPI)               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Sequence Number Field                      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                Authentication Data (variable)                 |
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\slide{RFC-2402 IP AH}
+
+Indpakning - pakkerne før og efter Authentication Header:
+\begin{alltt}
+\small
+                BEFORE APPLYING AH
+            ----------------------------
+      IPv4  |orig IP hdr  |     |      |
+            |(any options)| TCP | Data |
+            ----------------------------
+
+                  AFTER APPLYING AH
+            ---------------------------------
+      IPv4  |orig IP hdr  |    |     |      |
+            |(any options)| AH | TCP | Data |
+            ---------------------------------
+            |<------- authenticated ------->|
+                 except for mutable fields
+\end{alltt}
+
+\slide{RFC-2406 IP ESP}
+
+Pakkerne før og efter:
+\begin{alltt}
+\small
+               BEFORE APPLYING ESP
+         ---------------------------------------
+   IPv6  |             | ext hdrs |     |      |
+         | orig IP hdr |if present| TCP | Data |
+         ---------------------------------------
+
+
+
+               AFTER APPLYING ESP
+         ---------------------------------------------------------
+   IPv6  | orig |hop-by-hop,dest*,|   |dest|   |    | ESP   | ESP|
+         |IP hdr|routing,fragment.|ESP|opt*|TCP|Data|Trailer|Auth|
+         ---------------------------------------------------------
+                                   |<---- encrypted ---->|
+                               |<---- authenticated ---->|
+\end{alltt}
+
+\slide{ipsec konfigurationsfiler}
+
+\begin{list1}
+%\item Der er følgende dokumenter til IPsec på websitet\\
+% \link{www.security.net/courses/ipsec}:
+\item Der er følgende filer tilgængelige\\
+  \begin{list2}
+  \item konfigurationsfiler i NetBSD/FreeBSD/Mac OS X format - med
+    \verb+setkey+ kommandoen
+  \item konfigurationsfil til OpenBSD server - med \verb+ipsecadm+
+    kommandoen
+%  \item IKE.pdf \emph{Dynamic Management of the IPsec Parameters:
+%      The IKE Protocol}, fra Herve Schauer Consultants
+%\item NetBSD IPsec dokumentation
+%\item Cisco \emph{Introduction to IP security}
+  \end{list2}
+\end{list1}
+
+
+\slide{IPsec setup}
+
+%\hlkimage{}{images/}
+
+\begin{list1}
+  \item Client: Mac OS X/NetBSD/FreeBSD - samme syntaks\\
+\verb+rc.ipsec.client+
+
+\item Server: OpenBSD - bruger ipsecadm kommando\\
+\verb+rc.ipsec.server+
+
+\item Øvelse til læseren: lav samme i Cisco IOS
+\item Det vil ofte være relevant at se på IOS og IPsec i laboratoriet
+\item Dette setup når vi ikke at demonstrere
+\end{list1}
+
+\slide{rc.ipsec.client - client setup - adresser}
+
+\begin{verbatim}
+#!/bin/sh
+# /etc/rc.ipsec.client - IPsec client configuration
+# built from http://rt.fm/~jcs/ipsec_wep.phtml
+# FreeBSD/NetBSD syntaks! - used on Mac OS X
+# IPv4
+SECSERVER=10.0.42.1
+SECCLIENT=10.0.42.53
+# IPv6
+#SECSERVER=2001:618:433:101::1
+#SECCLIENT=2001:618:433:101::153
+ESPKEY=`cat ipsec.esp.key`
+AHKEY=`cat ipsec.ah.key`
+
+# Flush IPsec SAs in case we get called more than once
+setkey -F
+setkey -F -P
+\end{verbatim}
+
+\slide{rc.ipsec.client - client setup - SAs}
+
+\begin{verbatim}
+# Establish Security Associations
+# 1000 is from the server to the client
+# 1001 is from the client to the server
+setkey -c <<EOF
+
+add $SECSERVER $SECCLIENT esp 0x1000 \
+-m tunnel -E blowfish-cbc 0x$ESPKEY  -A hmac-sha1 0x$AHKEY;
+
+add $SECCLIENT $SECSERVER esp 0x1001 \
+-m tunnel -E blowfish-cbc 0x$ESPKEY -A hmac-sha1 0x$AHKEY;
+
+spdadd $SECCLIENT $SECSERVER any -P out \
+ipsec esp/tunnel/$SECCLIENT-$SECSERVER/default;
+
+spdadd $SECSERVER $SECCLIENT any -P in \
+ipsec esp/tunnel/$SECSERVER-$SECCLIENT/default;
+EOF
+\end{verbatim}
+
+\slide{rc.ipsec.server - server setup - adresser}
+
+\begin{verbatim}
+#!/bin/sh
+#
+# Henrik Lund Kramshøj
+# /etc/rc.ipsec - IPsec server configuration
+# built from http://rt.fm/~jcs/ipsec_wep.phtml
+# OpenBSD syntaks!
+SECSERVER=10.0.42.1
+SECCLIENT=10.0.42.53
+#SECSERVER6=2001:618:433:101::1
+#SECCLIENT6=2001:618:433:101::153
+
+ESPKEY=`cat ipsec.esp.key`
+AHKEY=`cat ipsec.ah.key`
+
+# Flush IPsec SAs in case we get called more than once
+ipsecadm flush
+\end{verbatim}
+
+
+\slide{rc.ipsec.server - server setup - SAs}
+
+\begin{verbatim}
+# Establish Security Associations
+#
+# 1000 is from the server to the client
+ipsecadm new esp -spi 1000 -src $SECSERVER -dst $SECCLIENT \
+-forcetunnel -enc blf -key $ESPKEY \
+-auth sha1 -authkey $AHKEY
+
+# 1001 is from the client to the server
+ipsecadm new esp -spi 1001 -src $SECCLIENT -dst $SECSERVER \
+-forcetunnel -enc blf -key $ESPKEY \
+-auth sha1 -authkey $AHKEY
+\end{verbatim}
+
+
+\slide{rc.ipsec.server - server setup - flows}
+
+\small
+\begin{verbatim}
+# Create flows
+#
+# Data going from the outside to the client
+ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
+-addr 0.0.0.0 0.0.0.0 $SECCLIENT 255.255.255.255 -dontacq
+# IPv6
+#ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
+#-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
+
+# Data going from the client to the outside
+ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
+-addr $SECCLIENT 255.255.255.255 0.0.0.0 0.0.0.0 -dontacq
+# IPv6
+#ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
+#-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
+\end{verbatim}
+
+
+
+\slide{World Wide Web fødes}
+
+\hlkimage{15cm}{images/tim-berners-lee-2001-europaeum-eighth.jpg}
+
+\begin{list1}
+\item Tim Berners-Lee opfinder WWW 1989 og den første webbrowser og
+  server i 1990 mens han arbejder for CERN
+\end{list1}
+
+Kilde:
+\link{http://www.w3.org/People/Berners-Lee/}
+
+\slide{World Wide Web udviklingen}
+
+\hlkimage{20cm}{images/Count_WWW.png}
+
+\begin{list1}
+\item Udviklingen på world wide web bliver en stor kommerciel success
+\end{list1}
+
+Kilde: Hobbes Internet time-line\\
+\link{http://www.zakon.org/robert/internet/timeline/}
+
+\slide{Nogle HTTP og webrelaterede RFC'er}
+
+\begin{list2}
+\item[1945] Hypertext Transfer Protocol -- HTTP/1.0. T. Berners-Lee, R.
+     Fielding, H. Frystyk. May 1996.
+\item[2068] Hypertext Transfer Protocol -- HTTP/1.1. R. Fielding, J. Gettys,
+     J. Mogul, H. Frystyk, T. Berners-Lee. January 1997. (Obsoleted by
+     RFC2616)
+\item[2069] An Extension to HTTP : Digest Access Authentication. J. Franks,
+     P. Hallam-Baker, J. Hostetler, P. Leach, A. Luotonen, E. Sink, L.
+     Stewart. January 1997. (Obsoleted by
+     RFC2617)
+\item[2145] Use and Interpretation of HTTP Version Numbers. J. C. Mogul, R.
+     Fielding, J. Gettys, H. Frystyk. May 1997.
+\item[2518] HTTP Extensions for Distributed Authoring -- WEBDAV. Y. Goland,
+     E. Whitehead, A. Faizi, S. Carter, D. Jensen. February 1999.
+\item[2616] Hypertext Transfer Protocol -- HTTP/1.1. R. Fielding, J. Gettys,
+     J. Mogul, H. Frystyk, L. Masinter, P. Leach, T. Berners-Lee. June
+     1999. (Obsoletes
+     RFC2068) (Updated by RFC2817)
+\item[2818] HTTP Over TLS. E. Rescorla. May 2000.
+\end{list2}
+
+\begin{quote}
+HTTP er basalt set en sessionsløs protokol bestående at individuelle
+HTTP forespørgsler via TCP forbindelser
+\end{quote}
+
+\slide{Infokager og state management}
+\begin{list2}
+\item[2109] HTTP State Management Mechanism. D. Kristol, L. Montulli.
+     February 1997. (Format: TXT=43469 bytes) (Obsoleted by RFC2965)
+     (Status: PROPOSED STANDARD)
+\item[2965] HTTP State Management Mechanism. D. Kristol, L. Montulli. October
+     2000. (Format: TXT=56176 bytes) (Obsoletes RFC2109) (Status: PROPOSED
+     STANDARD)
+\end{list2}
+\begin{quote}
+1.  ABSTRACT
+   This document specifies a way to create a stateful session with HTTP
+   requests and responses.  It describes two new headers, Cookie and
+   Set-Cookie, which carry state information between participating
+   origin servers and user agents.  The method described here differs
+   from Netscape's Cookie proposal, but it can interoperate with
+   HTTP/1.0 user agents that use Netscape's method.  (See the HISTORICAL
+   section.)
+\end{quote}
+
+(Citatet er fra RFC-2109)
+
+\slide{Transport Layer Security}
+
+
+\end{document}

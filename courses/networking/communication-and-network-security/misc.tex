@@ -1,0 +1,350 @@
+\documentclass[20pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% Basic things that we need are below
+\selectlanguage{danish}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+\begin{document}
+% beskrivelse findes i beskrivelse.txt
+
+% lavet med basis i advanced-unix-admin kurset!
+
+\mytitlepage
+{Communication and Network Security}
+{2019}
+
+
+\slide{Kursusmateriale}
+\label{reftest}
+\begin{list1}
+\item Dette materiale består af flere dele:
+\begin{list2}
+%\item Introduktionsmateriale med baggrundsinformation
+\item Kursusmaterialet - præsentationen til undervisning - dette sæt
+\item Øvelseshæfte med øvelser
+\end{list2}
+\item Hertil kommer diverse ressourcer fra internet, specielt RFC-dokumenter
+\item Boot CD'er baseret på Linux
+\item Bemærk: kursusmaterialet er ikke en substitut for andet materiale, der er udeladt mange detaljer som forklares undervejs, eller kan slås op op internet
+\end{list1}
+
+
+
+
+\slide{Kursusforløb}
+
+
+\begin{list1}
+\item Vi skal have glæde af hinanden i følgende kursusforløb
+\begin{list2}
+\item 5 dage TCP/IP grundkursus
+%\item 2 dage Apache HTTP server
+\end{list2}
+\item I skal udover at lære en masse om protokoller og netværk lære nogle gode vaner!
+\item Jeres arbejde med netværk kan lettes betydeligt - hvis I starter rigtigt!
+\end{list1}
+
+
+\hlkprofil
+
+% lad være hvis der er 10+ deltagere
+%\deltagere
+
+\dagsplan
+
+\slide{Er TCP/IP interessant?}
+\hlkimage{12cm}{kame-noanime-small.png}
+
+\begin{list1}
+\item IP er med i alle de gængse operativsystemer UNIX og Windows
+\item Internet er overalt
+\end{list1}
+
+\slide{Formål: TCP/IP grundkursus}
+\hlkimage{11cm}{images/sample-network.png}
+\centerline{IP-baserede netværk}
+
+\slide{Formål: mere specifikt}
+
+\begin{list1}
+\item At introducere IP familien af protokoller
+\item Kendskab til almindeligt brugte programmer i disse miljøer\\
+ - ping, traceroute, samt serverfunktioner Apache HTTP, BIND DNS m.v.
+\item Gennemgang af netværksdesign ved hjælp af almindeligt brugte setups\\ - en skalamodel af internet
+\end{list1}
+
+\slide{Forudsætninger}
+
+\begin{list1}
+\item Dette er en workshop og fuldt udbytte kræver at
+  deltagerne udfører praktiske øvelser
+\item Kurset anvender OpenBSD til øvelser, men UNIX kendskab
+er ikke nødvendigt
+\item De fleste øvelser kan udføres fra en Windows PC
+\item Øvelserne foregår via login til UNIX maskinen
+\begin{list2}
+\item Til penetrationstest og det meste Internet-sikkerhedsarbejde er der
+følgende forudsætninger
+\item Netværkserfaring
+\item TCP/IP principper - ofte i detaljer
+\item Programmmeringserfaring er en fordel
+\item UNIX kendskab er ofte en {\bfseries nødvendighed}\\
+- fordi de nyeste værktøjer er skrevet til UNIX i form af Linux og BSD
+\vskip 3 mm
+\end{list2}
+\end{list1}
+
+
+\slide{Kursusfaciliteter}
+
+\begin{list1}
+\item Der er opbygget et kursusnetværk med følgende primære systemer:
+\begin{list2}
+\item UNIX server Fiona med HTTP server og værktøjer
+%\item Sun Solaris PC server ved navn Flaffy, Athlon 64 X2 med 2GB ram
+\item UNIX boot CD'er eller VMware images - jeres systemer
+\end{list2}
+\item På UNIX serveren tillades login diverse kursusbrugere - kursus1,
+  kursus2, kursus3, ... kodeordet er {\bf kursus}
+\item Det er en fordel at benytte hver sin bruger, så man kan gemme scripts
+\item På de resterende systemer kan benyttes brugeren {\bf kursus}
+\end{list1}
+
+\begin{alltt}
+Login: {\bf kursus}
+Password: {\bf kursus42}
+\end{alltt}
+
+\slide{Knoppix og BackTrack boot CD'er}
+
+%\hlkimage{5cm}{images/auditor.jpg}
+
+\begin{list1}
+\item Vi bruger UNIX og SSH på kurset
+\item I kan bruge en udleveret CD til at boote Linux på jeres
+  arbejdsstation og derfra arbejde, eller I kan benytte Fiona
+\item Brug CD'en eller VMware player til de grafiske værktøjer som Wireshark
+\item CD'en er under en åben licens - må kopieres frit :-)
+\item ISO image kan hentes fra mirrors
+\item BackTrack \link{http://www.remote-exploit.org/backtrack.html}
+%\item Knoppix Dansk \link{http://tyge.sslug.dk/knoppix/}
+\item Til begyndere indenfor Linux anbefales Ubuntu eller Kubuntu til
+  arbejdsstationer
+\end{list1}
+
+\slide{Stop - tid til check}
+
+\begin{list1}
+\item Er alle kommet
+\item Har alle en PC med
+\item Har alle et kabel eller trådløst netkort som virker
+\item Der findes et trådløst netværk ved navn {\bf kamenet}
+\item Mangler der strømkabler
+\item Mangler noget af ovenstående, sæt nogen igang med at finde det
+\end{list1}
+
+
+
+\slide{UNIX starthjælp}
+\begin{list1}
+\item Da UNIX indgår er her et lille \emph{cheat sheet} til UNIX
+\begin{list2}
+\item DOS/Windows kommando - tilsvarende UNIX, og forklaring
+\item dir - ls - står for list files, viser filnavne
+\item del - rm - står for remove, sletter filer
+%\item ren - mv - move flytter filer til nyt navn, rename
+%\item md - mkdir - make directory, lav en mappe/katalog
+\item cd - cd - change directory, skifter katalog
+\item type - cat - concatenate, viser indholdet af tekstfiler
+\item more - less - viser tekstfiler en side af gangen
+\item attrib - chmod - change mode, ændrer rettighederne på filer
+\end{list2}
+\item Prøv bare:
+  \begin{list2}
+    \item {\bfseries ls} list, eller long listing med {\bfseries ls -l}
+    \item {\bfseries cat /etc/hosts} viser hosts filen
+\item {\bfseries chmod +x head.sh} - sæt execute bit på en fil så den
+  kan udføres som et program med kommandoen \verb+./head.sh+
+  \end{list2}
+\end{list1}
+
+\slide{Aftale om test af netværk}
+
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel
+  indtil 6 måneder
+straffes den, som uberettiget skaffer sig adgang til en andens
+oplysninger eller programmer, der er bestemt til at bruges i et anlæg
+til elektronisk databehandling.}
+
+Hacking kan betyde:
+\begin{list2}
+\item At man skal betale erstatning til personer eller virksomheder
+\item At man får konfiskeret sit udstyr af politiet
+\item At man, hvis man er over 15 år og bliver dømt for hacking, kan
+  få en bøde - eller fængselsstraf i alvorlige tilfælde
+\item At man, hvis man er over 15 år og bliver dømt for hacking, får
+en plettet straffeattest. Det kan give problemer, hvis man skal finde
+et job eller hvis man skal rejse til visse lande, fx USA og
+Australien
+\item Frit efter: \link{http://www.stophacking.dk} lavet af Det
+  Kriminalpræventive Råd
+\item Frygten for terror har forstærket ovenstående - så lad være!
+\end{list2}
+
+
+\slide{Agenda - dag 1 Basale begreber og mindre netværk}
+
+\begin{list1}
+\item Opstart - hvad er IP og TCP/IP
+\item Adresser
+\item Subnets og CIDR
+\item TCP og UDP
+\item Basal DNS
+\item Lidt om hardware half/full-duplex
+
+\end{list1}
+
+
+
+\slide{Agenda - dag 2 IPv6, Management, diagnosticering}
+
+\begin{list1}
+\item IP version 6
+\item ARP og NDP
+\item Ping
+\item Traceroute
+\item Snifferprogrammer Tcpdump og Wireshark
+\item Management
+\item Tuning og perfomancemålinger
+\item RRDTool og Smokeping
+\item Overvågning og Nagios
+\item Wireless 802.11
+\end{list1}
+
+
+\slide{Agenda - dag 3 Dynamiske protokoller og services}
+
+\begin{list1}
+\item Netværksservices og serverfunktioner
+\item DNS protokoller og servere
+\item HTTP protokoller og servere
+\item Dynamisk routing: BGP og OSPF
+\item Produktionsmodning af netværk
+\item Netværksprogrammering: små utilityprogrammer og scripts
+\end{list1}
+
+\slide{Agenda - dag 4  Netværkssikkerhed og firewalls}
+
+\begin{list1}
+\item SSL Secure Sockets Layer
+\item VLAN 802.1q
+\item 802.1x portbaseret autentifikation
+\item WPA Wi-Fi Protected Access
+\item VPN protokoller og IPSec
+\item VoIP introduktion
+\item Mobile IP introduktion
+\end{list1}
+
+\slide{Agenda - dag 5 Netværksdesign og templates}
+
+\begin{list1}
+\item Netværksdesign
+\item Infrastrukturer i praksis
+\item Templates til almindeligt forekommende setups
+\item Afslutning og opsummering på kursus
+\vskip 1 cm
+\item Udfyld meget gerne evalueringsskemaerne, tak
+\end{list1}
+
+% agenda slut
+
+
+% days 1-5
+\input{basic-tcpip-1.tex}
+
+\input{basic-tcpip-2.tex}
+
+\input{basic-tcpip-3.tex}
+
+\input{basic-tcpip-4.tex}
+
+\input{basic-tcpip-5.tex}
+
+
+\slide{Opsummering}
+
+\vskip 3 cm
+
+\begin{list1}
+\item Husk følgende:
+\begin{list2}
+\item UNIX og Linux er blot eksempler - navneservice eller HTTP
+  server kører fint på Windows
+\item DNS er grundlaget for Internet
+\item Sikkerheden på internet er generelt dårlig, brug SSL!
+\item Procedurerne og vedligeholdelse er essentiel for alle
+  operativsystemer!
+\item Man skal \emph{hærde} operativsystemer \emph{før} man sætter dem på
+  Internet
+\item Husk: IT-sikkerhed er ikke kun netværkssikkerhed!
+\item God sikkerhed kommer fra langsigtede intiativer\\
+\end{list2}
+\item Jeg håber I har lært en masse om netværk og kan bruge det i praksis :-)
+\end{list1}
+
+\slide{Spørgsmål?}
+
+
+\vskip 4cm
+
+\begin{center}
+\hlkbig
+
+\myname
+
+\myweb
+\vskip 2 cm
+
+I er altid velkomne til at sende spørgsmål på e-mail
+\end{center}
+
+
+
+\slide{Referencer: netværksbøger}
+
+\begin{list2}
+\item Stevens, Comer,
+\item Network Warrior
+\item TCP/IP bogen på dansk
+\item KAME bøgerne
+\item O'Reilly generelt IPv6 Essentials og IPv6 Network Administration
+\item O'Reilly cookbooks: Cisco, BIND og Apache HTTPD
+\item Cisco Press og website
+\item Firewall bøger, Radia Perlman: IPsec,
+\end{list2}
+
+\slide{Bøger om IPv6}
+
+\begin{list1}
+\item \emph{IPv6 Network Administration}
+af David Malone og Niall Richard Murphy
+ - god til real-life admins, typisk
+O'Reilly bog
+\item \emph{IPv6 Essentials} af Silvia Hagen, O'Reilly 2nd edition (May 17, 2006)
+	god reference om emnet
+\item \emph{IPv6 Core Protocols Implementation}
+af Qing Li, Tatuya Jinmei og Keiichi Shima
+\item \emph{IPv6 Advanced Protocols Implementation}
+af Qing Li, Jinmei Tatuya og Keiichi Shima
+\item - flere andre
+\end{list1}
+
+
+%\input{references.tex}
+
+
+
+\end{document}

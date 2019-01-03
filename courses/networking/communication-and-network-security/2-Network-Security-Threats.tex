@@ -1,0 +1,176 @@
+\documentclass[Screen16to9,17pt,footrule]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Network Security Threats}
+{Communication and Network Security 2019}
+
+
+\slide{Unencrypted data protocols }
+
+\slide{TFTP Trivial File Transfer Protocol}
+
+\begin{list1}
+\item Trivial File Transfer Protocol - uautentificerede filoverførsler
+\item De bruges især til:
+  \begin{list2}
+\item TFTP bruges til boot af netværksklienter uden egen harddisk
+\item TFTP benytter UDP og er derfor ikke garanteret at data overføres korrekt
+  \end{list2}
+\item TFTP sender alt i klartekst, hverken password \\
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord}
+\end{list1}
+Still used for configuration files and firmwares
+
+\slide{FTP File Transfer Protocol}
+
+\begin{list1}
+\item File Transfer Protocol - filoverførsler
+\item Bruges især til:
+  \begin{list2}
+    \item FTP - drivere, dokumenter, rettelser - Windows Update? er
+    enten HTTP eller FTP
+  \end{list2}
+\item FTP sender i klartekst\\
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord}
+\item Der findes varianter som tillader kryptering, men brug istedet SCP/SFTP over Secure Shell protokollen
+\end{list1}
+
+
+\slide{FTP Daemon konfiguration}
+
+\begin{list1}
+\item Meget forskelligt!
+\item WU-FTPD er meget udbredt
+\item BSD FTPD ligeså meget anvendt
+\item \emph{anonym ftp} er når man tillader alle at logge ind\\
+men husk så ikke at tillade upload af filer!
+\item På BSD oprettes blot en bruger med navnet \verb+ftp+ så er der åbent!
+\end{list1}
+
+
+
+\slide{Dag 3 Dynamiske protokoller og services}
+
+\hlkimage{20cm}{openbgpd-network-2.pdf}
+
+\slide{Dynamisk routing}
+
+\begin{list1}
+\item Når netværkene vokser bliver det administrativt svært at vedligeholde
+\item Det skalerer dårligt med statiske routes til netværk
+\item Samtidig vil man gerne have redundante forbindelser
+\item Til dette brug har man STP på switch niveau og dynamisk routing på IP niveau
+\end{list1}
+
+
+
+% OpenBGPD
+
+\slide{BGP Border Gateway Protocol}
+
+\begin{list1}
+\item Er en dynamisk routing protocol som benyttes eksternt
+\item Netværk defineret med AS numre annoncerer hvilke netværk de er forbundet til
+\item Autonomous System (AS) er en samling netværk
+\item BGP version 4 er beskrevet i RFC-4271
+\item BGP routere forbinder sig til andre BGP routere og snakker sammen, \emph{peering}
+\item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
+\item Vores setup svarer til dette:
+\item \link{http://www.kramse.dk/projects/network/openbgpd-basic_en.html}
+\end{list1}
+
+\slide{RIP Routing Information Protocol}
+
+\begin{list1}
+\item Gammel routingprotokol som ikke benyttes mere
+\item RIP er en distance vector routing protokol, tæller antal hops
+\item \link{http://en.wikipedia.org/wiki/Routing_Information_Protocol}
+\end{list1}
+
+
+% OpenOSPFD
+
+\slide{OSPF Open Shortest Path First}
+
+\begin{list1}
+\item Er en dynamisk routing protocol som benyttes til intern routing
+\item OSPF version 3 er beskrevet i RFC-2740
+\item OSPF bruger hverken TCP eller UDP, men sin egen protocol med ID 89
+\item OSPF bruger en metric/cost pr link for at udregne smart routing
+\item \link{http://en.wikipedia.org/wiki/Open_Shortest_Path_First}
+\item Vores setup svarer til OpenBGPD setup, blot med OpenOSPFD
+\end{list1}
+
+
+\slide{EIGRP}
+
+\begin{list1}
+\item Cisco protokol til intern routing, hvis man udelukkende har Cisco udstyr
+\item \link{http://www.cisco.com}
+\end{list1}
+
+\slide{Stop - vi gennemgår og tester vores dynamiske routing}
+
+\begin{list1}
+\item Vi gennemgår hvordan vores setup ser ud
+\item Vi laver traceroute før og efter:
+\item Vi fjerner en ledning \emph{link down}
+\item Vi stopper en router og ser de annoncerede netværk forsvinder
+\item Vi booter en router og ser de annoncerede netværk igen
+\end{list1}
+
+\slide{Båndbreddestyring og policy based routing}
+
+\begin{list1}
+\item Mange routere og firewalls idag kan lave båndbredde allokering til
+  protokoller, porte og derved bestemte services
+\item Mest kendte er i Open Source:
+\begin{list2}
+\item ALTQ bruges på OpenBSD - integreret i PF
+%  \link{http://www.csl.sony.co.jp/person/kjc/kjc/software.html}
+\item FreeBSD har dummynet
+\item Linux har tilsvarende\\
+ADSL-Bandwidth-Management-HOWTO, ADSL Bandwidth Management HOWTO\\
+Adv-Routing-HOWTO, Linux Advanced Routing \& Traffic Control HOWTO\\
+\link{http://www.knowplace.org/shaper/resources.html} Linux resources
+\end{list2}
+\item Det kaldes også traffic shaping
+\end{list1}
+
+
+\slide{Routingproblemer, angreb}
+
+\begin{list1}
+  \item falske routing updates til protokollerne
+\item sende redirect til maskiner
+\item source routing - mulighed for at specificere en ønsket vej for
+  pakken
+\item Der findes (igen) specialiserede programmer til at teste og
+  forfalske routing updates, svarende til icmpush programmet
+\item Det anbefales at sikre routere bedst muligt - eksempelvis
+Secure IOS template der findes på adressen:\\
+{\small \link{http://www.cymru.com/Documents/secure-ios-template.html}}
+\item Med UNIX systemer generelt anbefales opdaterede systemer og netværkstuning
+\end{list1}
+
+
+\slide{Source routing}
+
+\begin{list1}
+\item Hvis en angriber kan fortælle hvilken vej en pakke skal følge
+  kan det give anledning til sikkerhedsproblemer
+\item maskiner idag bør ikke lytte til source routing, evt. skal de
+  droppe pakkerne
+\end{list1}
+
+
+
+\end{document}

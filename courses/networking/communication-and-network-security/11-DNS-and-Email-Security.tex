@@ -1,0 +1,147 @@
+\documentclass[Screen16to9,17pt,footrule]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{DNS and Email Security}
+{Communication and Network Security 2019}
+
+
+
+\exercise{ex:basic-dns-lookup}
+
+
+
+\slide{SMTP Simple Mail Transfer Protocol}
+
+\begin{alltt}\tiny
+hlk@bigfoot:hlk$ telnet mail.kramse.dk 25
+Connected to sunny.
+220 sunny.kramse.dk ESMTP Postfix
+HELO bigfoot
+250 sunny.kramse.dk
+MAIL FROM: Henrik
+250 Ok
+RCPT TO: hlk@kramse.dk
+250 Ok
+DATA
+354 End data with <CR><LF>.<CR><LF>
+hejsa
+.
+250 Ok: queued as 749193BD2
+QUIT
+221 Bye
+\end{alltt}
+
+\begin{list1}
+\item RFC-821 SMTP Simple Mail Transfer Protocol fra 1982
+\item RFC-2821 fra 2001 og flere andre er idag gældende
+\item \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
+\item Vedhæftede filer kodes i MIME Multipurpose Internet Mail Extensions
+\item Bemærk at MIME encoding forøger størrelsen med ca. 30\%!
+%\item Lad VÆRE med at sende store filer, dvs over 7-8MB via e-mail
+\end{list1}
+
+\slide{e-mail servere}
+
+\begin{list1}
+  \item Sendmail, qmail og postfix
+\item Tre meget brugte e-mail systemer
+  \begin{list2}
+    \item Sendmail - den ældste og mest benyttede
+\item Postfix en modulært og sikkerhedsmæssigt god e-mail server\\
+er ligeledes nem at konfigurere
+\item Qmail - en underlig mailserver lavet af Dan J Bernstein, med en
+  speciel licens - ligesom programmøren
+  \end{list2}
+\item Dertil kommer diverse andre mailservere:
+\item Microsoft Exchange på Windows servere
+\item Jeg anbefaler at man har en postserver mod internet, der kun sender og modtager ekstern post, og en intern postserver der opbevarer al posten
+\end{list1}
+
+
+\slide{Postfix postserveren}
+
+\hlkimage{6cm}{postfix-mouse.png}
+
+\begin{list1}
+\item Lavet af Wietse Venema for IBM
+\item Nem at konfigurere og sikker
+\item \verb+main.cf+ findes typisk i kataloget \verb+/etc/postfix+
+\end{list1}
+
+\slide{Audit af postservere}
+
+\begin{list1}
+\item Typisk findes konfigurationsfilerne til postservere under
+  \verb+/etc+
+\begin{list2}
+\item \verb+/etc/mail+
+\item \verb+/etc/postfix+
+\end{list2}
+\item Det vigtigste er at den er opdateret og IKKE tillader relaying
+\item Der findes diverse test-scripts til relaycheck på internet
+\item Husk også at checke domæne records, MX og A
+\end{list1}
+
+\slide{Test af e-mail server}
+
+\begin{alltt}
+[hlk]$ {\bfseries telnet localhost 25}
+Connected.
+Escape character is '^]'.
+220 server ESMTP Postfix
+{\bfseries helo test}
+250 server
+{\bfseries mail from: postmaster@pentest.dk}
+250 Ok
+{\bfseries rcpt to: root@pentest.dk}
+250 Ok
+{\bfseries data}
+354 End data with <CR><LF>.<CR><LF>
+{\bfseries skriv en kort besked}
+.
+250 Ok: queued as 91AA34D18
+{\bfseries quit}
+\end{alltt}
+%$
+\exercise{ex:email-server-config}
+
+\slide{Postservere til klienter}
+
+\begin{list1}
+\item SMTP  som vi har gennemgået er til at sende mail mellem servere
+\item Når vi skal hente post sker det typisk med POP3 eller IMAP
+\begin{list2}
+\item POP3 Post Office Protocol version 3 RFC-1939
+\item Internet Message Access Protocol (typisk IMAPv4) RFC-3501
+\end{list2}
+\item Forskellen mellem de to er at man typisk med POP3 henter posten, hvor man med IMAP lader den ligge på serveren
+\item POP3 er bedst hvis kun en klient skal hente
+\item IMAP er bedst hvis du vil tilgå din post fra flere systemer
+\item Jeg bruger selv IMAPS, IMAP over SSL kryptering - idet kodeord ellers sendes i klartekst
+\end{list1}
+
+
+\slide{POP3 i Danmark}
+
+\hlkimage{15cm}{images/pop3-1.pdf}
+
+\begin{list1}
+\item Man har tillid til sin ISP - der administrerer såvel net som server
+\end{list1}
+
+\slide{POP3 i Danmark - trådløst}
+
+\hlkimage{13cm}{images/pop3-wlan.pdf}
+\begin{list1}
+\item Har man tillid til andre ISP'er? Alle ISP'er?
+\item Deler man et netværksmedium med andre?
+\item {\color{green}Brug de rigtige protokoller!}
+\end{list1}
+
+\end{document}

@@ -1,0 +1,1402 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Lund Kramshoej, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-network-exercises}
+
+\begin{document}
+
+\rm
+\selectlanguage{english}
+
+\newcommand{\emne}[1]{Communication and Network Security workshop}
+\newcommand{\kursus}[1]{Communication and Network Security workshop}
+\newcommand{\kursusnavn}[1]{Communication and Network Security workshop\\ exercises}
+
+\mytitle{Communication and Network Security}{exercises}
+
+\pagenumbering{roman}
+
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Preface}
+\markboth{Preface}{}
+
+This material is prepared for use in \emph{\kursus} and was prepared by
+Henrik Lund Kramshoej, \url{http://www.zencurity.com} .
+It describes the networking setup and
+applications for trainings and workshops where hands-on exercises are needed.
+
+\vskip 1cm
+Further a presentation is used which is available as PDF from kramse@Github\\
+Look for \jobname in the repo security-courses.
+
+These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
+
+\url{https://github.com/kramse/kramse-labs}
+
+
+
+\section*{\color{titlecolor}Prerequisites}
+
+This material expect that participants have a working knowledge of
+TCP/IP from a user perspective. Basic concepts such as web site addresses and email should be known as well as IP-addresses and common protocols like DHCP.
+
+\vskip 1cm
+Have fun and learn
+\eject
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+
+
+\chapter*{\color{titlecolor}Introduction to networking}
+%\markboth{Introduktion til netværk}{}
+\label{chap:intro}
+
+\section*{\color{titlecolor}IP - Internet protocol suite}
+
+It is extremely important to have a working knowledge about IP to implement
+secure and robust infrastructures. Knowing about the alternatives while doing
+implementation will allow the selection of the best features.
+
+\section*{\color{titlecolor}ISO/OSI reference model}
+A very famous model used for describing networking is the ISO/OSI model
+of networking which describes layering of network protocols in stacks.
+
+This model divides the problem of communicating into layers which can
+then solve the problem as smaller individual problems and the solution
+later combined to provide networking.
+
+Having layering has proven also in real life to be helpful, for instance
+replacing older hardware technologies with new and more efficient technologies
+without changing the upper layers.
+
+In the picture the OSI reference model is shown along side with
+the Internet Protocol suite model which can also be considered to have different layers.
+
+
+\begin{figure}[H]
+\label{fig:osi}
+\begin{center}
+\colorbox{white}{\includegraphics[width=8cm,angle=90]{images/compare-osi-ip.pdf}}
+\end{center}
+\caption{OSI og Internet Protocol suite}
+\end{figure}
+
+
+\chapter*{\color{titlecolor}Exercise content}
+\markboth{Exercise content}{}
+
+Most exercises follow the same procedure and has the following content:
+\begin{itemize}
+\item {\bf Objective:} What is the exercise about, the objective
+\item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
+\item {\bf Suggested method:} suggest a way to get started
+\item {\bf Hints:} one or more hints and tips or even description how to
+do the actual exercises
+\item {\bf Solution:} one possible solution is specified
+\item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
+\end{itemize}
+
+Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
+
+
+\chapter{Check your VM, run Kali Linux}
+\label{ex:basicVM}
+
+
+{\bf Objective:}\\
+Make sure your virtual machine is in working order.
+
+We need a Kali Linux for running tools during the course.
+
+{\bf Purpose:}\\
+If your VM is not updated we will run into trouble later.
+
+{\bf Suggested method:}\\
+Go to \url{https://github.com/kramse/kramse-labs/}
+
+Read the instructions for the setup of a Kali VM.
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+When you have a updated virtualisation software and Kali Linux, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+\chapter{Wireshark and tcpdump}
+\label{ex:wireshark-install}
+
+\hlkimage{10cm}{wireshark-http.png}
+
+
+{\bf Objective:}\\
+Try the program Wireshark locally your workstation, or tcpdump
+
+You can run Wireshark on your host too, if you want.
+
+{\bf Purpose:}\\
+Installing Wireshark will allow you to analyse packets and protocols
+
+Tcpdump is a feature included in many operating systems and devices to allow packet capture and saving network traffic into files.
+
+{\bf Suggested method:}\\
+Download and install the program, either download from web server locally or from \url{http://www.wireshark.org}\\
+Wireshark requires a packet capture library to be installed
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+{\bf Solution:}\\
+When Wireshark is installed sniff some packets. We will be working with both live traffic and saved packets from files in this course.
+
+If you want to capture packets as a non-root user on Debian, then use the command to add a Wireshark group:
+\begin{alltt}
+sudo dpkg-reconfigure wireshark-common
+\end{alltt}
+
+and add your user to this:
+\begin{alltt}
+sudo gpasswd -a $USER wireshark
+\end{alltt}
+Dont forget to logout/login to pick up this new group.
+
+{\bf Discussion:}\\
+Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
+
+We can download a lot of packet traces from around the internet, we might use examples from\\
+\url{https://www.bro.org/community/traces.html}
+
+\chapter{Capturing network packets}
+\label{ex:wireshark-capture}
+
+\hlkimage{4cm}{tcp-three-way.pdf}
+
+
+{\bf Objective:}\\
+Sniff packets and dissect them using Wireshark
+
+{\bf Purpose:}\\
+See real network traffic, also know that a lot of information is available and not encrypted.
+
+Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL
+
+\begin{alltt}
+curl http://www.zencurity.com
+\end{alltt}
+
+{\bf Suggested method:}\\
+Open Wireshark and start a capture\\
+Then in another window execute the ping program while sniffing
+
+or perform a Telnet connection while capturing data
+
+{\bf Hints:}\\
+When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some packets you are done.
+
+{\bf Discussion:}
+Is it ethical to collect packets from an open wireless network?
+
+Also note the TTL values in packets from different operating systems
+
+
+
+
+\chapter{Zeek on the web}
+\label{ex:zeekweb}
+
+
+{\bf Objective:} \\
+Try Zeek Network Security Monitor - without installing it.
+
+
+{\bf Purpose:}\\
+Show a couple of examples of Zeek scripting, the built-in language found in Zeek Network Security Monitor
+
+
+{\bf Suggested method:}\\
+Go to \url{http://try.bro.org/#/?example=hello}
+
+{\bf Hints:}\\
+The exercise
+\emph{The Summary Statistics Framework} can be run with a specifc PCAP.
+
+\verb+192.168.1.201 did 402 total and 2 unique DNS requests in the last 6 hours.+
+
+{\bf Solution:}\\
+You should read the example \emph{Raising a Notice}. Getting output for certain events may be interesting to you.
+
+
+{\bf Discussion:}\\
+Zeek Network Security Monitor is an old/mature tool, but can still be hard to get started using. I would suggest that you always start out using the packages available in your Ubuntu/Debian package repositories.
+
+They work, and will give a first impression of Zeek. If you later want specific features not configured into the binary packet, then install from source.
+
+Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
+
+\begin{alltt}
+root@NMS-VM:/etc/bro# ls -la
+drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
+drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
+-rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
+-rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
+-rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
+drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
+\end{alltt}
+
+\chapter{Zeek DNS capturing domain names}
+\label{ex:zeekdnsbasic}
+
+
+{\bf Objective:} \\
+We will now start using Zeek on our systems.
+
+
+{\bf Purpose:}\\
+Try Zeek with example traffic, and see what happens.
+
+
+{\bf Suggested method packet capture file:}\\
+Note: a dollar sign is the Linux prompt, showing the command after
+\begin{alltt}\small
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ mkdir $HOME/bro;cd $HOME/bro; bro -r ../nitroba.pcap
+... bro reads the packets
+~/bro$ ls
+conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
+sip.log  ssl.log  weird.log  x509.log
+$ less *
+\end{alltt}
+
+Use :n to jump to the next file in less, go through all of them.
+
+{\bf Suggested method Live traffic:}\\
+Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
+
+\begin{alltt}
+root@NMS-VM:/etc/bro# cat node.cfg
+# Example BroControl node configuration.
+#
+# This example has a standalone node ready to go except for possibly changing
+# the sniffing interface.
+
+# This is a complete standalone configuration.  Most likely you will
+# only need to change the interface.
+[bro]
+type=standalone
+host=localhost
+interface=eth0
+...
+\end{alltt}
+
+
+{\bf Hints:}\\
+There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
+
+Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
+{\bf Solution:}\\
+When you either run Zeek using a packet capture or using live traffic
+
+Running with a capture can be done using a command line such as:
+\verb+bro -r traffic.pcap+
+
+Using broctl to start it would be like this:
+\begin{alltt}\small
+// install bro first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+\end{alltt}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# cd /var/spool/bro/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+You should be able to spot entries like this:
+\begin{alltt}\small
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
+     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
+
+{\bf Discussion:}\\
+Why is DNS interesting?
+
+
+\chapter{Zeek TLS capturing certificates}
+\label{ex:zeektlsbasic}
+
+
+{\bf Objective:} \\
+Run more traffic through Zeek, see the various files.
+
+
+{\bf Purpose:}\\
+See that even though HTTPS and TLS traffic is encrypted it often show names and other values from the certificates and servers.
+
+
+{\bf Suggested method:}\\
+Run Zeek capturing live traffic, start https towards some sites. A lot of common sites today has shifted to HTTPS/TLS.
+
+
+{\bf Hints:}\\
+use broctl start and watch the output directory
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# ls *.log
+communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
+stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
+stderr.log weird.log
+\end{alltt}
+
+We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# grep dr.dk ssl.log
+1538983060.546122	CtKYZ625cq3m3jUz9k	10.xxx.0.145	49932	2.17.212.93	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	www.dr.dk	F	-	h2	T	FzmZCt3o9EYcmNaxIi,FKXcmxQHT3znDDMSj	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
+1538983060.674217	CLjZo51fzuTcvPT0lg	200xxxxb:89b0:5cbf	49933	2a02:26f0:2400:2a1::3f46	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	asset.dr.dk	F	-	h2	TFEpW9a1IFe6NTUZNpb,FwV50B4CHIwF1CPlul	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
+\end{alltt}
+
+{\bf Solution:}\\
+When you have multiple log files with data from Zeek, and have looked into some of them. You are welcome to ask questions and look into more files.
+
+
+{\bf Discussion:}\\
+How can you hide that you are going to HTTPS sites?
+
+Hint: VPN
+
+
+
+\chapter{Suricata Basic Operation}
+\label{ex:suricatastartstop}
+
+
+{\bf Objective:} \\
+Start using Suricata IDS engine with some traffic.
+
+
+{\bf Purpose:}\\
+Show how to get started, meet some obstacles - missing files etc.
+
+Discuss how to solve problems, why do we miss them, how to fix
+
+
+{\bf Suggested method packet capture file:}\\
+Note: a dollar sign is the Linux prompt, showing the command after
+\begin{alltt}\small
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ mkdir $HOME/suricata;cd $HOME/suricata;  suricata -r ../nitroba.pcap -c /etc/suricata/suricata.yaml -l .
+... Suricata reads the packets
+~/suricata$ ls
+eve.json  fast.log  stats.log
+$ less *
+\end{alltt}
+
+{\bf Suggested method live capture:}\\
+Make sure the config file \verb+/etc/suricata/suricata.yaml+ has the right interface eth0 - or maybe ens192?. Check using \verb+ifconfig -a+
+
+Try starting the service
+
+\begin{alltt}\small
+hlk@debian:~$ sudo service suricata start
+hlk@debian:~$ cd /var/log/suricata/
+hlk@debian:/var/log/suricata$ ls
+eve.json  fast.log  stats.log  suricata.log
+hlk@debian:/var/log/suricata$
+
+hlk@debian:/var/log/suricata$ tail -3 suricata.log
+8/10/2018 -- 17:15:58 - <Warning> - [ERRCODE: SC_ERR_AFP_CREATE(190)] - Can not open iface 'eth0'
+8/10/2018 -- 17:15:58 - <Warning> - [ERRCODE: SC_ERR_AFP_CREATE(190)] - Can not open iface 'eth0'
+8/10/2018 -- 17:16:19 - <Warning> - [ERRCODE: SC_ERR_AFP_CREATE(190)] - Can not open iface 'eth0'
+\end{alltt}
+
+Yeah my network card is called \verb+ens33+, and I should replace eth0 with ens33 in the config file.
+
+\begin{alltt}\small
+perl -pi -e "s/eth0/ens33/g" /etc/suricata/suricata.yaml
+\end{alltt}
+
+\begin{alltt}\small
+hlk@debian:/var/log/suricata$ sudo service suricata stop
+hlk@debian:/var/log/suricata$ sudo service suricata start
+hlk@debian:/var/log/suricata$ tail -3 suricata.log
+8/10/2018 -- 17:23:20 - <Warning> - [ERRCODE: SC_ERR_NO_RULES(42)] - No rule files match the pattern /etc/suricata/rules/emerging-worm.rules
+8/10/2018 -- 17:23:20 - <Warning> - [ERRCODE: SC_ERR_NO_RULES(42)] - No rule files match the pattern /etc/suricata/rules/tor.rules
+8/10/2018 -- 17:23:20 - <Notice> - all 2 packet processing threads, 4 management threads initialized, engine started.
+\end{alltt}
+
+{\bf Hints:}\\
+\url{https://redmine.openinfosecfoundation.org/projects/suricata/wiki/Quick_Start_Guide}
+and
+\url{https://redmine.openinfosecfoundation.org/projects/suricata/wiki/Basic_Setup}
+
+{\bf Solution:}\\
+When you can start and stop suricata, and it only complains about missing rules, you are done with this exercise.
+
+
+{\bf Discussion:}\\
+What was the main problems in this exercise?
+
+
+
+\chapter{Basic Suricata rule configuration}
+\label{ex:suricataeve1}
+
+
+{\bf Objective:} \\
+See the Suricata configuration files, and get some rules.
+
+The best IDS is nothing without good rules.
+
+
+{\bf Purpose:}\\
+The rules make Suricata useful, and we will learn how to get a ruleset installed, and to keep it updated.
+
+
+{\bf Suggested method:}\\
+Check the file \verb+/etc/suricata/suricata-oinkmaster.conf+
+
+It contains this:
+\begin{alltt}\small
+hlk@debian:/etc/suricata$ cat suricata-oinkmaster.conf
+# This is a Debian specific config file for oinkmaster crafted for suricata,
+# you should read oinkmaster documentation to modify this file.
+# This config is loaded by default from the suricata-oinkmaster-updater binary
+# which is called daily from a cronjob by default
+
+skipfile local.rules
+skipfile deleted.rules
+skipfile snort.conf
+use_external_bins = 0
+
+url = https://rules.emergingthreats.net/open/suricata-3.0/emerging.rules.tar.gz
+\end{alltt}
+
+Then try running the oinkmaster program in "dry run" with -c
+
+\begin{alltt}\small
+root@debian:~# oinkmaster -i -c -C /etc/suricata/suricata-oinkmaster.conf -o /etc/suricata/rules/
+Loading /etc/suricata/suricata-oinkmaster.conf
+Downloading file from https://rules.emergingthreats.net/open/suricata-3.0/emerging.rules.tar.gz... done.
+Archive successfully downloaded, unpacking... done.
+Setting up rules structures... done.
+Processing downloaded rules... disablesid 0, enablesid 0, modifysid 0, localsid 0, total rules 26212
+\end{alltt}
+
+If the output looks OK, then re-run without -c and let it update files.
+
+\begin{alltt}\small
+root@debian:~# oinkmaster -i -C /etc/suricata/suricata-oinkmaster.conf -o /etc/suricata/rules/
+...
+[+] Added files (consider updating your snort.conf to include them if needed):
+    -> botcc.portgrouped.rules
+    -> botcc.rules
+    -> BSD-License.txt
+    -> ciarmy.rules
+...
+    -> emerging-chat.rules
+    -> emerging-current_events.rules
+    -> emerging-deleted.rules
+    -> emerging-dns.rules
+    -> emerging-dos.rules
+    -> emerging-exploit.rules
+    -> emerging-ftp.rules
+Do you approve these changes? [Yn]
+\end{alltt}
+
+{\bf Hints:}\\
+You need to restart Suricata for the rules to be found. In the example below I remove the long log with errors, and restart:
+
+\begin{alltt}\small
+root@debian:~# service suricata stop
+root@debian:~# rm /var/log/suricata/suricata.log
+root@debian:~# service suricata start
+root@debian:~# cat /var/log/suricata/suricata.log
+8/10/2018 -- 17:45:19 - <Notice> - This is Suricata version 3.2.1 RELEASE
+\end{alltt}
+
+{\bf Solution:}\\
+When you have the ruleset downloaded and Suricata is happy when starting you are done with this exercise.
+
+In a real deployment it is advised to automate the update of rules, and also some rules are probably not needed in you environments, YMMV. We will not go through all the rules provided.
+
+{\bf Discussion:}\\
+Emerging Threats is a well-known ruleset provider, with commercial support.
+
+Whenever there is a new internet wide security incident there are people providing IDS rules in Snort or Suricata format. Since Suricata can read snort rules, this is a good way to add up-to-date rules to your installation.
+
+Note: we haven't mentioned it, but the config files for both Zeek and Suricata allows one to specify your home network.
+
+Checkout the files: Zeek configuration in \verb+/etc/bro/networks.cfg+ and Suricata main config \verb+/etc/suricata/suricata.yaml+
+
+
+\begin{alltt}\small
+vars:
+  # more specifc is better for alert accuracy and performance
+  address-groups:
+    HOME_NET: "[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]"
+    #HOME_NET: "[192.168.0.0/16]"
+\end{alltt}
+
+\chapter{Configure Mirror Port}
+\label{ex:mirrorport}
+
+
+{\bf Objective:} \\
+Mirror ports are a way to copy traffic to Suricata and other devices - for analyzing it. We will go through the steps on a Juniper switch to show how.
+Most switches which are configurable have this possibility.
+
+
+{\bf Purpose:}\\
+We want to capture traffic for multiple systems, so we select an appropriate port and copy the traffic. In our setup, we select the uplink port to the internet/router.
+
+It is also possible to buy passive taps, like a fiber splitter, which then takes part of the signal, and is only observable if you look for signal strength on the physical layer.
+
+
+{\bf Suggested method:}\\
+We will configure a mirror port on a Juniper EX2200-C running Junos.
+
+\begin{alltt}
+root@ex2200-c# show ethernet-switching-options | display set
+set ethernet-switching-options analyzer mirror01 input ingress interface ge-0/1/1.0
+set ethernet-switching-options analyzer mirror01 input egress interface ge-0/1/1.0
+set ethernet-switching-options analyzer mirror01 output interface ge-0/1/0.0
+set ethernet-switching-options storm-control interface all
+\end{alltt}
+
+
+{\bf Hints:}\\
+When checking your own devices this is often called SPAN ports, Mirror ports or similar.
+
+\url{https://en.wikipedia.org/wiki/Port_mirroring}
+
+Cisco has called this Switched Port Analyzer (SPAN) or Remote Switched Port Analyzer (RSPAN), so many will refer to them as SPAN-ports.
+
+{\bf Solution:}\\
+When we can see the traffic from the network, we have the port configured - and can run any tool we like. Note: specialized capture cards can often be configured to spread the load of incoming packets onto separate CPU cores for performance. Capturing 100G and more can also be done using switches like the example found on the Zeek web site using an Arista switch 7150.
+
+
+{\bf Discussion:}\\
+When is it ethical to capture traffic?
+
+
+\chapter{Save Suricata JSON Output in Database}
+\label{ex:suricatahasboards}
+
+
+{\bf Objective:} \\
+Configure a system to read the output files from Suricata EVE logging and save into database system.
+
+This will enable us to use browser based methods and dashboards to analyse more efficiently.
+
+
+{\bf Purpose:}\\
+Flat files show that we can collect data, but processing big files when trying to solve problems or handling security incidents is slow. Using databases and document stores like Elasticsearch can help a lot.
+
+
+{\bf Suggested method:}\\
+Open the Suricata config file suricata.yml and make sure eve-log is turned on.
+\url{https://suricata.readthedocs.io/en/suricata-4.0.5/output/eve/eve-json-output.html}
+\begin{alltt}
+# Extensible Event Format (nicknamed EVE) event log in JSON format
+- eve-log:
+    enabled: yes
+\end{alltt}
+
+It might be enabled by default. So you can run the (complex) playbook to install database and supporting tools:
+\begin{alltt}
+ansible-playbook -v elasticstack.yml
+\end{alltt}
+
+Run the playbook, that installs:
+\begin{itemize}
+\item Logstash for reading the EVE JSON log
+\item Elasticsearch the database / document store
+\item Kibana for showing data
+\item Nginx, because we really should put this in front of Kibana
+\end{itemize}
+
+
+{\bf Hints:}\\
+Logstash and Elastic stack are a great way to get started with dashboarding.
+
+However, running a big installation is harder than it looks. Make sure to have multiple servers and good monitoring.
+
+{\bf Solution:}\\
+When we have a few running installations we are done. Kibana should be available on port 5601 on localhost (127.0.0.1) only though!
+
+Using Firefox visit Kibana on http://127.0.0.1:5601 first time you need to
+ select \verb+logstash-*+ as a default index. Note: Kibana is an advanced and powerful tool in itself.
+
+Don't be discouraged if something goes wrong, there are a lot of moving pieces.
+
+A very common problem is the permissions to read files, from logstash log:
+\begin{alltt}\small
+[2018-10-05T18:22:33,105][WARN ][filewatch.tailmode.handlers.createinitial] failed to open
+/var/log/suricata/eve.json: #<Errno::EACCES: Permission denied - /var/log/suricata/eve.json>,
+["org/jruby/RubyFile.java:366:in `initialize'", "org/jruby/RubyIO.java:1154:in `open'",
+ "/usr/share/logstash/vendor/bundle/jruby/2.3.0/gems/logstash-input-file-4.1.6
+ /lib/filewatch/watched_file.rb:204:in `open'"]
+\end{alltt}
+
+{\bf Discussion:}\\
+Making dashboard are an art form. We will NOT start creating beautiful dashboards.
+
+There are a lot of Dashboards available, such as:\\
+\url{https://github.com/StamusNetworks/KTS6}
+
+Note: they require Suricata 4.1+ so we cannot use them immediately.
+
+If you want, there is a SELKS LiveCD dedicated to suricata which also includes more tools for administration of rules and getting alerts:\\
+\url{https://www.stamus-networks.com/open-source/}
+
+\chapter{Suricata Netflow}
+\label{ex:suricatanetflow}
+
+
+{\bf Objective:} \\
+Configure Suricata to do netflow logging
+
+
+{\bf Purpose:}\\
+In some cases we dont know what traffic we need to analyze, but if we collect netflow data - summary data about every connection. We can go back and check for specific types of traffic, based on ports, length etc.
+
+
+{\bf Suggested method:}\\
+
+uncomment netflow in the config file \verb+/etc/suricata/suricata.yaml+
+by removing the "\#" in front of this line:
+
+\begin{alltt}
+#- netflow
+\end{alltt}
+
+and restart Suricata.
+
+
+{\bf Hints:}\\
+Netflow logging allows efficient logging of summary data, which can be very useful.
+
+
+{\bf Solution:}\\
+When you have configured Suricata for netflow, you are done.
+
+
+{\bf Discussion:}\\
+Specialized tools exist for collecting and visualizing netflow data. If you have nothing, then Suricata may be a good start.
+
+
+\chapter{Extending Zeek and Suricata}
+\label{ex:}
+
+
+{\bf Objective:} \\
+Sometimes Zeek and Suricata by themselves will not be enough.
+
+Investigate how to extend Zeek and Suricata, by some examples.
+
+{\bf Purpose:}\\
+See examples of scripts and rules, evaluate the complexity.
+
+
+{\bf Suggested method:}\\
+Get a patch from Henrik for VXLAN support in Suricata. The patch does not need to be installed, but how big is it, how complex is it, could you or your organisation to something similar?
+
+Zeek scripts extend the basic engine, and are a big part of the eco-system. Some 1000s of script lines are already included. Do you have a specific need to analyze in your network which could be implemented in this?
+
+{\bf Hints:}\\
+Earlier it was quite hard to write C programs for creating and analyzing network traffic. Today we can use the Zeek scripting and Suricata rules to analyze traffic using highly efficient engines.
+
+
+{\bf Solution:}\\
+Which tool is easiest to expand, what are you missing from them?
+
+
+{\bf Discussion:}\\
+
+To repeat:\\
+Whenever there is a new internet wide security incident there are people providing IDS rules in Snort or Suricata format. Since Suricata can read snort rules, this is a good way to add up-to-date rules to your installation.
+
+Would you be able to write a rule for something attacking your network?
+
+\chapter{Bonus: Indicators of Compromise}
+\label{ex:zeekioc}
+
+
+{\bf Objective:} \\
+Indicators of Compromise is a term used for artifacts observed in networks or systems which indicate that a system was compromised.
+
+This could be a known DNS domain where a specifc malware is downloaded from, a specific file name downloaded, a TCP connection to a malware control and command server.
+
+\url{https://en.wikipedia.org/wiki/Indicator_of_compromise}
+
+{\bf Purpose:}\\
+The purpose of this exercise is to look at the data gathered and to start planning how one could use this with IOCs to perform after-the-fact analysis of your network.
+
+Goal is to answer how an attack got in, when was the first device compromised etc.
+
+
+{\bf Suggested method:}\\
+Look at the data provided by Zeek and Suricata, list the files again.
+
+Which parts will be of greatest interest in your networks? Could some of these facts have helped prevent, restrict, limit or otherwise improve your security stance?
+
+
+{\bf Hints:}\\
+I think Suricata and Zeek has excellent value just by turning them on.
+
+
+{\bf Solution:}\\
+There is no one solution fits all, results are expected to vary from network to network.
+
+{\bf Discussion:}\\
+Zeek can include data from other sources, check the intel module\\
+\url{https://www.bro.org/sphinx/frameworks/intel.html}
+
+and the exercise \url{https://www.bro.org/current/exercises/intel/index.html}
+
+Would this need to be updated every day to have value? How do we demonstrate return on investment and benefit from looking at traffic?
+
+\chapter{Bonus: VXLAN Detection}
+\label{ex:vxlandetect}
+
+
+{\bf Objective:} \\
+One recent addition to many networks are cloud environments using tunneling and encapsulation to connect islands of containers and virtual systems.
+
+One such protocol named VXLAN can be used without the network people being involved, which can be bad for security. Also it would be easy for an attacker which have compromised a system to use this for exfiltration of data.
+
+So, do you have any VXLAN traffic in your network?
+
+
+{\bf Purpose:}\\
+The main idea of this exercise is to talk about unknown traffic, that which you dont even know exist in your network. Some networks have tunnels and IPv6, but the network and security might not be fully aware of this.
+
+
+{\bf Suggested method:}\\
+VXLAN traffic will most likely use the default port 4789, which is not used by much other traffic.
+
+VXLAN is also UDP packets, so analysing if a few endpoints use a LOT of UDP might reveal interesting stuff.
+
+
+{\bf Hints:}\\
+The conn.log might show you interesting things about such traffic.
+
+
+{\bf Solution:}\\
+We dont have a VXLAN tunnel, but it is very easy to add a VXLAN interface to a Linux server, and start sending data out.
+
+
+{\bf Discussion:}\\
+Which protocols are the most dangerous, and why?
+
+
+\appendix
+\rhead{\fancyplain{}{\bf \leftmark}}
+%\setlength{\parskip}{5pt}
+
+\normal
+
+\chapter{\color{titlecolor}Host information}
+
+\begin{itemize}
+\item You should note the IP-addresses used for servers and devices
+\item The web server for installing programs:\\
+http:// \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm
+/public/windows/
+\item Server used for team login: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm \\
+Available usernames: team1, team2, ... team10
+password: \verb+team+
+\item You can obtain root access using: \verb+sudo -s+
+\end{itemize}
+
+\section*{\color{titlecolor}Available servers and devices:}
+\begin{itemize}
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - OpenBSD router
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Your laptop
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Your laptop VM
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm -
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm -
+\end{itemize}
+
+
+\bibliographystyle{alpha}
+%\bibliography{../ipv6-reference/security6-net.bib,../ipv6-reference/rfc.bib,../ipv6-reference/std.bib,../ipv6-reference/fyi.bib}
+%\bibliography{kramse.bib,rfc.bib,std.bib,fyi.bib}
+%,internet.bib}
+
+%\printindex
+
+\end{document}
+
+
+
+\chapter{Opslag i whois databaser}
+\label{ex:whois}
+
+
+{\bfseries Opgave:} \\
+Lï¿œr at bruge whois
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+\begin{list2}
+\item Login pï¿œ UNIX server - lï¿œs manualen til programmet whois
+eller brug webinterface pï¿œ\\ \link{http://www.ripe.net}
+\end{list2}
+
+{\bfseries Hjï¿œlp:}\\
+Whois databaserne er fordelt pï¿œ ARIN, RIPE, LACNIC og APNIC.
+
+Kommandoen \verb+whois -r 90.184.69.97+ vil pï¿œ en OpenBSD give
+svaret pï¿œ et opslag i RIPE databasen efter IP adresse 90.184.69.97
+
+{\bfseries Diskussion:}\\
+I skal lï¿œre at spï¿œrge efter IP adresser og spore oprindelsen - find
+eksempelvis brugeren af IP-adressen 217.157.20.129
+
+
+
+\chapter{ping og traceroute}
+\label{ex:ping}
+
+{\bfseries Opgave:}\\
+Lï¿œr at bruge ping og traceroute programmerne
+
+{\bfseries Forslag til fremgangsmï¿œde:} \\
+Brug \verb+ping+ og \verb+traceroute+ til at teste netvï¿œrksforbindelsen - kan
+udfï¿œres fra bï¿œde windows og UNIX.
+
+Husk at traceroute hedder \verb+tracert+ pï¿œ windows.
+
+Er der forbindelse til alle servere pï¿œ oversigtstegningen?
+
+{\bfseries Hjï¿œlp:} \\
+ICMP er Internet Control Message Protocol det bruges typisk til at
+rapportere om fejl, host unreachable og lignende.
+
+Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
+reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
+svar tilbage for at kunne mappe et netvï¿œrk.tomcat
+
+{\bf Ekstra:}
+Hvad er forskellen pï¿œ (skal udfï¿œres pï¿œ OpenBSD/UNIX)
+\begin{list2}
+\item {\bfseries traceroute} og {\bfseries traceroute -I}
+\item NB: traceroute med -I findes kun pï¿œ UNIX - traceroute med ICMP pakker
+\item Der er mange der ikke blokerer for ICMP traceroute
+\end{list2}
+
+\chapter{ICMP tool - icmpush}
+\label{ex:icmpush}
+
+{\bfseries Opgave:} \\
+Lï¿œr at bruge icmpush programmet
+
+{\bfseries Forslag til fremgangsmï¿œde:} \\
+Login pï¿œ UNIX server - lï¿œs manualen til programmet
+
+{\bfseries Hjï¿œlp:} \\
+ICMP er Internet Control Message Protocol det bruges typisk til at
+rapportere om fejl, host unreachable og lignende.
+
+Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
+reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
+svar tilbage for at kunne mappe et netvï¿œrk.
+
+{\bfseries Diskussion:}\\
+I skal lï¿œre at spï¿œrge efter mindst echo, time og netmask med icmpush
+
+
+\chapter{DNS og navneopslag}
+\label{ex:basic-dns-lookup}
+
+{\bfseries Opgave:}\\
+Prï¿œv forskellige programmer til at spï¿œrge en service
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+\begin{itemize}
+\item nslookup - findes bï¿œde pï¿œ UNIX og Windows
+\item Prï¿œv nslookup -q=txt -class=CHAOS version.bind. 0
+\item dig - syntaks @server domain query-type query-class
+\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]
+\item prï¿œv {\bfseries host -a security6.net} \\
+{\bfseries host -a www.security6.net} - hvad er forskellen
+\end{itemize}
+
+{\bfseries Hjï¿œlp:}\\
+Host programmet er med som standard pï¿œ OpenBSD - sï¿œ brug Fiona eller Luffe
+
+Pï¿œ Unix Boot CD og MS Windows platformen findes mange GUI programmer til det samme.
+
+{\bfseries Diskussion:}\\
+Hvad er en zonetransfer? det er alle de records der er defineret for
+et domï¿œne
+
+Hvad er forward og reverse lookup? forward er fra hostnavn til IP adresse,
+mens reverse er fra IP adresse til hostnavn
+
+
+
+
+\chapter{ping6 og traceroute6}
+\label{ex:ping6}
+
+{\bfseries Opgave:}\\
+Lï¿œr at bruge ping og traceroute programmerne - men med IPv6
+
+{\bfseries Forslag til fremgangsmï¿œde:} \\
+Brug \verb+ping6+ og \verb+traceroute6+ til at teste netvï¿œrksforbindelsen - kan
+udfï¿œres fra bï¿œde windows og UNIX.
+
+Husk at traceroute hedder \verb+tracert6+ pï¿œ windows.
+
+Er der forbindelse til alle servere pï¿œ oversigtstegningen?
+
+{\bfseries Hjï¿œlp:} \\
+ICMP er Internet Control Message Protocol det bruges typisk til at
+rapportere om fejl, host unreachable og lignende. IPv6 har tilsvarende ICMPv6 med samme funktioner - men har overtaget ARP funktionen.
+
+Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
+reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
+svar tilbage for at kunne mappe et netvï¿œrk.
+
+{\bf Ekstra:}
+Hvad er forskellen pï¿œ (skal udfï¿œres pï¿œ OpenBSD/UNIX)
+\begin{list2}
+\item {\bfseries traceroute} og {\bfseries traceroute -I}
+\item NB: traceroute med -I findes kun pï¿œ UNIX - traceroute med ICMP pakker
+\item Der er mange der ikke blokerer for ICMP traceroute
+\end{list2}
+
+Det er ikke altid at IPv4 og IPv6 routes gï¿œr gennem de samme routere! Det er med vilje lavet simpelt i vores setup.
+
+\chapter{DNS og navneopslag - IPv6}
+\label{ex:basic-dns-lookup6}
+
+{\bfseries Opgave:}\\
+Prï¿œv host programmet til at spï¿œrge efter Quad-A (AAAA) records.
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+\begin{itemize}
+\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]
+\item prï¿œv {\bfseries host -t A security6.net} \\
+{\bfseries host -t AAAA security6.net} - hvad er forskellen
+\end{itemize}
+
+{\bfseries Hjï¿œlp:}\\
+Host programmet er med som standard pï¿œ OpenBSD - sï¿œ brug Fiona eller Luffe
+
+Pï¿œ Unix Boot CD og MS Windows platformen findes mange GUI programmer til det samme.
+
+{\bfseries Diskussion:}\\
+DNS har mange recordtyper og AAAA er blot endnu en. Typisk vil programmer der har IPv6 funktionalitet forsï¿œge at slï¿œ bï¿œde AAAA records og A records op - og forsï¿œge at forbinde til AAAA fï¿œrst.
+
+
+
+\chapter{Performance tool - iperf}
+\label{ex:iperf}
+
+{\bfseries Opgave:} \\
+Lï¿œr at bruge iperf programmet
+
+{\bfseries Forslag til fremgangsmï¿œde:} \\
+Login pï¿œ UNIX server - lï¿œs manualen til programmet
+
+{\bfseries Hjï¿œlp:} \\
+Iperf er et lille nemt program som blot skal startes som server pï¿œ en maskine og derefter kaldes som klient pï¿œ et andet. Sï¿œ mï¿œler den som default et kort stykke tid og prï¿œsenterer resultatet.
+
+{\bfseries Diskussion:}\\
+Til rigtige performancemï¿œlinger er det uhensigtsmï¿œssigt at netvï¿œrket benyttes til anden traffik under mï¿œlingerne, medmindre man ï¿œnsker at mï¿œle nu og her.
+
+
+\chapter{TCP/IP og sniffere}
+\label{ex:wireshark}
+
+\hlkimage{9cm}{images/ethereal-main-window.pdf}
+
+{\bfseries Opgave:}\\
+Prï¿œv en Wireshark sniffer pï¿œ din maskine!
+
+Brug lidt tid pï¿œ at lï¿œre den at kende.
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+Find Wireshark og installer denne, hent fra den lokale webserver eller \link{http://www.wireshark.org}
+
+{\bfseries Hjï¿œlp:}\\
+Find ud af hvordan det er understï¿œttet i dit favorit operativsystem
+ved at bruge eksempelvis \link{http://www.google.com}
+
+{\bfseries Forslag til lï¿œsning:}\\
+Windows - hvis du er pï¿œ Windows skal der
+installeres WinPCAP - packet capture - biblioteket. Dette kan
+eksempelvis hentes pï¿œ den lokale webserver. I nyere versioner af
+Wireshark fï¿œlger dette med i installationsfilen.
+
+%adressen:
+%\href{http://www.security6.net/courses/programs/WinPcap_3_0_beta.exe}
+%{http://www.security6.net/courses/programs/WinPcap\_3\_0\_beta.exe}
+
+UNIX - de fleste UNIX varianter har installationspakker til Wireshark
+og TCPdump
+
+Prï¿œv efter installationen at kigge pï¿œ den normale trafik pï¿œ nettet,
+eller generer selv trafik med ping og traceroute (windows: tracert)
+programmer
+- nï¿œr dette er gjort virker snifferen
+
+{\bfseries Diskussion:}\\
+Kender du forskel pï¿œ ICMP, TCP og UDP? Prï¿œv at skrive
+\verb+icmpush -h+ mens du er logget ind pï¿œ kursusserveren -
+senere. Hvad er det for et program?
+
+Hvilke protokoller bruger kryptering?
+
+Husk ogsï¿œ at sniffe en TCP session og sammensï¿œt alle pakkerne med
+TCP Follow Stream funktionaliteten.
+
+Wireshark er en efterfï¿œlger til Ethereal, navneskiftet skyldes et jobskifte hvor ejeren af Ethereal domï¿œnet ikke ville give det med programmï¿œren.
+
+
+
+\chapter{Logning med syslogd og syslog.conf}
+\label{ex:syslogd-basic}
+
+{\bfseries Opgave:}\\
+log ind pï¿œ et OpenBSD UNIX system og se pï¿œ \verb+syslog.conf+
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+\begin{list2}
+\item Hvor ligger den? - i hvilket katalog?
+\item Hvordan kan man sende loggen videre til en anden maskine?
+\item Hvilken protocol og port bruger syslog - hvis I skal tillade det
+  gennem en firewall?
+\end{list2}
+
+{\bfseries Hjï¿œlp:}\\
+ Indholdet af filen kan ses pï¿œ nï¿œste slide
+
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+{\bfseries Diskussion:}\\
+Se ogsï¿œ \link{http://www.loganalysis.org/}
+
+
+
+
+
+\chapter{SNMP walk}
+\label{ex:snmpwalk}
+
+{\bfseries Opgave:}\\
+Log ind pï¿œ et OpenBSD UNIX system og se pï¿œ \verb+snmpwalk+
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+SNMP walk betyder at man gï¿œr igennem alle SNMP oplysningerne fra et system.
+
+{\bfseries Hjï¿œlp:}\\
+\verb+snmpwalk -v 2c -c public system+
+
+Public er default pï¿œ meget udstyr og findes stadig mange steder i produktion.
+
+Private er et andet kendt community name og gav tidligere lov til at ï¿œndre indstillingerne pï¿œ enheder.
+
+{\bfseries Diskussion:}\\
+
+
+
+
+
+
+\chapter{Wardriving }
+\label{ex:wardriving}
+
+{\bfseries Opgave:}\\
+
+
+
+
+\chapter{BIND version}
+\label{ex:bind-version}
+
+{\bfseries Opgave:} \\
+Find version pï¿œ BIND software pï¿œ UNIX
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+Brug en af fï¿œlgende kommandoer til at finde version pï¿œ BIND pï¿œ
+navneserveren:\\
+
+\verb+nslookup -q=txt -class=CHAOS version.bind. 0 server+
+
+\verb+dig @server version.bind chaos txt+
+
+
+{\bfseries Hjï¿œlp:} \\
+
+{\bfseries Diskussion:} \\
+BIND softwaren er ofte udsat for angreb
+
+BIND og navnesystemet er kritisk for mange funktioner som web og mail
+
+\chapter{Tilpasning af DNS server}
+\label{ex:bind-config}
+{\bfseries Opgave:}\\
+Konfiguration af en BIND ved hjï¿œlp af named.conf, men hvordan ser den ud.
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+
+Log ind pï¿œ Luffe, som afvikler en rekursiv DNS og Mai som afvikler en autoritativ navneserver.
+
+Begge benytter OpenBSD hvor BIND er installeret med konfiguration og data under \verb+/var/named+.
+
+\begin{list1}
+\item Find ud af - hvad er:
+\begin{list2}
+\item master server
+\item slave server
+\item caching-only server
+\end{list2}
+\item \verb+/var/named+ kataloget, hint chroot'et installation
+\item \verb+/var/named/etc+ - underkataloget, hint konfiguration
+\item \verb+/var/named/standard+ - underkataloget, hint localhost
+\end{list1}
+
+{\bfseries Hjï¿œlp:}\\
+BIND er installeret - sï¿œ find \verb+named.conf+ og lï¿œs den
+
+{\bfseries Diskussion:}\\tomcat
+Det er altid en god ide at en navneserver kan svare pï¿œ localhost.
+
+
+\chapter{Vedligehold af DNS systemer}
+\label{ex:bind-dnszone}
+\hlkimage{8cm}{images/dnszone-logo.png}
+{\bfseries Opgave:}\\
+Prï¿œv et gratis adminsystem til DNS
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+Gï¿œ ind pï¿œ \link{http://www.dnszone.org} og prï¿œv demo sitet, eller
+se gratisdns interface som instruktï¿œren kan vise.
+
+{\bfseries Hjï¿œlp:}\\
+Det anbefales KRAFTIGT at man bruger et system til vedligehold af
+DNS oplysninger
+
+{\bfseries Diskussion:}\\
+Der findes mange programmer og produkter til administration af DNS -
+eksemplet ovenfor er kun et af disse.
+
+Nï¿œr man har konfigureret DNS bï¿œr man overveje at finde en service pï¿œ
+nettet der checker konfigurationen, eksempelvis DNS advisor fra
+\link{http://www.infoblox.com} eller \link{http://www.dnsreport.com}.
+
+Husk efter konfiguration af et domï¿œne at checke det med programmer som dem pï¿œ
+\link{http://www.infoblox.com} eller \link{www.dnsreport.com}
+
+
+\chapter{Konfiguration af DHCP server}
+\label{ex:dhcpd-config}
+
+{\bfseries Opgave:}\\
+Konfiguration af en DHCPD foregï¿œr ved hjï¿œlp af dhcpd.conf
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+Undersï¿œg dhcpd.conf pï¿œ vores systemer.
+
+{\bfseries Hjï¿œlp:}\\
+Log ind pï¿œ systemerne og vis netvï¿œrkskonfigurationen med \verb+ifconfig+
+og dhcpd.conf filen med \verb+cat /etc/dhcpd.conf+ - Luffe er den nemmeste at vï¿œlge.
+
+Nï¿œr dhcpd startes pï¿œ OpenBSD benyttes tillige \verb+/etc/dhcpd.interfaces+ til at vï¿œlge
+hvilke netkort der skal svares pï¿œ DHCP.
+
+\begin{alltt}
+#
+# DHCP server options.
+# See dhcpd.conf(5) and dhcpd(8) for more information.
+#
+#
+shared-network LOCAL-NET {
+        option  domain-name "kramse.dk";
+        #option  domain-name-servers 192.168.1.3, 192.168.1.5;
+        subnet 10.0.45.0 netmask 255.255.255.0 {
+                option routers 10.0.45.2;
+                range 10.0.45.32 10.0.45.200;
+        }
+}
+\end{alltt}
+
+{\bfseries Diskussion:}\\
+Det ville vï¿œre nï¿œsten umuligt for almindelige brugere at benytte en laptop, hvis de manuelt skulle skifte adresse fra netvï¿œrk til netvï¿œrk.
+
+Det er ofte set at folk der manuelt sï¿œtter en adresse ender med at sï¿œtte router adressen pï¿œ deres netkort, hvad sker der sï¿œ?
+
+
+
+
+
+\chapter{Konfiguration af e-mail server}
+\label{ex:email-server-config}
+
+{\bfseries Opgave:}\\
+Der skal laves e-mail server baseret pï¿œ postfix
+  som accepterer post til pentest.dk domï¿œnet
+
+Valgfrit om man vil lave denne opgave :-)
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+Log ind og udpak postfix kildeteksten i jeres hjemmekatalog. Brug eksempelvis Fiona kursusserveren.
+
+Konfigurer til at installere i jeres hjemmekatalog og skift eventuelt
+portnummer - sï¿œ der ikke kommer konflikt med de andre pï¿œ holdet
+
+NB: Hvis flere starter server der vil lytte pï¿œ port 25 giver det
+problemer! I kan ï¿œndre portnummer i Postfix master.cf - linien der
+starter med "smtp" ï¿œndres til eksempelvis "2025"
+
+
+Tip: I kan teste serveren ved at forsï¿œge \emph{telnet localhost
+  portnr} og indtaste e-mail direkte
+
+{\bfseries Hjï¿œlp:}\\
+Test af e-mail server kan udfï¿œres med Telnet
+
+\begin{alltt}
+[hlk]$ {\bfseries telnet localhost 2025}
+Connected.
+Escape character is '^]'.
+220 server ESMTP Postfix
+{\bfseries helo test}
+250 server
+{\bfseries mail from: postmaster@pentest.dk}
+250 Ok
+{\bfseries rcpt to: root@pentest.dk}
+250 Ok
+{\bfseries data}
+354 End data with <CR><LF>.<CR><LF>
+{\bfseries skriv en kort besked}
+.
+250 Ok: queued as 91AA34D18
+{\bfseries quit}
+\end{alltt}
+%$
+
+{\bfseries Diskussion:}\\
+Det er vigtigt at en server kan komme af med beskeder om systemets
+tilstand. Husk derfor altid at sikre at der kï¿œrer en postserver -
+eventuelt den medfï¿œlgende Sendmail.
+
+Til servere der skal modtage post og sende det videre anbefales
+Postfix - den er nemmere at konfigurere end Sendmail.
+
+Husk ogsï¿œ at oprette en fil \verb+.forward+ for brugere, sï¿œledes at
+mail ikke strander pï¿œ servere. Denne fil skal blot indeholde en e-mail
+adresse hvor posten skal sendes videre til.
+
+
+
+
+
+\chapter{Firewallkonfiguration}
+\label{ex:unix-basic-firewall}
+
+{\bfseries Opgave:}\\
+Konfiguration af en firewall - se eksempler, fï¿œllesopgave
+
+{\bfseries Forslag til fremgangsmï¿œde:}\\
+\begin{list2}
+\item Hvordan enabler man firewall?
+\item Hvordan ï¿œbner man for noget i vores firewall?
+\item Tilfï¿œj en regel for at tillade adgang til noget mere pï¿œ vores
+  systemer
+%\item Gï¿œ sammen i hold pr system
+\end{list2}
+
+Pï¿œ OpenBSD kan man se om firewall er enablet med kommandoen \verb+pfctl+. Prï¿œv fï¿œlgende kommandoer pï¿œ eksempelvis Luffe
+\begin{list2}
+\item \verb+sudo pfctl -s all | more+
+\item \verb+sudo pfctl -s rules | more+
+\item \verb+sudo pfctl -s nat | more+
+\item \verb+sudo pfctl -s states | more+
+\item \verb+sudo pfctl -s info | more+\\
+...
+\end{list2}
+
+
+
+{\bfseries Hjï¿œlp:}\\
+Vi gennemgï¿œr sammen ï¿œndringen pï¿œ de forskellige firewalls vi har til
+rï¿œdighed!
+
+%Hint: se pï¿œ \verb+/etc/sysconfig/iptables+
+%og \verb+system-config-securitylevel+
+
+%NB: Hvis I oplever problemer med Red Hat konfigurationsvï¿œrktï¿œjerne og
+%X kan I lave \verb+unset DISPLAY+ for at tvinge det til tekstmode udgaven.
+
+{\bfseries Diskussion:}\\
+Sï¿œrg for at Henrik viser flere firewalls!
+
+Der er GUI pï¿œ Mac OS X, Windows, Linux og ogsï¿œ til OpenBSD PF pfw

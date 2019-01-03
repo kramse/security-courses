@@ -1,0 +1,232 @@
+\documentclass[Screen16to9,17pt,footrule]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Network Management}
+{Communication and Network Security 2019}
+
+
+
+
+\slide{NTP Network Time Protocol}
+
+\begin{list1}
+\item NTP opsætning
+\item foregår typisk i \verb+/etc/ntp.conf+ eller \verb+/etc/ntpd.conf+
+\item det vigtigste er navnet på den server man vil bruge som tidskilde
+\item Brug enten en NTP server hos din udbyder eller en fra \link{http://www.pool.ntp.org/}
+\item Eksempelvis:
+\end{list1}
+
+\begin{alltt}
+server ntp.cybercity.dk
+
+server 0.dk.pool.ntp.org
+server 0.europe.pool.ntp.org
+server 3.europe.pool.ntp.org
+
+\end{alltt}
+
+\slide{What time is it?}
+
+\hlkimage{8cm}{images/xclock.pdf}
+
+\begin{list1}
+\item Hvad er klokken?
+\item Hvad betydning har det for sikkerheden?
+\item Brug NTP Network Time Protocol på produktionssystemer
+\end{list1}
+
+
+\slide{What time is it? - spørg ICMP}
+
+\vskip 1 cm
+
+\begin{list1}
+  \item ICMP timestamp option - request/reply
+\item hvad er klokken på en server
+\item Slayer icmpush - er installeret på server
+\item viser tidstempel
+\end{list1}
+
+\begin{alltt}
+# {\bfseries icmpush -v -tstamp 10.0.0.12}
+ICMP Timestamp Request packet sent to 10.0.0.12 (10.0.0.12)
+
+Receiving ICMP replies ...
+fischer         -> 21:27:17
+icmpush: Program finished OK
+\end{alltt}
+
+\slide{Stop - NTP Konfigurationseksempler}
+
+\hlkimage{12cm}{osx-ntp.png}
+
+\begin{list1}
+\item Vi har en masse udstyr, de meste kan NTP, men hvordan
+\item Vi gennemgår, eller I undersøger selv:
+\begin{list2}
+\item Airport
+\item Switche (managed)
+\item Mac OS X
+\item OpenBSD - check \verb+man rdate+ og \verb+man ntpd+
+\end{list2}
+\end{list1}
+
+\slide{BIND DNS server}
+
+\begin{list1}
+\item Berkeley Internet Name Daemon server
+\item Mange bruger BIND fra Internet Systems Consortium
+   - altså Open Source
+\item konfigureres gennem \verb+named.conf+
+\item det anbefales at bruge BIND version 9
+\end{list1}
+
+\begin{list2}
+\item \emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 4th
+  edition Maj 2001
+\item \emph{DNS and BIND cookbook}, Cricket Liu, O'Reilly, 4th
+  edition Oktober 2002
+\end{list2}
+
+Kilde: \link{http://www.isc.org}
+
+
+
+
+\slide{BIND konfiguration - et udgangspunkt}
+
+\begin{alltt}
+\small
+acl internals \{ 127.0.0.1; ::1; 10.0.0.0/24; \};
+options \{
+        // the random device depends on the OS !
+        random-device "/dev/random"; directory "/namedb";
+        port 53; version "Dont know"; allow-query \{ any; \};
+\};
+view "internal" \{
+   match-clients \{ internals; \};
+   recursion yes;
+   zone "." \{
+       type hint;   file "root.cache"; \};
+   // localhost forward lookup
+   zone "localhost." \{
+        type master; file "internal/db.localhost";   \};
+   // localhost reverse lookup from IPv4 address
+   zone "0.0.127.in-addr.arpa" \{
+        type master; file "internal/db.127.0.0"; notify no;   \};
+...
+\}
+\end{alltt}
+
+\exercise{ex:bind-version}
+
+\exercise{ex:bind-config}
+
+\exercise{ex:bind-dnszone}
+
+\slide{Små DNS tools bind-version - Shell script}
+
+\begin{alltt}\small
+#! /bin/sh
+# Try to get version info from BIND server
+PROGRAM=`basename $0`
+. `dirname $0`/functions.sh
+if [ $# -ne 1 ]; then
+   echo "get name server version, need a target! "
+   echo "Usage: $0 target"
+   echo "example $0 10.1.2.3"
+   exit 0
+fi
+TARGET=$1
+# using dig
+start_time
+dig @$1 version.bind chaos txt
+echo Authors BIND er i versionerne 9.1 og 9.2 - måske ...
+dig @$1 authors.bind chaos txt
+stop_time
+\end{alltt}
+\centerline{\link{http://www.kramse.dk/files/tools/dns/bind-version}}
+
+\slide{Små DNS tools dns-timecheck - Perl script}
+
+\begin{alltt}\small
+#!/usr/bin/perl
+# modified from original by Henrik Kramshøj, hlk@kramse.dk
+# 2004-08-19
+#
+# Original from: http://www.rfc.se/fpdns/timecheck.html
+use Net::DNS;
+
+my $resolver = Net::DNS::Resolver->new;
+$resolver->nameservers($ARGV[0]);
+
+my $query = Net::DNS::Packet->new;
+$query->sign_tsig("n","test");
+
+my $response = $resolver->send($query);
+foreach my $rr ($response->additional) {
+  print "localtime vs nameserver $ARGV[0] time difference: ";
+  print$rr->time_signed - time() if $rr->type eq "TSIG";
+}
+\end{alltt}
+% inserting stupid $ to stop EMACS from
+\centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
+
+
+\slide{DHCPD server}
+
+\begin{list1}
+\item Dynamic Host Configuration Protocol Server
+\item Mange bruger DHCPD fra Internet Systems Consortium\\
+  \link{http://www.isc.org} - altså Open Source
+\item konfigureres gennem \verb+dhcpd.conf+ - næsten samme syntaks som BIND
+\item DHCP er en efterfølger til BOOTP protokollen
+\end{list1}
+
+\begin{alltt}
+\small
+ddns-update-style ad-hoc;
+
+shared-network LOCAL-NET \{
+    option  domain-name "security6.net";
+    option  domain-name-servers 212.242.40.3, 212.242.40.51;
+    subnet 10.0.42.0 netmask 255.255.255.0 \{
+            option routers 10.0.42.1;
+            range 10.0.42.32 10.0.42.127;
+    \}
+\}
+\end{alltt}
+
+\exercise{ex:dhcpd-config}
+
+
+
+
+
+\slide{Logfiler}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler giver mulighed for statistik
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:
+\begin{list2}
+\item routere
+\item firewalls
+\item webservere
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+\end{document}

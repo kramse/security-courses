@@ -24,17 +24,15 @@
 \mytitlepage{VXLAN Security or Injection}{TROOPERS19 2019}
 
 {\small
-Note: My contribution are mostly a PoC of less known security issues}
+Note: My contribution are mostly a PoC of lesser known security issues}
 
 
 \slide{Why talk about VXLAN RFC7348}
 
 \quote{\small
-Virtual Extensible LAN (VXLAN) is a network virtualization technology that attempts to address the scalability problems associated with large cloud computing deployments. It uses a VLAN-like encapsulation technique to encapsulate OSI layer 2 Ethernet frames within layer 4 UDP datagrams, using 4789 as the default IANA-assigned destination UDP port number.[1] VXLAN endpoints, which terminate VXLAN tunnels and may be either virtual or physical switch ports, are known as VXLAN tunnel endpoints (VTEPs).[2][3]
+Virtual Extensible LAN (VXLAN) is a network virtualization technology ... uses a VLAN-like encapsulation technique to {\bf encapsulate OSI layer 2 Ethernet frames} within layer 4 {\bf UDP datagrams}, ... VXLAN endpoints, which terminate VXLAN tunnels and may be either virtual or physical switch ports, are known as {\bf VXLAN tunnel endpoints (VTEPs)}.[2][3]
 
-...
-
-{\bf The VXLAN specification was originally created by VMware, Arista Networks and Cisco.[5][6] Other backers of the VXLAN technology include Huawei,[7] Broadcom, Citrix, Pica8, Cumulus Networks, Dell EMC, Mellanox,[8] FreeBSD,[9] OpenBSD,[10] Red Hat,[11] Joyent, and Juniper Networks.}
+The VXLAN specification was originally created by VMware, Arista Networks and Cisco.[5][6] Other backers of the VXLAN technology include Huawei,[7] Broadcom, Citrix, Pica8, Cumulus Networks, Dell EMC, Mellanox,[8] FreeBSD,[9] OpenBSD,[10] Red Hat,[11] Joyent, and Juniper Networks.
 }
 
 Source for quote:\\
@@ -43,16 +41,18 @@ Source for quote:\\
 \vskip 5mm
 \centerline{Already in production use}
 
+\vskip 1cm
+Security Considerations\\
+   TBD.
+
 \slide{Why do this talk}
 
-\hlkimage{10cm}{dragon-drawing-6.jpg}
+\hlkimage{12cm}{dragon-drawing-6.jpg}
 \begin{list2}
-\item We are beginning to see networks with VXLAN
-\item Live networks with production traffic - which are insecure
+\item New networks being built with production traffic - insecurely
 \item Vendors hype their speed of VXLAN implementations, but not the security issues
 \item I need help in designing \emph{network patterns} for good VXLAN deployments
 \item We need to increase visibility into VXLAN attacks, attacks encapsulated in VXLAN
-\item We should stop repeating the same mistakes again and again
 \item If you use VXLAN across data centers you have a complex problem at your hands
 \end{list2}
 
@@ -66,13 +66,13 @@ Source for quote:\\
 How does it work?
 
 \begin{list2}
-\item Router 1 takes Layer 2 traffic, encapsulates with IP+UDP port 4789 header, routes
+\item Router 1 takes Layer 2 traffic, encapsulates with IP+UDP port 4789, routes
 \item Router 2 receives IP+UDP+data, decapsulates, forward/switches layer 2 onto VLAN
-\item Most often VLAN IEEE 802.1q involved too, but not shown
+%\item Most often VLAN IEEE 802.1q involved too, but not shown
 \item Lets only consider two routers
 \end{list2}
 
-\centerline{Quite easy to get a working lab with OpenBSD \smiley}
+\centerline{Quite easy to get a working lab with Linux or OpenBSD \smiley}
 
 \slide{But what about security}
 
@@ -86,6 +86,8 @@ No confidentiality. No integrity protection.}
 \item Just isolate so no-one from the outside can send traffic
 \item Then what about from inside your data center, from partners, your servers
 \item Vendors does have some documents, like Arista has\\ \url{https://eos.arista.com/vxlan-security/}
+%\item Cisco has a 2018 55 page \emph{VXLAN EVPN Multi-Site
+%Design and Deployment} without the word security
 \item Security is not detailed as part of the regular "how to setup VXLAN"
 \item Using IPsec would perhaps be best, but hey \\
 - what a nice small broadcast storm you just had there $=>$ lost packets
@@ -118,6 +120,25 @@ I tested using my pentest server in one AS, sending across an internet exchange 
 
 \slide{Example attacks}
 
+\begin{alltt}\footnotesize
+VXLAN Header:
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|R|R|R|R|I|R|R|R|            Reserved                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                VXLAN Network Identifier (VNI) |   Reserved    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Inner Ethernet Header:
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Inner Destination MAC Address                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Inner Destination MAC Address | Inner Source MAC Address      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Inner Source MAC Address                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|OptnlEthtype = C-Tag 802.1Q    | Inner.VLAN Tag Information    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
 What is possible:
 \begin{list2}
 \item Inject ARP traffic, send arbitrary ARP packets to hosts, connectivity DoS
@@ -125,30 +146,28 @@ What is possible:
 \item Inject UDP packets sourced from inside, even being sent out through firewall
 \end{list2}
 
-\vskip 1cm
-\centerline{The above were my first attacks}
-
 
 
 \slide{Example: Send UDP DNS reqs to inside server}
 
-One interesting attack is injecting UDP packets to allow DNS\\
-requests to inside server which might not even have public IP
+\hlkimage{22cm}{vxlan-basic-injection-dns.pdf}
 
-\begin{enumerate}
-\item Select target: internal server, 10.0.0.10 and DNS service 53/UDP
-\item Create VXLAN packet(s): DNS request dst 10.0.0.10 UDP dport 53
-\item Source for this probe is your external pentest server
-\item Make sure inside packet has Ethernet destination that reaches server
-\item Send spoofed VXLAN packet across internet
-\item After VXLAN decap this packet is sent to the server
-\item Server process DNS request, send back response
-\item Attacker waiting for the UDP DNS reply, gets it
-\end{enumerate}
- Attacker can send UDP DNS request to inside server on RFC1918 destination.
- Tested working with Clavister with DNS UDP probes/requests, no inspection \smiley
+%One interesting attack is injecting UDP packets to allow DNS\\
+%requests to inside server which might not even have public IP
 
+%\begin{enumerate}
+%\item Select target: internal server, 10.0.0.10 and DNS service 53/UDP
+%\item Create VXLAN packet(s): DNS request dst 10.0.0.10 UDP dport 53
+%\item Source for this probe is your external pentest server
+%\item Make sure inside packet has Ethernet destination that reaches server
+%\item Send spoofed VXLAN packet across internet
+%\item After VXLAN decap this packet is sent to the server
+%\item Server process DNS request, send back response
+%\item Attacker waiting for the UDP DNS reply, gets it
+%\end{enumerate}
 
+{\small Attacker can send UDP DNS request to inside server on RFC1918 destination - server has no external IP or incoming ports forwarded.\\
+Tested working with Clavister with DNS UDP probes/requests, no inspection }
 
 
 \slide{Snippets of Scapy}
@@ -174,7 +193,7 @@ packet={\bf vxlan}/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
     DNS(rd=1,id=0xdead,qd=DNSQR(qname="www.wikipedia.org"))
 \end{alltt}
 
-{\small Fun fact, Unbound on OpenBSD reply to DNS requests received in Ethernet packets with broadcast destination and IP destination being the IP of the server - normal IP stack behaviour}
+{\small Fun fact, Unbound on OpenBSD reply to DNS requests received in Ethernet packets with broadcast destination and IP destination being the IP of the server - confirmed normal IP stack behaviour}
 
 
 \slide{Send and receive - from another source}
@@ -203,25 +222,27 @@ The source port we used in the inside packet, becomes the destination port in re
 
 \slide{Example: Open UDP from inside scenarios}
 
-Plan inject UDP via VXLAN to create firewall state, will allow\\
+\hlkimage{23cm}{vxlan-basic-injection-udp-open.pdf}
+
+Inject UDP via VXLAN to create firewall state, will allow\\
 reverse UDP requests coming into internal server
 
-\begin{enumerate}
-\item Select target: internal server, 10.0.0.10 and DNS service 53/UDP
-\item Create VXLAN packet(s): internal packet src 10.0.0.10 UDP sport 53
-\item Destination for this probe is your external pentest server
-\item Make sure inside packet has Ethernet destination of the firewall
-\item Send spoofed VXLAN packet across internet
-\item After VXLAN decap, packet switched to firewall, come from inside
-\item Firewall forwards, creates state, NATs
-\item Attacker waiting for the UDP probe, notice NAT source IP+port
-\item Attacker across regular internet send UDP request to NAT IP+port
-\item Request match state, and is forwarded to internal server on 10.0.0.10
-\end{enumerate}
+%\begin{enumerate}
+%\item Select target: internal server, 10.0.0.10 and DNS service 53/UDP
+%\item Create VXLAN packet(s): internal packet src 10.0.0.10 UDP sport 53
+%\item Destination for this probe is your external pentest server
+%\item Make sure inside packet has Ethernet destination of the firewall
+%\item Send spoofed VXLAN packet across internet
+%\item After VXLAN decap, packet switched to firewall, come from inside
+%\item Firewall forwards, creates state, NATs
+%\item Attacker waiting for the UDP probe, notice NAT source IP+port
+%\item Attacker across regular internet send UDP request to NAT IP+port
+%\item Request match state, and is forwarded to internal server on 10.0.0.10
+%\end{enumerate}
 
-Tested working with Clavister with DNS UDP probes/requests, weak/no DNS inspection \smiley
+{\small Tested working with Clavister with DNS UDP probes/requests, weak/no DNS inspection
 \vskip 5mm
-\centerline{May allow acess to all UDP services? Need more testing}
+\centerline{May allow acess to all UDP services? Need more testing}}
 
 \slide{Send and receive - do another request}
 
@@ -250,53 +271,77 @@ Maybe abuse complex protocols such as FTP, SIP etc. to open arbitrary ports?
 
 What I need to do these attacks are:
 \begin{list2}
-\item MAC addresses, some attacks can use broadcast destination
-\item VLAN IDs and VNIs - usually one to one mapping to VXLAN Network Identifier (VNI)
+\item Injection end points, IPs of the two routers
+\item VLAN IDs and VNIs - VXLAN Network Identifier (VNI)
+\item IP addresses, internal subnets
+\item MAC addresses - depending on attack
+\end{list2}
+
+\slide{Where can I "find" this information}
+
+\begin{list2}
+\item MAC addresses, some attacks use broadcast, try default VRRP?
+\item VLAN IDs and VNIs - usually 1:1 mapping
 \item IP addresses, internal subnets, qualified guesses as to default gateways etc.
-\item Injection end points, IPs of the two routers, port will likely be 4789
+\item Injection end points, IPs of the two routers, or one -
+port likely be 4789/8472
 \item Most of these are not typically considered highly confidential
 \item SMTP, HTTP setups often reveal real IP of the server behind etc.
 \item Also it is easily possible to produce millions of packets so send/scanning/trying
 \item Doing a complete scan of RFC1918 space is certainly possible for some protocols/ports
 \item Devices with SNMP public? Doing snmpwalk would get a lot of the above
-\item I dont think the hardware VTEP on Arista logs much, if anything
+\item Besides I dont think the hardware VTEP on Arista logs much, if anything
 \end{list2}
 
+
+
 \vskip 1cm
-Any former employee, consultant would know some of this
+Any former employee or consultant would know some of this
 
 Do Jazz hands if you think this is possible in real networks
 
-\slide{Advanced attacks and scanning}
 
-Currently doing both offensive and defensive:
+\slide{Next steps - both some offensive and defensive}
+
+\hlkimage{15cm}{vxlan-basic-dos.pdf}
+
 \begin{list2}
 \item "Implement further attacks" to devise ways to prevent/block
 \item I would love to try everything from  \url{http://www.yersinia.net/}\\ \url{https://tools.kali.org/vulnerability-analysis/yersinia}
+\item Advanced attacks and scanning
+\item how can we secure VLANs in server networks better
+\item Currently brainstorming and enhancing this list into a larger VXLAN test-plan
+\end{list2}
+
+\slide{Being defensive is also what TROOPERS is about!}
+
+\hlkimage{19cm}{vxlan-basic-suricata-bro.pdf}
+
+Defensive:
+\begin{list2}
 \item Many firewalls/IDS/DDoS protection would not see this traffic,\\
 do not consider ARP / Layer 2 / Tunnels / VXLAN
-\item Currently brainstorming and enhancing this list into a larger VXLAN test-plan
-\item Tool enhancements being released, adding VXLAN decapsulation to Bro and Suricata
+\item Tool enhancements work-in-progress, adding VXLAN decap to Bro and Suricata
 \item Trying to push knowledge about secure VXLAN deployment
 \end{list2}
 
-\slide{Expand VXLAN support Hping3 2018, Bro, Suricata}
+\slide{Expand tool support Hping3 2018, Bro, Suricata}
 
 \begin{list2}
-\item A lot of tools dont support VXLAN
-\item Scapy does, extremely easy to get first examples working, $<$ 4 hours
-\item Scapy is fast enough for a lot of things, and flexible
+\item Scapy support VXLAN fast enough for a lot of things,
+\item Very easy to get first examples working, $<$ 4 hours
 \item Scapy is preferred when doing VXLAN inject to one address, \\
 receiving on completely different one (like Open UDP from inside scenarios)
-\item PoC: adding VXLAN to Hping3 - tool is a bit unsuported, forked and made changes
-\item Ongoing: adding VXLAN to Bro and Suricata - easy to add code, work in progress
-\item Idea, use router with VXLAN interface and route packets into,\\ might work for 1-way scenarios, DDoS
+\item PoC: adding VXLAN to Hping3 - tool is a bit unsuported, forked
+\item Ongoing: adding VXLAN to Bro and Suricata - works on my machine
+\vskip 1cm
+\item Also 1-way scenarios can use a Linux VXLAN interface and just route into this
 \end{list2}
 
+\vskip 1cm
 My fork of Hping3 are at \url{https://github.com/kramse/hping-2018}\\
 also my patches to Suricata and Bro - being worked on, help me
 
-My repo of example scripts is private, will be opened publicly when we have some default patterns for secure VXLAN deployment available, or when Suricata VXLAN support is more complete
 
 
 \slide{Lessons learned}
@@ -308,10 +353,12 @@ My repo of example scripts is private, will be opened publicly when we have some
 \item AAAARRRRRRRGGGHHHHHHH \smiley
 \item Stop using VXLAN? Discuss
 \end{list2}
-
-\vskip 2cm
+\vskip 1cm
 Really, help me, what IS the right answer? \smiley
 
-\vskip 2cm
-BTW This presentation used https://www.opendyslexic.org/ font - let me know if it works better than a normal sans serif
+\vskip 1cm
+
+One recommendation: go home and configure ingress and egress filtering BCP38
+\vskip 1cm
+Thank you for coming. I'll be around until friday.
 \end{document}

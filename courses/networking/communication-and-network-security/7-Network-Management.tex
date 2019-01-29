@@ -1,4 +1,4 @@
-\documentclass[Screen16to9,17pt,footrule]{foils}
+\documentclass[Screen16to9,17pt]{foils}
 \usepackage{zencurity-slides}
 
 \externaldocument{communication-and-network-security-exercises}
@@ -210,23 +210,101 @@ shared-network LOCAL-NET \{
 
 
 
-\slide{Logfiler}
+\slide{Simple Network Management Protocol}
+
 \begin{list1}
-\item Logfiler er en nødvendighed for at have et transaktionsspor
-\item Logfiler giver mulighed for statistik
-\item Logfiler er desuden nødvendige for at fejlfinde
-\item Det kan være relevant at sammenholde logfiler fra:
-\begin{list2}
-\item routere
-\item firewalls
-\item webservere
-\item intrusion detection systemer
-\item adgangskontrolsystemer
+\item SNMP er en protokol der supporteres af de fleste professionelle
+  netværksenheder, såsom switche, routere
+\item hosts - skal slås til men følger som regel med
+\item SNMP bruges til:
+  \begin{list2}
+    \item \emph{network management}
+    \item statistik
+    \item rapportering af fejl - SNMP traps
+  \end{list2}
+\item {\bfseries sikkerheden baseres på community strings der sendes
+    som klartekst ...}
+\item det er nemmere at brute-force en community string end en
+  brugerid/kodeord kombination
+\end{list1}
+
+\slide{SNMP - \emph{hacking}}
+
+\vskip 2 cm
+
+\begin{list1}
+\item Simple Network Management Protocol
+\item sikkerheden afhænger alene af en Community string SNMPv2
+\item typisk er den nem at gætte:
+  \begin{list2}
+    \item public - default til at aflæse statistik
+\item private - default når man skal ændre på enheden, skrive
+\item cisco
 \item ...
+  \end{list2}
+\item Der findes lister og ordbøger på nettet over kendte default communities
+\end{list1}
+
+\slide{Systemer med SNMP}
+
+\begin{list1}
+  \item kan være svært at finde ... det er UDP 161
+\item Hvis man finder en så prøv at bruge {\bfseries snmpwalk}
+  programmet - det kan vise alle tilgængelige SNMP oplysninger fra den
+  pågældende host
+\item det kan være en af måderne at identificere uautoriserede WLAN
+  Access Points på - sweep efter port 161/UDP
+\item snmpwalk er et af de mest brugte programmer til at hente snmp
+  oplysninger - i forbindelse med hackning og penetrationstest
+\end{list1}
+
+\slide{snmpwalk}
+
+\begin{list1}
+\item Typisk brug er:
+\item \verb+snmpwalk -v 1 -c secret switch1+
+\item \verb+snmpwalk -v 2c -c secret switch1+
+\item Eventuelt bruges \verb+snmpget+ og \verb+snmpset+
+\item Ovenstående er en del af Net-SNMP pakken, \link{http://net-snmp.sourceforge.net/}
+\end{list1}
+
+\exercise{ex:snmpwalk}
+
+\slide{brute force}
+
+\begin{list1}
+\item hvad betyder bruteforcing?\\
+afprøvning af alle mulighederne
+\end{list1}
+
+\begin{alltt}
+\small
+Hydra v2.5 (c) 2003 by van Hauser / THC <vh@thc.org>
+Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]]
+[-o FILE] [-t TASKS] [-g TASKS] [-T SERVERS] [-M FILE] [-w TIME]
+[-f] [-e ns] [-s PORT] [-S] [-vV] server service [OPT]
+Options:
+  -S        connect via SSL
+  -s PORT   if the service is on a different default port, define it here
+  -l LOGIN  or -L FILE login with LOGIN name, or load several logins from FILE
+  -p PASS   or -P FILE try password PASS, or load several passwords from FILE
+  -e ns     additional checks, "n" for null password, "s" try login as pass
+  -C FILE   colon seperated "login:pass" format, instead of -L/-P option
+  -M FILE   file containing server list (parallizes attacks, see -T)
+  -o FILE   write found login/password pairs to FILE instead of stdout
+...
+\end{alltt}
+
+
+\slide{Eksempler på SNMP og management}
+
+\begin{list1}
+\item Ofte foregår administration af netværksenheder via HTTP, Telnet eller SSH
+\begin{list2}
+\item små dumme enheder er idag ofte web-enablet
+\item bedre enheder giver både HTTP og kommandolinieadgang
+\item de bedste giver mulighed for SSH, fremfor Telnet
 \end{list2}
-\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales
-\item Husk at logfilerne typisk kan slettes af en angriber -
-  hvis denne får kontrol med systemet
 \end{list1}
 
 \end{document}

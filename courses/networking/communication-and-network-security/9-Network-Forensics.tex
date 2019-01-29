@@ -1,4 +1,4 @@
-\documentclass[Screen16to9,17pt,footrule]{foils}
+\documentclass[Screen16to9,17pt]{foils}
 \usepackage{zencurity-slides}
 
 \externaldocument{communication-and-network-security-exercises}
@@ -10,6 +10,133 @@
 {Network Forensics}
 {Communication and Network Security 2019}
 
+
+
+
+
+\slide{Logfiler}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler giver mulighed for statistik
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:
+\begin{list2}
+\item routere
+\item firewalls
+\item webservere
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+
+
+\slide{syslog}
+
+\begin{list1}
+\item syslog er system loggen på UNIX og den er effektiv
+  \begin{list2}
+\item man kan definere hvad man vil se og hvor man vil have det
+  dirigeret hen
+\item man kan samle det i en fil eller opdele alt efter programmer og
+  andre kriterier
+\item man kan ligeledes bruge named pipes - dvs filer i filsystemet
+  som tunneller fra chroot'ed services til syslog i det centrale system!
+\item man kan nemt sende data til andre systemer
+  \end{list2}
+\item Hvis man vil lave en centraliseret løsning er følgende link
+  vigtigt: \\
+Tina Bird, Counterpane\\
+\link{http://loganalysis.org}
+\end{list1}
+
+\slide{syslogd.conf eksempel}
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+\slide{Andre syslogs syslog-ng}
+
+\begin{list1}
+\item der findes andre syslog systemer eksempelvis syslog-ng
+\item konfigureres gennem \verb+/etc/syslog-ng/syslog-ng.conf+
+\item Eksempel på indholdet af filen kunne være:
+\end{list1}
+
+\begin{alltt}
+\small
+options \{
+        long_hostnames(off);
+        sync(0);
+        stats(43200);
+\};
+
+source src { unix-stream("/dev/log"); internal(); pipe("/proc/kmsg"); };
+destination messages { file("/var/log/messages"); };
+destination console_all { file("/dev/console"); };
+log { source(src); destination(messages); };
+log { source(src); destination(console_all); };
+\end{alltt}
+
+\exercise{ex:syslogd-basic}
+
+\slide{Logfiler og computer forensics}
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:
+\begin{list2}
+\item routere
+\item firewalls
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+
+\slide{Web server access log}
+
+
+\begin{alltt}
+\footnotesize
+root# tail -f access_log
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/IPv6ready.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/valid-html401.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/snowflake1.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /~hlk/security6.net/images/logo-1.png
+HTTP/1.1" 304 0
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:35 +0100]
+"GET / HTTP/1.1" 200 1456
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:35 +0100]
+"GET /apache_pb.gif HTTP/1.1" 200 2326
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:36 +0100]
+"GET /favicon.ico HTTP/1.1" 404 209
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:36 +0100]
+"GET /favicon.ico HTTP/1.1" 404 209
+\end{alltt}
+\vskip 1cm
+\centerline{Apache konfigureres nemt til at lytte på IPv6}
 
 
 

@@ -33,54 +33,39 @@
 %  funktionen er reelt den samme - der filtreres traffik
 \end{list1}
 
-\slide{regelsæt fra OpenBSD PF}
+\slide{Sample rules from OpenBSD PF}
 
-\begin{list1}
-\item \begin{alltt}
-\tiny
-# hosts
+\begin{alltt}\tiny
+# hosts and networks
 router="217.157.20.129"
 webserver="217.157.20.131"
-# Networks
 homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
 wlan="10.0.42.0/24"
 wireless=wi0
-
+set skip lo0
 # things not used
 spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
-
-block in all # default block anything
-# loopback and other interface rules
-pass out quick on lo0 all
-pass in quick on lo0 all
-
+{\bf
+block in all # default block anything}
 # egress and ingress filtering - disallow spoofing, and drop spoofed
 block in quick from $spoofed to any
 block out quick from any to $spoofed
 
-pass in on $wireless proto tcp from $wlan to any port = 22
-pass in on $wireless proto tcp from $homenet to any port = 22
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
 pass in on $wireless proto tcp from any to $webserver port = 80
 
-pass out quick proto tcp  from $homenet to any flags S/S keep state
-pass out quick proto udp  from $homenet to any         keep state
-pass out quick proto icmp from $homenet to any         keep state
+pass out
 \end{alltt}
-%$
-\end{list1}
 
 \slide{netdesign - med firewalls}
 
-\begin{center}
-\colorbox{white}{\includegraphics[width=12cm]{images/kut.jpg}}
-\end{center}
+\hlkimage{10cm}{images/kut.jpg}
 
 \begin{list2}
 \item Hvor skal en firewall placeres for at gøre størst nytte?
 \item Hvad er forudsætningen for at en firewall virker?\\
 At der er konfigureret et sæt fornuftige regler!
 \item Hvor kommer reglerne fra? Sikkerhedspolitikken!
-\item Kan man lave en 100\% sikker firewall? Ja selvfølgelig, se!
 \end{list2}
 
 
@@ -94,7 +79,7 @@ At der er konfigureret et sæt fornuftige regler!
 
 \slide{VLAN Virtual LAN}
 
-\hlkimage{10cm}{vlan-portbased.pdf}
+\hlkimage{8cm}{vlan-portbased.pdf}
 
 \begin{list1}
 \item Nogle switche tillader at man opdeler portene
@@ -106,10 +91,9 @@ At der er konfigureret et sæt fornuftige regler!
 
 \slide{IEEE 802.1q}
 
-\hlkimage{20cm}{vlan-8021q.pdf}
+\hlkimage{16cm}{vlan-8021q.pdf}
 
 \begin{list1}
-\item Nogle switche tillader at man opdeler portene, men tillige benytter 802.1q
 \item Med 802.1q tillades VLAN tagging på Ethernet niveau
 \item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
 \item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
@@ -122,13 +106,11 @@ At der er konfigureret et sæt fornuftige regler!
 
 \slide{IEEE 802.1x  Port Based Network Access Control}
 
-\hlkimage{15cm}{osx-8021x.png}
+\hlkimage{13cm}{osx-8021x.png}
 
 \begin{list1}
-\item Nogle switche tillader at man benytter 802.1x
 \item Denne protokol sikrer at man valideres før der gives adgang til porten
 \item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
-\item Denne protokol indgår også i WPA Enterprise
 \end{list1}
 
 
@@ -141,22 +123,10 @@ At der er konfigureret et sæt fornuftige regler!
 \end{list1}
 
 
-
-
-
-
-
-
-
-%XXX \slide{input fra firewallskursus}
-
-
-
-
 \slide{Hvad er en firewall}
 
 \vskip 4 cm
-\centerline{\hlkbig En firewall er noget som {\color{green}blokerer}
+\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
   traffik på Internet}
 
 \vskip 1 cm
@@ -207,8 +177,7 @@ At der er konfigureret et sæt fornuftige regler!
 
 \slide{Packet filtering}
 
-\begin{alltt}
-\small
+\begin{alltt}\footnotesize
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -234,10 +203,9 @@ At der er konfigureret et sæt fornuftige regler!
 \slide{Kommercielle firewalls}
 \begin{list2}
 \item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
-\item Nokia appliances - Nokia IPSO \link{http://www.nokia.com}
-\item Cisco PIX \link{http://www.cisco.com}
+\item Cisco ASA \link{http://www.cisco.com}
 \item Clavister firewalls \link{http://www.clavister.com}
-\item Netscreen - nu ejet af Juniper
+\item Juniper SRX
   \link{http://www.juniper.net}
 \end{list2}
 
@@ -248,15 +216,13 @@ Ovenstående er dem som jeg oftest ser ude hos mine kunder
 \item Linux firewalls - fra begyndelsen til det nuværende netfilter
   til kerner version 2.4 og 2.6\\
 \link{http://www.netfilter.org}
-\item Firewall GUIs ovenpå Linux - mange! IPcop, Guarddog, Watchguard
-nogle Linux firewalls er kommercielle produkter
-\item IP Filter (IPF) \link{http://coombs.anu.edu.au/~avalon/}
-\item OpenBSD PF - findes idag på andre operativsystemer
+\item Firewall GUIs ovenpå Linux - mange!
+nogle er kommercielle produkter
+\item OpenBSD PF
 \link{http://www.openbsd.org}
 \item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
-\item Mac OS X benytter IPFW
+\item Mac OS X benytter OpenBSD PF
 \item FreeBSD inkluderer også OpenBSD PF
-\item NetBSD - bruger IPF og er ved at inkludere OpenBSD PF
 \end{list2}
 
 NB: kun eksempler og dem jeg selv har brugt
@@ -281,8 +247,8 @@ NB: kun eksempler og dem jeg selv har brugt
 \end{list1}
 
 \slide{TCP three way handshake}
-
-\hlkimage{7cm}{images/tcp-three-way.pdf}
+.
+\hlkrightpic{7cm}{0cm}{images/tcp-three-way.pdf}
 
 \begin{list2}
 \item {\bfseries TCP SYN half-open} scans
@@ -293,89 +259,26 @@ NB: kun eksempler og dem jeg selv har brugt
   fra at blive oprette - {\bfseries SYN-flooding}
 \end{list2}
 
-\slide{firewall regelsæt eksempel}
 
-\begin{alltt}
-\tiny
-# hosts
-router="217.157.20.129"
-webserver="217.157.20.131"
-# Networks
-homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
-wlan="10.0.42.0/24"
-wireless=wi0
-
-# things not used
-spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
-
-block in all # default block anything
-# loopback and other interface rules
-pass out quick on lo0 all
-pass in quick on lo0 all
-
-# egress and ingress filtering - disallow spoofing, and drop spoofed
-block in quick from $spoofed to any
-block out quick from any to $spoofed
-
-pass in on $wireless proto tcp from $wlan to any port = 22
-pass in on $wireless proto tcp from $homenet to any port = 22
-pass in on $wireless proto tcp from any to $webserver port = 80
-
-pass out quick proto tcp  from $homenet to any flags S/S keep state
-pass out quick proto udp  from $homenet to any         keep state
-pass out quick proto icmp from $homenet to any         keep state
-\end{alltt}
-%$
-
-
-
-\slide{netdesign - med firewalls - 100\% sikkerhed?}
-
-\begin{center}
-\colorbox{white}{\includegraphics[width=12cm]{images/kut.jpg}}
-\end{center}
-
-\begin{list1}
-\item Hvor skal en firewall placeres for at gøre størst nytte?
-\item Hvad er forudsætningen for at en firewall virker?\\
-At der er konfigureret et sæt fornuftige regler!
-\item Hvor kommer reglerne fra? Sikkerhedspolitikken!
-%\item Kan man lave en 100\% sikker firewall? Ja selvfølgelig, se!
-\end{list1}
-
-
-\centerline{\small Kilde: Billedet er fra Marcus Ranum The ULTIMATELY
-  Secure Firewall}
 
 
 \slide{Firewall er ikke alene}
 
-\begin{list1}
-\item Firewalls er ikke alene
-\begin{list2}
-\item anti-virus på klienter og postsystemer
-\item IDS systemer
-\item Backupsystemer
-\item Adgangskontrol
-\item ... mange andre ting er mindst ligeså vigtige
-\end{list2}
-\end{list1}
+\hlkimage{15cm}{network-layers-1.png}
 
 \centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
 
 
 \slide{Firewall historik}
 
-
-\hlkimage{6cm}{images/cheswick-cover2e.jpg}
+\hlkimage{4cm}{images/cheswick-cover2e.jpg}
 
 \begin{list1}
 \item Firewalls har været kendt siden starten af 90'erne
-\item Den første bog \emph{Firewalls and Internet Security} udkom i
-  1994 men der findes mange akademiske artikler om firewalls
-\item Bogen \emph{Firewalls and Internet Security} anbefales,
+\item Første bog \emph{Firewalls and Internet Security}
 William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
 Addison-Wesley, 2nd edition, 2003
+\item Bogen udkom i 1994 men kan stadig anbefales
 \end{list1}
 
 \slide{An Evening with Berferd}
@@ -393,12 +296,12 @@ Addison-Wesley, 2nd edition, 2003
 
 \slide{m0n0wall}
 
-\hlkimage{20cm}{images/m0n0wall-1.pdf}
+\hlkimage{16cm}{images/m0n0wall-1.pdf}
 
 
 \slide{First or Last match firewall?}
 
-\hlkimage{20cm}{images/first-last-match-1.pdf}
+\hlkimage{18cm}{images/first-last-match-1.pdf}
 
 
 \slide{firewall koncepter}
@@ -419,14 +322,8 @@ Addison-Wesley, 2nd edition, 2003
 
 \slide{First or Last match firewall?}
 
-\hlkimage{20cm}{images/first-last-match-1.pdf}
-\begin{list2}
-\item To typer af firewalls:
- First match - eksempelvis IPFW,
- Last match - eksempelvis PF
-%\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
-%    man bruger!}
-\end{list2}
+\hlkimage{18cm}{images/first-last-match-1.pdf}
+
 
 
 \slide{First match - IPFW}
@@ -448,12 +345,11 @@ Addison-Wesley, 2nd edition, 2003
 
 \slide{Last match - OpenBSD PF}
 
-\begin{alltt}
-\small
+\begin{alltt}\small
 ext_if="ext0"
 int_if="int0"
-
-block in
+{\bf
+block in}
 pass out keep state
 
 pass quick on \{ lo $int_if \}
@@ -464,16 +360,13 @@ pass in on $ext_if proto tcp to ($ext_if) port http keep state
 pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
 \end{alltt}
 
-\vskip 2 cm
-\centerline{Pakkerne markeres med block eller pass indtil sidste
-  regel}
-\centerline{nøgleordet \emph{quick} afslutter match - god til store
-  regelsæt}
+
+Pakkerne markeres med block eller pass indtil sidste regel\\
+nøgleordet \emph{quick} afslutter match - god til store regelsæt
 
 \slide{Linux iptables/netfilter eksempel}
 
-\begin{alltt}
-\footnotesize
+\begin{alltt}\footnotesize
 # Firewall configuration written by system-config-securitylevel
 # Manual customization of this file is not recommended.
 *filter
@@ -500,23 +393,11 @@ COMMIT
 
 \slide{Firewall GUI}
 
-\hlkimage{24cm}{images/fwbuilder-screenshot1.png}
-
-\begin{list1}
-\item Der findes mange GUI programmer til Open Source firewalls
-\end{list1}
+\hlkimage{22cm}{images/fwbuilder-screenshot1.png}
 
 Kilde: billede fra \link{http://www.fwbuilder.org}
 
-
-\slide{m0n0wall}
-
-\hlkimage{20cm}{images/m0n0wall-1.pdf}
-
-Kilde: billede fra \link{http://m0n0.ch/wall/}
-
 \slide{Firewalls og ICMP}
-
 
 \begin{alltt}
 ipfw add allow icmp from any to any icmptypes 3,4,11,12
@@ -559,11 +440,7 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \item Windows SMB filesharing - ikke til brug på Internet!
 \item UNIX NFS - ikke til brug på Internet!
 \end{list2}
-\item Kendte problemer:
-\begin{list2}
-\item KaZaA og andre P2P programmer - hvis muligt!
-\item Portmapper - port 111
-\end{list2}
+\item Kendte problemer som minimum
 \end{list1}
 
 \slide{Firewall konfiguration}
@@ -586,30 +463,9 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 
 \slide{En typisk firewall konfiguration}
 
-\hlkimage{22cm}{images/firma-netvaerk.pdf}
+\hlkimage{20cm}{images/firma-netvaerk.pdf}
 
 \centerline{Opdeling i separate netværkssegmenter!}
-
-\slide{personlige firewalls}
-
-\begin{list1}
-\item Personlige firewalls:
-
-\begin{list2}
-\item Microsoft Windows XP
-\item ZoneAlarm \link{http://www.zonelabs.com}
-\end{list2}
-\item Personlige firewalls til Microsoft Windows inkluderer ofte
-blokering af hvilket programmer der må tilgå netværk
-\end{list1}
-
-\centerline{\color{titlecolor}Det anbefales at bruge en personlig firewall}
-
-Note: Lad være med at stille spørgsmål om logfilen i diverse fora!
-
-{\bfseries Hvis du ikke forstår loggen så lad den ligge!}
-
-
 
 
 \slide{Firewallværktøjer}
@@ -693,8 +549,8 @@ Forskellen mellem TCP og UDP i forbindelse med portscan, og effekten af en firew
 UDP applikationer svarer forskelligt - hvis overhovedet}
 
 \slide{TCP three way handshake}
-
-\hlkimage{7cm}{images/tcp-three-way.pdf}
+.
+\hlkrightpic{7cm}{0cm}{images/tcp-three-way.pdf}
 
 \begin{list2}
 \item {\bfseries TCP SYN half-open} scans
@@ -795,14 +651,14 @@ Nmap run completed -- 1 IP address (1 host up) scanned in 7.540 seconds
   Ofir Arkin\\ \link{http://www.sys-security.com/html/projects/icmp.html}
 \end{list2}
 
-\slide{Top 75 Security Tools}
+\slide{Top Security Tools}
 
 \begin{list1}
 %  \item I er meget ivrige efter at afprøve en masse
-\item listen over 75 top security
+\item listen over top security
   tools - nogle værktøjer springes over, nogle har vi brugt
 \item Den er samlet af Fyodor og findes på:\\
-\link{http://www.insecure.org/tools.html}
+\link{https://www.sectools.org/}
 \end{list1}
 
 
@@ -844,9 +700,8 @@ Nmap run completed -- 1 IP address (1 host up) scanned in 7.540 seconds
 \end{list1}
 
 
-\slide{OpenBSD PF}
-\begin{alltt}
-\footnotesize
+\slide{OpenBSD PF IPv6 NDP}
+\begin{alltt}\footnotesize
 # Macros: define common values, so they can be referenced and changed easily.
 int_if=vr0
 ext_if=vr2
@@ -856,75 +711,37 @@ set skip on lo0
 scrub in all
 # Filtering: the implicit first two rules are
 block in all
-block out all
+
 # allow ICMPv6 for NDP
-pass in inet6 proto ipv6-icmp all icmp6-type neighbradv keep state
 # server with configured IP address and router advertisement daemon running
+pass in inet6 proto ipv6-icmp all icmp6-type neighbradv keep state
 pass out inet6 proto ipv6-icmp all icmp6-type routersol keep state
+
 # client which uses autoconfiguration would use this instead
 #pass in inet6 proto ipv6-icmp all icmp6-type routeradv keep state
 #pass out inet6 proto ipv6-icmp all icmp6-type neighbrsol keep state
-table <sixxspop> { 82.96.56.14 2001:16d8:ff00:155::1 }
-pass in on $ext_if proto icmp from <sixxspop6> to ($ext_if)
-pass in on $tunnel_if proto icmp6 from <sixxspop6> to any
-pass in on $int_if all
-pass out on $int_if all keep state
+
 ...  probably not working AS IS
 \end{alltt}
 
 
 \slide{Redundante firewalls}
 
-\hlkimage{8cm}{images/pfsync-carp-1.jpg}
+.
+\hlkrightpic{8cm}{0cm}{images/pfsync-carp-1.jpg}
 
 \begin{list2}
+\item Mange producenter giver mulighed for redundante firewalls/routere
+\item Eksempler VRRP, CARP, HSRP Cisco, VARP Arista
 \item OpenBSD Common Address Redundancy Protocol CARP - både IPv4 og IPv6\\
 overtagelse af adresse både IPv4 og IPv6
 \item pfsync - sender opdateringer om firewall states mellem de to systemer
-\item Kilde:
-\link{http://www.countersiege.com/doc/pfsync-carp/}
 \end{list2}
-
-\slide{Redundante forbindelser hardware}
-
-\begin{alltt}
-root@azumi:# cat hostname.fxp0
-up
-root@azumi:# cat hostname.fxp1
-up
-root@azumi:# cat /etc/hostname.trunk0
-trunkproto failover trunkport fxp0 trunkport fxp1
-dhcp
-\end{alltt}
-
-\begin{list1}
-\item OpenBSD trunk interface
-\item Linux bonding,
-\item Etherchannel Cisco
-\item Idag anbefales IEEE 802.3ad LACP som er en åben standard
-\item \link{http://en.wikipedia.org/wiki/EtherChannel}
-\end{list1}
-
-\slide{LACP Link Aggregation Control Protocol}
-
-\hlkimage{7cm}{lacp-1.pdf}
-
-\begin{list1}
-\item IEEE 802.3ad standardiseret bundling/failover
-\item Målet er at give:
-\begin{list2}
-\item mere båndbredde end en enkelt port
-\item failover - hvis et link falder ud
-\end{list2}
-\item En server med to netinterfaces kan med fordel forbindes til to porte
-\item Er ikke generelt understøttet i alle operativsystemer, men det kommer
-\item \link{http://en.wikipedia.org/wiki/Link_Aggregation_Control_Protocol}
-\end{list1}
 
 
 \slide{Redundante forbindelser IP-niveau}
 
-\hlkimage{12cm}{router-redundancy-1.pdf}
+\hlkimage{7cm}{router-redundancy-1.pdf}
 
 \begin{list1}
 \item HSRP Hot Standby Router Protocol, Cisco protokol, RFC-2281
@@ -934,7 +751,6 @@ dhcp
 \end{list1}
 
 
-
-
+\slidenext
 
 \end{document}

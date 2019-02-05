@@ -205,7 +205,7 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 
 
 
-\chapter{Wireshark and tcpdump}
+\chapter{Wireshark and Tcpdump}
 \label{ex:wireshark-install}
 
 \hlkimage{10cm}{wireshark-http.png}
@@ -288,92 +288,114 @@ Is it ethical to collect packets from an open wireless network?
 
 Also note the TTL values in packets from different operating systems
 
-\chapter{Opslag i whois databaser}
+\chapter{Whois databases}
 \label{ex:whois}
 
+{\bf Objective:}\\
+Learn to lookup data in the global Whois databases
 
-{\bfseries Opgave:} \\
-L<E6>r at bruge whois
+{\bf Purpose:}\\
+We often need to see where traffic is coming from, or who is responsible for the IP addresses sending attacks.
 
-{\bfseries Forslag til fremgangsm<E5>de:}\\
-\begin{list2}
-\item Login p<E5> UNIX server - l<E6>s manualen til programmet whois
-eller brug webinterface p<E5>\\ \link{http://www.ripe.net}
-\end{list2}
+{\bf Suggested method:}\\
 
-{\bfseries Hj<E6>lp:}\\
-Whois databaserne er fordelt p<E5> ARIN, RIPE, LACNIC og APNIC.
+{\bf Hints:}\\
+If you dont have a whois command then you can use the web interfaces, like \link{http://www.ripe.net}
 
-Kommandoen \verb+whois -r 90.184.69.97+ vil p<E5> en OpenBSD give
-svaret p<E5> et opslag i RIPE databasen efter IP adresse 90.184.69.97
+{\bf Solution:}\\
+When you can find our external address and look it up, you are done.
 
-{\bfseries Diskussion:}\\
-I skal l<E6>re at sp<F8>rge efter IP adresser og spore oprindelsen - find
-eksempelvis brugeren af IP-adressen 217.157.20.129
+{\bf Discussion:}\\
+Whois databases are global and used for multiple purposes, the ones run by the Regional Internet Registries ARIN, RIPE, AfriNIC, LACNIC og APNIC have information about IP addresses and AS numbers allocated.
 
-
-
-\chapter{ping og traceroute}
+\chapter{Using ping and traceroute}
 \label{ex:ping}
 
-{\bfseries Opgave:}\\
-L<E6>r at bruge ping og traceroute programmerne
 
-{\bfseries Forslag til fremgangsm<E5>de:} \\
-Brug \verb+ping+ og \verb+traceroute+ til at teste netv<E6>rksforbindelsen - kan
-udf<F8>res fra b<E5>de windows og UNIX.
 
-Husk at traceroute hedder \verb+tracert+ p<E5> windows.
+{\bf Objective:}\\
+Be able to do initial debugging of network problems using commands ping and traceroute
 
-Er der forbindelse til alle servere p<E5> oversigtstegningen?
+{\bf Purpose:}\\
+Being able to verify connectivity is a basic skill.
 
-{\bfseries Hj<E6>lp:} \\
-ICMP er Internet Control Message Protocol det bruges typisk til at
-rapportere om fejl, host unreachable og lignende.
+{\bf Suggested method:}\\
+Use \verb+ping+ and \verb+traceroute+ to test your network connection - can be done one Windows and UNIX.
 
-Ping programmet benytter ICMP ECHO request og forventer ICMP ECHO
-reply. Traceroute programmet sender ICMP eller UDP og forventer ICMP
-svar tilbage for at kunne mappe et netv<E6>rk.
+{\bf Hints:}
+\begin{alltt}
+  $ ping 10.0.42.1
+  PING 10.0.42.1 (10.0.42.1) 56(84) bytes of data.
+  64 bytes from 10.0.42.1: icmp_seq=1 ttl=62 time=1.02 ms
+  64 bytes from 10.0.42.1: icmp_seq=2 ttl=62 time=0.998 ms
+  ^C
+  --- 10.0.42.1 ping statistics ---
+  2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+  rtt min/avg/max/mdev = 0.998/1.012/1.027/0.034 ms
+\end{alltt}
 
-{\bf Ekstra:}
-Hvad er forskellen p<E5> (skal udf<F8>res p<E5> OpenBSD/UNIX)
+Dont forget that UNIX ping continues by default, press ctrl-c to break.
+
+Do the same with traceroute.
+
+{\bf Solution:}\\
+Run both programs to local gateway and some internet address by your own choice.
+
+{\bf Discussion:}\\
+Note the tool is called tracert on Windows, shortened for some reason.
+
+ICMP is the Internet Control Message Protocol, usually used for errors like host unreachable. The ECHO request ICMP message is the only ICMP message that generates another.
+
+The traceroute programs send packets with low Time To Live (TTL) and receives ICMP messages, unless there is a problem or a firewall/filter. Also used for mapping networks.
+
+{\bf Bonus:}
+
+Whats the difference between:
 \begin{list2}
-\item {\bfseries traceroute} og {\bfseries traceroute -I}
-\item NB: traceroute med -I findes kun p<E5> UNIX - traceroute med ICMP pakker
-\item Der er mange der ikke blokerer for ICMP traceroute
+\item {\bfseries traceroute} and {\bfseries traceroute -I}
+\item NB: traceroute -I is found on UNIX - traceroute using ICMP pakker
+\item Windows tracert by default uses ICMP
+\item Unix by default uses UDP, but can use ICMP instead.
+\item Lots of traceroute-like programs exist for tracing with TCP or other protocols
 \end{list2}
 
 
-\chapter{DNS og navneopslag}
+\chapter{DNS and Name Lookups}
 \label{ex:basic-dns-lookup}
 
-{\bfseries Opgave:}\\
-Pr<F8>v forskellige programmer til at sp<F8>rge en service
 
-{\bfseries Forslag til fremgangsm<E5>de:}\\
+
+{\bf Objective:}\\
+Be able to do DNS lookups from specific DNS server
+
+{\bf Purpose:}\\
+Try doing DNS lookup using different programs
+
+{\bf Suggested method:}\\
+Try the following programs:
 \begin{itemize}
-\item nslookup - findes b<E5>de p<E5> UNIX og Windows
-\item Pr<F8>v nslookup -q=txt -class=CHAOS version.bind. 0
-\item dig - syntaks @server domain query-type query-class
-\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]
-\item pr<F8>v {\bfseries host -a security6.net} \\
-{\bfseries host -a www.security6.net} - hvad er forskellen
+\item nslookup - UNIX and Windows, but not recommended\\
+\verb+nslookup -q=txt -class=CHAOS version.bind. 0+
+\item dig - syntax @server domain query-type query-class\\
+\verb+dig @8.8.8.8 www.example.com+
+\item host - syntaks host [-l] [-v] [-w] [-r] [-d] [-t querytype] [-a] host [server]\\
+\verb+host www.example.com 8.8.8.8+
 \end{itemize}
 
-{\bfseries Hj<E6>lp:}\\
-Host programmet er med som standard p<E5> OpenBSD - s<E5> brug Fiona eller Luffe
+{\bf Hints:}\\
+Dig is the one used by most DNS admins, I often prefer the host command for the short output.
 
-P<E5> Unix Boot CD og MS Windows platformen findes mange GUI programmer til det samme.
+{\bf Solution:}\\
+Shown inline, above.
 
-{\bfseries Diskussion:}\\
-Hvad er en zonetransfer? det er alle de records der er defineret for
-et dom<E6>ne
+{\bf Discussion:}\\
+The nslookup program does not use the same method for lookup as the standard lookup libraries, results may differ from what applications see.
 
-Hvad er forward og reverse lookup? forward er fra hostnavn til IP adresse,
-mens reverse er fra IP adresse til hostnavn
+What is a zone transfer, can you get one using the host command?
 
+Explain forward and reverse DNS lookup.
 
-
+\end{document}
 
 
 

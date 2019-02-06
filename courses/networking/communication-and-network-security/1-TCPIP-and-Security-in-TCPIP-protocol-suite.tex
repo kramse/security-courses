@@ -1553,23 +1553,124 @@ fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
 \slide{Security problems in the TCP/IP Suite}
 
 The title of a nice paper, and the rest of today
+\begin{quote}
+The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
+lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
+\end{quote}
 
-Problems
+\begin{list1}
+\item Problems described in the original:
+\begin{list2}
+\item sequence number spoofing
+\item routing attacks,
+\item source address spoofing
+\item authentication attacks
+\end{list2}
+\end{list1}
 
 
 \slide{TCP sequence number prediction}
 
+\vskip 5mm
+\begin{quote}
+TCP SEQUENCE NUMBER PREDICTION
+One of the more fascinating security holes was first described by Morris [7] . Briefly, he used TCP
+sequence number prediction to construct a TCP packet sequence without ever receiving any responses
+from the server. This allowed him to spoof a trusted host on a local network.
+\end{quote}
+
 \begin{list1}
-  \item tidligere baserede man ofte login og adgange på de IP adresser
-  som folk kom fra
-\item det er ikke pålideligt at tro på address based authentication
-\item TCP sequence number kan måske gættes
-\item Mest kendt er nok Shimomura der blev hacket på den måde, måske
-  af Kevin D Mitnick eller en kompagnon
+\item tidligere baserede man login/adgange på source IP adresser, address based authentication
+\item Er ikke en pålidelig autentifikationsmekanisme
+\item Mest kendt er nok Shimomura der blev hacket på den måde, \\
+måske af Kevin D Mitnick eller en kompagnon
 \item I praksis vil det være svært at udføre på moderne operativsystemer
-\item Se evt. \link{http://www.takedown.com/}
-\item (filmen er ikke så god ;-) )
+\item Se evt. \link{http://www.takedown.com/} (filmen er ikke så god ;-) )
+\item Det er naturligvis fint med filtre så man kun kan tilgå services FRA bestemte IP
 \end{list1}
+
+\slide{Routing attacks}
+
+\begin{list1}
+\item Problems described in the original from 1989:
+\begin{list2}
+\item IP Source routing attacks - angiv en rute for pakkerne\\
+Knapt så brugbar idag
+\item Routing Information Protocol Attacks\\
+The Routing Information Protocol [15] (RIP) - denne bruges ikke mere, outdated
+\item BGPv4 som bruges idag har kæmpe problemer, kludetæppe af kludges
+\end{list2}
+\item Vi kommer til at snakke om \link{https://github.com/tomac/yersinia}
+\end{list1}
+
+
+\slide{Solutions to TCP/IP security problems}
+
+
+\begin{list1}
+\item Solutions:
+\begin{list2}
+\item Use RANDOM TCP sequence numbers, Win/Mac/Linux - DO,but IoT?
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item Routers and routing protocols must be more skeptical\\
+Routing filtre everywhere, auth på OSPF/BGP etc.
+\end{list2}
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\end{list1}
+
+
+\slide{DNS problems}
+
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, see DNS flag day\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\end{list2}
+\end{list1}
+
+\slide{SNMP problems}
+
+\begin{quote}
+5.5 Simple Network Management Protocol
+The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network
+management. Clearly, access to such a resource must be heavily protected. The RFC states this, but
+also allows for a null authentication service; this is a bad idea. Even a ‘‘read-only’’ mode is dangerous;
+it may expose the target host to netstat-type attacks if the particular Management Information Base
+(MIB) [38] used includes sequence numbers. (T
+\end{quote}
+
+True, and we will talk more about SNMP later in this course.
+
+
+\slide{local networks}
+
+\begin{quote}
+6.1 Vulnerability of the Local Network
+Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and
+host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise
+to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel,
+unless authentication servers are used.
+If the local network uses the Address Resolution Protocol (ARP) [42] more subtle forms of host-spoofing
+are possible. In particular, it becomes trivial to intercept, modify, and forward packets, rather than just
+taking over the host’s role or simply spying on all traffic.
+\end{quote}
+
+Today we can send VXLAN spoofed packets across the internet layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...
+
+
+A Look Back at “Security Problems in the TCP/IP Protocol Suite”
+about 1989 + 15 years = 2004
+
 
 \slidenext
 

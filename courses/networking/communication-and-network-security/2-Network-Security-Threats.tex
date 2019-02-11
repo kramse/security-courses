@@ -27,6 +27,8 @@
 \begin{list2}
 \item ARP spoofing and ettercap
 \item EtherApe
+\item Nmap and Nping
+\item Pcap-diff
 \end{list2}
 \end{list1}
 
@@ -145,153 +147,168 @@ Command Line
 \end{list2}
 \end{list1}
 
-\slide{Basic Portscanning}
+
+\slide{Basic port scanning}
 
 \begin{list1}
-  \item Hvad er portscanning
-\item afprøvning af alle porte fra 0/1 og op til 65535
-\item målet er at identificere åbne porte - sårbare services
-\item typisk TCP og UDP scanning
-\item TCP scanning er ofte mere pålidelig end UDP scanning
+\item What is a port scan
+\item Testing all values possible for port number from 0/1 to 65535
+\item Goal is to identify open ports, listening and vulnerable services
+\item Most often TCP og UDP scan
+\item TCP scanning is more realiable than UDP scanning
+\item TCP handshake must respond with SYN-ACK packets
+\item UDP applications respond differently -- if they even respond\\
+so probes with real requests may get response, no firewall they respond withb ICMP on closed ports
+\item Use the GUI program Zenmap while learning Nmap
 \end{list1}
 
-{\hlkbig TCP handshake er nemmere at identificere
+\slide{TCP three-way handshake}
 
-UDP applikationer svarer forskelligt - hvis overhovedet}
-
-\slide{TCP three way handshake}
-.
-\hlkrightpic{7cm}{0cm}{images/tcp-three-way.pdf}
+\hlkimage{4cm}{images/tcp-three-way.pdf}
 
 \begin{list2}
 \item {\bfseries TCP SYN half-open} scans
-\item Tidligere loggede systemer kun når der var etableret en fuld TCP
-  forbindelse - dette kan/kunne udnyttes til \emph{stealth}-scans
-\item Hvis en maskine modtager mange SYN pakker kan dette fylde
-  tabellen over connections op - og derved afholde nye forbindelser
-  fra at blive oprette - {\bfseries SYN-flooding}
+\item in the old days systems would only log when a full TCP connection was setup\\
+  -- so doing only half open it was a \emph{stealth}-scans
+\item Today system and IDS intrusion detection can easily monitor for this
+\item Sending a lot of SYN packets can create a Denial of Service -- {\bfseries SYN-flooding}
 \end{list2}
 
+\slide{Scope: select systems for testing}
 
-\slide{Ping og port sweep}
+\hlkimage{10cm}{overview-routing-customer-2015.png}
+
+\begin{list2}
+\item Routers in front of critical systems and networks - availability
+\item Firewalls -- are traffic flows restricted
+\item Mail servers -- open for relaying
+\item Web servers -- remote code execution in web systems, data download
+\end{list2}
+
+\slide{Ping and port sweep}
 
 \begin{list1}
-\item scanninger på tværs af netværk kaldes for sweeps
-\item Scan et netværk efter aktive systemer med PING
-\item Scan et netværk efter systemer med en bestemt port åben
-\item Er som regel nemt at opdage:
-  \begin{list2}
-    \item konfigurer en maskine med to IP-adresser som ikke er i brug
-\item hvis der kommer trafik til den ene eller anden er det portscan
-\item hvis der kommer trafik til begge IP-adresser er der nok
-  foretaget et sweep - bedre hvis de to adresser ligger et stykke fra hinanden
+\item Scans across the network are named sweeps
+\item Ping sweeps using ICMP Ping probes
+\item Port sweep trying to find a specific service, like port 80 web
+\item Quite easy to see in network traffic:
+\begin{list2}
+\item Selecting two IP-adresser not in use
+\item Should not see any traffic, but if it does, its being scanned
+\item If traffic is received on both addresses, its a sweep -- if they are a bit apart it is even better, like 10.0.0.100 and 10.0.0.200
   \end{list2}
 
+\vskip 2cm
+Pro tip: a Great network intrusion detection engine (IDS), is Suricata \link{suricata-ids.org}
 \end{list1}
 
-\slide{nmap port sweep efter port 80/TCP}
+\slide{what is Nmap today}
+\begin{quote}
+Nmap ("Network Mapper") is a free and open source (license) utility for network discovery and security auditing.
+\end{quote}
 
 \begin{list1}
-  \item Port 80 TCP er webservere
+\item Initial release September 1997; 20 years ago
+\item Today a package of programs for Windows, Mac, BSD, Linux, ... source
+\item Flexible, powerful, and free! Includes other tools!
+\item Lets check release notes, 7.70 pt.\\
+http://seclists.org/nmap-announce/2018/0
 \end{list1}
 
-\begin{alltt}
-\small # {\bfseries nmap  -p 80 217.157.20.130/28}
+Bonus info: you can help Nmap by submitting fingerprints
 
-Starting nmap V. 3.00 ( www.insecure.org/nmap/ )
-Interesting ports on router.kramse.dk (217.157.20.129):
-Port       State       Service
-80/tcp     filtered    http
 
-Interesting ports on www.kramse.dk (217.157.20.131):
-Port       State       Service
-80/tcp     open        http
+\slide{Nmap port sweep for web servers}
 
-Interesting ports on  (217.157.20.139):
-Port       State       Service
-80/tcp     open        http
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries  nmap -p80,443 172.29.0.0/24}
+
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:31 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00016s latency).
+PORT    STATE    SERVICE
+{\color{darkgreen}80/tcp  open     http}
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00012s latency).
+PORT    STATE  SERVICE
+{\color{darkgreen}80/tcp  open   http}
+443/tcp closed https
+MAC Address: 00:0C:29:46:22:FB (VMware)
 
 \end{alltt}
 
-\slide{nmap port sweep efter port 161/UDP}
+\slide{Nmap port sweep for SNMP port 161/UDP}
 
-\begin{list1}
-  \item Port 161 UDP er SNMP
-\end{list1}
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries nmap -sU -p 161 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:30 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00015s latency).
+PORT    STATE         SERVICE
+{\color{darkgreen}161/udp open|filtered snmp}
+MAC Address: 00:50:56:C0:00:08 (VMware)
 
-\begin{alltt}
-\small # {\bfseries nmap -sU -p 161 217.157.20.130/28}
-
-Starting nmap V. 3.00 ( www.insecure.org/nmap/ )
-Interesting ports on router.kramse.dk (217.157.20.129):
-Port       State       Service
-161/udp    open        snmp
-
-The 1 scanned port on mail.kramse.dk (217.157.20.130) is: closed
-
-Interesting ports on www.kramse.dk (217.157.20.131):
-Port       State       Service
-161/udp    open        snmp
-
-The 1 scanned port on  (217.157.20.132) is: closed
+Nmap scan report for 172.29.0.138
+Host is up (0.00011s latency).
+PORT    STATE  SERVICE
+{\bf{161/udp closed snmp}}
+MAC Address: 00:0C:29:46:22:FB (VMware)
+...
+Nmap done: 256 IP addresses (5 hosts up) scanned in 2.18 seconds
 \end{alltt}
 
-\slide{OS detection}
-\begin{alltt}
-\footnotesize
-# nmap -O ip.adresse.slet.tet \emph{scan af en gateway}
-Starting nmap 3.48 ( http://www.insecure.org/nmap/ ) at 2003-12-03 11:31 CET
-Interesting ports on gw-int.security6.net (ip.adresse.slet.tet):
-(The 1653 ports scanned but not shown below are in state: closed)
-PORT     STATE SERVICE
-22/tcp   open  ssh
-80/tcp   open  http
-1080/tcp open  socks
-5000/tcp open  UPnP
-Device type: general purpose
-Running: FreeBSD 4.X
-OS details: FreeBSD 4.8-STABLE
-Uptime 21.178 days (since Wed Nov 12 07:14:49 2003)
-Nmap run completed -- 1 IP address (1 host up) scanned in 7.540 seconds
+\vskip 5mm
+\centerline{More reliable to use Nmap script with probes like --script=snmp-info}
+
+\slide{Nmap Advanced OS detection}
+\begin{alltt}\footnotesize
+root@cornerstone:~#{\bfseries nmap -A -p80,443 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:37 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00027s latency).
+PORT    STATE    SERVICE VERSION
+80/tcp  open     http    Apache httpd 2.2.26 ((Unix) DAV/2 mod_ssl/2.2.26 OpenSSL/0.9.8zc)
+|_http-title: Site doesn't have a title (text/html).
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+Device type: media device|general purpose|phone
+Running: Apple iOS 6.X|4.X|5.X, Apple Mac OS X 10.7.X|10.9.X|10.8.X
+OS details: Apple iOS 6.1.3, Apple Mac OS X 10.7.0 (Lion) - 10.9.2 (Mavericks)
+or iOS 4.1 - 7.1 (Darwin 10.0.0 - 14.0.0), Apple Mac OS X 10.8 - 10.8.3 (Mountain Lion)
+or iOS 5.1.1 - 6.1.5 (Darwin 12.0.0 - 13.0.0)
+OS and Service detection performed.
+Please report any incorrect results at http://nmap.org/submit/
 \end{alltt}
 
 \begin{list2}
-  \item lavniveau måde at identificere operativsystemer på
-\item send pakker med \emph{anderledes} indhold
-\item Reference: \emph{ICMP Usage In Scanning} Version 3.0,
-  Ofir Arkin\\ \link{http://www.sys-security.com/html/projects/icmp.html}
+\item Low-level way to identify operating systems, also try/use
+  \verb+nmap -A+
+\item Send probes and observe responses, lookup in table of known OS and responses
+\item Techniques known since at least: \emph{ICMP Usage In Scanning} Version 3.0,
+  Ofir Arkin, 2001 %\link{https://web.archive.org/web/20050210093427/http://www.sys-security.com/html/projects/icmp.html} % Original side er død
 \end{list2}
 
-\slide{Top Security Tools}
+\slide{Portscan using Zenmap GUI}
+
+\hlkimage{12cm}{nmap-zenmap.png}
+\centerline{Zenmap included in the full Nmap package \link{https://nmap.org}}
+
+
+\slide{What happens now?}
 
 \begin{list1}
-%  \item I er meget ivrige efter at afprøve en masse
-\item listen over top security
-  tools - nogle værktøjer springes over, nogle har vi brugt
-\item Den er samlet af Fyodor og findes på:\\
-\link{https://www.sectools.org/}
-\end{list1}
-
-
-\slide{Hvad skal der ske?}
-
-\begin{list1}
-\item Tænk som en hacker
-\item Rekognoscering
+\item Think like a hacker
+\item Recon phase -- gather information reconnaissance
 \begin{list2}
-\item ping sweep, port scan
-\item OS detection - TCP/IP eller banner grab
-\item Servicescan - rpcinfo, netbios, ...
-\item telnet/netcat interaktion med services
+\item Traceroute, Whois, DNS lookups
+\item Ping sweep, port scan
+\item OS detection -- TCP/IP and banner grabbing
+\item Service scan -- rpcinfo, netbios, ...
+\item telnet/netcat interact with services
 \end{list2}
-\item Udnyttelse/afprøvning: Nessus, nikto, exploit programs
-\item Oprydning vises ikke på kurset, men I bør i praksis:
-\begin{list2}
-\item Lav en rapport
-\item Gennemgå rapporten, registrer ændringer
-\item Opdater programmer, konfigurationer, arkitektur, osv.
-\end{list2}
-\item I skal jo også VISE andre at I gør noget ved sikkerheden.
 \end{list1}
 
 
@@ -368,16 +385,7 @@ men husk så ikke at tillade upload af filer!
 \end{list1}
 
 
-\slide{Network Security Threats}
 
-\begin{list1}
-\item Low level and Network Layer Attacks
-\begin{list2}
-\item Yersinia
-\item IP
-\item LAND, m.fl.
-\end{list2}
-\end{list1}
 
 \slide{Person in the middle attacks}
 
@@ -390,6 +398,7 @@ men husk så ikke at tillade upload af filer!
 \item Wireless listening and spoofing higher levels like  airpwn-ng \link{https://github.com/ICSec/airpwn-ng}
 \end{list2}
 \item Usually aimed at unencrypted protocols
+\item Today we only talk about getting the data, not how to perform higher level attacks
 \end{list1}
 
 
@@ -427,25 +436,47 @@ men husk så ikke at tillade upload af filer!
 \item bruge protokoller som ikke er sårbare overfor opsamling
 \end{list1}
 
+\slide{Lufthavns wifi}
+
+Åbne trådløse netværk er dejlige, vi bruger dem allesammen.
+
+\begin{alltt}\small
+http://wifi.aal.dk/fs/customwebauth/login.html?
+switch_url=http://wifi.aal.dk/login.html&ap_mac=70:db:98:73:e5:a0&
+\bf{client_mac=30:10:b3:XX:YY:ZZ}&wlan=AALfree&redirect=www.gstatic.com/generate_204
+\end{alltt}
+
+\begin{list2}
+\item Når du forbinder til netværket, bruger din enhed sin MAC adresse
+\item Denne indeholder en OUI som er den første halvdel af de 48-bit
+\item Dette ID er gemt i din enhed, fra fabrikken, kan sjældent ændres
+\item Alle i nærheden kan se denne MAC, og dermed din enheds unikke hardwareadresse.
+\item Kendere ved at man kan skifte sin MAC midlertidigt, og det gør telefoner ofte når de scanner efter netværk idag - hvis de overhovedet scanner
+\end{list2}
+
+
+
+\slide{Demo Attacks fun with nodes}
+
+\hlkimage{8cm}{etherape-2018.png}
+
+\begin{quote}
+EtherApe is a graphical network monitor for Unix modeled after etherman. Featuring link layer, IP and TCP modes, it displays network activity graphically. Hosts and links change in size with traffic. Color coded protocols display.
+\end{quote}
+
+\begin{list1}
+\item How do we find nodes to perform ARP spoofing?
+\item The main page for the tool is:
+\link{https://etherape.sourceforge.io/}
+\end{list1}
+
 \exercise{ex:etherape}
 
 \exercise{ex:arp-spoof-ettercap}
 
 
+\slide{Intro to routing protocols attacks}
 
-
-
-
-
-
-
-\slide{Transport Layer Attacks}
-
-TCP SYN flood
-TCP sequence numbers
-
-
-\slide{Dynamisk routing}
 
 \hlkimage{8cm}{openbgpd-network-2.pdf}
 
@@ -457,13 +488,7 @@ TCP sequence numbers
 \end{list1}
 
 
-
-% OpenBGPD
-
-\slide{Intro to routing protocols attacks}
-
-
-\slide{BGP intro and hijacking}
+\slide{BGP intro}
 
 \begin{list1}
 \item What is BGP Border Gateway Protocol
@@ -474,6 +499,16 @@ TCP sequence numbers
 \emph{peering}
 \item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
 \end{list1}
+
+
+\slide{Hosting og internet-udbydere}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item Jeg var engang i en position hvor vi transporterede data for mange kunder
+\item Det var data som information, just eat, kino.dk, ...
+\end{list2}
 
 
 \slide{OSPF Open Shortest Path First}
@@ -497,15 +532,39 @@ Secure IOS template der findes på adressen:\\
 {\small \link{http://www.cymru.com/Documents/secure-ios-template.html}}
 \end{list1}
 
+
+
+\slide{Network Security Threats}
+
+\begin{list1}
+\item Low level and Network Layer Attacks
+\begin{list2}
+\item Yersinia
+\item IP
+\item LAND, m.fl.
+\end{list2}
+\end{list1}
+
+
+
+
 \slide{Some preventions}
 
 \begin{list1}
 \item RPKI
+\item Authenticated routing protocols passwords, secrets etc.
 \end{list1}
 
 
 \slide{DDoS and flooding}
 
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
+
+\begin{list2}
+\item Transport Layer Attacks TCP SYN flood TCP sequence numbers
+\item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
+\end{list2}
 
 \slide{Båndbreddestyring og policy based routing}
 
@@ -513,6 +572,7 @@ Secure IOS template der findes på adressen:\\
 \item Mange routere og firewalls idag kan lave båndbredde allokering til
   protokoller, porte og derved bestemte services
   \item Specielt relevant for DDoS beskyttelse
+  \item Findes på F5 BigIP, Cisco, Junos osv.
 \item Mest kendte er i Open Source:
 \begin{list2}
 \item OpenBSD - integreret i PF
@@ -522,7 +582,205 @@ Secure IOS template der findes på adressen:\\
 \item Det kaldes også traffic shaping
 \end{list1}
 
+\slide{hping3 packet generator}
 
+\begin{alltt}\footnotesize
+usage: hping3 host [options]
+  -i  --interval  wait (uX for X microseconds, for example -i u1000)
+      --fast      alias for -i u10000 (10 packets for second)
+      --faster    alias for -i u1000 (100 packets for second)
+      --flood      sent packets as fast as possible. Don't show replies.
+...
+hping3 is fully scriptable using the TCL language, and packets
+can be received and sent via a binary or string representation
+describing the packets.
+\end{alltt}
+
+\begin{list2}
+\item Hping3 packet generator is a very flexible tool to produce simulated DDoS traffic with specific charateristics
+\item Home page: \link{http://www.hping.org/hping3.html}
+\item Source repository \link{https://github.com/antirez/hping}
+\end{list2}
+
+\centerline{My primary DDoS testing tool, easy to get specific rate pps}
+
+\slide{t50 packet generator}
+
+
+\begin{alltt}\footnotesize
+root@cornerstone03:~# t50 -?
+T50 Experimental Mixed Packet Injector Tool 5.4.1
+Originally created by Nelson Brito <nbrito@sekure.org>
+Maintained by Fernando Mercês <fernando@mentebinaria.com.br>
+
+Usage: T50 <host> [/CIDR] [options]
+
+Common Options:
+    --threshold NUM        Threshold of packets to send     (default 1000)
+    --flood                This option supersedes the 'threshold'
+...
+6. Running T50 with '--protocol T50' option, sends ALL protocols sequentially.
+root@cornerstone03:~# t50 -? | wc -l
+264
+\end{alltt}
+
+\begin{list2}
+\item T50 packet generator, another high speed packet generator
+can easily overload most firewalls by producing a randomized traffic with multiple protocols like IPsec, GRE, MIX \\
+home page: \link{http://t50.sourceforge.net/resources.html}
+\end{list2}
+
+\centerline{Extremely fast and breaks most firewalls when flooding, easy 800k pps/400Mbps}
+
+\slide{Process: monitor, attack, break, repeat}
+
+\begin{list2}
+\item Pre-test: Monitoring setup - from multiple points
+\item Pre-test: Perform full Nmap scan of network and ports
+\item Start small, run with delays between packets
+\item Turn up until it breaks, decrease delay - until using \verb+--flood+
+\item Monitor speed of attack on your router interface pps/bandwidth
+\item Give it maximum speed\\
+ \verb+hping3 --flood -1+ and \verb+hping3 --flood -2+
+\item Have a common chat with network operators/customer to talk about symptoms and things observed
+\item Any information resulting from testing is good information
+\end{list2}
+
+\vskip 1cm
+\centerline{Ohh we lost our VPN into the environment, ohh the fw console is dead}
+
+\slide{Running Attacks with hping3}
+
+\begin{alltt}\small
+# export CUST_IP=192.0.2.1
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+ \end{alltt}
+
+\begin{alltt}\small
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+Thu Jan 21 22:37:06 CET 2016
+HPING 192.0.2.1 (eth0 192.0.2.1): S set, 40 headers + 0 data bytes
+
+--- 192.0.2.1 hping statistic ---
+1000000 packets transmitted, 999996 packets received, 1% packet loss
+round-trip min/avg/max = 0.9/7.0/1005.5 ms
+
+real    1m7.438s
+user    0m1.200s
+sys     0m5.444s
+\end{alltt}
+
+\vskip 1cm
+\centerline{Dont forget to do a killall hping3 when done \smiley }
+
+\slide{Recommendations During Test}
+
+\begin{list1}
+\item Run each test for at least 5 minutes, or even 15 minutes\\
+Some attacks require some build-up before resource run out
+\item Take note of any change in response, higher latency, lost probes
+\item If you see a change, then re-test using the same parameters, or a little less first
+\item We want to know the approximate level where it breaks
+\item If you want to change environment, then wait until all scenarios tested
+\end{list1}
+
+\slide{Comparable to real DDoS?}
+
+Tools are simple and widely available but are they actually producing same result as high-powered and advanced criminal botnets. We can confirm that the attack delivered in this test is, in fact, producing the traffic patterns very close to criminal attacks in real-life scenarios.
+
+\begin{list2}
+\item We can also monitor logs when running a single test-case
+\item Gain knowledge about supporting infrastructure
+\item Can your syslog infrastructure handle 800.000 events in $<$ 1 hour?
+\end{list2}
+
+
+\slide{Running the tools}
+
+A basic test would be:
+\begin{list2}
+\item TCP SYN flooding
+\item TCP other flags, PUSH-ACK, RST, ACK, FIN
+\item ICMP flooding
+\item UDP flooding
+\item Spoofed packets src=dst=target \smiley
+\item Small fragments
+\item Bad fragment offset
+\item Bad checksum
+\item Be creative
+\item Mixed packets - like \verb+t50 --protocol T50+
+\item Perhaps esoteric or unused protocols, GRE, IPSec
+\end{list2}
+
+\slide{Test-cases / Scenarios}
+
+\begin{list1}
+\item The minimal run contains at least these:
+\begin{list2}
+\item SYN flood: \verb+hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &+
+\item SYN+ACK: \verb+hping3 -q -c 1000000  -i u60 -S -A -p 80  $CUST_IP &+
+\item ICMP flood: \verb+hping3 -q -c --flood -1 $CUST_IP &+
+\item UDP flood: \verb+hping3 -q -c --flood -1 $CUST_IP &+
+\end{list2}
+\item Vary the speed using the packet interval \verb+-i u60+ up/down
+\item Use flooding with caution, runs max speeeeeeeeeeeed \smiley
+\item TCP testing use a port which is allowed through the network, often 80/443
+\item Focus on attacks which are hard to block, example TCP SYN must be allowed in
+\item Also if you found devices like routers in front of environment\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 22 $ROUTER_IP+\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+
+\end{list1}
+
+\slide{Experiences from testing}
+
+How much bandwidth can big danish companies handle!
+\begin{list2}
+\item B) {\bf 100Mbps -1Gbit}
+\end{list2}
+
+How much abuse in pps can big danish companies handle!
+\begin{list2}
+\item B) {\bf 50.000 - 500k pps} TCP attacks
+\item B) {\bf 500.000 - 1mill pps} UDP or ICMP attacks
+\item Ohhh and often we can spoof using their addresses in the first test
+\end{list2}
+
+Even the DDoS protection services are a bit too small, can handle perhaps only 10G. Multiple times admins lost access to network, VPN, log overflow etc.
+
+Note: attackers can send full 10Gbit 14mill pps from Core i7 with 3 cores ...
+
+
+\slide{Improvements seen after testing}
+
+\begin{list1}
+\item Turning off unneeded features - free up resources
+\item Tuning sesions, max sessions src / dst
+\item Tuning firewalls, max sessions in half-open state, enabling services
+\item Tuning network, drop spoofed src from inside net \smiley
+\item Tuning network, can follow logs, manage network during attacks
+\item ...
+\item And organisation has better understanding of DDoS challenges
+\item Including vendors, firewall consultants, ISPs etc.
+\end{list1}
+
+\vskip 1cm
+\centerline{After tuning of {\bf existing devices/network} improves results 10-100 times}
+
+\slide{Conclusion DDoS and network attacks}
+
+\hlkrightimage{15cm}{network-layers-1.png}
+.
+\begin{list1}
+\item You really should try testing
+\item Investigate your existing devices\\
+all of them, RTFM, upgrade firmware
+\item Choose which devices does which\\
+part - discard early to free resources\\
+for later devices to dig deeper
+\end{list1}
+
+\vskip 3cm
+\centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
 
 
 \slidenext

@@ -7,7 +7,7 @@
 \begin{document}
 
 \mytitlepage
-{Traffic Inspection and Firewalls}
+{3. Traffic Inspection and Firewalls}
 {Communication and Network Security 2019}
 
 \slide{Plan for today}
@@ -37,33 +37,59 @@ ANSM chapter 1,2,3 - 73 pages\\
 \link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
 \end{quote}
 
-\begin{list1}
-\item The chapters read for this time, main things:
-\item ANSM chapter 1: The Practice of Applied
-Network Security Monitoring
-\begin{list2}
-\item
-\end{list2}
-
-\end{list1}
-
-\vskip 5mm
-\Large Firewalls are by design a choke point, natural place \\
-to do network security monitoring!
-
-
-
+\begin{quote}
+The next time you are at your console, review some logs. You might think. . . “I
+don’t know what to look for". Start with what you know, understand, and don’t care about. Discard those. Everything else is of interest.\\
+Semper Vigilans,
+Mike Poor
+\end{quote}
 
 \slide{Reading Summary, continued}
 
-\begin{alltt}\footnotesize
+\hlkimage{7cm}{NSM_Phases-300x238.png}
 
-\end{alltt}
+\begin{list1}
+\item ANSM chapter 1: The Practice of Applied
+Network Security Monitoring
+\begin{list2}
+\item Vulnerability-Centric vs. Threat-Centric Defense
+\item The NSM cycle: collection, detection, and analysis
+\item Full Content Data, Session Data, Statistical Data, Packet String Data, and Alert Data
+\item Security Onion is nice, but a bit over the top - quickly gets overloaded
+\end{list2}
+\end{list1}
+
+\slide{Baseline Skills}
+
+\begin{list2}\small
+\item Threat-Centric Security, NSM, and the NSM Cycle
+\item TCP/IP Protocols
+\item Common Application Layer Protocols
+\item Packet Analysis
+\item Windows Architecture
+\item Linux Architecture
+\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item IDS Usage (Snort, Suricata, etc.)
+\item Indicators of Compromise and IDS Signature Tuning
+\item Open Source Intelligence Gathering
+\item Basic Analytic Diagnostic Methods
+\item Basic Malware Analysis
+\end{list2}
+
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, Chris Sanders and Jason Smith
+
+\slide{Reading Summary, continued}
+
+\hlkimage{13cm}{ansm-acf.png}
 
 \begin{list1}
   \item ANSM chapter 2: Planning Data Collection
 \begin{list2}
-\item
+\item The Applied Collection Framework (ACF)
+\item The ACF involves four distinct phases: Identify
+threats to your organization, quantify risk, identify relevant data feeds, and refine the useful elements
+\item Risk Analysis
+\item Lots of terms used, but only defined later in the book
 \end{list2}
 \end{list1}
 
@@ -76,7 +102,12 @@ to do network security monitoring!
 \begin{list1}
 \item ANSM chapter 3:The Sensor Platform
 \begin{list2}
-\item
+\item Full Packet Capture (FPC) Data
+\item Session Data
+\item Statistical Data
+\item Packet String (PSTR) Data
+\item Log Data
+\item Sensor Placement, designing etc.
 \end{list2}
 \end{list1}
 
@@ -91,45 +122,118 @@ In computing, a firewall is a network security system that monitors and controls
 \begin{list1}
 \item \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
 \item \link{http://www.wilyhacker.com/} Cheswick chapter 2 PDF
+\emph{A Security Review of Protocols:
+Lower Layers}
 \begin{list2}
-\item When working with firewalls some very important things to consider:
-\item What are normal traffic levels?
-\item How many source IPs going to how many destinations?
-\item Resource usage cpu and memory on a normal day
+\item Network layer, packet filters, application level, stateless, stateful
 \end{list2}
 \end{list1}
 
-
+\Large Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
 
 \slide{Reading Summary, continued}
 
 \begin{quote}
 
-\end{quote} Source: 
+\end{quote} Source:
 
 \begin{list1}
 \item \link{http://www.wilyhacker.com/} Cheswick chapter 3 PDF
+\emph{Security Review: The Upper Layers}
 \begin{list2}
-\item Security Review: The Upper Layers
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow SMB through an internet firewall, we are asking for trouble
 \end{list2}
 \end{list1}
 
+Skim chapters from 1st edition:\\
+\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
 
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Med 802.1q tillades VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\end{list1}
+
+
+\slide{Connecting clients more securely}
+
+IEEE 802.1x  Port Based Network Access Control
+
+\hlkimage{10cm}{osx-8021x.png}
+
+\begin{list1}
+\item Denne protokol sikrer at man valideres før der gives adgang til porten
+\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
+\end{list1}
+
+
+\slide{802.1x og andre teknologier}
+
+\begin{list1}
+\item 802.1x i forhold til MAC filtrering giver væsentlige fordele
+\item MAC filtrering kan spoofes, hvor 802.1x kræver det rigtige kodeord
+\item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
+\end{list1}
+
+
+\slide{Generic IP Firewalls}
+
+\vskip 4 cm
+\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
+  traffik på Internet}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
+  traffik på Internet}
+
+\slide{Firewallrollen idag}
+
+\begin{list1}
+\item Idag skal en firewall være med til at:
+\begin{list2}
+\item Forhindre angribere i at komme ind
+\item Forhindre angribere i at sende traffik ud
+\item Forhindre virus og orme i at sprede sig i netværk
+\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
+  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
+\end{list2}
+\item Det kræver overblik!
+\end{list1}
 
 
 
 \slide{Modern Firewalls}
 
 \begin{list1}
+\item Basalt set et netværksfilter - det yderste fæstningsværk
 \item Indeholder typisk:
   \begin{list2}
    \item Grafisk brugergrænseflade til konfiguration - er det en
    fordel?
 \item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
   ind/ud, porte, protokol, ...
-\item kun IPv4 for de kommercielle firewalls
-\item både IPv4 og IPv6 for Open Source firewalls: IPF, OpenBSD PF,
-  Linux firewalls, ...
+\item både IPv4 og IPv6
 \item foruddefinerede regler/eksempler - er det godt hvis det er nemt
   at tilføje/åbne en usikker protokol?
 \item typisk NAT funktionalitet indbygget
@@ -140,6 +244,7 @@ In computing, a firewall is a network security system that monitors and controls
   mens en dedikeret maskine kaldes firewall
 %  funktionen er reelt den samme - der filtreres traffik
 \end{list1}
+
 
 \slide{Sample rules from OpenBSD PF}
 
@@ -184,103 +289,6 @@ At der er konfigureret et sæt fornuftige regler!
 % old link:
 
 
-
-\slide{VLAN Virtual LAN}
-
-\hlkimage{8cm}{vlan-portbased.pdf}
-
-\begin{list1}
-\item Nogle switche tillader at man opdeler portene
-\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
-\item Port 1-4 er et LAN
-\item De resterende er et andet LAN
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\end{list1}
-
-\slide{IEEE 802.1q}
-
-\hlkimage{16cm}{vlan-8021q.pdf}
-
-\begin{list1}
-\item Med 802.1q tillades VLAN tagging på Ethernet niveau
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
-\item Der findes administrationsværktøjer der letter dette arbejde: OpenNAC FreeNAC, Cisco VMPS
-\end{list1}
-
-
-
-
-
-\slide{IEEE 802.1x  Port Based Network Access Control}
-
-\hlkimage{13cm}{osx-8021x.png}
-
-\begin{list1}
-\item Denne protokol sikrer at man valideres før der gives adgang til porten
-\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
-\end{list1}
-
-
-\slide{802.1x og andre teknologier}
-
-\begin{list1}
-\item 802.1x i forhold til MAC filtrering giver væsentlige fordele
-\item MAC filtrering kan spoofes, hvor 802.1x kræver det rigtige kodeord
-\item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
-\end{list1}
-
-
-\slide{Hvad er en firewall}
-
-\vskip 4 cm
-\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
-  traffik på Internet}
-
-\vskip 1 cm
-\pause
-
-\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
-  traffik på Internet}
-
-\slide{Firewallrollen idag}
-
-\begin{list1}
-\item Idag skal en firewall være med til at:
-\begin{list2}
-\item Forhindre angribere i at komme ind
-\item Forhindre angribere i at sende traffik ud
-\item Forhindre virus og orme i at sprede sig i netværk
-\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
-  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
-\end{list2}
-\item Det kræver overblik!
-\end{list1}
-
-
-\slide{firewalls}
-
-\begin{itemize}
-\item Basalt set et netværksfilter - det yderste fæstningsværk
-\item Indeholder typisk:
-  \begin{list2}
-   \item Grafisk brugergrænseflade til konfiguration - er det en
-   fordel?
-\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
-  ind/ud, porte, protokol, ...
-\item Kun IPv4 for de fleste kommercielle firewalls
-\item Både IPv4 og IPv6 for Open Source firewalls: IPF, OpenBSD PF,
-  Linux firewalls, ...
-\item Foruddefinerede regler/eksempler - er det godt hvis det er nemt
-  at tilføje/åbne en usikker protokol?
-\item Typisk NAT funktionalitet indbygget
-\item Typisk mulighed for nogle serverfunktioner: kan agere
-  DHCP-server, DNS caching server og lignende
-  \end{list2}
-\item En router med Access Control Lists - ACL kaldes ofte
-  netværksfilter, mens en dedikeret maskine kaldes firewall -
-  funktionen er reelt den samme - der filtreres trafik
-\end{itemize}
 
 
 \slide{Packet filtering}
@@ -387,22 +395,10 @@ Addison-Wesley, 2nd edition, 2003
 \item Bogen udkom i 1994 men kan stadig anbefales
 \end{list1}
 
-\slide{An Evening with Berferd}
-
-
-\begin{list1}
-\item Artikel om en hacker der lokkes, vurderes, overvåges
-\item Et tidligt eksempel på en honeypot
-\item Idag anbefales The Honeynet Project hvis man vil vide mere
-\\\link{http://www.honeynet.org}
-\end{list1}
-
-
-
 
 \slide{m0n0wall}
 
-\hlkimage{10cm}{images/m0n0wall-1.pdf}
+\hlkimage{6cm}{images/m0n0wall-1.pdf}
 
 \begin{list1}
 \item Tidlig firewall bygget på FreeBSD
@@ -503,12 +499,6 @@ COMMIT
 
 \centerline{NB: husk at aktivere IP forwarding}
 
-\slide{Firewall GUI}
-
-\hlkimage{22cm}{images/fwbuilder-screenshot1.png}
-
-Kilde: billede fra \link{http://www.fwbuilder.org}
-
 \slide{Firewalls og ICMP}
 
 \begin{alltt}
@@ -555,27 +545,10 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \item Kendte problemer som minimum
 \end{list1}
 
-\slide{Firewall konfiguration}
-
-\begin{list1}
-\item Den bedste firewall konfiguration starter med:
-\begin{list2}
-\item Papir og blyant
-\item En fornuftig adressestruktur
-\end{list2}
-\item Brug dernæst en firewall med GUI første gang!
-\item Husk dernæst:
-\begin{list2}
-\item En firewall skal passes
-\item En firewall skal opdateres
-\item Systemerne bagved skal hærdes!
-\end{list2}
-\end{list1}
-
 
 \slide{En typisk firewall konfiguration}
 
-\hlkimage{20cm}{images/firma-netvaerk.pdf}
+\hlkimage{14cm}{images/firma-netvaerk.pdf}
 
 \centerline{Opdeling i separate netværkssegmenter!}
 
@@ -633,6 +606,36 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \end{list1}
 
 
+\slide{ IPv6 neighbor discovery protocol (NDP)}
+
+\hlkimage{14cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item ARP er væk
+\item NDP erstatter og udvider ARP, Sammenlign \verb+arp -an+ med \verb+ndp -an+
+\item Til dels erstatter ICMPv6 således DHCP i IPv6, DHCPv6 findes dog
+\item {\bf NB: bemærk at dette har stor betydning for firewallregler!}
+\end{list1}
+
+\slide{ARP vs NDP}
+
+\begin{alltt}
+\small
+hlk@bigfoot:basic-ipv6-new$ arp -an
+? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+hlk@bigfoot:basic-ipv6-new$ ndp -an
+Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
+::1                           (incomplete)         lo0 permanent R
+2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
+fe80::1%lo0                   (incomplete)         lo0 permanent R
+fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
+fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+\end{alltt}
+
+
+
+
 \slide{OpenBSD PF IPv6 NDP}
 \begin{alltt}\footnotesize
 # Macros: define common values, so they can be referenced and changed easily.
@@ -674,7 +677,7 @@ overtagelse af adresse både IPv4 og IPv6
 
 \slide{Redundante forbindelser IP-niveau}
 
-\hlkimage{7cm}{router-redundancy-1.pdf}
+\hlkimage{5cm}{router-redundancy-1.pdf}
 
 \begin{list1}
 \item HSRP Hot Standby Router Protocol, Cisco protokol, RFC-2281

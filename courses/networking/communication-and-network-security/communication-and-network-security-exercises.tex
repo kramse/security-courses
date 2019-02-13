@@ -580,11 +580,10 @@ ports and use Nmap without ports. What is scanned then?
 
 Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
 
-If a firewall blocks ICMP you might need to add \verb+-P0+
-or even \verb+-PN+ to make nmap scan even if there are no Ping responses
+If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
 
 {\bf Hints:} \\
-Sample command: \verb+nmap -P0 -sU -p1-1024 server+ UDP port scanning
+Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
 1024 ports without doing a Ping first
 
 {\bf Solution:}\\
@@ -710,7 +709,6 @@ Look into the manual page of nmap or the web site book about nmap scanning
 Run nmap and get results.
 
 {\bf Discussion:}\\
-
 Some services will show software versions allowing an attacker easy lookup at web sites to known vulnerabilities and often exploits that will have a high probability of success.
 
 Make sure you know the difference between a vulnerability which is discovered, but not really there, a false positive, and a vulnerability not found due to limitations in the testing tool/method, a false negative.
@@ -718,7 +716,7 @@ Make sure you know the difference between a vulnerability which is discovered, b
 A sample false positive might be reporting that a Windows server has a vulnerability that you know only to exist in Unix systems.
 
 
-\chapter{Nmap full scan 10 min}
+\chapter{Nmap full scan 15 min}
 \label{ex:nmap-strategy}
 
 
@@ -727,7 +725,7 @@ Write down your Nmap strategy, and if needed create your own Nmap profile in Zen
 
 
 {\bf Purpose:}\\
-Doing a port scan often requires you to run multipl Nmap scans.
+Doing a port scan often requires you to run multiple Nmap scans.
 
 
 {\bf Suggested method:}\\
@@ -769,7 +767,7 @@ vncscan: nmap -A -p 5900-5905 -oA vncscan -iL targets
 
 
 
-\chapter{Reporting HTML 10 min}
+\chapter{Reporting HTML 15 min}
 \label{ex:nmap-html}
 
 \hlkimage{10cm}{nmap-html.png}
@@ -781,6 +779,7 @@ Show the use of XML output and convert to HTML
 Reporting data is very important. Using the oA option Nmap can export data in three formats easily, each have their use. They are normal, XML, and grepable formats at once.
 
 {\bf Suggested method:}\\
+First run Nmap, with output, then process it
 \begin{alltt}
   sudo nmap -oA zencurity-web www.zencurity.com
   xsltproc zencurity-web.xml > zencurity-web.html
@@ -789,11 +788,12 @@ Reporting data is very important. Using the oA option Nmap can export data in th
 {\bf Hints:} \\
 Nmap includes the stylesheet in XML and makes it very easy to create HTML.
 
+If the tool \verb+xsltproc+ is not installed, then install it: \verb+apt-get install xsltproc+
+
 {\bf Solution:}\\
 Run XML through xsltproc, command line XSLT processor, or another tool
 
 {\bf Discussion:}\\
-
 Options you can use to change defaults:
 \begin{alltt}
 --stylesheet <path/URL>: XSL stylesheet to transform XML output to HTML
@@ -801,7 +801,7 @@ Options you can use to change defaults:
 \end{alltt}
 
 Also check out the Ndiff tool
-\begin{alltt}
+\begin{alltt}\small
   hlk@cornerstone03:~$ ndiff zencurity-web.xml zencurity-web-2.xml
   -Nmap 7.70 scan initiated Fri Sep 07 18:35:54 2018 as: nmap -oA zencurity-web www.zencurity.com
   +Nmap 7.70 scan initiated Fri Sep 07 18:46:01 2018 as: nmap -oA zencurity-web-2 www.zencurity.com

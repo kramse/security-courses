@@ -7,9 +7,8 @@
 \begin{document}
 
 \mytitlepage
-{Encrypting the Network Layer}
+{4. Encrypting the Network}
 {Communication and Network Security 2019}
-
 
 
 \slide{Plan for today}
@@ -17,13 +16,55 @@
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item Basic cryptography
+\item Encryption Decryption
+\item Hashing
+\item Short introduction to algorithms RSA, AES
+\item Diffie Helman exchange
+\item Transport Layer Security (TLS)
 \end{list2}
 \item Exercises
+\begin{list2}
+\item mitmproxy \link{https://mitmproxy.org/}
+\item sslsplit \link{https://www.roe.ch/SSLsplit}
+\item sslstrip \link{https://moxie.org/software/sslstrip/}
+\item \link{https://www.ssllabs.com/} and sslscan checking servers
+\end{list2}
+\end{list1}
+
+
+\slide{Reading Summary, continued}
+
+\begin{alltt}\footnotesize
+Skim:\\
+\link{https://tools.ietf.org/html/rfc5246} The Transport Layer Security (TLS) Protocol Version 1.2\\
+\link{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+\end{alltt}
+
+\begin{list1}
+\item
 \begin{list2}
 \item
 \end{list2}
 \end{list1}
+
+
+\slide{Reading Summary, continued}
+
+\begin{quote}
+It is not clear that the link layer is the right one for security. In a coffeeshop, the security association is terminated by the store: is there any reason you should trust the shopkeeper? Perhaps link-layer security makes some sense in a home, where you control both the access point and the wireless machines. However, we prefer end-to-end security at the network layer or in the
+applications.
+\end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin
+
+\begin{list1}
+\item
+\begin{list2}
+\item
+\end{list2}
+\end{list1}
+
+
+
 
 
 \slide{kryptering, OpenPGP}
@@ -66,25 +107,9 @@ gpg:                 aka "wietse venema <wietse@wzv.win.tue.nl>"
 \end{alltt}
 %$
 
-\slide{Make and install programs from source}
-
-\begin{list1}
-\item Mange open source programmer kommer som en tar-fil
-\item De fleste C programmer benytter sig så af følgende kommando
-\begin{list2}
-\item konfigurer softwaren - undersøg hvilket operativsystem det er
-\item byg software ved hjælp af en Makefile - kompilerer og linker
-\item installer software - ofte i \verb+/usr/local/bin+
-\end{list2}
-\end{list1}
-
-\begin{alltt}
-./configure;make;make install
-\end{alltt}
-
 \slide{SSL og TLS}
 
-\hlkimage{18cm}{ehandel-https.pdf}
+\hlkimage{12cm}{ehandel-https.pdf}
 
 \begin{list1}
 \item Oprindeligt udviklet af Netscape Communications Inc.
@@ -95,7 +120,7 @@ TLS er baseret på SSL Version 3.0
 \end{list1}
 
 \slide{SSL/TLS udgaver af protokoller}
-\hlkimage{16cm}{imap-ssl.png}
+\hlkimage{12cm}{imap-ssl.png}
 
 \begin{list1}
 \item Mange protokoller findes i udgaver hvor der benyttes SSL
@@ -112,11 +137,11 @@ TLS er baseret på SSL Version 3.0
 %\colorbox{white}{\includegraphics[width=12cm]{images/tshirt-9b.jpg}}
 %\end{center}
 
-\hlkimage{16cm}{images/openssh-banner.png}
+\hlkimage{13cm}{images/openssh-banner.png}
 
 \begin{list1}
 \item Hvad er Secure Shell SSH?
-\item Oprindeligt udviklet af Tatu YlÃ¶nen i Finland,\\
+\item Oprindeligt udviklet af Tatu Ylönen i Finland,\\
 se \link{http://www.ssh.com}
 \item SSH afløser en række protokoller som er usikre:
   \begin{list2}
@@ -180,17 +205,16 @@ $ chmod -R go-rwx .ssh  \emph{skift rettigheder på nøglen}
 \item Det gøres i filen \verb+sshd_config+ typisk \verb+/etc/ssh/sshd_config+
 \end{list1}
 
-\begin{alltt}
-\small
-Port 22780
+\begin{alltt}\small
+Port 22780    // eller anden tilfældig port
 Protocol 2
 
 PermitRootLogin no
 PubkeyAuthentication yes
-AuthorizedKeysFile      .ssh/authorized_keys
 # To disable tunneled clear text passwords, change to no here!
 PasswordAuthentication no
 
+UseDNS no
 #X11Forwarding no
 #X11DisplayOffset 10
 #X11UseLocalhost yes
@@ -304,127 +328,6 @@ Pakkerne før og efter:
 %\item Cisco \emph{Introduction to IP security}
   \end{list2}
 \end{list1}
-
-
-\slide{IPsec setup}
-
-%\hlkimage{}{images/}
-
-\begin{list1}
-  \item Client: Mac OS X/NetBSD/FreeBSD - samme syntaks\\
-\verb+rc.ipsec.client+
-
-\item Server: OpenBSD - bruger ipsecadm kommando\\
-\verb+rc.ipsec.server+
-
-\item Øvelse til læseren: lav samme i Cisco IOS
-\item Det vil ofte være relevant at se på IOS og IPsec i laboratoriet
-\item Dette setup når vi ikke at demonstrere
-\end{list1}
-
-\slide{rc.ipsec.client - client setup - adresser}
-
-\begin{verbatim}
-#!/bin/sh
-# /etc/rc.ipsec.client - IPsec client configuration
-# built from http://rt.fm/~jcs/ipsec_wep.phtml
-# FreeBSD/NetBSD syntaks! - used on Mac OS X
-# IPv4
-SECSERVER=10.0.42.1
-SECCLIENT=10.0.42.53
-# IPv6
-#SECSERVER=2001:618:433:101::1
-#SECCLIENT=2001:618:433:101::153
-ESPKEY=`cat ipsec.esp.key`
-AHKEY=`cat ipsec.ah.key`
-
-# Flush IPsec SAs in case we get called more than once
-setkey -F
-setkey -F -P
-\end{verbatim}
-
-\slide{rc.ipsec.client - client setup - SAs}
-
-\begin{verbatim}
-# Establish Security Associations
-# 1000 is from the server to the client
-# 1001 is from the client to the server
-setkey -c <<EOF
-
-add $SECSERVER $SECCLIENT esp 0x1000 \
--m tunnel -E blowfish-cbc 0x$ESPKEY  -A hmac-sha1 0x$AHKEY;
-
-add $SECCLIENT $SECSERVER esp 0x1001 \
--m tunnel -E blowfish-cbc 0x$ESPKEY -A hmac-sha1 0x$AHKEY;
-
-spdadd $SECCLIENT $SECSERVER any -P out \
-ipsec esp/tunnel/$SECCLIENT-$SECSERVER/default;
-
-spdadd $SECSERVER $SECCLIENT any -P in \
-ipsec esp/tunnel/$SECSERVER-$SECCLIENT/default;
-EOF
-\end{verbatim}
-
-\slide{rc.ipsec.server - server setup - adresser}
-
-\begin{verbatim}
-#!/bin/sh
-#
-# Henrik Lund Kramshøj
-# /etc/rc.ipsec - IPsec server configuration
-# built from http://rt.fm/~jcs/ipsec_wep.phtml
-# OpenBSD syntaks!
-SECSERVER=10.0.42.1
-SECCLIENT=10.0.42.53
-#SECSERVER6=2001:618:433:101::1
-#SECCLIENT6=2001:618:433:101::153
-
-ESPKEY=`cat ipsec.esp.key`
-AHKEY=`cat ipsec.ah.key`
-
-# Flush IPsec SAs in case we get called more than once
-ipsecadm flush
-\end{verbatim}
-
-
-\slide{rc.ipsec.server - server setup - SAs}
-
-\begin{verbatim}
-# Establish Security Associations
-#
-# 1000 is from the server to the client
-ipsecadm new esp -spi 1000 -src $SECSERVER -dst $SECCLIENT \
--forcetunnel -enc blf -key $ESPKEY \
--auth sha1 -authkey $AHKEY
-
-# 1001 is from the client to the server
-ipsecadm new esp -spi 1001 -src $SECCLIENT -dst $SECSERVER \
--forcetunnel -enc blf -key $ESPKEY \
--auth sha1 -authkey $AHKEY
-\end{verbatim}
-
-
-\slide{rc.ipsec.server - server setup - flows}
-
-\small
-\begin{verbatim}
-# Create flows
-#
-# Data going from the outside to the client
-ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
--addr 0.0.0.0 0.0.0.0 $SECCLIENT 255.255.255.255 -dontacq
-# IPv6
-#ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
-#-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
-
-# Data going from the client to the outside
-ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
--addr $SECCLIENT 255.255.255.255 0.0.0.0 0.0.0.0 -dontacq
-# IPv6
-#ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
-#-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
-\end{verbatim}
-
 
 
 \slide{World Wide Web fødes}

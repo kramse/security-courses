@@ -24,8 +24,12 @@
 \item Exercises
 \begin{list2}
 \item Nmap scanning firewalls
+\item Nmap full scan - strategy
+\item Nmap reporting
 \end{list2}
 \end{list1}
+
+\centerline{\LARGE Introduce firewalls}
 
 \slide{Reading Summary}
 
@@ -58,6 +62,16 @@ Network Security Monitoring
 \item Security Onion is nice, but a bit over the top - quickly gets overloaded
 \end{list2}
 \end{list1}
+
+
+\slide{Security Onion}
+
+\hlkimage{10cm}{security-onion.png}
+
+Security Onion is a Linux distro for IDS (Intrusion Detection) and NSM (Network Security Monitoring). \link{http://securityonion.net}
+
+\centerline{Nice starting point for researching dashboards/network packets}
+
 
 \slide{Baseline Skills}
 
@@ -111,6 +125,43 @@ threats to your organization, quantify risk, identify relevant data feeds, and r
 \end{list2}
 \end{list1}
 
+\slide{Network visibility: Netflow with NFSen}
+
+\hlkimage{18cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
 
 
 \slide{Reading Summary, continued}
@@ -206,6 +257,35 @@ IEEE 802.1x  Port Based Network Access Control
 
 \centerline{\hlkbig En firewall er noget som {\color{red}tillader}
   traffik på Internet}
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{6cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{Small networks}
+
+\hlkimage{18cm}{images/kursus-netvaerk.pdf}
+
+
+\slide{Firewall er ikke alene}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
+
+\slide{Unified communications}
+
+\hlkimage{19cm}{firma-netvaerk-wlan}
+
 
 \slide{Firewallrollen idag}
 
@@ -313,7 +393,7 @@ At der er konfigureret et sæt fornuftige regler!
 
 \begin{list1}
 \item Packet filtering er firewalls der filtrerer på IP niveau
-\item Idag inkluderer de fleste statefull inspection
+\item Idag inkluderer de fleste stateful inspection
 \end{list1}
 
 \slide{Kommercielle firewalls}
@@ -321,11 +401,12 @@ At der er konfigureret et sæt fornuftige regler!
 \item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
 \item Cisco ASA \link{http://www.cisco.com}
 \item Clavister firewalls \link{http://www.clavister.com}
-\item Juniper SRX
-  \link{http://www.juniper.net}
+\item Juniper SRX \link{http://www.juniper.net}
+\item Palo Alto \link{https://www.paloaltonetworks.com/}
+\item Fortinet \link{https://www.fortinet.com/}
 \end{list2}
 
-Ovenstående er dem som jeg oftest ser ude hos mine kunder
+Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
 
 \slide{Open source baserede firewalls}
 \begin{list2}
@@ -352,47 +433,30 @@ NB: kun eksempler og dem jeg selv har brugt
 \item Netværkskort - som er hardware
 \item Filtreringssoftware - som er \emph{software}!
 \end{list2}
-\item Det giver ikke mening at kalde en Zyxel 10 en hardware firewall
-  og en Soekris med OpenBSD for en software firewall!
-\item Det er efter min mening et marketingtrick
-\vskip 1 cm
+\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
+  og en APU2C4 med OpenBSD for en software firewall!
 \item Man kan til gengæld godt argumentere for at en dedikeret
   firewall som en separat enhed kan give bedre sikkerhed
+  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
 \end{list1}
 
-\slide{TCP three way handshake}
-.
-\hlkrightpic{7cm}{0cm}{images/tcp-three-way.pdf}
-
-\begin{list2}
-\item {\bfseries TCP SYN half-open} scans
-\item Tidligere loggede systemer kun når der var etableret en fuld TCP
-  forbindelse - dette kan/kunne udnyttes til \emph{stealth}-scans
-\item Hvis en maskine modtager mange SYN pakker kan dette fylde
-  tabellen over connections op - og derved afholde nye forbindelser
-  fra at blive oprette - {\bfseries SYN-flooding}
-\end{list2}
 
 
 
-
-\slide{Firewall er ikke alene}
-
-\hlkimage{15cm}{network-layers-1.png}
-
-\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
 
 
 \slide{Firewall historik}
 
-\hlkimage{4cm}{images/cheswick-cover2e.jpg}
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
 
 \begin{list1}
 \item Firewalls har været kendt siden starten af 90'erne
-\item Første bog \emph{Firewalls and Internet Security}
+\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
+
+\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
 William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
-Addison-Wesley, 2nd edition, 2003
-\item Bogen udkom i 1994 men kan stadig anbefales
+Addison-Wesley, 2nd edition
+%\item Idag findes mange, men findes der en god generel firewall bog?
 \end{list1}
 
 
@@ -406,11 +470,6 @@ Addison-Wesley, 2nd edition, 2003
 og OPNsense \link{https://opnsense.org/}
 \item De nye bruges i produktion i danske firmaer
 \end{list1}
-
-\slide{First or Last match firewall?}
-
-\hlkimage{18cm}{images/first-last-match-1.pdf}
-
 
 \slide{firewall koncepter}
 
@@ -533,6 +592,9 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \end{list2}
 \end{list1}
 
+
+
+
 \slide{Bloker indefra og ud}
 
 \begin{list1}
@@ -546,11 +608,12 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \end{list1}
 
 
-\slide{En typisk firewall konfiguration}
 
-\hlkimage{14cm}{images/firma-netvaerk.pdf}
+\exercise{ex:nmap-service}
+\exercise{ex:nmap-strategy}
+\exercise{ex:nmap-html}
 
-\centerline{Opdeling i separate netværkssegmenter!}
+
 
 \slide{Specielle features}
 
@@ -580,6 +643,18 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \item SSL forbindelser til \emph{secure websites} kan per design ikke proxies
 \end{list1}
 
+\slide{Anti-pattern dobbelt NAT i eget netværk}
+
+\hlkimage{20cm}{nat-double.pdf}
+
+\begin{list1}
+\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
+ud på internet.
+\vskip 1cm
+\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
+\end{list1}
+
+
 \slide{IPsec og Andre VPN features}
 
 \begin{list1}
@@ -592,9 +667,259 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \end{list1}
 
 
-\exercise{ex:nmap-service}
-\exercise{ex:nmap-strategy}
-\exercise{ex:nmap-html}
+
+\slide{DDoS traffic before filtering}
+\hlkimage{23cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{23cm}{ddos-after-filtering}
+\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
+
+Better to filter stateless before traffic reaches firewall, less work!
+
+
+
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a sample, better to use BGP flowspec and RTBH */
+inactive: term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+...
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers also have extensive Class-of-Service (CoS) tools today
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \} then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx; \}
+        protocol-except icmp;  \}
+    then \{ count some-server-block; discard;
+    \}
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{ Firewalls - screens, IDS like features}
+
+When you know regular traffic you can decide:
+
+\begin{alltt}\footnotesize
+hlk@srx-kas-05# show security screen ids-option untrust-screen
+icmp \{
+    ping-death;
+\}
+ip \{
+    source-route-option;
+    tear-drop;
+\}
+tcp \{    Note: UDP flood setting also exist
+    syn-flood \{
+        alarm-threshold 1024;
+        attack-threshold 200;
+        source-threshold 1024;
+        destination-threshold 2048;
+        timeout 20;
+    \}
+    land;
+\} Always select your own settings YMMV
+\end{alltt}
+
+
+
+\slide{ Routing RTBH Realtime Blackhole}
+
+\begin{list1}
+\item What about a really big DDoS?
+\item and routers can do more
+\end{list1}
+
+
+
+
+\slide{uRPF unicast Reverse Path Forwarding}
+
+\begin{quote}
+Reverse path forwarding (RPF) is a technique used in modern routers for the purposes of ensuring loop-free forwarding of multicast packets in multicast routing and to help prevent IP address spoofing in unicast routing.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
+
+%\slide{Juniper RPF check}
+
+%\begin{quote}
+%{\bf Understanding Unicast Reverse Path Forwarding}\\
+%IP spoofing can occur during a denial-of-service (DoS) attack. IP spoofing allows an intruder to pass IP packets to a destination as genuine traffic, when in fact the packets are not actually meant for the destination. This type of spoofing is harmful because it consumes the destination's resources.
+
+%A unicast reverse-path-forwarding (RPF) check is a tool to reduce forwarding of IP packets that might be spoofing an address. A unicast RPF check performs a route table lookup on an IP packet's source address, and checks the incoming interface.
+%\end{quote}
+
+%Source:\\ {\footnotesize\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/topic-map/unicast-rpf.html}\\
+%\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/usage-guidelines/interfaces-configuring-unicast-rpf.html}}
+
+
+\slide{Strict vs loose mode RPF}
+
+\hlkimage{24cm}{uRPF-check-1.pdf}
+
+\slide{Strict mode RPF}
+
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
+\end{quote}
+
+
+\slide{uRPF Junos config with loose mode}
+
+\begin{alltt}\footnotesize
+xe-5/1/1 \{
+    description "Transit: Blah (AS65512)";
+    unit 0 \{
+        family inet \{
+            rpf-check \{
+                mode loose;
+            \}
+            filter \{
+                input all;
+                output all;
+            \}
+            address xx.yy.xx.yy/30;
+        \}
+        family inet6 \{
+            rpf-check \{
+                mode loose;
+            \}
+            address 2001:xx:yy/126;
+\} \} \}
+\end{alltt}
+
+See also: {\small\link{http://www.version2.dk/blog/den-danske-internettrafik-og-bgp-49401}}
+
+
+\slide{Remotely Triggered Black Hole Configurations}
+
+\hlkimage{6cm}{packetlife-RTBH.png}
+Picture from packetlife.net showing  R9 as a standalone "management" router for route injection.
+
+{\footnotesize
+\link{http://packetlife.net/blog/2009/jul/6/remotely-triggered-black-hole-rtbh-routing/}\\
+\link{https://ripe65.ripe.net/presentations/285-inex-ripe-routingwg-amsterdam-2012-09-27.pdf}
+\link{https://www.inex.ie/rtbh}}
+
+
+\slide{Remotely Triggered Black Hole at upstreams}
+
+\begin{alltt}\footnotesize
+6.  Black Hole Server (Optional)
+   ###################################################################################
+   #                           NOTE                                                  #
+   #  The Cogent Black Hole server will allow customers to announce a /32 route      #
+   #  to Cogent and have all traffic to that network blocked at Cogents backbone.    #
+   #  All peers on the Cogent black hole server require a password and IP address    #
+   #  from your network for Cogent to peer with.                                     #
+   ###################################################################################
+
+       [   ]  Please set up a BGP peer on the Cogent Black Hole server
+       Black Hole server password:
+       Black Hole server peer IP:
+
+       North American Black Hole Peer:  66.28.8.1
+       European Black Hole Peer:  130.117.20.1
+\end{alltt}
+
+Source:\\
+{\footnotesize\link{http://cogentco.com/files/docs/customer_service/guide/bgpq.sample.txt}}
+
+\centerline{Better drop single /32 host than whole network!}
+
+\slide{More information about DDoS testing}
+
+More DDoS and testing for DDoS can be found in this presentation:
+\begin{quote}\footnotesize{\bf
+Simulated DDoS Attacks, Breaking the Firewall Infrastructure
+Henrik Lund Kramshøj}
+
+DDoS Attacks have become a daily annoyance for many, and we need to create robust infrastructure. This tutorial will go through a proposed method for testing your own infrastructure using off-the-shelf tools like packet generators hping3 and t50 on Kali Linux.
+
+The goal for the tutorial is to explain:
+* How to create DDoS attack simulations
+* My actual experience with doing this - testing banks, etc.
+* Evaluate how good is this, value proposition for you
+\end{quote}
+
+{\small Can be found at \link{https://ripe72.ripe.net/wp-content/uploads/presentations/32-simulated-ddos-ripe.pdf} or \\
+\link{https://github.com/kramse/security-courses/tree/master/presentations/pentest/simulated-ddos-ripe}}
+
+\slide{Bonus exercise}
+
+Try running hping3 from the DDoS presentation, if we have time.
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
 
 
 \slide{Firewalls og IPv6}
@@ -658,6 +983,17 @@ pass out inet6 proto ipv6-icmp all icmp6-type routersol keep state
 #pass out inet6 proto ipv6-icmp all icmp6-type neighbrsol keep state
 
 ...  probably not working AS IS
+\end{alltt}
+
+
+
+\slide{IPv4 + IPv6 serviceeksempel, med tables}
+
+PF har tabeller og simpel regel til PF konfigurationsfilen kan give adgang til både IPv4 og IPv6:
+\begin{alltt}\small
+table <webservers> { 2001:7b8:3e4:72::20 10.0.72.20 }
+...
+pass in on $ext_if proto tcp to <webserver> port http
 \end{alltt}
 
 

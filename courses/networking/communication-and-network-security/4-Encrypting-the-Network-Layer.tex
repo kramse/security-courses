@@ -13,12 +13,13 @@
 
 \slide{Plan for today}
 
+{~}
+\hlkrightpic{8cm}{0cm}{Encrypt_all_the_things.png}
+
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item Basic cryptography
-\item Encryption Decryption
-\item Hashing
+\item Basic cryptography - Encryption Decryption - Hashing
 \item Short introduction to algorithms RSA, AES
 \item Diffie Helman exchange
 \item Transport Layer Security (TLS)
@@ -35,35 +36,837 @@
 
 \slide{Reading Summary, continued}
 
+\begin{quote}
+It is not clear that the link layer is the right one for security. In a coffeeshop, the security association is terminated by the store: is there any reason you should trust the shopkeeper? Perhaps link-layer security makes some sense in a home, where you control both the access point and the wireless machines. However, we prefer end-to-end security at the network layer or in the
+applications.
+\end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin
+
 \begin{alltt}\footnotesize
 Skim:\\
 \link{https://tools.ietf.org/html/rfc5246} The Transport Layer Security (TLS) Protocol Version 1.2\\
 \link{https://en.wikipedia.org/wiki/Transport_Layer_Security}
 \end{alltt}
 
+\slide{What is data?}
+
+{~}
+\hlkrightpic{10cm}{0cm}{Linus3-04041999.jpg}
+
 \begin{list1}
-\item
+\item Personal data you dont want to loose:
 \begin{list2}
-\item
+\item Wedding pictures
+\item Pictures of your children
+\item Sextapes
+\item Personal finances
 \end{list2}
 \end{list1}
 
+Source: picture of my son less than 24 hours old - precious!
 
-\slide{Reading Summary, continued}
+
+\slide{Confidentiality Integrity Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data holdes hemmelige
+\item Integrity - data ændres ikke uautoriseret
+\item Availability - data og systemet er tilgængelige når de skal bruges
+\end{list1}
+
+
+\slide{Why think of security?}
+
+\hlkimage{8cm}{1984-not-instruction-manual.jpg}
+
 
 \begin{quote}
-It is not clear that the link layer is the right one for security. In a coffeeshop, the security association is terminated by the store: is there any reason you should trust the shopkeeper? Perhaps link-layer security makes some sense in a home, where you control both the access point and the wireless machines. However, we prefer end-to-end security at the network layer or in the
-applications.
-\end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin
+	Privacy is necessary for an open society in the electronic age. Privacy is not secrecy. A private matter is something one doesn't want the whole world to know, but a secret matter is something one doesn't want anybody to know. Privacy is the power to selectively reveal oneself to the world. ~A Cypherpunk's Manifesto by Eric Hughes, 1993
+\end{quote}
+
+Copied from \link{https://cryptoparty.org/wiki/CryptoParty}
+
+
+\slide{Solidaritetskryptering}
+
+Hvorfor skal vi kryptere?
+
+\begin{alltt}
+       Køn
+                       Seksualitet
+ Tro religion       hatecrimes
+
+ Politisk overbevisning, eller blot aktiv
+
+ Whistleblowers             soldater      diplomater
+\end{alltt}
+
+\centerline{Du bestemmer ikke hvem der diskrimineres eller trues i andre lande}
+
+\vskip2cm
+
+Når vi krypterer hjælper vi andre! {\bf Solidaritetskryptering}
+
+
+\slide{Basic cryptography}
+
+{~}
+\hlkrightpic{9cm}{-1cm}{mitm-2019.png}
+
+\begin{list2}
+\item Confidentiality - data holdes hemmelige
+\item Integrity - data ændres ikke uautoriseret
+\item A common attack category is children intercepting messages
+\item or MiTM Mini in the Middle in this case
+\end{list2}
+
+\slide{Cryptography}
 
 \begin{list1}
-\item
+\item Cryptography or cryptology is the practice and study of techniques for secure communication
+\item Modern cryptography is heavily based on mathematical theory and computer science practice; cryptographic algorithms are designed around computational hardness assumptions, making such algorithms hard to break in practice by any adversary
+\item Symmetric-key cryptography refers to encryption methods in which both the sender and receiver share the same key, to ensure confidentiality, example algorithm AES
+\item Public-key cryptography (like RSA) uses two related keys, a key pair of a public key and a private key. This allows for easier key exchanges, and can provide confidentiality, and methods for signatures and other services
+\end{list1}
+
+Source: \link{https://en.wikipedia.org/wiki/Cryptography}
+
+
+\slide{Kryptografi er svært}
+
+%Stoler vi på de andre autentificeringsmetoder?}
+\hlkimage{20cm}{crypto-class.png}
+
+Åbent kursus på Stanford\\
+\link{http://crypto-class.org/}
+
+\slide{Kryptering: Cryptography Engineering}
+
+\hlkimage{6cm}{book-ce-150w.jpg}
+
+\emph{Cryptography Engineering} by
+Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
+\link{https://www.schneier.com/book-ce.html}
+
+
+\slide{Encryption Decryption}
+
+\slide{Kryptografi}
+
+\hlkimage{12cm}{images/crypto-rot13.pdf}
+
+\begin{list1}
+\item Kryptografi er læren om, hvordan man kan kryptere data
+\item Kryptografi benytter algoritmer som sammen med nøgler giver en
+  ciffertekst
+\item  - der kun kan læses ved hjælp af den tilhørende nøgle
+\end{list1}
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{12cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{12cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter\\ - som så verificeres med den offentlige nøgle
+\item NB: Kryptering alene sikrer ikke anonymitet
+\end{list1}
+
+
+\slide{Kryptografiske principper}
+
+\begin{list1}
+\item Algoritmerne er kendte
+\item Nøglerne er hemmelige
+\item Nøgler har en vis levetid - de skal skiftes ofte
+\item Et successfuldt angreb på en krypto-algoritme er enhver genvej
+  som kræver mindre arbejde end en gennemgang af alle nøglerne
+\item Nye algoritmer, programmer, protokoller m.v. skal gennemgås nøje!
+\item Se evt. Snake Oil Warning Signs:
+Encryption Software to Avoid\\
+\link{http://www.interhack.net/people/cmcurtin/snake-oil-faq.html}
+\end{list1}
+
+
+\slide{DES, Triple DES og AES}
+
+\hlkimage{15cm}{images/AES_head.png}
+
+\begin{list1}
+\item DES kryptering - gammel og pensioneret!
+\item Der blev i 2001 vedtaget en ny standard algoritme Advanced Encryption
+  Standard (AES) som afløser Data Encryption Standard (DES)
+\item Algoritmen hedder Rijndael og er udviklet
+af Joan Daemen og Vincent Rijmen.
+%\item \emph{Rijndael is available for free. You can use it for
+%whatever purposes  you want, irrespective of whether
+%it is accepted as AES or not.}
+\item Se også \link{https://en.wikipedia.org/wiki/Advanced_Encryption_Standard}
+\item Findes animationer (med fejl) \link{https://www.youtube.com/watch?v=mlzxpkdXP58}
+\end{list1}
+
+\slide{AES Advanced Encryption Standard}
+
+\hlkimage{10cm}{aes-overview.png}
+
 \begin{list2}
-\item
+\item The official Rijndael web site displays this image to promote understanding of the Rijndael round transformation [8].
+\item Key sizes 128,192,256 bit typical
+\item Some extensions in cryptosystems exist: XTS-AES-256 really is 2 instances of AES-128 and 384 is two instances of AES-192 and 512 is two instances of AES-256
+\item \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+
+\slide{RSA}
+
+\begin{quote}
+RSA (Rivest–Shamir–Adleman) is one of the first public-key cryptosystems and is widely used for secure data transmission. ...
+In RSA, this asymmetry is based on the practical difficulty of the factorization of the product of two large prime numbers, the "factoring problem". The acronym RSA is made of the initial letters of the surnames of Ron Rivest, Adi Shamir, and Leonard Adleman, who first publicly described the algorithm in 1978.
+\end{quote}
+
+\begin{list2}
+\item Key sizes	1,024 to 4,096 bit typical
+\item  Quote from: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+\slide{Hashing - MD5 message digest funktion}
+
+\hlkimage{16cm}{images/message-digest-1.pdf}
+
+\begin{list1}
+\item HASH algoritmer giver en næsten unik værdi baseret på input
+%\item output fra algoritmerne kaldes ogs<E5> message digest
+%\item MD5 er et eksempel p<E5> en meget brugt algoritme
+%\item MD5 algoritmen har f<F8>lgende egenskaber:
+%  \begin{list2}
+%  \item output er 128-bit "fingerprint" uanset l<E6>ngden af input
+\item værdien ændres radikalt selv ved små ændringer i input
+%  \end{list2}
+\item MD5 er blandt andet beskrevet i RFC-1321: The MD5 Message-Digest
+  Algorithm
+%\item Algoritmen MD5 er baseret p<E5> MD4, begge udviklet af Ronald
+%  L. Rivest kendt fra blandt andet RSA Data Security, Inc
+\item Både MD5 og SHA-1 er idag gamle og skal ikke bruges mere
+\item Idag benyttes eksempelvis \link{https://en.wikipedia.org/wiki/PBKDF2}
+\end{list1}
+
+
+\slide{Old skool NT hashes}
+
+\begin{list1}
+  \item NT LAN manager hash værdier er noget man typisk kunne samle op i
+  netværk
+\item det er en hash værdi af et password som man ikke burde kunne
+  bruge til noget - hash algoritmer er envejs
+\item opbygningen gør at man kan forsøge brute-force på 7 tegn ad
+  gangen!
+\item en moderne pc med l0phtcrack kan nemt knække de fleste password
+  på få dage!
+\item og sikkert 25-30\% indenfor den første dag - hvis der ingen
+  politik er omkring kodeord!
+\item ved at generere store tabeller, eksempelvis 100GB kan man dække
+  mange hashværdier af passwords med almindelige bogstaver, tal og
+  tegn - og derved knække passwordshashes på sekunder. Søg efter
+  rainbowcrack med google
+\end{list1}
+
+\slide{l0phtcrack LC4}
+\hlkimage{7cm}{images/lc4_splash.png}
+
+\begin{alltt}
+\small
+Consider that at one of the largest technology companies, where policy
+required that passwords exceed 8 characters, mix cases, and include
+numbers or symbols...
+
+L0phtCrack obtained 18\% of the passwords in 10 minutes
+90\% of the passwords were recovered within 48 hours on a Pentium II/300
+The Administrator and most Domain Admin passwords were cracked
+\link{http://www.atstake.com/research/lc/}
+\end{alltt}
+
+
+\slide{Cracking passwords}
+
+\begin{list2}
+\item Hashcat is the world's fastest CPU-based password recovery tool.
+\item oclHashcat-plus is a GPGPU-based multi-hash cracker using a brute-force attack (implemented as mask attack), combinator attack, dictionary attack, hybrid attack, mask attack, and rule-based attack.
+\item oclHashcat-lite is a GPGPU cracker that is optimized for cracking performance. Therefore, it is limited to only doing single-hash cracking using Markov attack, Brute-Force attack and Mask attack.
+\item John the Ripper password cracker old skool men stadig nyttig
+\end{list2}
+
+Source:\\
+\link{http://hashcat.net/wiki/}\\
+\link{http://www.openwall.com/john/}
+
+
+\slide{Encryption key length - who are attacking you}
+
+\hlkimage{9cm}{encryption-crack.png}
+
+Source: \link{http://www.mycrypto.net/encryption/encryption_crack.html}
+
+{\small
+More up to date:  In 1998, the EFF built Deep Crack for less than \$250,000\\
+\link{https://en.wikipedia.org/wiki/EFF_DES_cracker}\\
+FPGA Based UNIX Crypt Hardware Password Cracker - ~100 EUR in 2006\\
+\link{http://www.sump.org/projects/password/}}
+
+\slide{Pass the hash}
+
+Lots of tools in pentesting pass the hash, reuse existing credentials and tokens
+\emph{Still Passing the Hash 15 Years Later}\\
+\link{http://passing-the-hash.blogspot.dk/2013/04/pth-toolkit-for-kali-interim-status.html}
+
+\begin{quote}
+If a domain is built using only modern Windows OSs and COTS products (which know how to operate within these new constraints), and configured correctly with no shortcuts taken, then these protections represent a big step forward.
+\end{quote}
+
+Source:\\
+{\small\link{http://www.harmj0y.net/blog/penetesting/pass-the-hash-is-dead-long-live-pass-the-hash/}
+\link{https://samsclass.info/lulz/pth-8.1.htm}}
+
+
+\slide{Diffie Helman exchange}
+
+{~}
+\hlkrightpic{7cm}{-15mm}{800px-Diffie-Hellman_Key_Exchange.png}
+
+\begin{quote}
+Diffie–Hellman key exchange (DH)[nb 1] is a method of securely exchanging cryptographic keys over a public channel and was one of the first public-key protocols as originally conceptualized by Ralph Merkle and named after Whitfield Diffie and Martin Hellman.[1][2] DH is one of the earliest practical examples of public key exchange implemented within the field of cryptography.
+... The scheme was first published by Whitfield Diffie and Martin Hellman in 1976
+\end{quote}
+
+\begin{list2}
+\item Quote from: {\small \link{https://en.wikipedia.org/wiki/Diffie-Hellman_key_exchange}}
+\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\end{list2}
+
+\slide{Transport Layer Security (TLS)}
+
+\hlkimage{5cm}{crypto-class.png}
+
+\begin{list1}
+\item Oprindeligt udviklet af Netscape Communications Inc.
+\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
+derfor også for Transport Layer Security TLS
+TLS er baseret på SSL Version 3.0
+\item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
+\item RFC-3207 SMTP STARTTLS
+\item Det er svært!
+\item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
+\end{list1}
+
+
+\slide{SSL/TLS udgaver af protokoller}
+\hlkimage{12cm}{imap-ssl.png}
+
+\begin{list1}
+\item Mange protokoller findes i udgaver hvor der benyttes SSL
+\item HTTPS vs HTTP
+\item IMAPS, POP3S, osv.
+\item Bemærk: nogle protokoller benytter to porte IMAP 143/tcp vs IMAPS 993/tcp
+\item Andre benytter den samme port men en kommando som starter:
+\item SMTP STARTTLS RFC-3207
+\end{list1}
+
+
+\slide{Secure protocols}
+
+\begin{list1}
+\item Securing e-mail
+\begin{list2}
+\item Pretty Good Privacy - Phil Zimmermann
+\item OpenPGP = e-mail security
+\end{list2}
+\item Network sessions use SSL/TLS
+\begin{list2}
+\item Secure Sockets Layer SSL / Transport Layer Services TLS
+\item Encrypting data sent and received
+\item SSL/TLS already used for many protocols as a wrapper: POP3S, IMAPS, SSH, SMTP+TLS m.fl.
+\end{list2}
+\item Encrypting traffic at the network layer - Virtual Private Networks VPN
+\begin{list2}
+\item {\color{green}IPsec IP Security Framework, se også L2TP}
+\item {\color{red} PPTP Point to Point Tunneling Protocol - dårlig og usikker, brug den ikke mere!}
+\item OpenVPN uses SSL/TLS across TCP or UDP
+\end{list2}
+\end{list1}
+
+\slide{Email er usikkert}
+
+\hlkimage{14cm}{email-uden-kryptering.png}
+
+\centerline{Email uden kryptering - er som et postkort}
+
+
+
+\slide{Email med OpenPGP kryptering - afsendelse}
+
+\hlkimage{14cm}{email-med-kryptering.png}
+
+
+\centerline{En sikker krypteret email er ikke sværere at sende}
+
+\slide{Krypteret OpenPGP Email under transporten}
+
+\hlkimage{10cm}{modtaget-email-med-kryptering.png}
+
+\centerline{En sikker krypteret email er beskyttet undervejs}
+
+
+\slide{Fokus 2019: TLS og VPN indstillinger}
+
+\hlkimage{16cm}{bettercrypto-nginx.png}
+
+\begin{list2}
+\item De fleste har https nu, men er det konfigureret optimalt
+\item Vi bruger også VPN til at forbinde sites, kontorer
+\item Anbefaler at alle indstillingerne gennemgås!
+\end{list2}
+
+\slide{Nmap efter SSL og TLS}
+
+\hlkimage{7cm}{nmap-sslv2.png}
+
+\begin{list1}
+\item Nu vi har lært Kali og Nmap at kende
+\begin{list2}
+\item Find nemt alle ssl version 2 og 3\\
+\verb+nmap --script ssl-enum-ciphers+
+\item Brug ssllabs https://www.ssllabs.com/
 \end{list2}
 \end{list1}
 
 
+\slide{sslscan}
+
+\begin{alltt}\small
+root@kali:~# sslscan --ssl2 web.kramse.dk
+Version: 1.10.5-static
+OpenSSL 1.0.2e-dev xx XXX xxxx
+
+Testing SSL server web.kramse.dk on port 443
+...
+  SSL Certificate:
+Signature Algorithm: sha256WithRSAEncryption
+RSA Key Strength:    2048
+
+Subject:  *.kramse.dk
+Altnames: DNS:*.kramse.dk, DNS:kramse.dk
+Issuer:   AlphaSSL CA - SHA256 - G2
+\end{alltt}
+
+Source:
+Originally sslscan from http://www.titania.co.uk
+ but use the version on Kali
+
+SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
+
+
+
+\slide{Example Weak DH paper}
+
+\hlkimage{13cm}{weakdh-logjam.png}
+
+Source: \link{https://weakdh.org/} and \\
+\link{https://weakdh.org/imperfect-forward-secrecy-ccs15.pdf}
+
+Every year in different SSL/TLS implementations there have been problems.
+
+\slide{Why?, because things like Superfish February 2015}
+
+\hlkimage{12cm}{robert-graham-superfish-cert.png}
+
+Lenovo laptops included Adware, which did SSL/TLS Man in the Middle on connections.
+They had a root certificate installed on the Windows operating system, WTF!
+
+{\footnotesize Sources:\\
+\link{https://en.wikipedia.org/wiki/Superfish}\\
+\link{http://blog.erratasec.com/2015/02/extracting-superfish-certificate.html}\\
+\link{http://www.version2.dk/blog/kibana4-superfish-og-emergingthreats-81610}\\
+}{\tiny\link{https://www.eff.org/deeplinks/2015/02/further-evidence-lenovo-breaking-https-security-its-laptops}
+}
+
+
+\slide{FREAK March 2015}
+
+
+\begin{quote}\small
+"A group of cryptographers at INRIA, Microsoft Research and IMDEA have discovered some serious vulnerabilities in OpenSSL (e.g., Android) clients and Apple TLS/SSL clients (e.g., Safari) that allow a 'man in the middle attacker' to downgrade connections from 'strong' RSA to 'export-grade' RSA. These attacks are real and exploitable against a shocking number of websites -- including government websites. Patch soon and be careful."
+\end{quote}
+
+Source: Matthew Green, cryptographer and research professor at Johns Hopkins Univ\\
+{\footnotesize\link{http://blog.cryptographyengineering.com/2015/03/attack-of-week-freak-or-factoring-nsa.html}\\
+\link{https://www.smacktls.com/} \link{https://freakattack.com/}
+}
+
+OpenSSL, LibreSSL, Apple SSL flaw exit exit exit!, Android SSL, certs certs!!!111, SSLv3, Heartbleed, MS TLS
+
+
+\vskip 1cm
+PS From now on its TLS! Not SSL anymore, any SSLv2, SSLv3 is old and vulnerable
+
+\slide{Heartbleed CVE-2014-0160}
+
+\hlkimage{18cm}{heartbleed-com.png}
+
+\centerline{Nok det mest kendte SSL/TLS exploit}
+
+Source: \link{http://heartbleed.com/}
+
+
+\slide{Heartbleed hacking}
+
+\begin{alltt}\footnotesize
+  06b0: 2D 63 61 63 68 65 0D 0A 43 61 63 68 65 2D 43 6F  -cache..Cache-Co
+  06c0: 6E 74 72 6F 6C 3A 20 6E 6F 2D 63 61 63 68 65 0D  ntrol: no-cache.
+  06d0: 0A 0D 0A 61 63 74 69 6F 6E 3D 67 63 5F 69 6E 73  ...action=gc_ins
+  06e0: 65 72 74 5F 6F 72 64 65 72 26 62 69 6C 6C 6E 6F  ert_order&billno
+  06f0: 3D 50 5A 4B 31 31 30 31 26 70 61 79 6D 65 6E 74  =PZK1101&payment
+  0700: 5F 69 64 3D 31 26 63 61 72 64 5F 6E 75 6D 62 65  _id=1&card_numbe
+  0710: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX   r=4060xxxx413xxx
+  0720: 39 36 26 63 61 72 64 5F 65 78 70 5F 6D 6F 6E 74  96&card_exp_mont
+  0730: 68 3D 30 32 26 63 61 72 64 5F 65 78 70 5F 79 65  h=02&card_exp_ye
+  0740: 61 72 3D 31 37 26 63 61 72 64 5F 63 76 6E 3D 31  ar=17&card_cvn=1
+  0750: 30 39 F8 6C 1B E5 72 CA 61 4D 06 4E B3 54 BC DA  09.l..r.aM.N.T..
+\end{alltt}
+
+\begin{list2}
+\item Obtained using Heartbleed proof of concepts - Gave full credit card details
+\item "can XXX be exploited" - yes, clearly! PoCs ARE needed\\
+without PoCs even Akamai wouldn't have repaired completely!
+\item The internet was ALMOST fooled into thinking getting private keys from Heartbleed was not possible - scary indeed.
+\end{list2}
+
+\slide{Key points after heartbleed}
+
+\hlkimage{16cm}{ssl-tls-breaks-timeline.png}
+Source: picture source\\ {\footnotesize\link{https://www.duosecurity.com/blog/heartbleed-defense-in-depth-part-2}}
+\begin{list2}
+\item Writing SSL software and other secure crypto software is hard
+\item Configuring SSL is hard\\
+check you own site \link{https://www.ssllabs.com/ssltest/}
+\item SSL is hard, finding bugs "all the time"
+\link{http://armoredbarista.blogspot.dk/2013/01/a-brief-chronology-of-ssltls-attacks.html}
+\end{list2}
+
+
+
+\slide{Feb 2015 Decrypting TLS Browser Traffic With Wireshark }
+
+\hlkimage{16cm}{wireshark-decrypt-ssl.png}
+
+\begin{list1}
+\item  Firefox and Chrome both support logging the symmetric session key used to encrypt TLS traffic to a file
+\item Wireshark can read this file - and decrypt sessions - Nifty trick
+\end{list1}
+
+
+Source: great blog article about the features used\\
+{\tiny\link{https://jimshaver.net/2015/02/11/decrypting-tls-browser-traffic-with-wireshark-the-easy-way/}}
+
+
+
+\slide{HTTPS Everywhere}
+
+\hlkimage{5cm}{HTTPS_Everywhere_new_logo.jpg}
+\begin{quote}
+HTTPS Everywhere is a Firefox extension produced as a collaboration between The Tor Project and the Electronic Frontier Foundation. It encrypts your communications with a number of major websites.
+\end{quote}
+
+\centerline{\link{http://www.eff.org/https-everywhere}}
+
+
+
+\exercise{ex:SSLScanner}
+
+\exercise{ex:mitmproxy}
+\exercise{ex:sslsplit}
+\exercise{ex:sslstrip}
+
+\slide{Other crypto related stuff}
+
+
+\slide{PRNG}
+
+\hlkimage{21cm}{debian-prng.png}
+
+{\small\link{https://en.wikipedia.org/wiki/Random_number_generator_attack\#Debian_OpenSSL}}
+
+\centerline{The random number generator is VITAL for crypto security}
+
+Check out modern CPUs and Linux response to this\\
+ \link{https://en.wikipedia.org/wiki/RdRand}
+
+
+\slide{Fokus 2019: DNS og email}
+
+\hlkrightpic{10cm}{-2cm}{brian-patrick-tagalog-680954-unsplash.jpg}
+{~}
+
+\begin{list2}
+\item Vi er afhængige af email, modtagelse og afsendelse
+\item Når vi modtager skal det helst gå hurtigt
+\item Når vi sender skal vi ikke ende i spam mappen
+\item Phishing, hvem kan sende \emph{fra vores domæne}
+\end{list2}
+
+
+\slide{Various key attack types, clients and employees}
+
+\begin{list2}
+\item Phishing - sending fake emails, to collect credentials
+\item Spear phishing - targetted attacks
+\item Person in the middle - sniffing and changing data in transit
+\item Drive-by attacks - web pages infected with malware, often ad servers
+\item Malware transferred via USB or email
+\item Credential Stuffing, Password related, like re-use of password, see slide about being pwned
+\end{list2}
+
+\vskip 1cm
+\centerline{\Large\bf If we all wait a bit, and not click links immediately}
+
+\vskip 1cm
+Hackers try to create "urgency", click this or loose money
+
+\slide{DNS er mere end navneopslag}
+
+\begin{list1}
+  \item består af resource records med en type:
+    \begin{list2}
+\item adresser A-records
+\item IPv6 adresser AAAA-records
+\item autoritative navneservere NS-records
+\item post, mail-exchanger MX-records
+\item flere andre: md ,  mf ,  cname ,  soa ,
+                  mb , mg ,  mr ,  null ,  wks ,  ptr ,
+                  hinfo ,  minfo ,  mx ....
+\end{list2}
+\end{list1}
+\begin{alltt}
+        IN      MX      10      mail.zencurity.dk.
+        IN      MX      20      mail2.zencurity.dk.
+\end{alltt}
+
+\slide{SMTP Simple Mail Transfer Protocol}
+
+\begin{alltt}\tiny
+hlk@bigfoot:hlk$ telnet mail.kramse.dk 25
+Connected to sunny.
+220 sunny.kramse.dk ESMTP Postfix
+HELO bigfoot
+250 sunny.kramse.dk
+MAIL FROM: Henrik
+250 Ok
+RCPT TO: hlk@kramse.dk
+250 Ok
+DATA
+354 End data with <CR><LF>.<CR><LF>
+hejsa
+.
+250 Ok: queued as 749193BD2
+QUIT
+221 Bye
+\end{alltt}
+
+\begin{list2}
+\item RFC-821 SMTP Simple Mail Transfer Protocol fra 1982
+\item \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
+\end{list2}
+
+\slide{DNS attacks, Your registrar}
+
+\hlkimage{10cm}{krebs-lenovo-google-dns-hack.png}
+\begin{list1}
+%\item DNS is the Domain Name System, \link{https://en.wikipedia.org/wiki/Dns}
+\item DNS insecurity has huge impact on your security!
+\item Most are denial of service, by may create Mitm or confidentiality concerns
+\item Select DNS providers with care
+\end{list1}
+
+
+Sources:\\
+{\tiny
+\link{https://krebsonsecurity.com/2015/02/webnic-registrar-blamed-for-hijack-of-lenovo-google-domains/}\\
+\link{http://www.version2.dk/artikel/google-og-lenovo-defaced-som-foelge-af-overset-sikkerhedsproblemstilling-91295}}
+
+
+\slide{DNSSEC get started now}
+
+\hlkimage{12cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+
+\slide{DNSSEC and DANE}
+
+\begin{quote}
+"Objective:
+
+Specify mechanisms and techniques that allow Internet applications to
+establish cryptographically secured communications by using information
+distributed through DNSSEC for discovering and authenticating public
+keys which are associated with a service located at a domain name."
+\end{quote}
+
+\begin{list1}
+\item DNS-based Authentication of Named Entities (dane)
+\end{list1}
+
+\slide{Email security 2019 - Goals}
+
+\begin{list2}
+\item SPF Sender Policy Framework\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+\item DKIM DomainKeys Identified Mail\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}
+\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
+\item Brug allesammen, check efter ændringer!
+\end{list2}
+
+
+
+
+
+\slide{Fokus 2019: Laptop sikkerhed}
+
+\hlkimage{13cm}{kelly-sikkema-212376-unsplash.jpg}
+
+\begin{list2}
+\item Relevant for alle
+\item Hvordan sikrer vi at vi ikke mister værdierne, hardware og data typisk
+\end{list2}
+
+
+\slide{Secure Laptops}
+
+\hlkimage{7cm}{librem-15-v3-turns99.png}
+
+\begin{list2}
+\item Laptops (og mobile enheder)
+\item Hvad kendetegner en laptop?
+\item Hardware naturligvis, en Macbook koster officielt mere end en brugt mellemklassebil
+\item - og husk brugen af laptops
+\item Er laptops sikre, og hvad betyder det?
+\end{list2}
+
+
+
+\slide{Are your data secure - data at rest}
+
+\hlkimage{12cm}{images/data-integrity-1.pdf}
+
+\begin{list1}
+\item Stolen laptop, tablet, phone - can anybody read your data?
+\item Do you trust "remote wipe"
+\item How do you in fact wipe data securely off devices, and SSDs?
+\item Encrypt disk and storage devices before using them in the first place!
+\end{list1}
+
+
+\slide{Circumvent security - single user mode boot}
+\begin{list1}
+\item Unix systems often allows boot into singleuser mode\\
+press command-s when booting Mac OS X
+\item Laptops can often be booted using PXE network or CD boot
+\item Mac computers can become a Firewire disk\\
+hold t when booting - firewire target mode
+\item Unrestricted access to un-encrypted data
+\item Moving hard drive to another computer is also easy
+\end{list1}
+\pause
+\centerline{Physical access is often - {\bf game over}}
+
+
+\slide{Encrypting hard disk}
+
+\hlkimage{9cm}{images/apple-filevault.png}
+
+\begin{list1}
+\item Becoming available in the most popular client operating systems
+\begin{list2}
+\item Microsoft Windows Bitlocker
+\item Apple Mac OS X - FileVault
+\item FreeBSD GEOM og GBDE - encryption framework
+\item Linux LUKS distributions like Ubuntu ask to encrypt home dir during installation
+\item Some vendors have BIOS passwords, or disk passwords
+\end{list2}
+\end{list1}
+
+
+\slide{Attacks on disk encryption}
+
+\begin{list2}
+\item Firewire, DMA \& Windows, Winlockpwn via FireWire\\
+Hit by a Bus: Physical Access Attacks with Firewire Ruxcon 2006
+\item Removing memory from live system - data is not immediately lost, and can be read under some circumstances\\
+Lest We Remember: Cold Boot Attacks on Encryption Keys\\
+\link{http://citp.princeton.edu/memory/}
+\item This is very CSI or Hollywoord like - but a real threat
+\item VileFault decrypts encrypted Mac OS X disk image files\\ \link{https://code.google.com/p/vilefault/}
+\item  FileVault Drive Encryption (FVDE) (or FileVault2) encrypted volumes\\
+\link{https://code.google.com/p/libfvde/}
+\end{list2}
+
+\centerline{So perhaps use both hard drive encryption AND turn off computer after use?}
+
+\slide{... and deleting data}
+
+{~}
+\hlkrightpic{8cm}{0cm}{dban-screenshot.png}
+
+\begin{list1}
+\item Getting rid of data from old devices is a pain
+\item Some tools will not overwrite data, leaving it vulnerable to recovery
+\item Even secure erase programs might not work on SSD\\
+ - due to reallocation of blocks
+\item I have used Darik's Boot and Nuke ("DBAN")\\
+\link{http://www.dban.org/}
+\end{list1}
+
+
+\slide{2018 attack}
+
+\hlkimage{12cm}{ssd-attack-2018.png}
+\emph{self-encrypting deception: weakness in the encryption of solid state drives (SSDs)}\\
+\link{https://www.ru.nl/publish/pages/909282/draft-paper.pdf}
+
+
+
+
+
+\slide{Github Public passwords?}
+
+\hlkimage{13cm}{github-credentials.png}
+
+ Sources:\\
+{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
+\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
+\link{http://www.leakedin.com/}\\
+\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
+}
+
+\vskip 5mm
+\centerline{Use different passwords for different sites, yes - every site!}
 
 
 
@@ -106,30 +909,6 @@ gpg: Good signature from "wietse venema <wietse@porcupine.org>"
 gpg:                 aka "wietse venema <wietse@wzv.win.tue.nl>"
 \end{alltt}
 %$
-
-\slide{SSL og TLS}
-
-\hlkimage{12cm}{ehandel-https.pdf}
-
-\begin{list1}
-\item Oprindeligt udviklet af Netscape Communications Inc.
-\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
-derfor også for Transport Layer Security TLS
-TLS er baseret på SSL Version 3.0
-\item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
-\end{list1}
-
-\slide{SSL/TLS udgaver af protokoller}
-\hlkimage{12cm}{imap-ssl.png}
-
-\begin{list1}
-\item Mange protokoller findes i udgaver hvor der benyttes SSL
-\item HTTPS vs HTTP
-\item IMAPS, POP3S, osv.
-\item Bemærk: nogle protokoller benytter to porte IMAP 143/tcp vs IMAPS 993/tcp
-\item Andre benytter den samme port men en kommando som starter:
-\item SMTP STARTTLS RFC-3207
-\end{list1}
 
 \slide{Secure Shell - SSH og SCP}
 
@@ -221,189 +1000,6 @@ UseDNS no
 \end{alltt}
 
 Det er en smagssag om man vil tillade \emph{X11 forwarding}
-
-
-
-
-
-
-\slide{IPsec}
-
-\begin{itemize}
-\item Sikkerhed i netværket
-\item RFC-2401 Security Architecture for the Internet Protocol
-\item RFC-2402 IP Authentication Header (AH)
-\item RFC-2406 IP Encapsulating Security Payload (ESP)
-\item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
-\item Både til IPv4 og IPv6
-\item {\bfseries MANDATORY} i IPv6! - et krav hvis man implementerer
-  fuld IPv6 support
-\item god præsentation på \link{http://www.hsc.fr/presentations/ike/}
-\item Der findes IKEscan til at scanne efter IKE
-  porte/implementationer\\
-\link{http://www.nta-monitor.com/ike-scan/index.htm}
-\end{itemize}
-
-\slide{IPsec er ikke simpelt!}
-
-\hlkimage{16cm}{images/ipsec-hsc.png}
-\centerline{Kilde: \link{http://www.hsc.fr/presentations/ike/}}
-
-
-\slide{RFC-2402 IP AH}
-
-\begin{alltt}
-\small
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   | Next Header   |  Payload Len  |          RESERVED             |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                 Security Parameters Index (SPI)               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Sequence Number Field                      |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                Authentication Data (variable)                 |
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-\slide{RFC-2402 IP AH}
-
-Indpakning - pakkerne før og efter Authentication Header:
-\begin{alltt}
-\small
-                BEFORE APPLYING AH
-            ----------------------------
-      IPv4  |orig IP hdr  |     |      |
-            |(any options)| TCP | Data |
-            ----------------------------
-
-                  AFTER APPLYING AH
-            ---------------------------------
-      IPv4  |orig IP hdr  |    |     |      |
-            |(any options)| AH | TCP | Data |
-            ---------------------------------
-            |<------- authenticated ------->|
-                 except for mutable fields
-\end{alltt}
-
-\slide{RFC-2406 IP ESP}
-
-Pakkerne før og efter:
-\begin{alltt}
-\small
-               BEFORE APPLYING ESP
-         ---------------------------------------
-   IPv6  |             | ext hdrs |     |      |
-         | orig IP hdr |if present| TCP | Data |
-         ---------------------------------------
-
-
-
-               AFTER APPLYING ESP
-         ---------------------------------------------------------
-   IPv6  | orig |hop-by-hop,dest*,|   |dest|   |    | ESP   | ESP|
-         |IP hdr|routing,fragment.|ESP|opt*|TCP|Data|Trailer|Auth|
-         ---------------------------------------------------------
-                                   |<---- encrypted ---->|
-                               |<---- authenticated ---->|
-\end{alltt}
-
-\slide{ipsec konfigurationsfiler}
-
-\begin{list1}
-%\item Der er følgende dokumenter til IPsec på websitet\\
-% \link{www.security.net/courses/ipsec}:
-\item Der er følgende filer tilgængelige\\
-  \begin{list2}
-  \item konfigurationsfiler i NetBSD/FreeBSD/Mac OS X format - med
-    \verb+setkey+ kommandoen
-  \item konfigurationsfil til OpenBSD server - med \verb+ipsecadm+
-    kommandoen
-%  \item IKE.pdf \emph{Dynamic Management of the IPsec Parameters:
-%      The IKE Protocol}, fra Herve Schauer Consultants
-%\item NetBSD IPsec dokumentation
-%\item Cisco \emph{Introduction to IP security}
-  \end{list2}
-\end{list1}
-
-
-\slide{World Wide Web fødes}
-
-\hlkimage{15cm}{images/tim-berners-lee-2001-europaeum-eighth.jpg}
-
-\begin{list1}
-\item Tim Berners-Lee opfinder WWW 1989 og den første webbrowser og
-  server i 1990 mens han arbejder for CERN
-\end{list1}
-
-Kilde:
-\link{http://www.w3.org/People/Berners-Lee/}
-
-\slide{World Wide Web udviklingen}
-
-\hlkimage{20cm}{images/Count_WWW.png}
-
-\begin{list1}
-\item Udviklingen på world wide web bliver en stor kommerciel success
-\end{list1}
-
-Kilde: Hobbes Internet time-line\\
-\link{http://www.zakon.org/robert/internet/timeline/}
-
-\slide{Nogle HTTP og webrelaterede RFC'er}
-
-\begin{list2}
-\item[1945] Hypertext Transfer Protocol -- HTTP/1.0. T. Berners-Lee, R.
-     Fielding, H. Frystyk. May 1996.
-\item[2068] Hypertext Transfer Protocol -- HTTP/1.1. R. Fielding, J. Gettys,
-     J. Mogul, H. Frystyk, T. Berners-Lee. January 1997. (Obsoleted by
-     RFC2616)
-\item[2069] An Extension to HTTP : Digest Access Authentication. J. Franks,
-     P. Hallam-Baker, J. Hostetler, P. Leach, A. Luotonen, E. Sink, L.
-     Stewart. January 1997. (Obsoleted by
-     RFC2617)
-\item[2145] Use and Interpretation of HTTP Version Numbers. J. C. Mogul, R.
-     Fielding, J. Gettys, H. Frystyk. May 1997.
-\item[2518] HTTP Extensions for Distributed Authoring -- WEBDAV. Y. Goland,
-     E. Whitehead, A. Faizi, S. Carter, D. Jensen. February 1999.
-\item[2616] Hypertext Transfer Protocol -- HTTP/1.1. R. Fielding, J. Gettys,
-     J. Mogul, H. Frystyk, L. Masinter, P. Leach, T. Berners-Lee. June
-     1999. (Obsoletes
-     RFC2068) (Updated by RFC2817)
-\item[2818] HTTP Over TLS. E. Rescorla. May 2000.
-\end{list2}
-
-\begin{quote}
-HTTP er basalt set en sessionsløs protokol bestående at individuelle
-HTTP forespørgsler via TCP forbindelser
-\end{quote}
-
-\slide{Infokager og state management}
-\begin{list2}
-\item[2109] HTTP State Management Mechanism. D. Kristol, L. Montulli.
-     February 1997. (Format: TXT=43469 bytes) (Obsoleted by RFC2965)
-     (Status: PROPOSED STANDARD)
-\item[2965] HTTP State Management Mechanism. D. Kristol, L. Montulli. October
-     2000. (Format: TXT=56176 bytes) (Obsoletes RFC2109) (Status: PROPOSED
-     STANDARD)
-\end{list2}
-\begin{quote}
-1.  ABSTRACT
-   This document specifies a way to create a stateful session with HTTP
-   requests and responses.  It describes two new headers, Cookie and
-   Set-Cookie, which carry state information between participating
-   origin servers and user agents.  The method described here differs
-   from Netscape's Cookie proposal, but it can interoperate with
-   HTTP/1.0 user agents that use Netscape's method.  (See the HISTORICAL
-   section.)
-\end{quote}
-
-(Citatet er fra RFC-2109)
-
-\slide{Transport Layer Security}
 
 
 \slidenext

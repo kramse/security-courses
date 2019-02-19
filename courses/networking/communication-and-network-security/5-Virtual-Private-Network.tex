@@ -7,23 +7,98 @@
 \begin{document}
 
 \mytitlepage
-{Virtual Private Network}
+{5. Virtual Private Network}
 {Communication and Network Security 2019}
 
 
 \slide{Plan for today}
 
+{~}
+\hlkrightpic{8cm}{0cm}{Encrypt_all_the_things.png}
+
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item IPsec and L2TP/IPsec
+\item TLS VPN with example OpenVPN
+\item Linux Wireguard VPN
+\item Microsoft DirectAccess and VPN (RAS)
 \end{list2}
 \item Exercises
 \begin{list2}
-\item
+\item go through the ones used by participants, how are they secured why/why not
+\item Sniff data without VPN and after VPN turned on
 \end{list2}
 \end{list1}
 
+
+\slide{Reading Summary}
+
+VPN are everywhere, but could be better!
+
+\begin{quote}
+\link{https://en.wikipedia.org/wiki/Virtual_private_network}\\
+\link{https://kb.juniper.net/InfoCenter/index?page=content&id=KB11104}\\
+IPSec VPN between JUNOS and Cisco IOS
+
+Skim:\\
+\link{https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching}\\
+\link{https://en.wikipedia.org/wiki/OpenVPN}\\
+\link{https://en.wikipedia.org/wiki/IPsec}\\
+\link{https://en.wikipedia.org/wiki/DirectAccess}\\
+\link{https://www.wireguard.com/papers/wireguard.pdf}
+\end{quote}
+
+
+\slide{Fokus 2019: VPN alle steder}
+
+\hlkimage{12cm}{ks-kyung-784757-unsplash.jpg}
+
+\begin{list2}
+\item VPN er relevant for alle der har data af værdi
+\item Sikrer data der flyttes
+\item Virtual Private Network dækker over klienter der kobler op, og site-2-site
+\end{list2}
+
+\slide{Your Privacy }
+
+\hlkimage{18cm}{images/internet-browsing.pdf}
+
+\begin{list2}
+\item Your data travels far
+\item Often crossing borders, virtually and literally
+\end{list2}
+
+\slide{Data found in Network data }
+
+\begin{list1}
+\item Lets take an example, DNS
+\item Domain Name System DNS breadcrumbs
+\begin{list2}
+\item Your company domain, mailservers, vpn servers
+\item Applications you use, checking for updates, sending back data
+\item Web sites you visit
+\end{list2}
+\vskip 1cm
+\item Advice show your users,ask them to participate in a experiment
+\end{list1}
+
+\emph{\bf Join this Wireless network SSID and we will show you who you are on the internet}
+
+\vskip 2 cm
+\centerline{\bf\Large Maybe use VPN more - or always!}
+
+\slide{VPN}
+
+\hlkimage{9cm}{openvpn-gui-systray.png}
+
+\begin{list1}
+\item Virtual Private Networks are useful - or even required when travelling
+\item VPN \link{http://en.wikipedia.org/wiki/Virtual_private_network}
+\item SSL/TLS VPN - Multiple incompatible vendors: OpenVPN, Cisco, Juniper, F5 Big IP
+\item IETF IPsec does work cross-vendors - sometimes, and is also increasingly becoming blocked or unusable due to NAT :-(
+\item Recommended starting point OpenVPN - free and open, clients for "anything"
+\end{list1}
 
 \slide{IPsec}
 
@@ -33,22 +108,25 @@
 \item RFC-2402 IP Authentication Header (AH)
 \item RFC-2406 IP Encapsulating Security Payload (ESP)
 \item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
+\item ... IP Security (IPsec) and Internet Key Exchange (IKE) Document Roadmap\\
+\link{https://tools.ietf.org/html/rfc6071}
 \item Både til IPv4 og IPv6
 \item {\bfseries MANDATORY} i IPv6! - et krav hvis man implementerer
   fuld IPv6 support
-\item god præsentation på \link{http://www.hsc.fr/presentations/ike/}
 \item Der findes IKEscan til at scanne efter IKE
   porte/implementationer\\
 \link{http://www.nta-monitor.com/ike-scan/index.htm}
 \end{itemize}
 
+
+
 \slide{IPsec er ikke simpelt!}
 
-\hlkimage{16cm}{images/ipsec-hsc.png}
+\hlkimage{12cm}{images/ipsec-hsc.png}
 \centerline{Kilde: \link{http://www.hsc.fr/presentations/ike/}}
 
 
-\slide{RFC-2402 IP AH}
+\slide{RFC-2402 IP Authentication Header AH}
 
 \begin{alltt}
 \small
@@ -67,7 +145,7 @@
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 \end{alltt}
 
-\slide{RFC-2402 IP AH}
+\slide{RFC-2402 IP Authentication Header AH}
 
 Indpakning - pakkerne før og efter Authentication Header:
 \begin{alltt}
@@ -87,11 +165,32 @@ Indpakning - pakkerne før og efter Authentication Header:
                  except for mutable fields
 \end{alltt}
 
-\slide{RFC-2406 IP ESP}
+\slide{RFC-2406 IP Encapsulating Security Payload ESP}
 
+\begin{alltt}\small
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ----
+|               Security Parameters Index (SPI)                 | ^Int.
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |Cov-
+|                      Sequence Number                          | |ered
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | ----
+|                    Payload Data* (variable)                   | |   ^
+|                                                               | |Conf.
++               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |Cov-
+|               |     Padding (0-255 bytes)                     | |ered*
++-+-+-+-+-+-+-+-+               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |   |
+|                               |  Pad Length   | Next Header   | v   v
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ------
+|         Integrity Check Value-ICV   (variable)                |
+~                                                               ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\slide{RFC-2406 IP Encapsulating Security Payload ESP}
 Pakkerne før og efter:
-\begin{alltt}
-\small
+\begin{alltt}\small
                BEFORE APPLYING ESP
          ---------------------------------------
    IPv6  |             | ext hdrs |     |      |
@@ -109,44 +208,23 @@ Pakkerne før og efter:
                                |<---- authenticated ---->|
 \end{alltt}
 
-\slide{ipsec konfigurationsfiler}
 
-\begin{list1}
-%\item Der er følgende dokumenter til IPsec på websitet\\
-% \link{www.security.net/courses/ipsec}:
-\item Der er følgende filer tilgængelige\\
-  \begin{list2}
-  \item konfigurationsfiler i NetBSD/FreeBSD/Mac OS X format - med
-    \verb+setkey+ kommandoen
-  \item konfigurationsfil til OpenBSD server - med \verb+ipsecadm+
-    kommandoen
-%  \item IKE.pdf \emph{Dynamic Management of the IPsec Parameters:
-%      The IKE Protocol}, fra Herve Schauer Consultants
-%\item NetBSD IPsec dokumentation
-%\item Cisco \emph{Introduction to IP security}
-  \end{list2}
-\end{list1}
-
-
-\slide{IPsec setup}
+\slide{IPsec setup eksempel}
 
 %\hlkimage{}{images/}
 
 \begin{list1}
-  \item Client: Mac OS X/NetBSD/FreeBSD - samme syntaks\\
+\item Client: Mac OS X/NetBSD/FreeBSD - samme syntaks\\
 \verb+rc.ipsec.client+
-
 \item Server: OpenBSD - bruger ipsecadm kommando\\
 \verb+rc.ipsec.server+
-
-\item Øvelse til læseren: lav samme i Cisco IOS
-\item Det vil ofte være relevant at se på IOS og IPsec i laboratoriet
 \item Dette setup når vi ikke at demonstrere
+\item Vises for at trigge forundring over hvor kryptiske sådanne konfigurationer kan se ud!
 \end{list1}
 
 \slide{rc.ipsec.client - client setup - adresser}
 
-\begin{verbatim}
+\begin{alltt}\small
 #!/bin/sh
 # /etc/rc.ipsec.client - IPsec client configuration
 # built from http://rt.fm/~jcs/ipsec_wep.phtml
@@ -163,11 +241,11 @@ AHKEY=`cat ipsec.ah.key`
 # Flush IPsec SAs in case we get called more than once
 setkey -F
 setkey -F -P
-\end{verbatim}
+\end{alltt}
 
 \slide{rc.ipsec.client - client setup - SAs}
 
-\begin{verbatim}
+\begin{alltt}\small
 # Establish Security Associations
 # 1000 is from the server to the client
 # 1001 is from the client to the server
@@ -185,14 +263,12 @@ ipsec esp/tunnel/$SECCLIENT-$SECSERVER/default;
 spdadd $SECSERVER $SECCLIENT any -P in \
 ipsec esp/tunnel/$SECSERVER-$SECCLIENT/default;
 EOF
-\end{verbatim}
+\end{alltt}
 
 \slide{rc.ipsec.server - server setup - adresser}
 
-\begin{verbatim}
+\begin{alltt}\small
 #!/bin/sh
-#
-# Henrik Lund Kramshøj
 # /etc/rc.ipsec - IPsec server configuration
 # built from http://rt.fm/~jcs/ipsec_wep.phtml
 # OpenBSD syntaks!
@@ -206,12 +282,12 @@ AHKEY=`cat ipsec.ah.key`
 
 # Flush IPsec SAs in case we get called more than once
 ipsecadm flush
-\end{verbatim}
+\end{alltt}
 
 
 \slide{rc.ipsec.server - server setup - SAs}
 
-\begin{verbatim}
+\begin{alltt}\small
 # Establish Security Associations
 #
 # 1000 is from the server to the client
@@ -223,13 +299,13 @@ ipsecadm new esp -spi 1000 -src $SECSERVER -dst $SECCLIENT \
 ipsecadm new esp -spi 1001 -src $SECCLIENT -dst $SECSERVER \
 -forcetunnel -enc blf -key $ESPKEY \
 -auth sha1 -authkey $AHKEY
-\end{verbatim}
+\end{alltt}
 
 
 \slide{rc.ipsec.server - server setup - flows}
 
-\small
-\begin{verbatim}
+
+\begin{alltt}\small
 # Create flows
 #
 # Data going from the outside to the client
@@ -245,7 +321,170 @@ ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
 # IPv6
 #ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
 #-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
-\end{verbatim}
+\end{alltt}
+
+
+
+\slide{IPSec VPN between JUNOS and Cisco IOS}
+
+\begin{alltt}\small
+Topology
+  M10
+  R1      lo0 77.77.77.77
+ge-0/0/0
+   |
+   |
+ge-0/2/0
+  M5
+  R2                                         cisco3640  lo0 88.88.88.88
+fe-0/0/0  ===========IPSec==================    fa0/1
+   |                                              |
+   |                                              |
+   +----------- fe-0/0/0  M7i  fe-0/0/1 ----------+
+                        Sydney
+\end{alltt}
+
+Source:
+\link{https://kb.juniper.net/InfoCenter/index?page=content&id=KB11104}
+
+\slide{Cisco IOS crypto setup}
+
+\begin{alltt}\small
+cisco3640#sh run
+crypto isakmp policy 10
+ authentication pre-share
+ group 2
+ lifetime 3600
+crypto isakmp key key123 address 11.0.0.1
+!
+!
+crypto ipsec transform-set ts esp-3des esp-sha-hmac
+crypto ipsec transform-set ts-man esp-des esp-md5-hmac
+!
+crypto map dyn 10 ipsec-isakmp
+ set peer 11.0.0.1
+ set transform-set ts
+ match address 120
+\end{alltt}
+
+\centerline{Not recommended settings! See later!}
+
+\slide{Routing and addresses}
+
+\begin{alltt}\small
+interface Loopback1
+ ip address 88.88.88.88 255.255.255.255
+interface FastEthernet0/1
+ ip address 12.0.0.1 255.255.255.252
+ duplex auto
+ speed auto
+ no cdp enable
+ crypto map dyn
+!
+ip classless
+ip route 0.0.0.0 0.0.0.0 FastEthernet0/1
+ip route 11.0.0.0 255.255.255.252 12.0.0.2
+ip route 77.77.77.77 255.255.255.255 FastEthernet0/1
+ip route 99.99.99.0 255.255.255.0 FastEthernet0/1
+!
+access-list 120 permit ip host 88.88.88.88 host 77.77.77.77
+end
+\end{alltt}
+
+\slide{Layer 2 Tunneling Protocol L2TP}
+
+Description from
+\link{https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol}
+\begin{quote}\small
+The entire L2TP packet, including payload and L2TP header, is sent within a User Datagram Protocol (UDP) datagram. A virtue of transmission over UDP (rather than TCP; c.f. SSTP) is that it avoids the "TCP meltdown problem".[3][4] It is common to carry PPP sessions within an L2TP tunnel. L2TP does not provide confidentiality or strong authentication by itself. IPsec is often used to secure L2TP packets by providing confidentiality, authentication and integrity. The combination of these two protocols is generally known as L2TP/IPsec (discussed below).
+\end{quote}
+
+
+Often used when crossing NAT, which everyone does ...
+
+Configuration example for Cisco:\\
+{\small \link{https://www.cisco.com/c/en/us/support/docs/security-vpn/ipsec-negotiation-ike-protocols/14122-24.html}}\\
+OpenBSD L2TP IPsec\\
+{\small\link{https://www.exoscale.com/syslog/building-an-ipsec-gateway-with-openbsd/}}
+\slide{IPsec IKE-SCAN}
+
+Scan IPs for VPN endpoints with ike-scan:
+\begin{alltt}\small
+root@kali:~# ike-scan 91.102.91.30
+Starting ike-scan 1.9 with 1 hosts
+(http://www.nta-monitor.com/tools/ike-scan/)
+91.102.91.30	Notify message 14 (NO-PROPOSAL-CHOSEN)
+HDR=(CKY-R=f0d6043badb2b7bc, msgid=f97a7508)
+
+Ending ike-scan 1.9: 1 hosts scanned in 1.238 seconds (0.81 hosts/sec).
+0 returned handshake; 1 returned notify
+\end{alltt}
+
+Source:\\
+{\small\link{http://www.nta-monitor.com/tools-resources/security-tools/ike-scan}}
+
+crack IKE psk?\\
+{\small
+\link{http://ikecrack.sourceforge.net/} \\
+\link{https://www.trustwave.com/Resources/SpiderLabs-Blog/Cracking-IKE-Mission-Improbable-(Part-1)/}}
+
+\slide{ike-scan network scanning}
+
+\begin{alltt}\small
+hlk@cornerstone03:~$ sudo ike-scan -M 91.102.91.0/24
+Starting ike-scan 1.9 with 256 hosts
+(http://www.nta-monitor.com/tools/ike-scan/)
+91.102.91.14	Notify message 14 (NO-PROPOSAL-CHOSEN)
+	HDR=(CKY-R=94dd41cf44da082b, msgid=602c35c1)
+91.102.91.30	Notify message 14 (NO-PROPOSAL-CHOSEN)
+	HDR=(CKY-R=e21e89d16f898aa5, msgid=ff41d51c)
+91.102.91.70	Notify message 14 (NO-PROPOSAL-CHOSEN)
+	HDR=(CKY-R=e882d9b4477b847b, msgid=55be4339)
+91.102.91.78	Notify message 14 (NO-PROPOSAL-CHOSEN)
+	HDR=(CKY-R=1fc54d8c3042daa3, msgid=ea705f39)
+91.102.91.150	Notify message 14 (NO-PROPOSAL-CHOSEN)
+	HDR=(CKY-R=d5470f881de6d2d9, msgid=2bf5f5ef)
+91.102.91.158	Notify message 14 (NO-PROPOSAL-CHOSEN)
+	HDR=(CKY-R=9f7af04bcb0152a9, msgid=44f26f01)
+
+Ending ike-scan 1.9: 256 hosts scanned in 40.465 seconds (6.33 hosts/sec).
+0 returned handshake; 6 returned notify
+\end{alltt}
+
+
+\slide{VPN indstillinger}
+
+\hlkimage{12cm}{crypto-rot13.pdf}
+
+\begin{list1}
+\item PPTP, hvis du bruger det så er det godt du er kommet :-D
+\item Check hvert år:
+\begin{list2}
+\item Certifikater/nøgler - ligesom TLS lange og rulles indimellem
+\item Check både client VPN og site-2-site
+\end{list2}
+\end{list1}
+
+\slide{Anbefalinger til VPN}
+
+\begin{quote}\small
+  Use the following guidelines when configuring Internet Key Exchange (IKE) in VPN technologies:\\
+* Avoid IKE Groups 1, 2, and 5.\\
+* Use IKE Group 15 or 16 and employ 3072-bit and 4096-bit DH, respectively.\\
+* When possible, use IKE Group 19 or 20. They are the 256-bit and \\
+384-bit ECDH groups, respectively.\\
+* Use AES for encryption.
+\end{quote}
+Paper:
+{\small \link{https://www.cisco.com/c/en/us/about/security-center/next-generation-cryptography.html}}
+
+\begin{list2}
+\item Certifikater/nøgler - ligesom TLS lange og rulles indimellem
+\item Algoritmer DES/3DES bye bye, husk både encryption og auth algoritmer
+\item DH-Group - +15 tak
+\item Check både client VPN og site-2-site
+\item Skift til IKEv2
+\end{list2}
 
 
 \slide{OpenVPN / OpenSSL VPN}
@@ -264,6 +503,39 @@ load balancing, failover, and fine-grained access-controls (articles)
 et problem som kaldes \emph{TCP in TCP meltdown}
 \item Kilde: \link{http://openvpn.net/}
 \end{list1}
+
+
+
+\slide{Linux Wireguard VPN}
+
+\begin{quote}\small
+WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
+\end{quote}
+
+Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
+
+\begin{list2}
+\item Going to be interesting!
+\item single round trip key exchange, based on NoiseIK
+\item Short pre-shared static keys—Curve25519
+\item strong perfect forward secrecy
+\item Transport
+speed is accomplished using ChaCha20Poly1305 authenticated-encryption
+\item encapsulation of packets in UDP
+\item WireGuard can be
+simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
+\end{list2}
+
+\slide{Microsoft DirectAccess and VPN (RAS)}
+
+Description from \link{https://en.wikipedia.org/wiki/DirectAccess}
+\begin{quote}\small
+DirectAccess, also known as Unified Remote Access, is a VPN-like technology that provides intranet connectivity to client computers when they are connected to the Internet. Unlike many traditional VPN connections, which must be initiated and terminated by explicit user action, DirectAccess connections are designed to connect automatically as soon as the computer connects to the Internet. DirectAccess was introduced in Windows Server 2008 R2, providing this service to Windows 7 and Windows 8 "Enterprise" edition clients.
+\end{quote}
+
+\begin{list2}
+\item DirectAccess establishes {\bf IPsec tunnels} from the client to the DirectAccess server, and uses {\bf IPv6} to reach intranet resources or other DirectAccess clients. This technology {\bf encapsulates the IPv6 traffic over IPv4} to be able to reach the intranet over the Internet, which still (mostly) relies on IPv4 traffic. All traffic to the intranet is encrypted using IPsec and encapsulated in IPv4 packets, which means that in most cases, no configuration of firewalls or proxies should be required.
+\end{list2}
 
 
 \slidenext

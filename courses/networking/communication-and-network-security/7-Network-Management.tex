@@ -13,8 +13,7 @@
 
 \slide{Plan for today}
 
-{~}
-\hlkrightpic{9cm}{2cm}{switch-1.pdf}
+\hlkimage{4cm}{switch-1.pdf}
 
 \begin{list1}
 \item Subjects
@@ -255,7 +254,34 @@ shared-network LOCAL-NET \{
 \}
 \end{alltt}
 
+\slide{Rogue DHCP servers}
 
+\begin{list1}
+\item Common problem in networks is people connecting devices with DHCPD servers
+\item In general make sure to segment networks
+\item Start to use port security on switches, including DHCP snooping\\
+\link{https://en.wikipedia.org/wiki/DHCP_snooping}
+\end{list1}
+
+\slide{Example port security}
+
+\begin{alltt}\small
+[edit ethernet-switching-options secure-access-port]
+set interface ge-0/0/1 mac-limit 4
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:80
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:81
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:83
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:85
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:88
+set interface ge-0/0/2 mac-limit 4
+set interface ge-0/0/1 persistent-learning
+set interface ge-0/0/8 dhcp-trusted
+set vlan employee-vlan arp-inspection
+set vlan employee-vlan examine-dhcp
+set vlan employee-vlan mac-move-limit 5
+\end{alltt}
+
+Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
 
 \slide{Simple Network Management Protocol}
 
@@ -383,7 +409,7 @@ Oxidized is a network device configuration backup tool. It's a RANCID replacemen
 \slide{RANCID output}
 
 
-\hlkimage{20cm}{images/rancid-email.png}
+\hlkimage{15cm}{images/rancid-email.png}
 
 
 \exercise{ex:snmpwalk}
@@ -395,8 +421,7 @@ Oxidized is a network device configuration backup tool. It's a RANCID replacemen
 \begin{slidelist}
 \item You should always configure your devices properly
 \item Turn on SNMP, probably SNMPv2
-\item Turn on LLDP Link Layer Discovery Protocol, \\
-like CDP but vendor-neutral\\
+\item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
 {\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
 \item Centralized syslog
 \vskip 1 cm

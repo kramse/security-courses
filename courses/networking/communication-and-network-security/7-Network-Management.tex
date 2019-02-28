@@ -13,19 +13,22 @@
 
 \slide{Plan for today}
 
+{~}
+\hlkrightpic{9cm}{2cm}{switch-1.pdf}
+
 \begin{list1}
 \item Subjects
 \begin{list2}
 \item Network Management
-\item Monitoring
-\item Centralized management SSH, Jump hosts
 \item SNMP version 2 vs version 3
 \item Bruteforcing network devices SSH vs SNMP
-\item Centralized syslog
+\item Centralized management SSH, Jump hosts
+\item Monitoring
 \end{list2}
 \item Exercises
 \begin{list2}
-\item use SNMP and brute-force SNMP
+\item Run SNMP walk
+\item Try brute-force SNMP
 \end{list2}
 \end{list1}
 
@@ -33,6 +36,8 @@
 \slide{Reading Summary}
 
 \begin{quote}
+Network management is the process of administering and managing computer networks. Services provided by this discipline include fault analysis, performance management, provisioning of networks and maintaining the quality of service. Software that enables network administrators to perform their functions is called network management software.\\
+\link{https://en.wikipedia.org/wiki/Network_management}
 \end{quote}
 
 \begin{quote}
@@ -41,51 +46,56 @@ Skim:\\
 \link{https://nsrc.org/workshops/2015/sanog25-nmm-tutorial/materials/snmp.pdf}
 \end{quote}
 
+Very common network security task to follow guides like the ones from NSRC.org
 
-\slide{Formålet idag}
-\vskip 2 cm
+\slide{What is a core network service?}
 
-\hlkimage{5cm}{dont-panic.png}
-\centerline{\color{titlecolor}\LARGE Don't Panic!}
+\hlkimage{15cm}{nsrc-core-network-services.png}
+
+Source:
+\link{https://nsrc.org/workshops/2018/tenet-nsrc-cndo/networking/cndo/en/presentations/Campus_Operations_BCP.pdf}
+
+
+\slide{Goals}
+
+\hlkimage{8cm}{router-redundancy-1.pdf}
 
 \begin{list1}
-\item At vise de sikkerhedsmæssige aspekter af trådløse netværk
-
-\item At inspirere jer til at implementere trådløse netværk sikkert
-
-\item At fortælle jer om nogle af mulighederne for sikring af de
-  trådløse netværk
+\item Show the most important components for secure networks through network management protocols, techniques, systems
+\item Introduce essential tools for network management
 \end{list1}
+
+
+
+\slide{Network Management}
+
+\begin{quote}
+Network management is the process of administering and managing computer networks. Services provided by this discipline include fault analysis, performance management, provisioning of networks and maintaining the quality of service. Software that enables network administrators to perform their functions is called network management software.\\
+\end{quote}
+
+Source:
+\link{https://en.wikipedia.org/wiki/Network_management}
+
 
 \slide{NTP Network Time Protocol}
 
+{~}
+\hlkrightpic{5cm}{0cm}{images/xclock.pdf}
+
 \begin{list1}
-\item NTP opsætning
-\item foregår typisk i \verb+/etc/ntp.conf+ eller \verb+/etc/ntpd.conf+
-\item det vigtigste er navnet på den server man vil bruge som tidskilde
+\item Vigtigt at netværksenheder bruger korrekt tid, sikkerhed og drift
+\item Server NTP foregår typisk i \verb+/etc/ntp.conf+ eller \verb+/etc/ntpd.conf+
+\item det vigtigste er navnet på den/de servere man vil bruge som tidskilde
 \item Brug enten en NTP server hos din udbyder eller en fra \link{http://www.pool.ntp.org/}
 \item Eksempelvis:
 \end{list1}
 
 \begin{alltt}
-server ntp.cybercity.dk
-
 server 0.dk.pool.ntp.org
 server 0.europe.pool.ntp.org
 server 3.europe.pool.ntp.org
 
 \end{alltt}
-
-\slide{What time is it?}
-
-\hlkimage{8cm}{images/xclock.pdf}
-
-\begin{list1}
-\item Hvad er klokken?
-\item Hvad betydning har det for sikkerheden?
-\item Brug NTP Network Time Protocol på produktionssystemer
-\end{list1}
-
 
 \slide{What time is it? - spørg ICMP}
 
@@ -109,49 +119,41 @@ icmpush: Program finished OK
 
 \slide{Stop - NTP Konfigurationseksempler}
 
-\hlkimage{12cm}{osx-ntp.png}
+\hlkimage{7cm}{osx-ntp.png}
 
 \begin{list1}
 \item Vi har en masse udstyr, de meste kan NTP, men hvordan
 \item Vi gennemgår, eller I undersøger selv:
 \begin{list2}
-\item Airport
 \item Switche (managed)
-\item Mac OS X
 \item OpenBSD - check \verb+man rdate+ og \verb+man ntpd+
+\item Mac OS X / Windows / Linux - jeres laptops
 \end{list2}
 \end{list1}
+
+
+
+
 
 \slide{BIND DNS server}
 
+\begin{quote}
+BIND 9 is transparent open source. If your organization needs some functionality that is not in BIND 9, you can modify it, and contribute the new feature back to the the community by sending us your source. Download a tarball from the ISC web site or ftp.isc.org, or a binary from your operating system repository.
+BIND 9 has evolved to be a very flexible, full-featured DNS system. Whatever your application is, BIND 9 most likely has the required features.\\
+\link{https://www.isc.org/downloads/bind/}
+\end{quote}
+
 \begin{list1}
 \item Berkeley Internet Name Daemon server
-\item Mange bruger BIND fra Internet Systems Consortium
-   - altså Open Source
-\item konfigureres gennem \verb+named.conf+
+\item Konfigureres gennem \verb+named.conf+
 \item det anbefales at bruge BIND version 9
 \end{list1}
 
-\begin{list2}
-\item \emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 4th
-  edition Maj 2001
-\item \emph{DNS and BIND cookbook}, Cricket Liu, O'Reilly, 4th
-  edition Oktober 2002
-\end{list2}
-
-Kilde: \link{http://www.isc.org}
-
-
-
-
 \slide{BIND konfiguration - et udgangspunkt}
 
-\begin{alltt}
-\small
+\begin{alltt}\small
 acl internals \{ 127.0.0.1; ::1; 10.0.0.0/24; \};
 options \{
-        // the random device depends on the OS !
-        random-device "/dev/random"; directory "/namedb";
         port 53; version "Dont know"; allow-query \{ any; \};
 \};
 view "internal" \{
@@ -169,11 +171,6 @@ view "internal" \{
 \}
 \end{alltt}
 
-\exercise{ex:bind-version}
-
-\exercise{ex:bind-config}
-
-\exercise{ex:bind-dnszone}
 
 \slide{Små DNS tools bind-version - Shell script}
 
@@ -203,14 +200,11 @@ stop_time
 \begin{alltt}\small
 #!/usr/bin/perl
 # modified from original by Henrik Kramshøj, hlk@kramse.dk
-# 2004-08-19
-#
 # Original from: http://www.rfc.se/fpdns/timecheck.html
 use Net::DNS;
 
 my $resolver = Net::DNS::Resolver->new;
 $resolver->nameservers($ARGV[0]);
-
 my $query = Net::DNS::Packet->new;
 $query->sign_tsig("n","test");
 
@@ -223,6 +217,20 @@ foreach my $rr ($response->additional) {
 % inserting stupid $ to stop EMACS from
 \centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
 
+\slide{Unbound and NSD}
+
+\begin{quote}
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
+\end{quote}
+
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
+
+My preferred local DNS server. We will now stop and look at this configuration file and function.
+
+Also check out uncensored DNS and his DNS over TLS setup!\\
+Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
 
 \slide{DHCPD server}
 
@@ -237,20 +245,15 @@ foreach my $rr ($response->additional) {
 \begin{alltt}
 \small
 ddns-update-style ad-hoc;
-
 shared-network LOCAL-NET \{
-    option  domain-name "security6.net";
-    option  domain-name-servers 212.242.40.3, 212.242.40.51;
-    subnet 10.0.42.0 netmask 255.255.255.0 \{
-            option routers 10.0.42.1;
-            range 10.0.42.32 10.0.42.127;
+    option  domain-name "zencurity.com";
+    option  domain-name-servers 10.0.45.1;
+    subnet 10.0.45.0 netmask 255.255.255.0 \{
+            option routers 10.0.45.1;
+            range 10.0.45.32 10.0.45.127;
     \}
 \}
 \end{alltt}
-
-\exercise{ex:dhcpd-config}
-
-
 
 
 
@@ -271,6 +274,23 @@ shared-network LOCAL-NET \{
 \item det er nemmere at brute-force en community string end en
   brugerid/kodeord kombination
 \end{list1}
+
+
+
+\slide{SNMP version 2 vs version 3}
+
+\begin{list2}
+\item SNMP versions 1 and 2c are insecure
+\item SNMP version 3 created to fix this
+\item Authenticity and integrity: Keys are used for
+users and messages have digital signatures
+generated with a hash function (MD5 or SHA)
+\item Privacy: Messages can be encrypted with
+secret-key (private) algorithms
+\end{list2}
+
+Example for Juniper can be found at:\\
+{\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/snmpv3-configuration-junos-nm.html}}
 
 \slide{SNMP - \emph{hacking}}
 
@@ -296,8 +316,7 @@ shared-network LOCAL-NET \{
 \item Hvis man finder en så prøv at bruge {\bfseries snmpwalk}
   programmet - det kan vise alle tilgængelige SNMP oplysninger fra den
   pågældende host
-\item det kan være en af måderne at identificere uautoriserede WLAN
-  Access Points på - sweep efter port 161/UDP
+\item det kan være en af måderne at identificere uautoriserede enheder på - sweep efter port 161/UDP
 \item snmpwalk er et af de mest brugte programmer til at hente snmp
   oplysninger - i forbindelse med hackning og penetrationstest
 \end{list1}
@@ -312,9 +331,10 @@ shared-network LOCAL-NET \{
 \item Ovenstående er en del af Net-SNMP pakken, \link{http://net-snmp.sourceforge.net/}
 \end{list1}
 
-\exercise{ex:snmpwalk}
 
-\slide{brute force}
+
+
+\slide{Bruteforcing network devices SSH vs SNMP}
 
 \begin{list1}
 \item hvad betyder bruteforcing?\\
@@ -349,7 +369,608 @@ Options:
 \item bedre enheder giver både HTTP og kommandolinieadgang
 \item de bedste giver mulighed for SSH, fremfor Telnet
 \end{list2}
+\item Det er idag muligt at bruge scripting, som:
+\begin{list2}
+\item RANCID \link{http://www.shrubbery.net/rancid/}
+\item Ansible \link{https://www.ansible.com/}
+\item Python
+\item Also make sure to note down \link{https://github.com/ytti/oxidized}\\
+Oxidized is a network device configuration backup tool. It's a RANCID replacement!
+\end{list2}
 \end{list1}
+
+
+\slide{RANCID output}
+
+
+\hlkimage{20cm}{images/rancid-email.png}
+
+
+\exercise{ex:snmpwalk}
+\exercise{ex:hydra-brute}
+
+
+\slide{Step 1: configure devices properly}
+
+\begin{slidelist}
+\item You should always configure your devices properly
+\item Turn on SNMP, probably SNMPv2
+\item Turn on LLDP Link Layer Discovery Protocol, \\
+like CDP but vendor-neutral\\
+{\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
+\item Centralized syslog
+\vskip 1 cm
+\item And updated firmware, HTTPS and SSH only etc. the usual stuff
+\end{slidelist}
+
+
+\slide{Config example: SNMP}
+
+\begin{alltt}
+snmp \{
+    description "SW-CPH-02";
+    location "Interxion, Ballerup, Denmark";
+    contact "noc@zencurity.com";
+    community yourcommunitynotmine \{
+        authorization read-only;
+        clients \{
+            10.1.1.1/32;
+            10.1.2.2/32;
+        \}
+    \}
+\}
+\end{alltt}
+
+\slide{Location, location, location}
+
+\hlkimage{16cm}{images/snmp-location.png}
+
+\centerline{Observium picks up the location from SNMP :-)}
+
+\slide{Config example: LLDP}
+%\hlkrightimage{8cm}{images/lldp-dell-8024f.png}
+
+Dell 8024F switch LLDP
+\hlkrightpic{10cm}{0cm}{images/lldp-dell-8024f.png}
+
+
+\begin{alltt}\small
+interface ethernet 1/xg17
+mtu 9216
+lldp transmit-tlv port-desc sys-name sys-desc sys-cap
+lldp transmit-mgmt
+exit
+\end{alltt}
+
+\slide{LLDP spaghetti?}
+\hlkimage{\textwidth-3cm}{images/lldp-mess-censor.png}
+
+\centerline{LLDP is needed!}
+
+\slide{LLDP trick using tcpdump}
+
+\begin{alltt}\footnotesize
+[hlk@ljh ~]$ sudo tcpdump -i eth0 ether proto 0x88cc
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+.... wait for it ....
+11:03:55.395064 00:1c:23:80:49:ff (oui Unknown) > 01:80:c2:00:00:0e (oui Unknown),
+ethertype Unknown (0x88cc), length 60:
+	0x0000:  0207 0400 1c23 8049 fd04 0705 312f 302f  .....#.I....{\bf{}1/0/}
+	0x0010:  3331 0602 0078 0000 0000 0000 0000 0000  {\bf 31}...x..........
+	0x0020:  0000 0000 0000 0000 0000 0000 0000       ..............
+
+1 packets captured
+3 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+\vskip 2 cm
+\centerline{I know {\bf for sure} that this server is in Unit 1 port 31!}
+
+
+\slide{Basic stuff - consoles}
+
+\begin{quote}
+\it Conserver is an application that allows multiple users to watch a serial console at the same time. It can log the data, allows users to take write-access of a console (one at a time), and has a variety of bells and whistles to accentuate that basic functionality.
+\end{quote}
+
+\begin{slidelist}
+\item Watch the console!
+\item A network device rebooted - what happened?
+\item I accidently the whole network, what now?
+\item Serial consoles are not dead, and still very useful
+\item \link{http://www.conserver.com/}
+\end{slidelist}
+
+\slide{Hardware and software}
+
+\hlkimage{13cm}{images/soekris-siig-4S-3.jpg}
+
+\centerline{Soekris, 4-port serial card EUR59 / 430DKK + OpenBSD + conserver}
+
+\slide{Conserver is easy}
+\footnotesize
+\begin{verbatim}
+### set the defaults for all the consoles
+# these get applied before anything else
+default * {
+        # The '&' character is substituted with the console name
+        logfile /var/consoles/&;
+        # timestamps every hour with activity and break logging
+        timestamp 1hab;
+        # include the 'full' default
+        include full;
+        # master server is localhost
+        master localhost;
+}
+...
+console portS1 {
+        type device;
+        device /dev/cua02; parity none; baud 57600;
+        idlestring "#";
+        idletimeout 5m;         # send a '#' every 5 minutes of idle
+        timestamp "";           # no timestamps on this console
+}
+\end{verbatim}
+\normalsize
+
+\centerline{You will actually be able to say what happened at that device}
+
+
+
+\slide{Centralized management SSH, Jump hosts}
+
+\begin{quote}
+A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Jump_server}
+
+
+\slide{OpenSSH client config with jump host}
+
+My recommended SSH client settings, put in \verb+$HOME/.ssh/config+:
+\begin{alltt}\footnotesize
+Host *
+    ServerAliveInterval=30
+    ServerAliveCountMax=30
+    NoHostAuthenticationForLocalhost yes
+    HashKnownHosts yes
+    UseRoaming no
+
+Host jump-01
+  Hostname 10.1.2.3
+  Port 12345678
+
+Host fw-site-01 10.1.2.5
+  User hlk
+  Port 34
+  Hostname 10.1.2.5
+  ProxyCommand ssh -q -a -x jump-01 -W %h:%p
+\end{alltt}
+
+I configure fw using both hostname and IP,\\
+then I can use name, and any program using IP get this config too
+
+
+
+\slide{What is Ansible}
+
+\begin{quote}\small
+AUTOMATION FOR EVERYONE
+
+Ansible is designed around the way people work and the way people work together.
+
+Ansible has thousands of users, hundreds of customers and over 2,400 community contributors.
+
+750+ Ansible modules
+\end{quote}
+
+\link{https://www.ansible.com/}
+
+\slide{How Ansible Works: inventory files}
+
+List your hosts in one or multiple text files:
+\begin{alltt}\footnotesize
+[all:vars]
+ansible_ssh_port=34443
+
+[office]
+fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
+ansible_python_interpreter=/usr/local/bin/python
+
+[infrastructure]
+smtp-01     ansible_ssh_host=192.0.2.10
+ansible_python_interpreter=/usr/local/bin/python
+vpnmon-01   ansible_ssh_host=10.50.60.18
+
+\end{alltt}
+
+\begin{list2}
+\item Inventory files specify the hosts we work with
+\item Linux and OpenBSD servers shown here
+\item Real inventory for a site with development and staging may be 500 lines
+\item office and infrastructure are group names
+\end{list2}
+
+
+\slide{How Ansible Works: ad hoc commands }
+
+Using the inventory file you can run commands with Ansible:
+
+\begin{alltt}\footnotesize
+  ansible -m ping new-server
+  ansible -a "date" new-server
+  ansible -m shell -a "grep a /etc/something" new-server
+\end{alltt}
+
+\begin{list2}
+\item Running commands on multiple servers is easy now
+\item This alone has value, you can start
+\item Checking settings on servers
+\item Making small changes to servers
+\end{list2}
+
+
+\slide{How Ansible Works: Playbooks}
+
+The benefit comes with tasks listed in playbooks - do something:
+
+\begin{alltt}\footnotesize
+  - hosts: smartbox-*
+    become: yes
+    tasks:
+    - name: Create a template pf.conf
+      template:
+        src=pf/pf.conf.j2
+        dest=/etc/pf.conf owner=root group=wheel mode=0600
+     notify:
+        - reload pf
+      tags:
+        - firewall
+        - pf.conf
+\end{alltt}
+
+\begin{list2}
+\item Specify the end result, more than the steps, also restarts daemons
+\item Use the modules from\\
+\link{https://docs.ansible.com/ansible/modules_by_category.html}
+\item Jinja templates - ooooooh so great!
+\end{list2}
+
+\slide{How Ansible Works: typical execution}
+
+\begin{alltt}\footnotesize
+ansible-playbook -i hosts.cph1 -K infrastructure-firewalls.yml -t pf.conf --check --diff
+
+ansible-playbook -i hosts.cph1 -K infrastructure-firewalls.yml -t pf.conf
+
+ansible-playbook -i hosts.cph1 -K infrastructure-nagios.yml -t config-only
+
+ansible-playbook -i smartboxes -K create-pf-conf.yml -l smartbox-xxx-01
+\end{alltt}
+
+\begin{list2}
+\item Pro tip: check before you push out changes to production networks \smiley
+\item Check will see if something needs changing
+\item Diff will show the changes about to be made
+\end{list2}
+
+\slide{How Ansible Works: atypical execution / gotchas}
+
+\begin{alltt}\footnotesize
+ansible -i ../smartboxes.osl1 --become --ask-become-pass -m shell
+-a "pfctl -s rules" -l smartbox01
+
+ansible -i ../smartboxes.osl1 --become --ask-become-pass -m shell
+-a "nmap -sP 185.161.1xx.123-124 2> /dev/null| grep done" all
+\end{alltt}
+
+\begin{list2}
+\item Sometimes you need a trick or persistence
+\item Ansible moving from \emph{sudo} to \emph{become}
+\item The normal -K did not work, but the above does for ad hoc commands
+\end{list2}
+
+\slide{Life of a server}
+
+\begin{list2}
+\item Create VM
+\item Network install - with pxeboot
+\item Standard settings: hostname, LDAP, SSH, timezone,  ...
+\item Configure this server: application installation, settings, etc.
+\item Configure monitoring: like Smokeping
+\end{list2}
+
+% Get started with Ansible
+
+\slide{Get ready, Up and running with Ansible}
+
+Prequisites for Ansible - you need a Linux machine:
+\begin{list2}
+\item python language - Ansible uses this
+\item ssh keys - remote login without passwords
+\item Sudo - allow regular users to do superuser tasks
+\item Recommended tool: \verb+ssh-copy-id+ for getting your key on new server
+\item Recommended Change: \verb+sshd_config+ - no passwords allowed, no bruteforce
+\item Recommended to use: jump hosts/ProxyCommand in \verb+ssh_config+
+\item Highly recommended: Git and/or github for version control
+\end{list2}
+
+Official docs:\\
+\link{https://docs.ansible.com/ansible/intro_installation.html}
+
+\slide{Get set, Installation options}
+Options:
+\begin{enumerate}
+\item use your laptop, easy if you run Mac or Linux
+\item install and use a local virtual machine, like Kali Linux and use graphical editor like leafpad for playbooks
+\item you also need Git installed
+\end{enumerate}
+
+We will use:\\
+\verb+git clone +\link{https://github.com/kramse/ansible-workshop}
+
+
+
+\vskip 1cm
+\centerline{A goal is also to work in team on a server!}
+
+\centerline{\color{red}\LARGE  We will not do this workshop now in this course}
+
+\slide{Install Ansible on Mac and Ubuntu Linux clients}
+
+Official instructions!\\
+\link{http://docs.ansible.com/ansible/latest/intro_installation.html}
+
+\begin{list2}
+\item Mac OS X \verb+brew install ansible+ or use pip
+\begin{alltt}
+$ sudo easy_install pip
+$ sudo pip install ansible
+\end{alltt}
+\item Ubuntu Linux try something like:
+\begin{alltt}
+$ sudo apt-get update
+$ sudo apt-get install software-properties-common
+$ sudo apt-add-repository ppa:ansible/ansible
+$ sudo apt-get update
+$ sudo apt-get install ansible openssh-client
+\end{alltt}
+\end{list2}
+
+\centerline{Yes, I expect OpenSSH client is also installed :-D}
+
+\slide{Kali Linux as Ansible client}
+
+\hlkimage{13cm}{kali-ansible.png}
+
+\slide{Install python on servers}
+
+You can use Kali as a client, no problem
+
+\begin{list2}
+\item Ubuntu server: \verb+apt install python openssh-server+
+\item OpenBSD: \verb+pkg_add python+\\
+Requires \verb+PKG_PATH+ set, see below
+\end{list2}
+
+
+OpenBSD package path can be set in \verb+/root/.profile+
+\begin{alltt}\footnotesize
+PKG_PATH=ftp://mirror.one.com/pub/OpenBSD/`uname -r`/packages/`uname -m`
+PKG_PATH=https://stable.mtier.org/updates/$(uname -r)/$(arch -s):${PKG_PATH}
+export PKG_PATH
+\end{alltt}
+
+\vskip 2 cm
+\centerline{Yes, I expect OpenSSH server is also installed \smiley}
+
+
+\slide{Create OpenSSH compatible private / public key pair }
+
+\begin{alltt}\footnotesize
+hlk@generic:~$ ssh-keygen -f .ssh/kramse
+Generating public/private rsa key pair.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in .ssh/kramse.
+Your public key has been saved in .ssh/kramse.pub.
+The key fingerprint is:
+SHA256:chCjaP6BHaoPy/EMDlP6xKAP4aGAX2mknGA/ZoAzU3o hlk@generic
+The key's randomart image is:
++---[RSA 2048]----+
+|  .   o          |
+|.o . . o         |
+|BoE + .          |
+|oXoB o .         |
+|=.O=* . S        |
+|=O++.. o         |
+|X++ .            |
+|+X=              |
+|.o+o             |
++----[SHA256]-----+
+\end{alltt}
+
+\verb+/home/hlk/.ssh/kramse.pub+ is the public key in this example
+
+
+
+\slide{SSH utility ssh-copy-id}
+
+You need to copy your SSH public key to the server to use SSH+Ansible:
+
+\begin{alltt}\footnotesize
+hlk@kunoichi:hlk$ ssh-copy-id -i .ssh/kramse hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\vskip 5mm
+
+\centerline{This is the best tool for the job!}
+
+\slide{Exercise: trying Ansible}
+
+Create inventory file, and then:
+\begin{alltt}
+  ansible -m ping new-server
+  ansible -a "date" new-server
+  ansible -m shell -a "grep a /etc/something" new-server
+\end{alltt}
+
+Lets try running Ansible!
+\begin{list2}
+\item Hopefully there is a small getting started repo to clone from Github \smiley
+\item Install software: ansible and openssh-client
+\item Generate SSH key pair - see previous slides
+\item Server to use should be shown on the whiteboard (or similar)
+\item You can override user with \verb+ansible -u manager+\\
+very useful if you are bringing up a server from PXE boot using predefined user \verb+manager+
+\item Trouble? Try running with \verb+-vvv+, try manual ssh, is Python installed on server and ready?
+\end{list2}
+
+\slide{Success looks something like this}
+
+\begin{alltt}
+$ ssh-keygen -f .ssh/kramse
+... generates key pair and saves public key in .ssh/kramse.pub
+$ ssh-copy-id -i .ssh/kramse manager@10.0.42.147
+... asks for password "henrik42" and installs key
+$ cd ansible-workshop
+$ leafpad hosts.sitename \emph{# add the host server01 for your group}
+
+$ ansible -i hosts.sitename -u manager -m ping server01{\color{green}
+server01 | success >> \{
+    "changed": false,
+    "ping": "pong"
+\} }
+\end{alltt}
+
+\vskip 5mm
+\centerline{Congratulations you are now running Ansible!}
+
+\slide{Exercise: try fetching facts}
+
+\begin{alltt}\footnotesize
+$ ansible -i hosts.cph1 -u manager -m setup server01 | grep hostname
+        "ansible_hostname": "cph1-fw-cph1-01",
+\end{alltt}
+
+\begin{list2}
+\item Facts are fetched by default from servers
+\item Can be fetched / investigated using the setup module
+\item Returns JSON
+\item Try saving the output in a file and look at it:\\
+\verb+ansible -i hosts.cph1 -u manager -m setup server01 > facts.txt+\\
+\verb+less facts.txt+
+\end{list2}
+
+\vskip 5mm
+\centerline{Goal is to learn basics of Ansible by seeing some server facts}
+
+
+\slide{Exercise: try adding you own user}
+
+\begin{alltt}\footnotesize
+---
+- hosts: all:!*openbsd*
+  become: true
+  serial: 10
+tasks:
+  - group: name=yourusername state=present
+  - user: name=yourusername shell=/bin/bash group=sudo
+\end{alltt}
+
+\begin{list2}
+\item Copy above or edit the create-user.yml
+\item Replace "hlk" with your username, the one you want
+\item Run this task / playbook so your own user is created\\
+\verb+ansible-playbook -i hosts.sitename -K -u manager create-user.yml+
+\item Dont forget to install your key on this user!
+\item Try running multiple times, and try adding check and diff:\\
+{\footnotesize\verb+ansible-playbook -i hosts.sitename -K -u yourusername create-user.yml --check --diff+}
+\end{list2}
+
+\vskip 5mm
+\centerline{Congratulations: you can now do real work with Ansible!}
+
+
+\slide{Monitor your network}
+
+\begin{slidelist}
+\item MRTG The Multi Router Traffic Grapher - simple, great, fast\\
+\link{http://oss.oetiker.ch/mrtg/}
+\item Smokeping Network Latency measurements - network quality\\
+ \link{http://oss.oetiker.ch/smokeping/}
+\item NFsen Netflow monitoring - turn on at selected routers/switches
+\item LibreNMS \link{https://www.librenms.org/}
+\item Manual tools, My Traceroute, Nping
+\end{slidelist}
+
+\slide{MRTG SNMP monitoring made easy}
+
+\hlkimage{13cm}{images/mrtg-small.png}
+
+\centerline{Run configmaker, indexmaker - almost done}
+
+\slide{Smokeping packet loss}
+
+\hlkimage{12cm}{images/smokeping-packet-loss1}
+
+\slide{Smokeping latency changed}
+
+\hlkimage{12cm}{images/smokeping-latency-change.png}
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item We use mostly NFSen, but are looking at various software packages
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{12cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+\slide{LibreNMS Automatic discovery}
+
+\hlkimage{12cm}{librenms-switches.png}
+
+Automatically discover your entire network using CDP, FDP, LLDP, OSPF, BGP, SNMP and ARP.
+
+\slide{LibreNMS Geo Location}
+\hlkimage{12cm}{librenms-geo-location.png}
+
+\slide{LibreNMS wireless clients}
+\hlkimage{20cm}{images/librenms-wireless-clients.png}
+
+
+
 
 
 \slidenext

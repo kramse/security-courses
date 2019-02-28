@@ -658,7 +658,7 @@ When you have the tool running and showing data, you are done.
 {\bf Discussion:}\\
 
 
-\chapter{ARP spoofing and ettercap 20 min}
+\chapter{ARP spoofing and ettercap 20}
 \label{ex:arp-spoof-ettercap}
 
 
@@ -1007,6 +1007,81 @@ There is a lot of information available about aircrack-ng at the web site:\\
 Another tool available is pyrit and cpyrit which can break WPA-PSK using CUDA enabled graphic cards - instead of 100s of keys/second this may allow 10000s keys/second.
 
 Hashcat also is able to crack WPA \link{https://hashcat.net/hashcat/}
+
+
+
+\chapter{SNMP walk 15min}
+\label{ex:snmpwalk}
+
+{\bf Objective:}\\
+Run SNMP walk on a switch, \verb+snmpwalk+ see information from device.
+
+Lots of basic information helps defenders - AND attackers.
+
+{\bf Purpose:}\\
+SNMP is a default management protocol used in almost any network.
+
+{\bf Suggested method:}\\
+Run snmpwalk using community string public.
+Command is: \verb+snmpwalk -v 2c -c public system+
+
+%\begin{alltt}
+%$
+%\end{alltt}
+
+{\bf Hints:}\\
+Community strings private and public used to be default for network devices. Today professionel devices have no SNMP configured by default, but lots of networks install the community "public" anyway.
+
+{\bf Solution:}\\
+When you have done snmpwalk for at least one device.
+
+{\bf Discussion:}\\
+Which part of the information is most relevant to defenders, and attackers.
+
+Also remember on internal LAN segments, use Nmap:
+\begin{alltt}
+snmp-10.x.y.0.gnmap: nmap -sV -A -p 161 -sU --script=snmp-info -oA snmp-10xy 10.x.y.0/19
+snmpscan: nmap -sU -p 161 -oA snmpscan --script=snmp-interfaces -iL targets
+\end{alltt}
+
+
+\chapter{Try Hydra brute force 30min}
+\label{ex:hydra-brute}
+
+{\bf Objective:}\\
+Try a brute force program named hydra/Xhydra.
+
+You decide which service to attack, SSH or SNMP are good examples.
+
+{\bf Purpose:}\\
+Learn that some protocols allow brute forcing.
+
+{\bf Suggested method:} \\
+Make a short list of usernames and a short list of passwords
+and use hydra to brute force your way into a system. Use the editor \verb+kate+, using \verb+kate users.txt+ and \verb+kate pass.txt+ followed by a command similar to this:
+\begin{alltt}
+$ hydra -V -t 1 -L users.txt -P pass.txt 10.0.45.2 ssh
+\end{alltt}
+
+If you want to attack SNMP try with a small list of community names:
+public, private, kramse, etc.
+
+
+{\bf Hints:} \\
+When learning tools create a nice environment and check that things are working
+before trying to hack. So with brute forcing an account, create and test it!
+
+{\bf Solution:}\\
+When you have found working credentials for at least one service, like SNMP and done SNMPwalk
+
+{\bf Discussion:}\\
+The hydra program can brute force a lot of different protocols and also
+allow a lot of tuning.
+
+The hydra program does an online brute force attack, in some cases you
+can get access to data like password databases, or hash values that can
+be cracked in off-line brute force attacks.
+
 \end{document}
 
 \chapter{}
@@ -1948,24 +2023,6 @@ Se ogsï¿œ \link{http://www.loganalysis.org/}
 
 
 
-
-\chapter{SNMP walk}
-\label{ex:snmpwalk}
-
-{\bfseries Opgave:}\\
-Log ind pï¿œ et OpenBSD UNIX system og se pï¿œ \verb+snmpwalk+
-
-{\bfseries Forslag til fremgangsmï¿œde:}\\
-SNMP walk betyder at man gï¿œr igennem alle SNMP oplysningerne fra et system.
-
-{\bfseries Hjï¿œlp:}\\
-\verb+snmpwalk -v 2c -c public system+
-
-Public er default pï¿œ meget udstyr og findes stadig mange steder i produktion.
-
-Private er et andet kendt community name og gav tidligere lov til at ï¿œndre indstillingerne pï¿œ enheder.
-
-{\bfseries Diskussion:}\\
 
 
 

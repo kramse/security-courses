@@ -7,26 +7,49 @@
 \begin{document}
 
 \mytitlepage
-{Network Forensics}
+{9. Network Forensics}
 {Communication and Network Security 2019}
-
-
-
 
 \slide{Plan for today}
 
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item Centralized syslog
+\item Collect Network Evidence
+\item Netflow data
+\item Analyze Network data
+\item Network Forensics
+\item Create Incident Reports
 \end{list2}
 \item Exercises
 \begin{list2}
-\item
+\item Run forensics similar to ENISA examples
+\item Create a Kibana dashboard for looking at logs
+
 \end{list2}
 \end{list1}
 
-\slide{Logfiler}
+\slide{Reading Summary}
+
+\begin{list1}
+\item ANSM chapter 4,5,6 - 75 pages
+\item 4. Session Data
+\item 5. Full Packet Capture
+\item 6. Packet String Data
+\end{list1}
+
+\slide{IP reputation}
+
+\begin{list1}
+\item Zeek documentation Intel framework
+\link{https://docs.zeek.org/en/stable/frameworks/intel.html}\\
+\item Suricata reputation support\\
+\link{https://suricata.readthedocs.io/en/suricata-4.0.5/reputation/index.html}
+\end{list1}
+
+\slide{Centralized syslog}
+
 \begin{list1}
 \item Logfiler er en nødvendighed for at have et transaktionsspor
 \item Logfiler giver mulighed for statistik
@@ -45,8 +68,6 @@
   hvis denne får kontrol med systemet
 \end{list1}
 
-
-
 \slide{syslog}
 
 \begin{list1}
@@ -60,10 +81,7 @@
   som tunneller fra chroot'ed services til syslog i det centrale system!
 \item man kan nemt sende data til andre systemer
   \end{list2}
-\item Hvis man vil lave en centraliseret løsning er følgende link
-  vigtigt: \\
-Tina Bird, Counterpane\\
-\link{http://loganalysis.org}
+\item Man bør lave en centraliseret løsning
 \end{list1}
 
 \slide{syslogd.conf eksempel}
@@ -83,11 +101,10 @@ authpriv.debug                                          /var/log/secure
 
 \slide{Andre syslogs syslog-ng}
 
-\begin{list1}
+\begin{list2}
 \item der findes andre syslog systemer eksempelvis syslog-ng
 \item konfigureres gennem \verb+/etc/syslog-ng/syslog-ng.conf+
-\item Eksempel på indholdet af filen kunne være:
-\end{list1}
+\end{list2}
 
 \begin{alltt}
 \small
@@ -103,8 +120,10 @@ destination console_all { file("/dev/console"); };
 log { source(src); destination(messages); };
 log { source(src); destination(console_all); };
 \end{alltt}
+Kan eksempelvis TCP og garanteret aflevering af beskeder
 
 \exercise{ex:syslogd-basic}
+
 
 \slide{Logfiler og computer forensics}
 \begin{list1}
@@ -125,7 +144,6 @@ log { source(src); destination(console_all); };
 
 
 \slide{Web server access log}
-
 
 \begin{alltt}
 \footnotesize
@@ -148,8 +166,412 @@ HTTP/1.1" 304 0
 "GET /favicon.ico HTTP/1.1" 404 209
 \end{alltt}
 \vskip 1cm
-\centerline{Apache konfigureres nemt til at lytte på IPv6}
 
+Web server logs are pretty standardized, common log format.
+
+
+
+
+\slide{Logstash pipeline }
+
+\begin{verbatim}
+input { stdin { } }
+output {
+  elasticsearch { host => localhost }
+  stdout { codec => rubydebug }
+}
+\end{verbatim}
+
+
+
+\begin{list2}
+\item Logstash receives via {\bf input}
+\item Processes with {\bf filters} - grok
+\item Forward events with {\bf output}
+\end{list2}
+
+%Source:
+%Config snippet from recommended link\\
+%{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Logstash as SNMPtrap and syslog server}
+
+{\footnotesize
+\begin{verbatim}
+input {
+  snmptrap {
+    host => "0.0.0.0"
+    type => "snmptrap"
+    port => 1062
+    community => "xxxxx"
+  }
+  tcp {
+    port => 5000
+    type => syslog
+  }
+  udp {
+    port => 5000
+    type => syslog
+  }
+}
+\end{verbatim}
+}
+
+\begin{list2}
+\item We run logstash on port 5000 - but use IPtables port forwarding
+\end{list2}
+
+\centerline{Have you even configured SNMP traps?}
+
+Maybe you have a device sending SNMP traps right now ...
+
+\slide{IPtables forwarding}
+
+{\footnotesize
+\begin{verbatim}
+*nat
+:PREROUTING ACCEPT [0:0]
+# redirect all incoming requests on port 514 to port 5000
+-A PREROUTING -p tcp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 162 -j REDIRECT --to-port 1062
+COMMIT
+\end{verbatim}
+}
+
+\centerline{Inserted near beginning of /etc/ufw/before.rules on Ubuntu}
+
+Remember defense in depth, dont run a priveleged Java VM as root \smiley
+
+\slide{Grok expresssions}
+
+{\footnotesize
+\begin{verbatim}
+  filter {
+    if [type] == "syslog" {
+      grok {
+        match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp}
+        %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}
+        (?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Grok expresssions, sample from my archive}
+
+{\footnotesize
+\begin{verbatim}
+filter {
+# decode some SSHD
+if [syslog_program] == "sshd" {
+  grok {
+# May 20 10:27:08 odn1-nsm-01 sshd[4554]: Accepted publickey for hlk from
+10.50.11.17 port 50365 ssh2: DSA 9e:fd:3b:3d:fc:11:0e:b9:bd:22:71:a9:36:d8:06:c7
+
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: Accepted publickey for %{USERNAME:username} from
+  %{IP:src_ip} port %{BASE10NUM:port} ssh2" }
+
+# "May 20 10:27:08 odn1-nsm-01 sshd[4554]: pam_unix(sshd:session):
+session opened for user hlk by (uid=0)"
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: pam_unix\(sshd:session\): session opened for user
+%{USERNAME:username}" }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+
+
+
+
+\slide{Netflow data}
+\slide{Collect Network Evidence}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{14cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{25cm}{Logstash1.png}
+
+\vskip 2cm
+\begin{list2}
+\item Screenshot from Peter Manev, OISF
+\item Shown are Suricata IDS alerts processed by Logstash and Kibana
+\end{list2}
+
+
+% Suricata, Logstash, Elasticsearch, D3JShttp://d3js.org/
+\slide{Suricata with Dashboards}
+
+\hlkimage{12cm}{kibana-suricata.png}
+
+Picture from Twitter\\
+\link{https://twitter.com/nullthreat/status/445969209840128000}\\
+
+\link{http://suricata-ids.org/}
+
+
+\slide{Security Onion}
+
+\hlkimage{8cm}{security-onion.png}
+\begin{list2}
+\item Security Onion is a Linux distro for IDS, NSM, and log management
+\item \link{http://securityonion.blogspot.dk}
+\item \link{http://blog.securityonion.net/p/securityonion.html}
+\item Not so great in production, focus on fewer tools, or buy BIG CPU \smiley
+\end{list2}
+
+\centerline{Nice starting point for researching dashboards/network packets}
+
+
+\slide{Next steps}
+
+In our network we are always improving things:
+\begin{list1}
+\item Suricata IDS \link{http://www.openinfosecfoundation.org/}
+\item More graphs, with {\bf automatic identification} of IPs under attack
+\item Identification of {\bf short sessions without data} - spoofed addresses
+\item Alerting from {\bf existing} devices
+\item Dashboards with key measurements
+\end{list1}
+
+\vskip 2cm
+\centerline{\bf\Large Conclusion: Combine tools!}
+
+
+
+\slide{Analyze Network data}
+
+
+\slide{Network tools - examples}
+
+\hlkimage{16cm}{kibana-solido.png}
+\begin{list1}
+\item Net: Bro \link{http://www.bro-ids.org} Suricata \link{http://suricata-ids.org}
+\item DNS: DSC and PacketQ \link{https://github.com/dotse/packetq/wiki}
+\item Syslog: Elasticsearch, Logstash, and Kibana, called ELK stack or Elastic stack
+\item Packetbeat \link{https://www.elastic.co/products/beats/packetbeat}
+\end{list1}
+\centerline{Collect and present data more easily - non-programmers}
+
+
+\slide{Example tool, let see what BRO IDS is}
+
+\hlkimage{14cm}{bro-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Bro provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Bro has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.bro.org/}
+
+\slide{BRO more than an IDS}
+
+\begin{quote}
+	The key point that helped me understand was the explanation that Bro is a
+               domain-specific language for networking applications and that Bro-IDS
+               (http://bro-ids.org/) is an application written with Bro.
+\end{quote}
+
+Why I think you should try Bro\\
+\link{https://isc.sans.edu/diary.html?storyid=15259}\\
+
+\slide{Bro scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+	\{
+	++dns_A_reply_count;
+	\}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+	\{
+	++dns_AAAA_reply_count;
+	\}
+\end{alltt}
+
+Source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}}
+
+Trust me, this IS better than having to write network parsers in C \smiley
+
+%\slide{Bro with ELK}
+
+%\url{http://knowm.org/integrate-bro-ids-with-elk-stack/}
+
+\slide{Bro demo (on a Mac)}
+
+\begin{alltt}\small
+kunoichi:~ root# brew install bro
+
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+\end{alltt}
+
+\slide{Bro demo: Run bro}
+
+\begin{alltt}\small
+kunoichi:etc root# pwd
+/usr/local/etc
+kunoichi:etc root# grep eth0 node.cfg
+interface=eth0
+#interface=eth0
+#interface=eth0
+// My mac is not a Linux system, uses another interface naming scheme
+kunoichi:etc root# vi node.cfg
+kunoichi:etc root# grep en0 node.cfg
+interface=en0
+\end{alltt}
+
+\slide{Bro demo: Run bro}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+
+\slide{Example, Using tools similar to PacketQ}
+
+\hlkimage{20cm}{using-packetq.png}
+
+Are you using existing tools? or build your own specialised tools from scratch?\\
+
+{\footnotesize
+\link{http://securityblog.switch.ch/2013/01/22/using-packetq/}\\
+\link{http://jpmens.net/2013/05/27/server-agnostic-logging-of-dns-queries-responses/}
+}
+
+\slide{Storing query logs, old school or needed?}
+
+\hlkimage{7cm}{bro-sample-ssl-scripts.png}
+
+Looking at DNS PacketQ it was an Older link, but thinking the time is now for doing:
+
+\begin{list2}
+\item DNS query logs, keep it for at least a week? - with DSC and PacketQ
+\item SSL/TLS full logs over sessions, certs, keys - with Bro/Suricata\\
+\link{https://www.bro.org/sphinx-git/script-reference/scripts.html}
+\item Log and search with Elasticsearch?\\
+\link{https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html}
+\item Even netflow session logging, full 1:1 - NFSen or Suricata Flow mode
+%\item Moloch \link{https://github.com/aol/moloch}
+\end{list2}
+
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{6cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
+
+
+\slide{Network Forensics}
+
+\slide{ENISA}
+
+\begin{quote}
+  The European Union Agency for Network and Information Security (ENISA) is a centre of expertise for cyber security in Europe.
+
+ENISA is contributing to a high level of network and information security (NIS) within the European Union, by developing and promoting a culture of NIS in society to assist in the proper functioning of the internal market.
+\end{quote}
+
+\link{https://www.enisa.europa.eu/}
+
+\slide{ENISA exercises}
+
+\begin{list2}
+\item We will use these as examples:
+\item ENISA Presenting, correlating and filtering various feeds Handbook, Document for teachers\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/presenting-correlating-and-filtering-various-feeds-handbook}
+\item ENISA Forensic analysis, Network Incident Response\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/2016-resources/exe2_forensic_analysis_ii-handbook}
+\item ENISA Network Forensics, Handbook, Document for teachers\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/network-forensics-handbook}
+\end{list2}
+
+%\slide{Create Incident Reports}
 
 
 \slidenext

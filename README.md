@@ -2,11 +2,6 @@
 
 ## README is not updated, but presentations are added from time to time.
 
-
-## April 2016
-
-Not much to write here, the latest updates are in presentations, especially the Pentest series I-IV
-
 ## March 2015
 
 Welcome to my security-courses repo.

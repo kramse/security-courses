@@ -48,41 +48,86 @@ Exercises
 
 
 
-\slide{Basal DNS opsætning}
 
-\begin{alltt}
-domain security6.net
-nameserver 212.242.40.3
-nameserver 212.242.40.51
-nameserver 2001:1448:81:30::2
-\end{alltt}
+\slide{Fokus 2019: DNS og email}
+
+%\hlkrightpic{5cm}{2cm}{brian-patrick-tagalog-680954-unsplash.jpg}
+{~}
+
+\begin{list2}
+\item Vi er afhængige af email, modtagelse og afsendelse
+\item Når vi modtager skal det helst gå hurtigt
+\item Når vi sender skal vi ikke ende i spam mappen
+\item Phishing, hvem kan sende \emph{fra vores domæne}
+\end{list2}
+
+
+\slide{Various key attack types, clients and employees}
+
+\begin{list2}
+\item Phishing - sending fake emails, to collect credentials
+\item Spear phishing - targetted attacks
+\item Person in the middle - sniffing and changing data in transit
+\item Drive-by attacks - web pages infected with malware, often ad servers
+\item Malware transferred via USB or email
+\item Credential Stuffing, Password related, like re-use of password, see slide about being pwned
+\end{list2}
+
+\vskip 1cm
+\centerline{\Large\bf If we all wait a bit, and not click links immediately}
+
+\vskip 1cm
+Hackers try to create "urgency", click this or loose money
+
+
+
+\slide{DNS introduction}
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
 
 \begin{list1}
-\item \verb+/etc/resolv.conf+ angiver navneservere og søgedomæner
-\item typisk indhold er domænenavn og IP-adresser for navneservere
-\item Filen opdateres også automatisk på DHCP klienter
-\item {\bf Husk at man godt kan slå AAAA records op over IPv4}
-\item NB: denne fil kan hedde noget andet på UNIX varianter!
-\item eksempelvis \verb+/etc/netsvc.conf+
+\item IANA vedligeholder en liste over magiske konstanter i IP
+\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
+\item En liste af interesse er port numre, hvor et par eksempler er:
+\begin{list2}
+\item Port 25 SMTP Simple Mail Transfer Protocol
+\item Port 53 DNS Domain Name System
+\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
+\item Port 443 HTTP over TLS/SSL
+\end{list2}
+\item Se flere på \link{http://www.iana.org}
+\end{list1}
+
+\slide{Domain Name System}
+
+\hlkimage{10cm}{dns-1.pdf}
+
+\begin{list1}
+\item Gennem DHCP får man typisk også information om DNS servere
+\item En DNS server kan slå navne, domæner og adresser op
+\item Foregår via query og response med datatyper kaldet resource records
+\item DNS er en distribueret database, så opslag kan resultere i flere opslag
 \end{list1}
 
 \slide{DNS systemet}
 
 \begin{list1}
-\item Navneopslag på Internet - centralt for IPv6
-\item Tidligere brugte man en {\bfseries hosts} fil\\
+\item navneopslag på Internet
+\item tidligere brugte man en {\bfseries hosts} fil\\
 hosts filer bruges stadig lokalt til serveren - IP-adresser
 \item UNIX: /etc/hosts
 \item Windows \verb+c:\windows\system32\drivers\etc\hosts+
-\item Eksempel: www.security6.net har adressen 217.157.20.131
+\item Eksempel: www.zencurity.com har adressen 185.129.60.130
 \item skrives i database filer, zone filer
 \end{list1}
 
 \begin{alltt}
-ns1     IN      A       217.157.20.130
-        IN      AAAA    2001:618:433::1
-www     IN      A       217.157.20.131
-        IN      AAAA    2001:618:433::14
+ns1     IN      A       185.129.60.130
+        IN      AAAA    2a06:d380:0:3065::53
+www     IN      A       185.129.60.130
+        IN      AAAA    2a06:d380:0:3065::80
 \end{alltt}
 
 \slide{Mere end navneopslag}
@@ -90,7 +135,7 @@ www     IN      A       217.157.20.131
 \begin{list1}
   \item består af resource records med en type:
     \begin{list2}
-\item adresser A-records
+\item IPv4 adresser A-records
 \item IPv6 adresser AAAA-records
 \item autoritative navneservere NS-records
 \item post, mail-exchanger MX-records
@@ -100,13 +145,69 @@ www     IN      A       217.157.20.131
 \end{list2}
 \end{list1}
 \begin{alltt}
-        IN      MX      10      mail.security6.net.
-        IN      MX      20      mail2.security6.net.
+        IN      MX      10      mail.zencurity.com.
+        IN      MX      20      mail2.zencurity.com.
 \end{alltt}
 
+\slide{Basal DNS opsætning}
+
+\begin{alltt}
+domain zencurity.net
+nameserver 91.239.100.100
+nameserver 2001:67c:28a4::
+nameserver 89.233.43.71
+nameserver 2a01:3a0:53:53::
+\end{alltt}
+
+\begin{list1}
+\item \verb+/etc/resolv.conf+ angiver navneservere og søgedomæner
+\item typisk indhold er domænenavn og IP-adresser for navneservere
+\item Filen opdateres også automatisk på DHCP klienter
+\item {\bf Husk at man godt kan slå AAAA records op over IPv4}
+\item De viste servere er fra censurfridns.dk og kan benyttes frit
+\end{list1}
+
+\slide{DNS root servere}
+
+\hlkimage{20cm}{root-servers.png}
+
+\link{http://root-servers.org/}
+
+\slide{DK-hostmaster}
+
+\begin{list1}
+\item bestyrer .dk TLD - top level domain
+
+\item man registrerer ikke .dk-domæner hos DK-hostmaster, men hos en
+  registrator
+\item Et domæne bør have flere navneservere og flere postservere
+\item autoritativ navneserver - ved autoritativt om IP-adresse for
+  maskine.domæne.dk findes
+\item ikke-autoritativ - har på vegne af en klient slået en adresse op
+\item Det anbefales at overveje en service som
+  \link{http://www.gratisdns.dk} der har flere navneservere distribueret
+  over stor geografisk afstand
+\end{list1}
 
 
-\exercise{ex:basic-dns-lookup}
+\slide{Hvordan bruger man IPv6}
+
+\begin{center}
+\hlkbig
+\vskip 2 cm
+www.zencurity.com
+
+hlk@zencurity.com
+\end{center}
+
+DNS AAAA record tilføjes
+\begin{alltt}
+www     IN A    91.102.91.17
+        IN AAAA 2001:16d8:ff00:12f::2
+
+mail.zencurity.com has address 91.102.91.22
+mail.zencurity.com has IPv6 address 2a02:9d0:3000:1::216
+\end{alltt}
 
 
 
@@ -122,18 +223,14 @@ www     IN      A       217.157.20.131
 \end{list1}
 
 \begin{list2}
-\item \emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 4th
-  edition Maj 2001
-\item \emph{DNS and BIND cookbook}, Cricket Liu, O'Reilly, 4th
-  edition Oktober 2002
+\item Biblen omkring DNS og BIND er:\\
+\emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 5th
+  edition Maj 2006
 \end{list2}
-
-Kilde: \link{http://www.isc.org}
 
 \slide{BIND konfiguration - et udgangspunkt}
 
-\begin{alltt}
-\small
+\begin{alltt}\tiny
 acl internals \{ 127.0.0.1; ::1; 10.0.0.0/24; \};
 options \{
         // the random device depends on the OS !
@@ -155,15 +252,28 @@ view "internal" \{
 \}
 \end{alltt}
 
-\slide{Moderne administration}
+Maybe Git this {\small
+\link{https://labs.ripe.net/Members/ondrej_caletka/managing-dns-zones-using-git}}
 
 
-\link{https://labs.ripe.net/Members/ondrej_caletka/managing-dns-zones-using-git}
+\slide{Unbound and NSD}
 
-Lyder måske ikke moderne, men Git giver mulighed for signering mv.
+\begin{quote}
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
+\end{quote}
+
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
+
+My preferred local DNS server. We will now stop and look at this configuration file and function.
+
+Also check out uncensored DNS and his DNS over TLS setup!\\
+Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
 
 
-\slide{SMTP Simple Mail Transfer Protocol}
+
+\slide{Simple Mail Transfer Protocol introduction}
 
 \begin{alltt}\tiny
 hlk@bigfoot:hlk$ telnet mail.kramse.dk 25
@@ -186,28 +296,23 @@ QUIT
 
 \begin{list1}
 \item RFC-821 SMTP Simple Mail Transfer Protocol fra 1982
-\item RFC-2821 fra 2001 og flere andre er idag gældende
-\item \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
-\item Vedhæftede filer kodes i MIME Multipurpose Internet Mail Extensions
-\item Bemærk at MIME encoding forøger størrelsen med ca. 30\%!
-%\item Lad VÆRE med at sende store filer, dvs over 7-8MB via e-mail
+\item {\small \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}}
 \end{list1}
 
 \slide{e-mail servere}
 
 \begin{list1}
-  \item Sendmail, qmail og postfix
-\item Tre meget brugte e-mail systemer
-  \begin{list2}
-    \item Sendmail - den ældste og mest benyttede
+\item Example software Sendmail og Postfix
+\begin{list2}
+\item Sendmail - den ældste
 \item Postfix en modulært og sikkerhedsmæssigt god e-mail server\\
 er ligeledes nem at konfigurere
-\item Qmail - en underlig mailserver lavet af Dan J Bernstein, med en
-  speciel licens - ligesom programmøren
-  \end{list2}
+\end{list2}
 \item Dertil kommer diverse andre mailservere:
 \item Microsoft Exchange på Windows servere
-\item Jeg anbefaler at man har en postserver mod internet, der kun sender og modtager ekstern post, og en intern postserver der opbevarer al posten
+\item Related software Roundcube, Dovecot IMAP server, Thunderbird, etc.
+\item also need anti-spam solutions
+\item I use Spamhaus lists, \link{https://www.spamhaus.org/}
 \end{list1}
 
 
@@ -237,7 +342,7 @@ er ligeledes nem at konfigurere
 
 \slide{Test af e-mail server}
 
-\begin{alltt}
+\begin{alltt}\tiny
 [hlk]$ {\bfseries telnet localhost 25}
 Connected.
 Escape character is '^]'.
@@ -256,7 +361,13 @@ Escape character is '^]'.
 {\bfseries quit}
 \end{alltt}
 %$
-\exercise{ex:email-server-config}
+
+Skal ikke tillade relaying, og vil blive misbrugt meget hurtigt.
+
+Idag benyttes ofte en stjålet brugerkonto med brugernavn og kodeord til at sende spam.
+
+\exercise{ex:email-server-test}
+
 
 \slide{Postservere til klienter}
 
@@ -276,7 +387,7 @@ Escape character is '^]'.
 
 \slide{POP3 i Danmark}
 
-\hlkimage{15cm}{images/pop3-1.pdf}
+\hlkimage{12cm}{images/pop3-1.pdf}
 
 \begin{list1}
 \item Man har tillid til sin ISP - der administrerer såvel net som server
@@ -284,12 +395,176 @@ Escape character is '^]'.
 
 \slide{POP3 i Danmark - trådløst}
 
-\hlkimage{13cm}{images/pop3-wlan.pdf}
+\hlkimage{9cm}{images/pop3-wlan.pdf}
 \begin{list1}
 \item Har man tillid til andre ISP'er? Alle ISP'er?
 \item Deler man et netværksmedium med andre?
-\item {\color{security6blue}Brug de rigtige protokoller!}
+\item {\color{security6blue}Brug de rigtige protokoller!} IMAPS SMTPTLS
 \end{list1}
+
+
+\slide{SMTP TLS}
+
+\begin{quote}
+The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade header.
+\end{quote}
+
+\begin{list1}
+\item SMTP was extended with support for Transport Layer Security TLS
+\item Also called {\bf Opportunistic TLS}, where the quote is also from:\\ \link{https://en.wikipedia.org/wiki/Opportunistic_TLS}
+\end{list1}
+
+
+
+\slide{DNSSEC DNS integrity}
+
+\hlkimage{9cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+DNSSEC is something you should enable ASAP where possible
+
+\slide{DNSSEC}
+
+\hlkimage{20cm}{wwwdnsseckeys_02.png}
+
+\centerline{DNSSEC - nu ogs<E5> i Danmark}
+
+Du kan sikre dit domæne med DNSSEC - wooohooo!
+
+Det betyder en tillid til DNS som muliggør alskens services.
+
+Kilde:\\
+\link{https://www.dk-hostmaster.dk/english/tech-notes/dnssec/}
+
+
+\slide{DNSSEC trigger}
+
+\hlkimage{7cm}{dnssec-trigger.png}
+
+Der findes mange DNSSEC programmer, blandt andet DNSSEC-trigger som er en navneserver til din lokale PC
+
+\begin{list2}
+\item DNSSEC Validator for firefox\\ \link{https://addons.mozilla.org/en-us/firefox/addon/dnssec-validator/}
+\item OARC tools \link{https://www.dns-oarc.net/oarc/services/odvr}
+\item \link{http://www.nlnetlabs.nl/projects/dnssec-trigger/}
+\end{list2}
+
+
+
+
+
+\slide{DNSSEC and DANE}
+
+\begin{quote}
+"Objective:
+
+Specify mechanisms and techniques that allow Internet applications to
+establish cryptographically secured communications by using information
+distributed through DNSSEC for discovering and authenticating public
+keys which are associated with a service located at a domain name."
+\end{quote}
+
+\begin{list1}
+\item DNS-based Authentication of Named Entities (dane)
+\end{list1}
+
+
+
+\slide{SPF, DKIM, DMARC}
+
+\begin{list2}
+\item SPF Sender Policy Framework - which IPs can send for my domain\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+\item DKIM DomainKeys Identified Mail - when sending we use these keys\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}\\
+Who tried sending spam which does not match our SPF and DKIM, tell us!
+\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}\\
+Put everything in DNS and secure it with DNSSEC
+\item Brug allesammen, check efter ændringer!
+\end{list2}
+
+\vskip 1cm
+\centerline{\hlkbig Email security 2019 - Goals}
+
+\slide{DNS problems}
+
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, see DNS flag day\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\item DNS is unencrypted
+\end{list2}
+\end{list1}
+
+
+\slide{DNS attacks, Your registrar}
+
+\hlkimage{10cm}{krebs-lenovo-google-dns-hack.png}
+\begin{list1}
+%\item DNS is the Domain Name System, \link{https://en.wikipedia.org/wiki/Dns}
+\item DNS insecurity has huge impact on your security!
+\item Most are denial of service, by may create Mitm or confidentiality concerns
+\item Select DNS providers with care
+\end{list1}
+
+Sources:\\
+{\tiny
+\link{https://krebsonsecurity.com/2015/02/webnic-registrar-blamed-for-hijack-of-lenovo-google-domains/}\\
+\link{http://www.version2.dk/artikel/google-og-lenovo-defaced-som-foelge-af-overset-sikkerhedsproblemstilling-91295}}
+
+
+
+\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
+
+\begin{list1}
+\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
+\item Today we have competing standards:
+\item
+\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
+\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
+
+\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
+
+\item How to cofigure DoT \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
+\end{list1}
+
+
+\slide{sslscan}
+
+\begin{alltt}\small
+root@kali:~# sslscan --ssl2 web.kramse.dk
+Version: 1.10.5-static
+OpenSSL 1.0.2e-dev xx XXX xxxx
+
+Testing SSL server web.kramse.dk on port 443
+...
+  SSL Certificate:
+Signature Algorithm: sha256WithRSAEncryption
+RSA Key Strength:    2048
+
+Subject:  *.kramse.dk
+Altnames: DNS:*.kramse.dk, DNS:kramse.dk
+Issuer:   AlphaSSL CA - SHA256 - G2
+\end{alltt}
+
+Source:
+Originally sslscan from http://www.titania.co.uk
+ but use the version on Kali
+
+SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
+
 
 
 \slidenext

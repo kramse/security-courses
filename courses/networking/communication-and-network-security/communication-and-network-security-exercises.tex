@@ -1856,6 +1856,49 @@ Which log files from Zeek are most interesting to digest?
 
 
 
+\chapter{Test an e-mail server 10min}
+\label{ex:email-server-test}
+
+\chapter{}
+\label{ex:}
+
+{\bf Objective:}\\
+Try communicating with SMTP commands.
+
+{\bf Purpose:}\\
+Learn how basic the protocol is.
+
+{\bf Suggested method:}\\
+Use Kali and the telnet command line tool, if not available try nc - netcat.
+
+\begin{alltt}
+[hlk]$ {\bfseries telnet mail.zencurity.com 25}
+Connected.
+Escape character is '^]'.
+220 server ESMTP Postfix
+{\bfseries helo test}
+250 server
+{\bfseries mail from: postmaster@pentest.dk}
+250 Ok
+{\bfseries rcpt to: root@pentest.dk}
+250 Ok
+{\bfseries data}
+354 End data with <CR><LF>.<CR><LF>
+{\bfseries skriv en kort besked}
+.
+250 Ok: queued as 91AA34D18
+{\bfseries quit}
+\end{alltt}
+
+{\bf Hints:}\\
+My servr should actually not allow you to send the email, lets hope it doesn't
+
+{\bf Solution:}\\
+When you have tried sending a few emails you are done.
+
+{\bf Discussion:}\\
+How do we enforce new versions of protocol - as old as SMTP?!
+
 
 \appendix
 \rhead{\fancyplain{}{\bf \leftmark}}
@@ -2262,65 +2305,3 @@ shared-network LOCAL-NET {
 Det ville vï¿œre nï¿œsten umuligt for almindelige brugere at benytte en laptop, hvis de manuelt skulle skifte adresse fra netvï¿œrk til netvï¿œrk.
 
 Det er ofte set at folk der manuelt sï¿œtter en adresse ender med at sï¿œtte router adressen pï¿œ deres netkort, hvad sker der sï¿œ?
-
-
-
-
-
-\chapter{Konfiguration af e-mail server}
-\label{ex:email-server-config}
-
-{\bfseries Opgave:}\\
-Der skal laves e-mail server baseret pï¿œ postfix
-  som accepterer post til pentest.dk domï¿œnet
-
-Valgfrit om man vil lave denne opgave :-)
-
-{\bfseries Forslag til fremgangsmï¿œde:}\\
-Log ind og udpak postfix kildeteksten i jeres hjemmekatalog. Brug eksempelvis Fiona kursusserveren.
-
-Konfigurer til at installere i jeres hjemmekatalog og skift eventuelt
-portnummer - sï¿œ der ikke kommer konflikt med de andre pï¿œ holdet
-
-NB: Hvis flere starter server der vil lytte pï¿œ port 25 giver det
-problemer! I kan ï¿œndre portnummer i Postfix master.cf - linien der
-starter med "smtp" ï¿œndres til eksempelvis "2025"
-
-
-Tip: I kan teste serveren ved at forsï¿œge \emph{telnet localhost
-  portnr} og indtaste e-mail direkte
-
-{\bfseries Hjï¿œlp:}\\
-Test af e-mail server kan udfï¿œres med Telnet
-
-\begin{alltt}
-[hlk]$ {\bfseries telnet localhost 2025}
-Connected.
-Escape character is '^]'.
-220 server ESMTP Postfix
-{\bfseries helo test}
-250 server
-{\bfseries mail from: postmaster@pentest.dk}
-250 Ok
-{\bfseries rcpt to: root@pentest.dk}
-250 Ok
-{\bfseries data}
-354 End data with <CR><LF>.<CR><LF>
-{\bfseries skriv en kort besked}
-.
-250 Ok: queued as 91AA34D18
-{\bfseries quit}
-\end{alltt}
-%$
-
-{\bfseries Diskussion:}\\
-Det er vigtigt at en server kan komme af med beskeder om systemets
-tilstand. Husk derfor altid at sikre at der kï¿œrer en postserver -
-eventuelt den medfï¿œlgende Sendmail.
-
-Til servere der skal modtage post og sende det videre anbefales
-Postfix - den er nemmere at konfigurere end Sendmail.
-
-Husk ogsï¿œ at oprette en fil \verb+.forward+ for brugere, sï¿œledes at
-mail ikke strander pï¿œ servere. Denne fil skal blot indeholde en e-mail
-adresse hvor posten skal sendes videre til.

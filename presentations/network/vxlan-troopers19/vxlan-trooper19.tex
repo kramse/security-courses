@@ -30,6 +30,8 @@ Note: My contribution are mostly a PoC of lesser known security issues}
 \quote{\small
 Virtual Extensible LAN (VXLAN) is a network virtualization technology ... uses a VLAN-like encapsulation technique to {\bf encapsulate OSI layer 2 Ethernet frames} within layer 4 {\bf UDP datagrams}, ... VXLAN endpoints, which terminate VXLAN tunnels and may be either virtual or physical switch ports, are known as {\bf VXLAN tunnel endpoints (VTEPs)}.[2][3]
 
+\vskip 5mm
+
 The VXLAN specification was originally created by VMware, Arista Networks and Cisco.[5][6] Other backers of the VXLAN technology include Huawei,[7] Broadcom, Citrix, Pica8, Cumulus Networks, Dell EMC, Mellanox,[8] FreeBSD,[9] OpenBSD,[10] Red Hat,[11] Joyent, and Juniper Networks.
 }
 
@@ -45,17 +47,28 @@ Security Considerations\\
 
 \slide{Why do this talk}
 
-\hlkimage{12cm}{dragon-drawing-6.jpg}
+\hlkimage{8cm}{dragon-drawing-6.jpg}
 \begin{list2}
 \item New networks being built with production traffic - insecurely
 \item Vendors hype their speed of VXLAN implementations, but not the security issues
 \item I need help in designing \emph{network patterns} for good VXLAN deployments
 \item We need to increase visibility into VXLAN attacks, attacks encapsulated in VXLAN
 \item If you use VXLAN across data centers you have a complex problem at your hands
+\item Lots of blog-posts like "connect your on-prem cloud to AWS with VXLAN"
 \end{list2}
 
 %// Picture VXLAN security is VLAN hopping and ARP spoofing like its 1999
 
+\slide{What is this presentation about}
+
+\begin{list2}
+\item VXLAN is insecure, some people know, more should know
+\item VXLAN can be subverted using spoofed packets
+\item Example scripts and sample attacks shown, that I have tested
+\end{list2}
+
+\vskip 3cm
+{TL;DR This works mostly because you still CAN spoof packets across the internet. First time I encountered this was a big network!}
 
 \slide{Overview VXLAN RFC7348}
 
@@ -77,27 +90,33 @@ How does it work?
 {\bf VXLAN does not by itself provide ANY security, none, zip, nothing, nada! \\
 No confidentiality. No integrity protection.}
 
-
+\vskip 5mm
 
 \begin{list2}
 \item \emph{Just configure the firewall, router ACL, etc}
 \item Just isolate so no-one from the outside can send traffic
 \item Then what about from inside your data center, from partners, your servers
-\item Vendors does have some documents, like Arista has\\ \url{https://eos.arista.com/vxlan-security/}
-\item Cisco has a 2018 55 page \emph{VXLAN EVPN Multi-Site
-Design and Deployment} \\
-without the word security
-\item Security is not detailed as part of the regular "how to setup VXLAN"
 \end{list2}
 
-
 \vskip 1cm
-We currently have huge gaps in understanding these issues\\
-- and missing security tool coverage
+We currently have huge gaps in understanding these issues
+
+{\bf - and missing security tool coverage}
 
 \vskip 5mm
 
 {\small If hackers use GRE and IPv6 to exfiltrate data, why not VXLAN?}
+
+\slide{Ask the vendors}
+
+\begin{list2}
+\item Vendors does have some documents, like Arista has\\ \url{https://eos.arista.com/vxlan-security/}
+\item Cisco has a 2018 55 page \emph{VXLAN EVPN Multi-Site
+Design and Deployment} \\
+without the word security \smiley
+\item Security is not detailed as part of the regular "how to setup VXLAN"
+\end{list2}
+
 
 \slide{VXLAN attacks}
 

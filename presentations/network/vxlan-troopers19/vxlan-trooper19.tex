@@ -1,4 +1,4 @@
-\documentclass[Screen16to9,17pt,footrule]{foils}
+\documentclass[Screen16to9,17pt]{foils}
 %\documentclass[16pt,landscape,a4paper,footrule]{foils}
 \usepackage{zencurity-slides}
 
@@ -24,53 +24,63 @@
 {\small
 Note: My contribution are mostly a PoC of lesser known security issues}
 
+\slide{What is this presentation about}
 
-\slide{Why talk about VXLAN RFC7348}
+You will learn:
+\begin{list2}
+\item VXLAN is insecure, some people know, more should know
+\item VXLAN can be subverted using spoofed packets
+\item Example scripts and sample attacks shown, that I have tested
+\item Pointers to offensive and defensive tools for VXLAN
+\item We use insecure tech all the time, reduce and limit impact
+\end{list2}
+
+\vskip 1cm
+{\Large TL;DR This works mostly because you still CAN spoof\\
+packets across the internet.
+
+\vskip 5mm
+I encountered this in a big network \emph{recently}!}
+
+
+\slide{Why talk about VXLAN RFC7348 2014}
 
 \quote{\small
-Virtual Extensible LAN (VXLAN) is a network virtualization technology ... uses a VLAN-like encapsulation technique to {\bf encapsulate OSI layer 2 Ethernet frames} within layer 4 {\bf UDP datagrams}, ... VXLAN endpoints, which terminate VXLAN tunnels and may be either virtual or physical switch ports, are known as {\bf VXLAN tunnel endpoints (VTEPs)}.[2][3]
+Virtual Extensible LAN (VXLAN) is a network virtualization technology ... uses a VLAN-like encapsulation technique to {\bf encapsulate OSI layer 2 Ethernet frames} within {\bf layer 4 UDP datagrams}, ... VXLAN endpoints, which terminate VXLAN tunnels and may be either virtual or physical switch ports, are known as {\bf VXLAN tunnel endpoints (VTEPs)}.[2][3]
 
 \vskip 5mm
 
-The VXLAN specification was originally created by VMware, Arista Networks and Cisco.[5][6] Other backers of the VXLAN technology include Huawei,[7] Broadcom, Citrix, Pica8, Cumulus Networks, Dell EMC, Mellanox,[8] FreeBSD,[9] OpenBSD,[10] Red Hat,[11] Joyent, and Juniper Networks.
+The VXLAN specification was originally created by {\bf VMware, Arista Networks and Cisco}.[5][6] Other backers of the VXLAN technology include {\bf Huawei,[7] Broadcom, Citrix, Pica8, Cumulus Networks, Dell EMC, Mellanox,[8] FreeBSD,[9] OpenBSD,[10] Red Hat,[11] Joyent, and Juniper Networks.}
 }
 
-Source for quote:\\
-\url{https://en.wikipedia.org/wiki/Virtual_Extensible_LAN}
 
-\vskip 5mm
-\centerline{Already in production use}
+
+\vskip 10mm
+\centerline{\Large Already in production use}
 
 \vskip 1cm
 Security Considerations\\
    TBD.
 
+   Source for quote:\\
+   \url{https://en.wikipedia.org/wiki/Virtual_Extensible_LAN}
+
 \slide{Why do this talk}
 
-\hlkimage{8cm}{dragon-drawing-6.jpg}
+\hlkimage{10cm}{dragon-drawing-6.jpg}
 \begin{list2}
-\item New networks being built with production traffic - insecurely
 \item Vendors hype their speed of VXLAN implementations, but not the security issues
-\item I need help in designing \emph{network patterns} for good VXLAN deployments
+\item New networks being built with production traffic - insecurely
+\item Lots of blog-posts like "connect your on-prem cloud to AWS with VXLAN"
 \item We need to increase visibility into VXLAN attacks, attacks encapsulated in VXLAN
 \item If you use VXLAN across data centers you have a complex problem at your hands
-\item Lots of blog-posts like "connect your on-prem cloud to AWS with VXLAN"
+\item I need help in designing \emph{network patterns} for good VXLAN deployments
 \end{list2}
 
 %// Picture VXLAN security is VLAN hopping and ARP spoofing like its 1999
 
-\slide{What is this presentation about}
 
-\begin{list2}
-\item VXLAN is insecure, some people know, more should know
-\item VXLAN can be subverted using spoofed packets
-\item Example scripts and sample attacks shown, that I have tested
-\end{list2}
-
-\vskip 3cm
-{TL;DR This works mostly because you still CAN spoof packets across the internet. First time I encountered this was a big network!}
-
-\slide{Overview VXLAN RFC7348}
+\slide{Overview VXLAN RFC7348 2014}
 
 \hlkimage{21cm}{vxlan-basic.png}
 
@@ -79,29 +89,31 @@ How does it work?
 \begin{list2}
 \item Router 1 takes Layer 2 traffic, encapsulates with IP+UDP port 4789, routes
 \item Router 2 receives IP+UDP+data, decapsulates, forward/switches layer 2 onto VLAN
-%\item Most often VLAN IEEE 802.1q involved too, but not shown
-\item Lets only consider two routers
+\item Hosts 10.0.0.10 can talk to 10.0.0.20 as if they where next to each other in switch
+\item Most often VLAN IEEE 802.1q involved too, but not shown
+%\item Lets only consider two routers
 \end{list2}
 
-\centerline{Quite easy to get a working lab with Linux or OpenBSD \smiley}
+%\centerline{Quite easy to get a working lab with Linux or OpenBSD \smiley}
 
 \slide{But what about security}
 
-{\bf VXLAN does not by itself provide ANY security, none, zip, nothing, nada! \\
-No confidentiality. No integrity protection.}
+VXLAN does not by itself provide ANY security,
+none, zip, nothing, nada! \\
+No confidentiality. No integrity protection.
 
 \vskip 5mm
 
+Ways to protect:
 \begin{list2}
-\item \emph{Just configure the firewall, router ACL, etc}
-\item Just isolate so no-one from the outside can send traffic
+\item Just configure the firewall, router ACL, etc - does not really work
+\item Just isolate so no-one from the outside can send traffic, BCP38 please
 \item Then what about from inside your data center, from partners, your servers
 \end{list2}
 
 \vskip 1cm
-We currently have huge gaps in understanding these issues
-
-{\bf - and missing security tool coverage}
+{\Large We currently have huge gaps in understanding these\\
+issues - and missing security tool coverage}
 
 \vskip 5mm
 
@@ -127,10 +139,11 @@ So you are saying it is possible to produce VXLAN packets which sent across the 
 {\bf\LARGE Exactly!}
 
 \vskip 2cm
-And network people has been saying this for many years now, not news, but even more relevant to repeat it now
+And network people has been saying this for many years now, not news,\\
+but even more relevant to repeat it now
 \slide{VXLAN injection}
 
-\hlkimage{20cm}{vxlan-basic-injection.png}
+\hlkimage{19cm}{vxlan-basic-injection.png}
 
 I tested using my pentest server in one AS, sending across an internet exchange into a production network, towards Arista testing devices - no problems, it's just routed layer 3 IP+UDP packets
 
@@ -158,7 +171,7 @@ Inner Ethernet Header:
 What is possible:
 \begin{list2}
 \item Inject ARP traffic, send arbitrary ARP packets to hosts, connectivity DoS
-\item Inject SYN traffic behind the firewall, ex web servers behind load balancer
+\item Inject TCP like SYN traffic behind the firewall, ex web servers behind load balancer
 \item Inject UDP packets sourced from inside, even being sent out through firewall
 \end{list2}
 
@@ -236,7 +249,7 @@ The source port we used in the inside packet, becomes the destination port in re
 
 \slide{Example: Open UDP from inside scenarios}
 
-\hlkimage{23cm}{vxlan-basic-injection-udp-open.pdf}
+\hlkimage{20cm}{vxlan-basic-injection-udp-open.pdf}
 
 Inject UDP via VXLAN to create firewall state, will allow\\
 reverse UDP requests coming into internal server
@@ -254,9 +267,7 @@ reverse UDP requests coming into internal server
 %\item Request match state, and is forwarded to internal server on 10.0.0.10
 %\end{enumerate}
 
-{\small Tested working with Clavister with DNS UDP probes/requests, weak/no DNS inspection
-\vskip 5mm
-\centerline{May allow acess to all UDP services? Need more testing}}
+{\small Tested working with Clavister with DNS UDP probes/requests, weak/no DNS inspection. May allow acess to all UDP services? Need more testing}
 
 \slide{Send and receive - do another request}
 
@@ -323,27 +334,27 @@ Do Jazz hands if you think this is possible in real networks
 \item "Implement further attacks" to devise ways to prevent/block
 \item I would love to try everything from  \url{http://www.yersinia.net/}\\ \url{https://tools.kali.org/vulnerability-analysis/yersinia}
 \item Advanced attacks and scanning
-\item how can we secure VLANs in server networks better
+\item How can we secure VLANs in server networks better
 \item Currently brainstorming and enhancing this list into a larger VXLAN test-plan
 \end{list2}
 
 \slide{Being defensive is also what TROOPERS is about!}
 
-\hlkimage{19cm}{vxlan-basic-suricata-zeek.pdf}
+\hlkimage{17cm}{vxlan-basic-suricata-zeek.pdf}
 
 Defensive:
 \begin{list2}
 \item Many firewalls/IDS/DDoS protection would not see this traffic,\\
 do not consider ARP / Layer 2 / Tunnels / VXLAN
-\item Tool enhancements work-in-progress, adding VXLAN decap to Zeek and Suricata
-\item Trying to push knowledge about secure VXLAN deployment
+\item Lets push knowledge about secure VXLAN deployment
+\item Check for flows with a lot of UDP on port 4789 and Linux kernel default 8472
 \end{list2}
 
 \slide{Expand tool support Hping3 2018, Zeek, Suricata}
 
 \begin{list2}
 \item Scapy support VXLAN fast enough for a lot of things
-\item Very easy to get first examples working, $<$ 4 hours
+\item Very easy to get first examples working $<$ 4 hours
 \item Scapy is preferred when doing VXLAN inject to one address, \\
 receiving on completely different one (like Open UDP from inside scenarios)
 \item PoC: adding VXLAN to Hping3 - tool is a bit unsuported, forked
@@ -353,9 +364,11 @@ receiving on completely different one (like Open UDP from inside scenarios)
 \end{list2}
 
 \vskip 1cm
-My fork of Hping3 are at \url{https://github.com/kramse/hping-2018}\\
-also my patches to Suricata and Zeek there, help me
-
+\begin{list2}
+\item Updated Hping3 fork: \url{https://github.com/kramse/hping-2018} (inner checksum incorrect?)
+\item Zeek patch merged 5 days ago, \url{https://github.com/zeek/zeek/pull/300}
+\item My patch to Suricata may be next, need to talk to @inliniac and OISF
+\end{list2}
 
 
 \slide{Lessons learned}
@@ -366,6 +379,8 @@ also my patches to Suricata and Zeek there, help me
 \item How do we secure our network from external, internal BGP, internal hosts
 \item AAAARRRRRRRGGGHHHHHHH \smiley
 \item Stop using VXLAN? Discuss
+\item Using IPsec or never protocols like Generic Network Virtualization Encapsulation\\
+(Geneve) protocol?{\small \link{https://tools.ietf.org/id/draft-mglt-nvo3-geneve-encryption-option-00.html}}
 \end{list2}
 \vskip 1cm
 Really, help me, what IS the right answer? \smiley

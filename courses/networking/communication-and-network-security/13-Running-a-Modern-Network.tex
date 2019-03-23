@@ -17,7 +17,7 @@
 \item Subjects
 \begin{list2}
 \item BCP38 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing
-\item MANRS https://www.manrs.org/isps/
+\item Mutually Agreed Norms for Routing Security (MANRS)
 \item Testing security, evaluating and reporting
 \item Hardened network device configurations
 \item Jump hosts and management networks
@@ -35,13 +35,13 @@
 \slide{Reading Summary}
 
 \begin{list1}
-\item Browse \link{https://www.manrs.org/}  and read this\\ \link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}
-\item Browse / skim this:
+\item Browse\\
+\link{https://www.manrs.org/}\\
+and read this\\ {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+\item Browse / skim this:\\
 \link{https://tools.ietf.org/pdf/bcp38.pdf}
 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \end{list1}
-
-
 
 
 \slide{Infrastrukturer i praksis}
@@ -83,7 +83,7 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \item Husk du skal også kunne opdatere dine servere
 \end{list1}
 
-\slide{basalt netværk}
+\slide{Basic Network}
 
 \hlkimage{10cm}{images/demo-netvaerk.pdf}
 
@@ -98,78 +98,24 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \slide{Intrusion Detection Systems - IDS}
 
 \begin{list1}
-  \item angrebsværktøjerne efterlader spor
-
-\item hostbased IDS - kører lokalt på et system og forsøger at
+\item Angrebsværktøjerne efterlader spor
+\item Det anbefales at have IDS og flow opsamling som minimum
+\item Hostbased IDS - kører lokalt på et system og forsøger at
   detektere om der er en angriber inde
-\item network based IDS - NIDS - bruger netværket
+\item Network based IDS - NIDS - bruger netværket
 \item Automatiserer netværksovervågning:
   \begin{list2}
   \item bestemte pakker kan opfattes som en signatur
 \item analyse af netværkstrafik - FØR angreb
 \item analyse af netværk under angreb - sender en alarm
   \end{list2}
-\item \link{http://www.snort.org} - det kan anbefales at se på Snort
 \end{list1}
 
-\slide{snort}
-
-\hlkimage{5cm}{images/snort_tm.png}
-
-\begin{list1}
-\item Snort er Open Source og derfor godt til undervisning
-\item man kan se det som et antivirus system til netværket
-\item forsøger at detektere \emph{angreb}, \emph{skadelig} og
-  \emph{forkert} traffik
-\item pakker der minder om eksempelvis:
-  \begin{list2}
-    \item nmap portscan
-\item nmap OS detection - med underlige pakker
-\item fragmenter der overlapper
-\item shellcode der sendes til systemer som BIND
-  \end{list2}
-\end{list1}
-
-\slide{Snort regler}
-
-\begin{alltt}\small
-alert icmp $HOME_NET any -> $EXTERNAL_NET any (msg:"ICMP Address Mask
-Reply"; icode:0; itype:18; classtype:misc-activity; sid:386; rev:5;)
-alert icmp $EXTERNAL_NET any -> $HOME_NET any (msg:"ICMP Address Mask
-Reply undefined code"; icode:>0; itype:18; classtype:misc-activity;
-sid:387; rev:7;)
-alert icmp $EXTERNAL_NET any -> $HOME_NET any (msg:"ICMP Address Mask
-Request"; icode:0; itype:17; classtype:misc-activity; sid:388; rev:5;)
-alert icmp $EXTERNAL_NET any -> $HOME_NET any (msg:"ICMP Address Mask
-Request undefined code"; icode:>0; itype:17; classtype:misc-activity;
-sid:389; rev:7;)
-alert icmp $EXTERNAL_NET any -> $HOME_NET any (msg:"ICMP Alternate
-Host Address"; icode:0; itype:6; classtype:misc-activity; sid:390; rev:5;)
-\end{alltt}
-
-\begin{list2}
-\item sid - snort rules id - identificerer en signatur
-\item reference - hvor kommer reglen fra
-\item icode - ICMP code
-\item itype - ICMP type
-\item ... se mere i snort manualen
-\end{list2}
-
-\slide{Ulemper ved IDS}
-
-\hlkimage{5cm}{images/snort_tm.png}
-
-\begin{list1}
-\item snort er baseret på signaturer
-\item mange falske alarmer - tuning og vedligehold
-\item hvordan sikrer man sig at man har opdaterede signaturer for
-  angreb som går verden rundt på et døgn
-\end{list1}
 
 \slide{ Planlægning af IDS miljøer}
 
 \begin{list1}
-\item Før installationen
+\item Før installationen scope
 \begin{list2}
 \item Hvad er formålet - reaktion eller "statistik"
 \item Hvor skal der måles - hele netværket eller specifikke dele
@@ -179,14 +125,12 @@ Host Address"; icode:0; itype:6; classtype:misc-activity; sid:390; rev:5;)
 \begin{list2}
 \item Er infrastrukturen iorden som den er
 \item Er der gode målepunkter - monitorporte
-\item Et målepunkt eller flere
-\item Hvormeget trafik skal måles
+\item Et målepunkt eller flere, Hvor meget trafik skal måles
 \end{list2}
 \item Selve idriftsættelsen
 \begin{list2}
 \item Ændringer af infrastrukturen
-\item Installation af udstyret
-\item Test af udstyret udenfor drift
+\item Installation af udstyret og test af udstyret udenfor drift
 \item Installation i driftsmiljøet
 \item Test af udstyret i driftsmiljøet
 \end{list2}
@@ -207,34 +151,13 @@ Host Address"; icode:0; itype:6; classtype:misc-activity; sid:390; rev:5;)
 \item Gør netværket mere sikkert før du lytter på hele netværket
 \item Brug tcpdump/Ethereal til at se på trafik, lær IP pakker at
   kende
-\item Brug Snort til at evaluere
+\item Brug Suricata og Zeek til at evaluere
 \begin{list2}
-\item husk at man kan starte med Snort og senere skifte til andre
+\item husk at man kan starte med vilkårligt værktøj og senere skifte til andre
 produkter
-\item Erfaring tæller, Snort tillader at man ser de fine detaljer - motoren
+\item Praktisk erfaring med eget netværk er nødvendigt og værdifuldt
 \end{list2}
 \end{list1}
-
-\slide{ Vedligehold og overvågning af IDS miljøer}
-
-\begin{list1}
-\item Uden vedligehold er IDS værdiløst - lad hellere være!
-\begin{list2}
-\item Vedligehold af software på operativsystemet
-\item Vedligehold af IDS softwaren
-\item Vedligehold af regelsæt
-\end{list2}
-\item Overvågning - kører IDS systemet, databaser og sensorer
-\item Statistik og brug af IDS systemet
-\begin{list2}
-\item Vedligehold af rapporter - hvad er vi interesseret i
-\item Automatisk rapportgenerering - daglig rapport, rapport pr måned
-\item Specielle hændelser - hvad skete der onsdag mellem 11-12
-\end{list2}
-\item Et IDS kan også blot være en ARPwatch
-\item ARPwatch advarer hvis nogen tager adressen fra default gateway
-\end{list1}
-
 
 \slide{Honeypots}
 
@@ -250,71 +173,14 @@ produkter
   i
 \end{list1}
 
-%\slide{Prelude}
-
-%Måske Prelude i kombination med Nagios, Cricket, MRTG, RRDTool, Smokeping, ARPwatch
-
-
-%\slide{Oversigt over forsvar mod sårbarheder}
-
-\begin{list1}
-\item Hvad muligheder har man
-  \begin{list2}
-  \item Ændre miljø
-  \item forbedre systemerne
-  \item undgå standardindstillinger
-  \item vær opdateret på sikkerhedsområdet
-  \item have retningslinier - ens sikkerhedsniveau
-  \item drop kompatibilitet med usikre systemer
-  \item en god infrastruktur
-  \item brug kryptografi
-  \item brug standardbiblioteker
-  \item test af systemer
-  \end{list2}
-\end{list1}
-
-\slide{Ændre miljø}
-
-\begin{list1}
-\item Ændre arkitektur sw/hw/netværkstopologi
-  \begin{list2}
-  \item blokere porte således at en webserver IKKE kan connecte tilbage til hackeren!
-  \item blokere de services der IKKE skal tilgås udefra
-  \item skifte programmeringssprog
-  \end{list2}
-\item Husk altid at hackeren også kan gå ind ad hovedøren
-\item eksempelvis SAP Internet gateway, hvor man kunne lægge det
-  bagvedliggende system ned med loginrequests
-\end{list1}
-\slide{Forbedre systemerne}
-
-\begin{list1}
-\item Operativsystemet
-  \begin{list2}
-  \item non-executable stack
-  \item non-executable heap
-  \end{list2}
-\item Applikationsservere
-  \begin{list2}
-  \item filtrering af "dårlige" requests e-Eye sikret IIS
-  \item mere "sikker" default opsætning
-  \end{list2}
-\item Jeg tror vi vil se flere implementere den slags løsninger
-\item Eksempelvis:
-\begin{list2}
-\item Microsoft IIS web server version 6 er mere sikker i default opsætningen
-\item Apache HTTPD web server version 2 er mere modulær og nemmere at bygge sikkert
-\end{list2}
-\end{list1}
-
 \slide{Undgå standard indstillinger}
 
 \begin{list1}
 \item Giv jer selv mere tid til at patche og opdatere
-\item Tiden der går fra en sårbarhed annonceres på bugtraq til den bliver
+\item Tiden der går fra en sårbarhed annonceres på internet til den bliver
        udnyttet er meget kort idag!
 \item Ved at undgå standard indstillinger kan der
-       måske opnås en lidt længere frist - inden ormene kommer
+       måske opnås en lidt længere frist
 \item NB: ingen garanti
 \end{list1}
 
@@ -331,7 +197,7 @@ produkter
 
 \slide{Pattern: erstat FTP med HTTP}
 
-\begin{list1}
+\begin{list1}\slide{Jump Host}
 \item Hvis der kun skal distribueres filer kan man ofte benytte HTTP istedet for FTP
 \item Hvis der skal overføres med password er SCP/SFTP fra Secure Shell at foretrække
 \end{list1}
@@ -357,22 +223,66 @@ ud på internet.
 
 \slide{Anti-pattern blokering af ALT ICMP}
 
-\begin{alltt}
-ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\begin{alltt}\small
+# Simple stateful network firewall rules for allowing ICMP in IPv6 ICMPv6
+# Allow ICMPv6 destination unreach
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 1
+# Allow NS/NA/toobig (don't filter it out)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 2
+# Allow timex Time exceeded
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 3
+# Allow parameter problem
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 4
+# IPv6 ICMP - echo request (128) and echo reply (129)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 128,129
+# IPv6 ICMP - router solicitation (133) and router advertisement (134)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 133,134
+# IPv6 ICMP - neighbour discovery solicitation (135) and advertisement (136)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 135,136
 \end{alltt}
 
 \begin{list1}
+\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit netMANRS
+\end{list1}
+
+\slide{ICMPv4 beskedtyper}
+
+\begin{list1}
+\item Type
+\begin{list2}
+\item 0 = net unreachable;
+\item 1 = host unreachable;
+\item 2 = protocol unreachable;
+\item 3 = port unreachable;
+\item 4 = fragmentation needed and DF set;
+\item 5 = source route failed.
+\end{list2}
+\item Tillad disse ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\begin{list1}
 \item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net
-\vskip 1cm
-\item \end{list1}
+\end{list1}
+
 
 \slide{Anti-pattern blokering af DNS opslag på TCP}
 
 \begin{list1}
-\item Det bliver (er) nødvendigt med DNS opslag over TCP på grund af store svar. Det betyder at firewalls skal tillade DNS opslag via TCP
+\item Det bliver (er) nødvendigt med DNS opslag over TCP
 \vskip 1cm
-\item
-\item Guide:\\
+\item Store svar kræver TCP
+\item Det betyder at firewalls skal tillade DNS opslag via TCP
+\vskip 1cm
+\item De nye forslag DNS over TLS (DoT) og DNS over HTTPS (DoH)
+\item DNS kryptering bliver med TCP
+\vskip 1cm
+\item Anbefaling i enterprise netværk:\\
 Brug en caching nameserver, således at det kun er den som kan lave DNS opslag ud i verden
 
 \end{list1}
@@ -496,7 +406,7 @@ Crocker. May 1997
 
 \slide{individuel autentificering!}
 
-\hlkimage{7cm}{images/ssh-root.pdf}
+\hlkimage{4cm}{images/ssh-root.pdf}
 
 \begin{list1}
 \item Mange UNIX systemer administreres fejlagtigt ved brug af
@@ -510,8 +420,74 @@ Crocker. May 1997
 \end{list2}
 \end{list1}
 
-\slide{Jump Host}
 
-\slidenext
+\slide{Centralized management SSH, Jump hosts}
+
+\begin{quote}
+A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Jump_server}
+
+
+\slide{BCP38 RFC2827: Network Ingress Filtering}
+
+BCP38 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing
+
+\link{https://tools.ietf.org/pdf/bcp38.pdf}
+RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
+
+
+
+
+\slide{MANRS}
+
+\hlkimage{5cm}{MANRS_square.png}
+
+\begin{quote}
+  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
+\end{quote}
+
+\begin{list1}
+\item
+\item \link{https://www.manrs.org/isps/}
+\item {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+
+\end{list1}
+
+
+\slide{Testing security, evaluating and reporting}
+
+
+
+\slide{Hardened network device configurations}
+
+
+\slide{Jump hosts and management networks}
+
+
+
+\slide{DDoS protection}
+
+
+
+\slide{Check you network from outside RIPEstat, BGPmon}
+
+
+
+
+
+\slide{For Next Time}
+
+\hlkimage{2cm}{clipboard_01.png}
+
+\begin{list1}
+\item Think about the subjects from this time, write down questions
+
+\item Next time is exam preparation
+\item All books should be read by now
+\item Visit web sites and download papers if needed
+\item Retry the exercises to get more confident using the tools
+\end{list1}
 
 \end{document}

@@ -1897,6 +1897,268 @@ When you have tried sending a few emails you are done.
 How do we enforce new versions of protocol - as old as SMTP?!
 
 
+
+
+\chapter{VLANs, Routing and RPF - 2h}
+\label{ex:vlans-routing-rpf}
+
+{\bf Objective:}\\
+Configure a network and connect it to the local internet exchange. We will learn about IPv4 routing, and internet exchanges. We will also be able to configure blocking and firewall rules.
+
+Note: it is recommended to do this in teams with two laptops. One laptop stays connected to the local wifi with internet access, for searching. The other one runs a Debian server.
+
+The one running a Debian server will be configured as a router! YMMV but having an USB Ethernet adapter that can be dedicated and inserted into the VM will probably be the most efficient and ensure that VLAN tagging - required - are working.
+
+You MAY try using the built-in Ethernet in your laptop for this purpose and use \emph{bridging} to connect it to the network.
+
+{\bf Note: the network does NOT use NAT!} You can use NAT on your router, but it is recommended NOT to. If you enable NAT on your router it will be harder to connect back into your network - need to use features like port forwarding.
+
+{\bf Make sure routing is actually enabled on your device! Sysctl will show the current setting }
+
+Check using:
+\begin{alltt}
+# sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+\end{alltt}
+
+Changing it can be done using sysctl or echo:
+\begin{alltt}
+# sysctl -w net.ipv4.ip_forward=1
+net.ipv4.ip_forward = 1
+
+# echo 1 > /proc/sys/net/ipv4/ip_forward
+\end{alltt}
+
+
+{\bf Purpose:}\\
+The network built for this training allows you to configure network devices without affecting production networks. You can make all the mistakes and no manager will ask you to write incident reports.
+
+Your team will have a prefix of IPv4 /16, example 10.14.0.0/16. The same ID 14 in this example is used for other purposes too.
+
+All your devices must end up in this network.
+
+There are  multiple networks including the other teams, all are in 10/8.
+
+The uplink expects your connection to the rest of the networks are done with a switch using the internet exchange model with a peering network of 10.10.10.0/24. The core network will initially have a static route pointing all of your prefix to your peering address.
+
+Your router will need an interface in this range, to be able to communicate to the internet and the other networks.
+
+{\bf Suggested method:}\\
+Download the provided Ansible recipes for Debian
+
+OR download a firewall image for your favourite router/firewall and configure this.
+
+\section*{Initial steps to get started}
+\begin{enumerate}
+\item Cable a laptop to any port, except the first one - port 1/0/1
+\item Take control of the switch, default settings are in place, see label on bottom and use Ethernet preferably
+\item Add VLAN with ID: 2770 Name: KramsIX
+\item Configure the Uplink port with VLAN tag: 2770
+\item Configure the first port with VLAN tag: 2770\\
+If you keep the port in VLAN 1 you should be able to connect to the switch management via this port using tagged or untagged, as you prefer \smiley
+\item Configure VLAN interface on your router with the peering IP in the peering LAN 10.10.10.0/24 - if you team ID is 14, then your peering IP is 10.10.10.14/24
+\item Ping 10.10.10.1 from your router
+\item Add 10.10.10.1 as your default gateway\\
+Dont worry about
+\end{enumerate}
+
+\hlkimage{10cm}{vlan-tag-kramsix.png}
+
+When your router can ping 10.10.10.1, and possibly the outside world - congratulate yourself! You have just used VLAN tagging successfully!
+
+If your other laptop can also ping your router from the training network, awesome!
+
+Tools to use for debugging, traceroute, nping, arp
+
+PS The "peering LAN" uses tags to avoid the multiple switches with the same initial configuration to interfere. Only allowing VLAN tagged packets ensure only "configured devices" are let in. Real internet exchanges have lots of rules about which devices you may connect and which traffic is allowed.
+
+\section*{Implement your VLAN and IP plan}
+
+Now that your router is connected continue by adding your VLANs and IPs.
+\begin{enumerate}
+\item Add your VLANs using the names from your plan.\\
+If you have no plan then use VLAN 100 LAN, VLAN 200 Wifi
+\item Add ports to your VLAN - may be done while defining them too.\\
+You may have a VLAN 100 which is intended for LAN traffic then add this as untagged on a port and tagged to the router port 1/0/1
+\item Add your VLAN interfaces and IPs to the router\\
+Again, if VLAN 100 is the LAN, add an interface to router with this tag and IP 10.14.100.1 - some prefer the first for routers, others the last .254
+\item When adding the interface and port for the Wifi - make the port towards the AP untagged in your VLAN initially. The wifi APs are configured with only one SSID and will just bridged this traffic to the Ethernet port.\\
+Using VLAN tagging for the wifi, multiple SSIDs require reconfiguration of the wifi AP - you can do this though.
+\end{enumerate}
+
+Check using laptop that you can ping your router, before trying to ping other parts of the network. From the router you should also provide DHCP service - to avoid the clients needing a static IP.
+
+If you are new to routing it may be recommended to have no firewall rules initially. If the routing parts work without trouble then enable firewall.
+
+\section*{Advanced variants}
+\begin{enumerate}
+\item Remove the default route from your router, replace by a BGP connection to the router 10.10.10.1 using BGP with default settings, no password\\
+When the BGP connection is working, ask trainer to remove static route
+\item Reverse Path Forwarding (RPF) check can be added using Access Control Lists ACLs
+\item Run a DMZ with a web server and block everything except 80/tcp and 443/tcp
+\end{enumerate}
+
+
+{\bf Hints:}\\
+Use your team, search the internet, ask for help.
+
+This is a complex routing exercise, if you are new to routing, take it easy.
+
+{\bf Solution:}\\
+When you have a network that allows you to surf from inside your own network and one that allows traffic from the training network into your network - you are done.
+
+{\bf Discussion:}\\
+How much in this exercise is similar to real networks?
+
+I would say a lot. The exercise emulates a large part of the technologies used in real networks, including layer 3 routing having a peering internet exchange and a transit provider. Also the lab networks allows for playing with layer 2 features such as port security settings.
+
+\chapter{Monitoring - setup LibreNMS - 30 min}
+\label{ex:librenms-setup}
+
+{\bf Objective:}\\
+See and work with LibreNMS - for a little while.
+
+{\bf Purpose:}\\
+Show that initial setup of LibreNMS is quite easy, and immediately gives some results.
+
+{\bf Suggested method:}\\
+Choose installation method from:\\
+\link{https://docs.librenms.org/Installation/}
+
+Prebuilt docker and VM images will be fastest.
+
+{\bf Hints:}\\
+As they themselves write on the web page \link{https://www.librenms.org/}
+
+\begin{quote}
+LibreNMS is a fully featured network monitoring system that provides a wealth of features and device support.
+\end{quote}
+
+If you feel this is too much work, ask for login to the central one used for the core network.
+
+{\bf Solution:}\\
+When you have played around with LibreNMS you are done.
+
+It is recommended to look at:
+\begin{itemize}
+\item How basic information about devices are presented, from devices when added - and nothing more.\\
+See how to add a device and add your own. \link{https://docs.librenms.org/Support/Adding-a-Device/}
+\item How SNMP location is used to categorize devices and provice maps, see \link{https://docs.librenms.org/Extensions/World-Map/}
+\item How protocols like LLDP allow LibreNMS to make maps, see \link{https://docs.librenms.org/Extensions/Network-Map/}
+\item How port description can be used for describing ports, \link{https://docs.librenms.org/Extensions/Interface-Description-Parsing/}
+\end{itemize}
+
+Most of this happens with very little effort. Just configure devices consistently and they will be presented nicely.
+
+{\bf Discussion:}\\
+Have you configured port description? Try it!
+
+Real networks have policies for port description settings.
+
+\chapter{IDS with Bro and Suricata - 30min}
+\label{ex:suricata-real-network}
+
+{\bf Objective:}\\
+Add your Suricata and Zeek server to the network, use it to monitor your traffic.
+
+{\bf Purpose:}\\
+Show how an IDS box is added to a network.
+
+{\bf Suggested method:}\\
+Configure a mirror port - select a high numbered port not in use.
+
+Then configure source ports, the ones in current use and destination to the selected high port.
+
+If using the TP-Link T1500G-10PS then this link should describe the process:\\
+{\small\url{https://www.tp-link.com/en/configuration-guides/mirroring_traffic/?configurationId=18210}}
+
+Which describe:
+\begin{enumerate}
+\item Choose the menu MAINTENANCE > Mirroring
+\item Select Edit for the Mirror Session 1
+\item In the Destination Port Config section, specify a destination port for the mirroring session, and click Apply
+\item In the Source Interfaces Config section, specify the source interfaces and click Apply
+\end{enumerate}
+
+Using the command line would be similar to this:
+\begin{alltt}
+Switch#configure
+Switch(config)#monitor session 1 destination interface gigabitEthernet 1/0/7
+Switch(config)#monitor session 1 source interface gigabitEthernet 1/0/1-4 both
+Switch(config)#monitor session 1 source cpu 1 both
+\end{alltt}
+
+
+{\bf Hints:}\\
+Selecting a port away from the existing ones allow easy configuration of the source to be like, Source ports 1-4 and destination 7 - and easily expanded when port 5 and 6 are activated.
+
+{\bf Solution:}\\
+When your team has configured a mirror port and seen traffic using your IDS or just tcpdump you are done.
+
+{\bf Discussion:}\\
+How would you monitor a larger network?
+
+Cisco has a feature named RSPAN
+
+\begin{quote}
+Remote SPAN (RSPAN): An extension of SPAN called remote SPAN or RSPAN. RSPAN allows you to monitor traffic from source ports distributed over multiple switches, which means that you can centralize your network capture devices. RSPAN works by mirroring the traffic from the source ports of an RSPAN session onto a VLAN that is dedicated for the RSPAN session. This VLAN is then trunked to other switches, allowing the RSPAN session traffic to be transported across multiple switches. On the switch that contains the destination port for the session, traffic from the RSPAN session VLAN is simply mirrored out the destination port.
+\end{quote}
+Source: {\small\link{https://community.cisco.com/t5/networking-documents/understanding-span-rspan-and-erspan/ta-p/3144951}}
+
+
+
+\chapter{Configure port security - 30 min}
+\label{ex:port-security}
+
+{\bf Objective:}\\
+See the options available for port security on the local switch
+
+{\bf Purpose:}\\
+Even small cheap switches like the ones used in the training have options that can help protect a network. Such as:
+
+\begin{itemize}
+\item Max Learned Number of MAC\\
+
+Specify the maximum number of MAC addresses that can be learned on the port. When the learned MAC address number reaches the limit, the port will stop learning. It ranges from 0 to 64. The default value is 64.
+
+\item Exceed Max Learned Trap\\
+
+Enable Exceed Max Learned, and when the maximum number of learned MAC addresses on the specified port is exceeded, a notification will be generated and sent to the management host.
+
+\item Learn Address Mode\\
+
+Select the learn mode of the MAC addresses on the port. Three modes are provided:
+
+Delete on Timeout: The switch will delete the MAC addresses that are not used or updated within the aging time. It is the default setting.
+
+Delete on Reboot: The learned MAC addresses are out of the influence of the aging time and can only be deleted manually. The learned entries will be cleared after the switch is rebooted.
+
+Permanent: The learned MAC addresses are out of the influence of the aging time and can only be deleted manually. The learned entries will be saved even the switch is rebooted.
+
+\item Status when exceeded\\
+Drop: When the number of learned MAC addresses reaches the limit, the port will stop learning and discard the packets with the MAC addresses that have not been learned.
+
+Forward: When the number of learned MAC addresses reaches the limit, the port will stop learning but send the packets with the MAC addresses that have not been learned.
+\end{itemize}
+
+{\bf Suggested method:}\\
+Visit the settings page, configure port security and try running the \verb+macof+ mac overflow tool from a laptop connected on that port.
+
+{\bf Hints:}\\
+There may be a configuration guide at:\\
+{\small\url{https://www.tp-link.com/en/configuration-guides/configuring_port_security/?configurationId=18227}}
+
+{\bf Solution:}\\
+When you have seen the setting, either on the available devices, or searched the internet and found the options available on your favourite device, you are done.
+
+{\bf Discussion:}\\
+Port security is often neglected, so a small cabling issue in a single device in an office may take down the whole office location network.
+
+Think about port security when installing new networks, and turn it on immediately before allowing people to connect, as most managers are wary about enabling it afterwards.
+
+
+\end{document}
+
 \appendix
 \rhead{\fancyplain{}{\bf \leftmark}}
 %\setlength{\parskip}{5pt}

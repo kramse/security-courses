@@ -16,7 +16,8 @@
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item BCP38 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing
+\item BCP38 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks\\
+ which employ IP Source Address Spoofing
 \item Mutually Agreed Norms for Routing Security (MANRS)
 \item Testing security, evaluating and reporting
 \item Hardened network device configurations
@@ -39,7 +40,7 @@
 \link{https://www.manrs.org/}\\
 and read this\\ {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
 \item Browse / skim this:\\
-\link{https://tools.ietf.org/pdf/bcp38.pdf}
+{\small\link{https://tools.ietf.org/pdf/bcp38.pdf}}\\
 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \end{list1}
 
@@ -58,11 +59,12 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \end{list2}
 \item Den kunne udvides med flere andre teknologier vi har til rådighed:
 \begin{list2}
-\item VLAN inkl VLAN trunking/distribution
-\item WPA Enterprise
+\item VLAN inkl VLAN trunking/distribution, WPA Enterprise
 \end{list2}
 \item Hvad taler for og imod - de næste slides gennemgår nogle standardsetups
-\item En slags Patterns for networking
+\item En slags patterns og
+anti-patterns for networking
+\item Husk følgende slides er min mening
 \end{list1}
 
 
@@ -83,7 +85,7 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \item Husk du skal også kunne opdatere dine servere
 \end{list1}
 
-\slide{Basic Network}
+\slide{Basic Network Security Pattern Isolate in VLANs}
 
 \hlkimage{10cm}{images/demo-netvaerk.pdf}
 
@@ -95,9 +97,10 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 
 
 
-\slide{Intrusion Detection Systems - IDS}
+\slide{Pattern use IDS to get flow, connections and data}
 
 \begin{list1}
+\item Use Intrusion Detection Systems - IDS
 \item Angrebsværktøjerne efterlader spor
 \item Det anbefales at have IDS og flow opsamling som minimum
 \item Hostbased IDS - kører lokalt på et system og forsøger at
@@ -112,7 +115,7 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \end{list1}
 
 
-\slide{ Planlægning af IDS miljøer}
+\slide{Drift og Planlægning af sikre miljøer}
 
 \begin{list1}
 \item Før installationen scope
@@ -136,7 +139,7 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \end{list2}
 \end{list1}
 
-\slide{ Opsætning og konfiguration af IDS miljøer}
+\slide{Eksempel Opsætning og konfiguration af IDS miljøer}
 
 \begin{list1}
 \item Vælg en simpel installation til at starte med!
@@ -153,7 +156,7 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
   kende
 \item Brug Suricata og Zeek til at evaluere
 \begin{list2}
-\item husk at man kan starte med vilkårligt værktøj og senere skifte til andre
+\item Husk at man kan starte med vilkårligt værktøj og senere skifte til andre
 produkter
 \item Praktisk erfaring med eget netværk er nødvendigt og værdifuldt
 \end{list2}
@@ -173,7 +176,7 @@ produkter
   i
 \end{list1}
 
-\slide{Undgå standard indstillinger}
+\slide{Forslag undgå standard indstillinger}
 
 \begin{list1}
 \item Giv jer selv mere tid til at patche og opdatere
@@ -186,6 +189,40 @@ produkter
 
 
 
+
+
+
+\slide{Brug krypterede forbindelser}
+
+\hlkimage{12cm}{images/dsniff-comments.pdf}
+
+\begin{list1}
+\item Især på utroværdige netværk kan det give problemer at benytte
+  sårbare protokoller
+\end{list1}
+
+\slide{Mission 1: Kommunikere sikkert}
+
+\begin{list1}
+\item Du må ikke bruge ukrypterede forbindelser til at administrere netværk eller servere
+\item Du må ikke sende kodeord i ukrypterede e-mail beskeder
+\end{list1}
+
+\centerline{\hlkbig Telnet daemonen - telnetd må og skal dø!}
+
+\pause
+\centerline{\hlkbig FTP daemonen - ftpd må og skal dø!}
+
+\pause
+\centerline{\hlkbig POP3 daemonen port 110 må og skal dø!}
+
+\pause
+\centerline{\hlkbig IMAPD daemonen port 143 må og skal dø!}
+
+\pause
+\vskip 1cm
+\centerline{\hlkbig\bf væk med alle de ukrypterede forbindelser!}
+
 \slide{Pattern: erstat Telnet med SSH}
 
 \begin{list1}
@@ -197,19 +234,42 @@ produkter
 
 \slide{Pattern: erstat FTP med HTTP}
 
-\begin{list1}\slide{Jump Host}
+\begin{list1}
 \item Hvis der kun skal distribueres filer kan man ofte benytte HTTP istedet for FTP
 \item Hvis der skal overføres med password er SCP/SFTP fra Secure Shell at foretrække
 \end{list1}
 
 
-\slide{Anti-patterns}
+\slide{TFTP Trivial File Transfer Protocol}
 
 \begin{list1}
-\item Nu præsenteres et antal setups, som ikke anbefales
-\item Faktisk vil jeg advare mod at bruge dem
-\item Husk følgende slides er min mening
+\item Trivial File Transfer Protocol - uautentificerede filoverførsler
+\item De bruges især til:
+  \begin{list2}
+\item TFTP bruges til boot af netværksklienter uden egen harddisk
+\item TFTP benytter UDP og er derfor ikke garanteret at data overføres korrekt
+  \end{list2}
+\item TFTP sender alt i klartekst, hverken password \\
+{\bfseries USER brugernavn} eller \\
+{\bfseries PASS hemmeligt-kodeord}!
 \end{list1}
+Still used for configuration files and firmwares
+
+\slide{FTP File Transfer Protocol}
+
+\begin{list1}
+\item File Transfer Protocol - filoverførsler
+\item Bruges især til:
+  \begin{list2}
+    \item FTP - drivere, dokumenter, rettelser - Windows Update? er
+    enten HTTP eller FTP
+  \end{list2}
+\item FTP sender i klartekst\\
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord}
+\item Der findes varianter som tillader kryptering, men brug istedet SCP/SFTP over Secure Shell protokollen
+\end{list1}
+
 
 \slide{Anti-pattern dobbelt NAT i eget netværk}
 
@@ -306,6 +366,76 @@ Brug en caching nameserver, således at det kun er den som kan lave DNS opslag u
 \end{list1}
 
 
+\slide{Pattern individuel autentificering!}
+
+\hlkimage{4cm}{images/ssh-root.pdf}
+
+\begin{list1}
+\item Mange systemer administreres fejlagtigt ved brug af
+  root-login eller andet delt administrator login
+\item Undgå direkte root-login
+\item Insister på \verb+sudo+ eller \verb+su+
+\item Hvorfor?
+\begin{list2}
+\item Sporbarheden mistes hvis brugere logger direkte ind som root
+\item Hvis et kodeord til root gættes er der direkte adgang til alt!
+\end{list2}
+\end{list1}
+
+%\slide{Jump hosts and management networks}
+
+\slide{Centralized management SSH, Jump hosts}
+
+\begin{quote}
+A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Jump_server}
+
+
+
+\slide{Mutually Agreed Norms for Routing Security (MANRS)}
+
+\hlkimage{2cm}{MANRS_square.png}
+
+\begin{quote}
+  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
+\end{quote}
+
+\begin{list1}
+\item Problems related to incorrect routing information
+\item Problems related to traffic with spoofed source IP addresses
+\item Problems related to coordination and collaboration between network operators
+\item {\small\link{https://www.manrs.org/isps/}}
+\item {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+\end{list1}
+
+
+\slide{Hosting og internet-udbydere}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item Data krydser mange internetudbydere
+\item Det er stadig muligt at spoofe mange steder fra
+\end{list2}
+
+\slide{Expected Actions in MANRS for Network Operators}
+
+\begin{list1}
+\item 1. Prevent propagation of incorrect routing information\\
+Clear routing policies and systems for correctness, route import filters
+\item 2. Prevent traffic with spoofed source IP addresses\\
+Validate source address from end-users and infrastructure, use BCP38
+\item 3. Facilitate global operational communication and coordination between network operators\\
+Maintain contact information in databases like Whois, PeeringDB
+{\small\link{https://www.peeringdb.com/}}
+
+\item Advanced
+\item 4. Facilitate validation of routing information on a global scale\\
+Use RPSL {\small\link{ https://en.wikipedia.org/wiki/Routing_Policy_Specification_Language}}
+\end{list1}
+
 \slide{At være på internet}
 
 \begin{list1}
@@ -344,49 +474,166 @@ Kilde:
 RFC-2142 Mailbox Names for Common Services, Roles and Functions. D.
 Crocker. May 1997
 
-\slide{Brug krypterede forbindelser}
 
-\hlkimage{12cm}{images/dsniff-comments.pdf}
+\slide{RIPE NCC abuse-c}
+
+\hlkimage{18cm}{ripe-abuse-c.png}
+
+{\small\link{
+https://www.ripe.net/manage-ips-and-asns/resource-management/abuse-c-information}}
+
+
+\slide{Resource Public Key Infrastructure RPKI}
+
+\begin{list2}
+\item 1997 - AS7007 mistakenly (re)announces 72,000+ routes (becomes the poster-child for route filtering).
+\item 2008 - ISP in Pakistan accidentally announces IP routes for YouTube by blackholing the video service internally to their network.
+\item 2017 - Russian ISP leaks 36 prefixes for payments services owned by Mastercard, Visa, and major banks.
+\item 2018 - BGP hijack of Amazon DNS to steal crypto currency.
+\end{list2}
+Source: \link{https://blog.cloudflare.com/rpki/}
 
 \begin{list1}
-\item Især på utroværdige netværk kan det give problemer at benytte
-  sårbare protokoller
+\item RPKI \link{https://en.wikipedia.org/wiki/Resource_Public_Key_Infrastructure}
+\item Authenticated routing protocols passwords, secrets etc.
 \end{list1}
 
-\slide{Mission 1: Kommunikere sikkert}
+\slide{Use RPKI}
+
+\begin{quote}
+  Routinator is RPKI Relying Party software, also known as an RPKI Validator. It is designed to have a small footprint and great portability.
+
+Routinator connects to the Trust Anchors of the five Regional Internet Registries (RIRs) — APNIC, AFRINIC, ARIN, LACNIC and RIPE NCC — downloads all of the certificates and ROAs in their repositories and validates the signatures. It can feed the validated information to hardware routers supporting Route Origin Validation such as Juniper, Cisco and Nokia, as well as serving software solutions like BIRD and OpenBGPD. Alternatively, Routinator can output the validated data in a number of useful formats, such as CSV, JSON and RPSL.
+\end{quote}
 
 \begin{list1}
-\item Du må ikke bruge ukrypterede forbindelser til at administrere
-  UNIX
-\item Du må ikke sende kodeord i ukrypterede e-mail beskeder
+\item Quote from {\small\link{https://www.nlnetlabs.nl/projects/rpki/routinator/}}
+\item Update your records in the Whois system, read about RIPE here:\\ {\small\link{https://www.ripe.net/manage-ips-and-asns/resource-management/certification}}
 \end{list1}
 
-\centerline{\hlkbig Telnet daemonen - telnetd må og skal dø!}
 
-\pause
-\centerline{\hlkbig FTP daemonen - ftpd må og skal dø!}
 
-\pause
-\centerline{\hlkbig POP3 daemonen port 110 må og skal dø!}
+\slide{BCP38 RFC2827: Network Ingress Filtering}
 
-\pause
-\centerline{\hlkbig IMAPD daemonen port 143 må og skal dø!}
+BCP38 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing
 
-\pause
+{\small\link{https://tools.ietf.org/pdf/bcp38.pdf}}\\
+RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
+
+
+
+
+\slide{Testing security, evaluating and reporting}
+
+
+\slide{DDoS protection and flooding}
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
+
+\begin{list2}
+\item Transport Layer Attacks TCP SYN flood TCP sequence numbers
+\item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
+\end{list2}
+
+\slide{Båndbreddestyring og policy based routing}
+
+\begin{list1}
+\item Mange routere og firewalls idag kan lave båndbredde allokering til
+  protokoller, porte og derved bestemte services
+  \item Specielt relevant for DDoS beskyttelse
+  \item Findes på F5 BigIP, Cisco, Junos osv.
+\item Mest kendte er i Open Source:
+\begin{list2}
+\item OpenBSD - integreret i PF
+\item FreeBSD har dummynet
+\item Linux Traffic Control
+\end{list2}
+\item Det kaldes også traffic shaping
+\end{list1}
+
+\slide{hping3 packet generator}
+
+\begin{alltt}\footnotesize
+usage: hping3 host [options]
+  -i  --interval  wait (uX for X microseconds, for example -i u1000)
+      --fast      alias for -i u10000 (10 packets for second)
+      --faster    alias for -i u1000 (100 packets for second)
+      --flood      sent packets as fast as possible. Don't show replies.
+...
+hping3 is fully scriptable using the TCL language, and packets
+can be received and sent via a binary or string representation
+describing the packets.
+\end{alltt}
+
+\begin{list2}
+\item Hping3 packet generator is a very flexible tool to produce simulated DDoS traffic with specific charateristics
+\item Home page: \link{http://www.hping.org/hping3.html}
+\item Source repository \link{https://github.com/antirez/hping}
+\end{list2}
+
+\centerline{My primary DDoS testing tool, easy to get specific rate pps}
+
+\slide{t50 packet generator}
+
+
+\begin{alltt}\footnotesize
+root@cornerstone03:~# t50 -?
+T50 Experimental Mixed Packet Injector Tool 5.4.1
+Originally created by Nelson Brito <nbrito@sekure.org>
+Maintained by Fernando Mercês <fernando@mentebinaria.com.br>
+
+Usage: T50 <host> [/CIDR] [options]
+
+Common Options:
+    --threshold NUM        Threshold of packets to send     (default 1000)
+    --flood                This option supersedes the 'threshold'
+...
+6. Running T50 with '--protocol T50' option, sends ALL protocols sequentially.
+root@cornerstone03:~# t50 -? | wc -l
+264
+\end{alltt}
+
+\begin{list2}
+\item T50 packet generator, another high speed packet generator
+can easily overload most firewalls by producing a randomized traffic with multiple protocols like IPsec, GRE, MIX \\
+home page: \link{http://t50.sourceforge.net/resources.html}
+\end{list2}
+
+\centerline{Extremely fast and breaks most firewalls when flooding, easy 800k pps/400Mbps}
+
+\slide{Process: monitor, attack, break, repeat}
+
+\begin{list2}
+\item Pre-test: Monitoring setup - from multiple points
+\item Pre-test: Perform full Nmap scan of network and ports
+\item Start small, run with delays between packets
+\item Turn up until it breaks, decrease delay - until using \verb+--flood+
+\item Monitor speed of attack on your router interface pps/bandwidth
+\item Give it maximum speed\\
+ \verb+hping3 --flood -1+ and \verb+hping3 --flood -2+
+\item Have a common chat with network operators/customer to talk about symptoms and things observed
+\item Any information resulting from testing is good information
+\end{list2}
+
 \vskip 1cm
-\centerline{\hlkbig\bf væk med alle de ukrypterede forbindelser!}
+\centerline{Ohh we lost our VPN into the environment, ohh the fw console is dead}
 
 
-\slide{Change management}
+\slide{DDoS and network attacks}
 
+\hlkrightimage{15cm}{network-layers-1.png}
+.
 \begin{list1}
-\item Er der tilstrækkeligt med fokus på software i produktion
-\item Kan en vilkårlig server nemt reetableres
-\item Foretages rettelser direkte på produktionssystemer
-\item Er der fall-back plan
-\item Burde være god systemadministrator praksis
+\item You really should try testing
+\item Investigate your existing devices\\
+all of them, RTFM, upgrade firmware
+\item Choose which devices does which\\
+part - discard early to free resources\\
+for later devices to dig deeper
 \end{list1}
 
+\vskip 3cm
+\centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
 
 
 \slide{Fundamentet skal være iorden}
@@ -404,78 +651,33 @@ Crocker. May 1997
 \end{list1}
 
 
-\slide{individuel autentificering!}
-
-\hlkimage{4cm}{images/ssh-root.pdf}
+\slide{Hardened network device configurations}
 
 \begin{list1}
-\item Mange UNIX systemer administreres fejlagtigt ved brug af
-  root-login
-\item Undgå direkte root-login
-\item Insister på \verb+sudo+ eller \verb+su+
-\item Hvorfor?
+\item Alle services skal være konfigureret korrekt:
 \begin{list2}
-\item Sporbarheden mistes hvis brugere logger direkte ind som root
-\item Hvis et kodeord til root gættes er der direkte adgang til alt!
+\item Administration kun fra jump host og egne administrator netværk, SSH og HTTPS
+\item Alle protokoller med mulighed for \emph{secrets} bør evalueres for om det skal benyttes
+\item Protokoller som BGP skal benytte route import filtre
+\item Protokoller som OSPF bør benytte policies OG secrets
+\item Brug, Router protect filter således at kun relevant adgang tillades til services på udstyret
 \end{list2}
 \end{list1}
 
 
-\slide{Centralized management SSH, Jump hosts}
 
-\begin{quote}
-A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
-\end{quote}
-
-\link{https://en.wikipedia.org/wiki/Jump_server}
-
-
-\slide{BCP38 RFC2827: Network Ingress Filtering}
-
-BCP38 RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing
-
-\link{https://tools.ietf.org/pdf/bcp38.pdf}
-RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
-
-
-
-
-\slide{MANRS}
-
-\hlkimage{5cm}{MANRS_square.png}
-
-\begin{quote}
-  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
-\end{quote}
+\slide{Check you network from outside}
 
 \begin{list1}
-\item
-\item \link{https://www.manrs.org/isps/}
-\item {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
-
+\item How does your network look like from the outside?
+\item Check your network using:
+\item \link{https://stat.ripe.net/}
+\item Consider:
+\begin{list2}
+  \item Join the NLNOG RING \link{https://ring.nlnog.net/}
+\item \link{https://bgpmon.net/} - commercial tool, some alternatives exist
+\end{list2}
 \end{list1}
-
-
-\slide{Testing security, evaluating and reporting}
-
-
-
-\slide{Hardened network device configurations}
-
-
-\slide{Jump hosts and management networks}
-
-
-
-\slide{DDoS protection}
-
-
-
-\slide{Check you network from outside RIPEstat, BGPmon}
-
-
-
-
 
 \slide{For Next Time}
 

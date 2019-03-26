@@ -1913,23 +1913,6 @@ You MAY try using the built-in Ethernet in your laptop for this purpose and use 
 
 {\bf Note: the network does NOT use NAT!} You can use NAT on your router, but it is recommended NOT to. If you enable NAT on your router it will be harder to connect back into your network - need to use features like port forwarding.
 
-{\bf Make sure routing is actually enabled on your device! Sysctl will show the current setting }
-
-Check using:
-\begin{alltt}
-# sysctl net.ipv4.ip_forward
-net.ipv4.ip_forward = 1
-\end{alltt}
-
-Changing it can be done using sysctl or echo:
-\begin{alltt}
-# sysctl -w net.ipv4.ip_forward=1
-net.ipv4.ip_forward = 1
-
-# echo 1 > /proc/sys/net/ipv4/ip_forward
-\end{alltt}
-
-
 {\bf Purpose:}\\
 The network built for this training allows you to configure network devices without affecting production networks. You can make all the mistakes and no manager will ask you to write incident reports.
 
@@ -1944,9 +1927,62 @@ The uplink expects your connection to the rest of the networks are done with a s
 Your router will need an interface in this range, to be able to communicate to the internet and the other networks.
 
 {\bf Suggested method:}\\
-Download the provided Ansible recipes for Debian
+Follow the instructions below for each part. Use your team and ask questions - learn.
 
-OR download a firewall image for your favourite router/firewall and configure this.
+\subsection*{Enable routing}
+{\bf Make sure routing is actually enabled on your device! Sysctl will show the current setting }
+
+Use your favourite editor and activate the line in /etc/sysctl.conf:
+\begin{alltt}
+user@debian-9-lab:~$ grep forward /etc/sysctl.conf
+# Uncomment the next line to enable packet forwarding for IPv4
+net.ipv4.ip_forward=1
+\end{alltt}
+
+Note: requires a reboot to pick up this change, or set using sysctl.
+
+Changing it can be done using sysctl or echo:
+\begin{alltt}
+# sysctl -w net.ipv4.ip_forward=1
+net.ipv4.ip_forward = 1
+
+# echo 1 > /proc/sys/net/ipv4/ip_forward
+\end{alltt}
+
+Check using:
+\begin{alltt}
+# sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+\end{alltt}
+
+also install the \verb+vlan+ package using: \verb+apt-get install vlan+
+
+
+\subsection*{Network Cards}
+
+{\bf Before configuring your Debian as a router, make sure to remove / deactivate any network cards to your virtualisation host}
+
+You should only have the USB Ethernet configured, as a USB device in the virtual machine. Name may vary - on my server it became: \verb+enx00249b1b2991+
+
+So your configuration should be similar to this:
+\begin{alltt}
+root@NMS-VM:~# ifconfig  -a
+enx00249b1b2991: flags=4098<BROADCAST,MULTICAST>  mtu 1500
+        ether 00:24:9b:1b:29:91  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 1355  bytes 556600 (543.5 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1355  bytes 556600 (543.5 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+\end{alltt}
+
 
 \section*{Initial steps to get started}
 \begin{enumerate}
@@ -1971,6 +2007,28 @@ If your other laptop can also ping your router from the training network, awesom
 Tools to use for debugging, traceroute, nping, arp
 
 PS The "peering LAN" uses tags to avoid the multiple switches with the same initial configuration to interfere. Only allowing VLAN tagged packets ensure only "configured devices" are let in. Real internet exchanges have lots of rules about which devices you may connect and which traffic is allowed.
+
+Your network config should look something like this:
+\begin{alltt}
+$ cat /etc/network/interfaces
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# Include files from /etc/network/interfaces.d:
+source-directory /etc/network/interfaces.d
+
+auto enx00249b1b2991
+iface enx00249b1b2991 inet static
+  address 192.168.0.2
+  netmask 255.255.255.0
+  
+auto vlan2770
+iface vlan2770 inet static
+	vlan-raw-device enx00249b1b2991
+	address 10.10.10.14
+	netmask 255.255.255.0
+  gateway 10.10.10.1
+\end{alltt}
+
+Note: you should probably also add an IP for the management of the router as shown. If you do NOT activate the base network card, the VLAN sub interfaces will not come online!
 
 \section*{Implement your VLAN and IP plan}
 

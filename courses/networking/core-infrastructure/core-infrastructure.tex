@@ -1,0 +1,393 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{core-infrastructure-exercises}
+\selectlanguage{english}
+
+
+
+% Original description in danish sorry
+% Netværk idag er ofte blevet uoverskuelige, men kritiske for vores
+% IT-brug. Foredraget indeholder beskrivelse af et baseline setup med
+% Ansible opskrifter til konfiguration af et komplet logging setup med
+% Suricata, Zeek og passiv DNS opsamling. Formålet er at kunne gå tilbage
+% i tiden og identificere inficerede maskiner, angrebsforsøg, men også
+% blot dokumentere en baseline for netværket.
+
+% Nøgleord:
+% DNS, malware detektion, IDS, Netflow, dashboards, TCP, UDP, ICMP, TLS
+
+% Forudsætninger
+% Der bliver opsat testudstyr og netværk, så det største udbytte fås ved at
+% medbringe en bærbar computer. Helst med mulighed for at afvikle en virtual
+% maskine, med: 30Gb ledig disk, 2 CPU (1 er minimum), 2048Mb memory (1024 er
+% minimum). Software til virtualisering kan være Virtual box, VMware eller
+% lignende. Det forventes, at deltagerne har dette installeret, testet og selv
+% kender det.
+
+% Basic things that we need are below
+\selectlanguage{danish}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+\begin{document}
+
+% Switch font to dyslexic
+\rm
+\selectlanguage{english}
+\mytitlepage
+{Core Infrastructure and BGP Intro}
+{Building a production network}
+
+\LogoOn
+
+%\dagsplan
+
+
+\slide{Goal}
+
+%{\hlkbig En 3 dages workshop, hvor du lærer at angribe dit netværk!}
+\hlkimage{2cm}{dont-panic.png}
+\centerline{\color{titlecolor}\LARGE Don't Panic!}
+
+Spend some hours setting up a production network:
+\begin{list1}
+\item Use VLANs, IP subnetting, routing, BGP
+\item Use Automated provisioning scripts for network devices
+\item Use SNMP and setup LibreNMS server
+\item Configure monitoring
+\item Mirror data and start an IDS
+\end{list1}
+
+\centerline{We try to do a lot, feel free to focus on specific parts}
+
+\slide{Packet sniffing tools}
+
+\begin{list1}
+\item Tcpdump for capturing packets
+\item Wireshark for dissecting packets manually with GUI
+\item Zeek Network Security Monitor
+\item Snort, old timer Intrusion Detection Engine (IDS)
+\item Suricata, modern robust capable of IDS and IPS (prevention)
+\item ntopng High-speed web-based traffic analysis
+\item Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
+\end{list1}
+
+\vskip 5mm
+\centerline{Often a combination of tools and methods used in practice}
+
+Full packet capture big data tools also exist
+
+\slide{Kali Linux the pentest toolbox}
+
+\hlkimage{12cm}{kali-linux.png}
+
+\begin{list1}
+\item Kali \link{http://www.kali.org/} brings together 100s of tools
+\item 100.000s of videos on youtube alone, searching for kali and \$TOOL
+\end{list1}
+
+\vskip 1cm
+\centerline{Use this to generate bad traffic}
+
+\slide{Hackerlab setup}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: most modern laptops has CPU with virtualization \\
+May need to enale it in BIOS
+\item Software: use your favorite operating system, Windows, Mac, Linux
+\item Virtualization software: VMware, Virtual box, choose your poison
+\item Hackersoftware: Kali as a Virtual Machine \link{https://www.kali.org/}
+\item Install sniffing VM - put into \emph{bridge mode}
+\end{list2}
+
+
+\slide{What happens today?}
+
+\begin{list1}
+\item Think like a blue team member find hacker traffic
+\item Get basic tools running
+\item Improve situation
+\begin{list2}
+\item See where the data end up
+\item What kind of data and metadata can we extract
+\item How can we collect and make use of it
+\item Databases and web interfaces, examples shown
+\item Consider what your deployment could be
+\end{list2}
+\end{list1}
+
+\centerline{Today focus on the lower parts, but user interfaces are important too}
+
+\slide{Security devops}
+
+\begin{list1}
+\item We need devops skillz in security
+\item automate, security is also big data
+\item integrate tools, transfer, sort, search, pattern matching, statistics, ...
+\item tools, languages, databases, protocols, data formats
+\item Use Github! So many libraries and programs that can help, maybe solve  90\% of your problem, and you can glue the rest together
+\item Example introductions:
+\begin{list2}
+\item Seven languages/database/web frameworks in Seven Weeks
+\item Elasticsearch the definitive guide
+\end{list2}
+\end{list1}
+
+\centerline{We are all Devops now, even security people!}
+
+
+
+\slide{Internet today}
+
+\hlkimage{8cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers
+\item Roots in academia
+\item Protocols more than 20 years old
+\item HTTP is becoming encrypted, but a lot other traffic is not
+\end{list1}
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
+
+\slide{Using Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{\link{https://www.wireshark.org}}
+
+\exercise{ex:wireshark-install}
+\exercise{ex:wireshark-capture}
+
+\slide{Network mapping}
+
+\hlkimage{8cm}{images/network-example.pdf}
+
+\begin{list1}
+\item Using traceroute and similar programs it is often possible to make educated guess to network topology
+\item Time to live (TTL) for packets are decreased when crossing a router
+\item when it reaches zero the packet is timed out, and ICMP message sent back to source
+\item Default Unix traceroute uses UDP, Windows tracert use ICMP
+\end{list1}
+
+
+\slide{traceroute -- UDP}
+
+\begin{alltt}
+\footnotesize # {\bfseries tcpdump -i en0 host 10.20.20.129 or host 10.0.0.11}
+tcpdump: listening on en0
+23:23:30.426342 10.0.0.200.33849 > router.33435: udp 12 {\bf [ttl 1]}
+23:23:30.426742 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.436069 10.0.0.200.33849 > router.33436: udp 12 {\bf [ttl 1]}
+23:23:30.436357 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.437117 10.0.0.200.33849 > router.33437: udp 12 {\bf [ttl 1]}
+23:23:30.437383 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.437574 10.0.0.200.33849 > router.33438: udp 12
+23:23:30.438946 router > 10.0.0.200: icmp: router {\bf udp port 33438 unreachable}
+23:23:30.451319 10.0.0.200.33849 > router.33439: udp 12
+23:23:30.452569 router > 10.0.0.200: icmp: router {\bf udp port 33439 unreachable}
+23:23:30.452813 10.0.0.200.33849 > router.33440: udp 12
+23:23:30.454023 router > 10.0.0.200: icmp: router {\bf udp port 33440 unreachable}
+23:23:31.379102 10.0.0.200.49214 > safri.domain:  6646+ PTR?
+200.0.0.10.in-addr.arpa. (41)
+23:23:31.380410 safri.domain > 10.0.0.200.49214:  6646 NXDomain* 0/1/0 (93)
+14 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+\vskip 5mm
+\centerline{Low TTL, UDP, high ports above 33000 = Unix traceroute signature}
+
+
+\slide{Experiences gathered}
+
+\begin{list1}
+\item Lots of information
+\item Reveals a lot about the network, operating systems, services etc.
+\item I use a template when getting data
+  \begin{list2}
+    \item Respond to ICMP: $\Box$\  echo, $\Box$\ mask, $\Box$\ time
+\item Respond to traceroute: $\Box$\ ICMP, $\Box$\ UDP
+\item Open ports TCP og UDP:
+\item Operating system:
+\item ... (banner information )
+  \end{list2}
+\item Beware when doing scans it is possible to make routers, firewalls and devices perform badly or even crash!
+\end{list1}
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{13cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework (former name Bro)
+
+{\small Source \url{https://www.zeek.org/}, redirects to \url{https://www.bro.org/zeek.html}}
+
+\slide{Zeek scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_A_reply_count;
+        \}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_AAAA_reply_count;
+        \}
+\end{alltt}
+
+source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}
+\url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
+
+
+\exercise{ex:zeekweb}
+
+\slide{Exercise setup}
+
+We will use a combination of your virtual servers, my switch hardware and my virtual systems.
+
+\vskip 1cm
+{\Large \bf There will be sniffing done on traffic!\\
+Don't abuse information gathered}
+
+We try to mimic what you would do in your own networks during the exercises.
+
+Another way of running exercises might be:\\
+\url{https://github.com/jonschipp/ISLET}
+
+Recommended and used by Zeek and Suricata projects.
+
+\slide{Get Started with Zeek}
+
+\begin{list1}
+\item To run in “base” mode:
+ \verb+bro -r traffic.pcap+
+\item To run in a “near broctl” mode:
+\verb+bro -r traffic.pcap local+
+\item To add extra scripts:
+\verb+bro -r traffic.pcap myscript.bro+
+\end{list1}
+
+\centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
+\slide{Bro demo: Run}
+
+\begin{alltt}\small
+// install zeek first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+kunoichi:etc root# grep eth0 node.cfg
+interface=eth0
+\end{alltt}
+
+\slide{Zeek demo: Run Zeek}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+\exercise{ex:zeekdnsbasic}
+\exercise{ex:zeektlsbasic}
+
+\slide{DNS is important}
+
+Another tool that provides a basic SQL-frontend to PCAP-files\\
+\url{https://www.dns-oarc.net/tools/packetq}\\
+\url{https://github.com/DNS-OARC/PacketQ}
+
+Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
+
+Deciding on which tool to use, Zeek or PacketQ depends on the situation.
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a
+ community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by th
+e OISF and its supporting vendors.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+
+\exercise{ex:suricatastartstop}
+\exercise{ex:suricataeve1}
+\exercise{ex:mirrorport}
+\exercise{ex:suricatahasboards}
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+\exercise{ex:suricatanetflow}
+
+
+
+\slide{Zeek JSON}
+
+As shown with Suricata, it is also possible to insert Bro output into Elasticsearch.
+
+One example is shown in the blog posts:
+\url{https://logz.io/blog/bro-elk-part-1/}
+
+
+\slide{Commercial Support}
+
+You can and should use updated rulesets for Suricata.
+
+I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year per sensor. So two sites with Suricata running in both, 2x USD 900
+
+\slide{Summary}
+
+We started from a basic Ubuntu/Debian server, and using Zeek and Suricata we now know more about our network.
+
+We can collect logs about network traffic based on generic netflow, specific types DNS/TLS/protocols, and traffic matching advanced rulesets.
+
+We know it is possible to create dashboards and visualizing the data.
+
+What are the next steps?
+
+
+\myquestionspage
+
+\end{document}

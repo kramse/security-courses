@@ -1,0 +1,566 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Lund Kramshoej, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-network-exercises}
+
+\begin{document}
+
+\rm
+\selectlanguage{english}
+
+%\newcommand{\emne}[1]{{Network Tapping PROSA SURVEIL\_IT workshop}
+\newcommand{\kursus}[1]{Network Tapping PROSA SURVEIL\_IT workshop}
+%\newcommand{\kursusnavn}[1]{Network Tapping PROSA SURVEIL\_IT workshop\\exercises}
+
+\mytitle{Network Tapping \\PROSA SURVEIL\_IT}{Optional exercises}
+
+\pagenumbering{roman}
+
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Preface}
+\markboth{Preface}{}
+
+This material is prepared for use in \emph{\kursus} and was prepared by
+Henrik Lund Kramshoej, \url{http://www.zencurity.com} .
+It describes the networking setup and
+applications for trainings and workshops where hands-on exercises are needed.
+
+\vskip 1cm
+Further a presentation is used which is available as PDF from kramse@Github\\
+Look for \jobname in the repo security-courses.
+
+These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
+
+\url{https://github.com/kramse/kramse-labs}
+
+
+
+\section*{\color{titlecolor}Prerequisites}
+
+This material expect that participants have a working knowledge of
+TCP/IP from a user perspective. Basic concepts such as web site addresses and email should be known as well as IP-addresses and common protocols like DHCP.
+
+\vskip 1cm
+Have fun and learn
+\eject
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+
+
+\chapter*{\color{titlecolor}Introduction to networking}
+%\markboth{Introduktion til netværk}{}
+\label{chap:intro}
+
+\section*{\color{titlecolor}IP - Internet protocol suite}
+
+It is extremely important to have a working knowledge about IP to implement
+secure and robust infrastructures. Knowing about the alternatives while doing
+implementation will allow the selection of the best features.
+
+\section*{\color{titlecolor}ISO/OSI reference model}
+A very famous model used for describing networking is the ISO/OSI model
+of networking which describes layering of network protocols in stacks.
+
+This model divides the problem of communicating into layers which can
+then solve the problem as smaller individual problems and the solution
+later combined to provide networking.
+
+Having layering has proven also in real life to be helpful, for instance
+replacing older hardware technologies with new and more efficient technologies
+without changing the upper layers.
+
+In the picture the OSI reference model is shown along side with
+the Internet Protocol suite model which can also be considered to have different layers.
+
+
+\begin{figure}[H]
+\label{fig:osi}
+\begin{center}
+\colorbox{white}{\includegraphics[width=8cm,angle=90]{images/compare-osi-ip.pdf}}
+\end{center}
+\caption{OSI og Internet Protocol suite}
+\end{figure}
+
+
+\chapter*{\color{titlecolor}Exercise content}
+\markboth{Exercise content}{}
+
+Most exercises follow the same procedure and has the following content:
+\begin{itemize}
+\item {\bf Objective:} What is the exercise about, the objective
+\item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
+\item {\bf Suggested method:} suggest a way to get started
+\item {\bf Hints:} one or more hints and tips or even description how to
+do the actual exercises
+\item {\bf Solution:} one possible solution is specified
+\item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
+\end{itemize}
+
+Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
+
+
+\chapter{Wireshark and tcpdump 15min}
+\label{ex:wireshark-install}
+
+\hlkimage{10cm}{wireshark-http.png}
+
+
+{\bf Objective:}\\
+Try the program Wireshark locally your workstation, or tcpdump
+
+You can run Wireshark on your host too, if you want.
+
+{\bf Purpose:}\\
+Installing Wireshark will allow you to analyse packets and protocols
+
+Tcpdump is a feature included in many operating systems and devices to allow packet capture and saving network traffic into files.
+
+{\bf Suggested method:}\\
+Download and install the program, either download from web server locally or from \url{http://www.wireshark.org}\\
+Wireshark requires a packet capture library to be installed
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+{\bf Solution:}\\
+When Wireshark is installed sniff some packets. We will be working with both live traffic and saved packets from files in this course.
+
+If you want to capture packets as a non-root user on Debian, then use the command to add a Wireshark group:
+\begin{alltt}
+sudo dpkg-reconfigure wireshark-common
+\end{alltt}
+
+and add your user to this:
+\begin{alltt}
+sudo gpasswd -a $USER wireshark
+\end{alltt}
+Dont forget to logout/login to pick up this new group.
+
+{\bf Discussion:}\\
+Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
+
+We can download a lot of packet traces from around the internet, we might use examples from\\
+\url{https://www.bro.org/community/traces.html}
+
+\chapter{Capturing network packets 15min}
+\label{ex:wireshark-capture}
+
+\hlkimage{4cm}{tcp-three-way.pdf}
+
+
+{\bf Objective:}\\
+Sniff packets and dissect them using Wireshark
+
+{\bf Purpose:}\\
+See real network traffic, also know that a lot of information is available and not encrypted.
+
+Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL
+
+\begin{alltt}
+curl http://www.zencurity.com
+\end{alltt}
+
+{\bf Suggested method:}\\
+Open Wireshark and start a capture\\
+Then in another window execute the ping program while sniffing
+
+or perform a Telnet connection while capturing data
+
+{\bf Hints:}\\
+When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some packets you are done.
+
+{\bf Discussion:}
+Is it ethical to collect packets from an open wireless network?
+
+Also note the TTL values in packets from different operating systems
+
+
+
+
+\chapter{Zeek on the web 15min}
+\label{ex:zeekweb}
+
+
+{\bf Objective:} \\
+Try Zeek Network Security Monitor - without installing it.
+
+
+{\bf Purpose:}\\
+Show a couple of examples of Zeek scripting, the built-in language found in Zeek Network Security Monitor
+
+
+{\bf Suggested method:}\\
+Go to \url{http://try.bro.org/#/?example=hello}
+
+{\bf Hints:}\\
+The exercise
+\emph{The Summary Statistics Framework} can be run with a specifc PCAP.
+
+\verb+192.168.1.201 did 402 total and 2 unique DNS requests in the last 6 hours.+
+
+{\bf Solution:}\\
+You should read the example \emph{Raising a Notice}. Getting output for certain events may be interesting to you.
+
+
+{\bf Discussion:}\\
+Zeek Network Security Monitor is an old/mature tool, but can still be hard to get started using. I would suggest that you always start out using the packages available in your Ubuntu/Debian package repositories.
+
+They work, and will give a first impression of Zeek. If you later want specific features not configured into the binary packet, then install from source.
+
+Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
+
+\begin{alltt}
+root@NMS-VM:/etc/bro# ls -la
+drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
+drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
+-rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
+-rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
+-rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
+drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
+\end{alltt}
+
+
+
+\chapter{Check your VM, run Ansible up to 30min}
+\label{ex:basicVM}
+
+
+{\bf Objective:}\\
+Make sure your virtual machine is in working order.
+
+We need a Linux server for running the tools.
+
+{\bf Purpose:}\\
+If your VM is not updated we will run into trouble later.
+
+{\bf Suggested method:}\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+Read the instructions for the setup of a VM.
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content
+\begin{alltt}
+apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+\chapter{Zeek DNS capturing domain names up to 30min}
+\label{ex:zeekdnsbasic}
+
+
+{\bf Objective:} \\
+We will now start using Zeek on our systems.
+
+
+{\bf Purpose:}\\
+Try Zeek with example traffic, and see what happens.
+
+
+{\bf Suggested method packet capture file:}\\
+Note: a dollar sign is the Linux prompt, showing the command after
+\begin{alltt}\small
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ mkdir $HOME/bro;cd $HOME/bro; bro -r ../nitroba.pcap
+... bro reads the packets
+~/bro$ ls
+conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
+sip.log  ssl.log  weird.log  x509.log
+$ less *
+\end{alltt}
+
+Use :n to jump to the next file in less, go through all of them.
+
+{\bf Suggested method Live traffic:}\\
+Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
+
+\begin{alltt}
+root@NMS-VM:/etc/bro# cat node.cfg
+# Example BroControl node configuration.
+#
+# This example has a standalone node ready to go except for possibly changing
+# the sniffing interface.
+
+# This is a complete standalone configuration.  Most likely you will
+# only need to change the interface.
+[bro]
+type=standalone
+host=localhost
+interface=eth0
+...
+\end{alltt}
+
+
+{\bf Hints:}\\
+There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
+
+Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
+{\bf Solution:}\\
+When you either run Zeek using a packet capture or using live traffic
+
+Running with a capture can be done using a command line such as:
+\verb+bro -r traffic.pcap+
+
+Using broctl to start it would be like this:
+\begin{alltt}\small
+// install bro first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+\end{alltt}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+[BroControl] > exit
+// and then
+kunoichi:bro root# cd /var/spool/bro/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+You should be able to spot entries like this:
+\begin{alltt}\small
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
+     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
+
+{\bf Discussion:}\\
+Why is DNS interesting?
+
+
+\chapter{Zeek TLS capturing certificates 15min}
+\label{ex:zeektlsbasic}
+
+
+{\bf Objective:} \\
+Run more traffic through Zeek, see the various files.
+
+
+{\bf Purpose:}\\
+See that even though HTTPS and TLS traffic is encrypted it often show names and other values from the certificates and servers.
+
+
+{\bf Suggested method:}\\
+Run Zeek capturing live traffic, start https towards some sites. A lot of common sites today has shifted to HTTPS/TLS.
+
+
+{\bf Hints:}\\
+use broctl start and watch the output directory
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# ls *.log
+communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
+stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
+stderr.log weird.log
+\end{alltt}
+
+We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
+
+{\bf Solution:}\\
+When you have multiple log files with data from Zeek, and have looked into some of them. You are welcome to ask questions and look into more files.
+
+
+{\bf Discussion:}\\
+How can you hide that you are going to HTTPS sites?
+
+Hint: VPN
+
+
+
+
+\chapter{Configure Mirror Port - Junos Demo 10min}
+\label{ex:mirrorport}
+
+
+{\bf Objective:} \\
+Mirror ports are a way to copy traffic from devices - for analyzing it. We will go through the steps on a Juniper switch to show how.
+Most switches which are configurable have this possibility.
+
+
+{\bf Purpose:}\\
+We want to capture traffic for multiple systems, so we select an appropriate port and copy the traffic. In our setup, we select the uplink port to the internet/router.
+
+It is also possible to buy passive taps, like a fiber splitter, which then takes part of the signal, and is only observable if you look for signal strength on the physical layer.
+
+
+{\bf Suggested method:}\\
+We will configure a mirror port on a Juniper EX2200-C running Junos.
+
+\begin{alltt}
+root@ex2200-c# show ethernet-switching-options | display set
+set ethernet-switching-options analyzer mirror01 input ingress interface ge-0/1/1.0
+set ethernet-switching-options analyzer mirror01 input egress interface ge-0/1/1.0
+set ethernet-switching-options analyzer mirror01 output interface ge-0/1/0.0
+set ethernet-switching-options storm-control interface all
+\end{alltt}
+
+
+{\bf Hints:}\\
+When checking your own devices this is often called SPAN ports, Mirror ports or similar.
+
+\url{https://en.wikipedia.org/wiki/Port_mirroring}
+
+Cisco has called this Switched Port Analyzer (SPAN) or Remote Switched Port Analyzer (RSPAN), so many will refer to them as SPAN-ports.
+
+{\bf Solution:}\\
+When we can see the traffic from the network, we have the port configured - and can run any tool we like. Note: specialized capture cards can often be configured to spread the load of incoming packets onto separate CPU cores for performance. Capturing 100G and more can also be done using switches like the example found on the Zeek web site using an Arista switch 7150.
+
+
+{\bf Discussion:}\\
+When is it ethical to capture traffic?
+
+
+\chapter{Mirror port with TP-Link - 30min}
+\label{ex:mirrorport-tplink}
+
+{\bf Objective:}\\
+Configure mirror port, use it to monitor your traffic.
+
+{\bf Purpose:}\\
+Show how real networks often sniff.
+
+{\bf Suggested method:}\\
+Configure a mirror port - select a high numbered port not in use.
+
+Then configure source ports, the ones in current use and destination to the selected high port.
+
+If using the TP-Link T1500G-10PS then this link should describe the process:\\
+{\small\url{https://www.tp-link.com/en/configuration-guides/mirroring_traffic/?configurationId=18210}}
+
+Which describe:
+\begin{enumerate}
+\item Choose the menu MAINTENANCE > Mirroring
+\item Select Edit for the Mirror Session 1
+\item In the Destination Port Config section, specify a destination port for the mirroring session, and click Apply
+\item In the Source Interfaces Config section, specify the source interfaces and click Apply
+\end{enumerate}
+
+Using the command line would be similar to this:
+\begin{alltt}
+Switch#configure
+Switch(config)#monitor session 1 destination interface gigabitEthernet 1/0/7
+Switch(config)#monitor session 1 source interface gigabitEthernet 1/0/1-4 both
+Switch(config)#monitor session 1 source cpu 1 both
+\end{alltt}
+
+
+{\bf Hints:}\\
+Selecting a port away from the existing ones allow easy configuration of the source to be like, Source ports 1-4 and destination 7 - and easily expanded when port 5 and 6 are activated.
+
+{\bf Solution:}\\
+When your team has configured a mirror port and seen traffic using your IDS, Wireshark or just tcpdump you are done.
+
+{\bf Discussion:}\\
+How would you monitor a larger network?
+
+Cisco has a feature named RSPAN
+
+\begin{quote}
+Remote SPAN (RSPAN): An extension of SPAN called remote SPAN or RSPAN. RSPAN allows you to monitor traffic from source ports distributed over multiple switches, which means that you can centralize your network capture devices. RSPAN works by mirroring the traffic from the source ports of an RSPAN session onto a VLAN that is dedicated for the RSPAN session. This VLAN is then trunked to other switches, allowing the RSPAN session traffic to be transported across multiple switches. On the switch that contains the destination port for the session, traffic from the RSPAN session VLAN is simply mirrored out the destination port.
+\end{quote}
+Source: {\small\link{https://community.cisco.com/t5/networking-documents/understanding-span-rspan-and-erspan/ta-p/3144951}}
+
+
+\appendix
+\rhead{\fancyplain{}{\bf \leftmark}}
+%\setlength{\parskip}{5pt}
+
+\normal
+
+\chapter{\color{titlecolor}Host information}
+
+\begin{itemize}
+\item You should note the IP-addresses used for servers and devices
+\item The web server for installing programs:\\
+http:// \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm
+/public/windows/
+\item Server used for team login: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm \\
+Available usernames: team1, team2, ... team10
+password: \verb+team+
+\item You can obtain root access using: \verb+sudo -s+
+\end{itemize}
+
+\section*{\color{titlecolor}Available servers and devices:}
+\begin{itemize}
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - OpenBSD router
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Your laptop
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm - Your laptop VM
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm -
+\item IP: \hskip 15mm .\hskip 15mm .\hskip 15mm .\hskip 15mm -
+\end{itemize}
+
+
+\bibliographystyle{alpha}
+%\bibliography{../ipv6-reference/security6-net.bib,../ipv6-reference/rfc.bib,../ipv6-reference/std.bib,../ipv6-reference/fyi.bib}
+\bibliography{kramse.bib,rfc.bib,std.bib,fyi.bib}
+%,internet.bib}
+
+
+%\printindex
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -226,39 +226,100 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 
 
 
+\chapter{Discover active systems ping sweep 10 min}
+\label{ex:nmap-pingsweep}
+\hlkimage{5cm}{nmap-zenmap.png}
+
+{\bf Objective:}\\
+Use nmap to discover active systems
+
+{\bf Purpose:}\\
+Know how to use nmap to scan networks for active systems.
+
+{\bf Suggested method:}\\
+Try different scans,
+\begin{itemize}
+\item Ping sweep to find active systems
+\item Port sweeps to find active systems with specific ports
+\end{itemize}
+
+{\bf Hints:} \\
+Try nmap in sweep mode - and you may run this from Zenmap
+
+{\bf Solution:}\\
+Use the command below as examples:
+\begin{itemize}
+\item Ping sweep \verb+nmap -sP 10.0.45.*+
+\item Port sweeps \verb+nmap -p 80 10.0.45.*+
+\end{itemize}
+
+{\bf Discussion:}\\
+Quick scans quickly reveal interesting hosts, ports and services
+
+Also now make sure you understand difference between single host scan
+10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
 
 
+\chapter{Execute nmap TCP and UDP port scan 20 min}
+\label{ex:nmap-synscan}
 
 
+{\bf Objective:} \\
+Use nmap to discover important open ports on active systems
 
-%\chapter{Risk Assessment 101}
-%\label{ex:risk-assessment-101}
+{\bf Purpose:}\\
+Finding open ports will allow you to find vulnerabilities on these ports.
 
-%\begin{quote}
-%In quantitative risk assessment an annualized loss expectancy (ALE) may be used to justify the cost of implementing countermeasures to protect an asset. This may be calculated by multiplying the single loss expectancy (SLE), which is the loss of value based on a single security incident, with the annualized rate of occurrence (ARO), which is an estimate of how often a threat would be successful in exploiting a vulnerability.
-%\end{quote}
+{\bf Suggested method:}\\
+Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
+ports and use Nmap without ports. What is scanned then?
 
-%Quote from \link{https://en.wikipedia.org/wiki/Risk\_assessment}
+Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
 
-%{\bf Objective:}\\
-%Do calculations to understand risk assessment better
+If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
 
-%{\bf Purpose:}\\
+{\bf Hints:} \\
+Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
+1024 ports without doing a Ping first
+
+{\bf Solution:}\\
+Discover some active systems and most interesting ports, which are 1-1024 and the built-in list of popular ports.
+
+{\bf Discussion:}\\
+There is a lot of documentation about the nmap portscanner, even a book by the author
+of nmap. Make sure to visit \link{http://www.nmap.org}
+
+TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
+
+When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
+
+\chapter{Perform nmap OS detection 10 min}
+\label{ex:nmap-os}
+
+{\bf Objective:} \\
+Use nmap OS detection and see if you can guess the brand of devices on the network
+
+{\bf Purpose:}\\
+Getting the operating system of a system will allow you to focus your next attacks.
+
+{\bf Suggested method:}\\
+Look at the list of active systems, or do a ping sweep.
+
+Then add the OS detection using the option \verb+-O+
+
+Better to use -A all the time, includes even more scripts and advanced stuff
+See the next exercise.
+
+{\bf Hints:} \\
+The nmap can send a lot of packets that will get different responses, depending on the operating system. TCP/IP is implemented using various constants chosen by the implementors, they have chosen different standard packet TTL etc.
+
+{\bf Solution:}\\
+Use a command like \verb+nmap -O -p1-100 10.0.45.45+ or  \verb+nmap -A -p1-100 10.0.45.45+
 
 
-%{\bf Suggested method:}\\
+{\bf Discussion:}\\
+nmap OS detection is not a full proof way of knowing the actual operating system, but in most cases in can detect the family and in some cases it can identify the exact patch level of the system.
 
-
-%{\bf Hints:}\\
-
-
-%{\bf Solution:}\\
-
-
-%{\bf Discussion:}\\
-%What we have done here is Quantitative Risk Assessment.
-
-%Other risk analysis methods exist, qualitative risk analysis - used when it is difficult to put amount
 
 
 
@@ -273,21 +334,34 @@ Show that when a vulnerability exist attacks can be quick and easy.
 
 {\bf Suggested method:}\\
 
+Running Armitage as a gui on top of Metasploit is the easiest way to do this.
+
 \begin{enumerate}
 \item Boot up Kali Linux
-\item Boot up Metasploitable - from ISO
+\item Boot up Metasploitable - from ISO\\
+There may be a couple of systems already running this.
 \item Run Armitage Hail-Mary against Metasploitable
 \item Note which succeeded, describe those attacks that succeeded in relation to MITRE ATT\&CK framework
 \end{enumerate}
 
 {\bf Hints:}\\
+Running Metasploit against Metasploitable - which is a vulnerable system - should result in multiple vulnerabilities exploited.
+
+Each of these may have different characteristics.
+
+We are aiming at:
+\begin{itemize}
+\item Vulnerable application - root access
+\item Vulnerable application - non-root access, would need privilege escalation
+\item Bad password allowing \emph{Brute Force} access, msfadmin/msfadmin - see also \emph{Valid Accounts}
+\end{itemize}
 
 
 {\bf Solution:}\\
-
+When you have exploited and mapped at least one vulnerability you are done, but should spend more time.
 
 {\bf Discussion:}\\
-
+Do we need these frameworks? What are the benefits? - can we become product blind - so we only see what these framework cover.
 
 
 
@@ -325,18 +399,20 @@ Yes, the root user can disable the SELinux protection :-D
 See real world high level policies
 
 {\bf Purpose:}\\
-
+When writing your first policy it may be hard to know what to include. Starting from an example is often easier.
 
 {\bf Suggested method:}\\
 Find your AUP for the ISPs we use, you use, your company uses
 
 {\bf Hints:}\\
-
+Policies for different environments are often very different in scope and goals.
 
 {\bf Solution:}\\
-
+When you have seen at least two different policies you are done.
 
 {\bf Discussion:}\\
+How do you both write AND create awareness about a policy?
+
 
 \chapter{Database Security}
 \label{ex:database-security}

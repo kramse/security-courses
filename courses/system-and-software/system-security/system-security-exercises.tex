@@ -323,7 +323,7 @@ nmap OS detection is not a full proof way of knowing the actual operating system
 
 
 
-\chapter{Run Armitage - Hail Mary}
+\chapter{Run Armitage - Hail Mary 30min}
 \label{ex:hail-mary}
 
 {\bf Objective:}\\
@@ -364,36 +364,191 @@ When you have exploited and mapped at least one vulnerability you are done, but 
 Do we need these frameworks? What are the benefits? - can we become product blind - so we only see what these framework cover.
 
 
-
-\end{document}
-
-\chapter{SELinux Introduction}
+\chapter{SELinux Introduction up to 60min}
 \label{ex:se-linux-intro}
 
 {\bf Objective:}\\
-Create a secret file, that you can read, but root cant.
-
 Check out the SELinux system\\
 \link{https://www.debian.org/doc/manuals/debian-handbook/sect.selinux.en.html}
 
+and the setup instructions at:\\
+\link{https://wiki.debian.org/SELinux/Setup}
+
+(Not working right now - Create a secret file, that you can read, but root cant.)
+
 {\bf Purpose:}\\
+Everybody reads about Discretionary Access Control (DAC) and Mandatory Access Control (MAC) but few realize that Linux implements it.
 
 
 {\bf Suggested method:}\\
-Try enabling and disabling the policies
+Try enabling and disabling the policies in your Debian VM.
+
+First install prerequisites - approx 75MB download on my system:\\
+\verb+apt-get install selinux-basics selinux-policy-default auditd+
+
+Then run activation of SELinux:\\
+\verb+selinux-activate+
+
+\begin{alltt}
+  root@debian-9-lab:~# selinux-activate
+  Activating SE Linux
+  Generating grub configuration file ...
+  Found linux image: /boot/vmlinuz-4.9.0-9-amd64
+  Found initrd image: /boot/initrd.img-4.9.0-9-amd64
+  Found linux image: /boot/vmlinuz-4.9.0-8-amd64
+  Found initrd image: /boot/initrd.img-4.9.0-8-amd64
+  done
+  SE Linux is activated.  You may need to reboot now.
+  root@debian-9-lab:~#
+\end{alltt}
+
+Perform the reboot, \verb+shutdown -r now+ then check again.
+
+Not enabled will show this, try again:
+\begin{alltt}
+root@debian-9-lab:~# sestatus
+SELinux status:                 disabled
+\end{alltt}
+
+Enabled, but not the current mode and mode from config file discrepancy:
+\begin{alltt}
+root@debian:~# sestatus
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             default
+Current mode:                   {\bf enforcing}
+Mode from config file:          {\bf permissive}
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      30
+\end{alltt}
+
+While playing I had changed the mode temporarily to \emph{enforcing}! Next reboot would make SELinux run in the more \emph{permissive} mode
+
+\subsection{Part 2 - do this when SELinux is enabled}
+
+Create a directory and a test file:
+\begin{alltt}
+root@debian:~# setenforce 0   // set mode permissive!
+root@debian:~# cd
+root@debian:~# mkdir /etc/private
+root@debian:~# echo "hey" > /etc/private/README
+root@debian:~# cat /etc/private/test1
+hey
+root@debian:~#
+\end{alltt}
+
+Root can read the file, yay!
+
+Copy example files:
+\begin{alltt}
+cp -r /usr/share/doc/selinux-policy-dev/examples .
+cd examples/
+
+\end{alltt}
+
+Create a file myprivate.te with this content:
+\begin{alltt}
+policy_module(myprivate, 1.0)
+
+########################################
+#
+# Declarations
+#
+type etc_private_t;
+fs_associate(etc_private_t)
+
+type sysadm_t;
+type sysadm_exec_t;
+
+userdom_admin_user_template(sysadm_t)
+
+allow sysadm_t etc_private_t:{dir file} relabelto;
+\end{alltt}
+
+Note last line is missing a sysadm domain, does not work.
+
+Then compile this, \verb+make myprivate.pp+:
+\begin{alltt}
+root@debian:~/examples# make myprivate.pp
+Compiling default myprivate module
+/usr/bin/checkmodule:  loading policy configuration from tmp/myprivate.tmp
+/usr/bin/checkmodule:  policy configuration loaded
+/usr/bin/checkmodule:  writing binary representation (version 17) to tmp/myprivate.mod
+Creating default myprivate.pp policy package
+rm tmp/myprivate.mod.fc tmp/myprivate.mod
+root@debian:~/examples#
+\end{alltt}
+
+then it should have been possible to enable/disable enforcing mode, and see the file becoming unreadable - even by root.
+
+Something is wrong, when enabling enforcing mode, the chcon command fails:
+\begin{alltt}
+root@debian:~/examples# setenforce 1
+root@debian:~/examples# chcon -R -t etc_private_t /etc/private/README
+chcon: failed to change context of '/etc/private/README' to ‘system_u:object_r:etc_private_t:s0’: Invalid argument
+root@debian:~/examples# chcon -R -t etc_private_t /etc/private
+chcon: failed to change context of 'README' to ‘system_u:object_r:etc_private_t:s0’: Invalid argument
+chcon: failed to change context of '/etc/private' to ‘system_u:object_r:etc_private_t:s0’: Invalid argument
+
+root@debian:~/examples# setenforce 0
+root@debian:~/examples# chcon -R -t etc_private_t /etc/private/README
+root@debian:~/examples#
+// When Linux returns to the command prompt without messages no errors were observed
+\end{alltt}
+
+So SELinux IS preventing us from doing it :-D
+
+this example is in parts based on this blog post:\\
+\link{http://blog.siphos.be/2015/07/restricting-even-root-access-to-a-folder/}
+
 
 {\bf Hints:}\\
+Keeping SELinux enabled may NOT be a good idea, since some tools may not work correctly, until policies are downloaded, written or installed.
+
+Temporarily disable SELinux:\\
+\verb+echo 0 > /sys/fs/selinux/enforce+
+
+Temporarily enable SELinux:\\
+\verb+echo 1 > /sys/fs/selinux/enforce+
+
+or use the command \verb+setenforce 0+ or
+\verb+setenforce 1+
+
+The main config for setting permissive or enforcing mode is
+\verb+/etc/selinux/config+:
+\begin{alltt}
+root@debian-9-lab:~# cat /etc/selinux/config
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+# enforcing - SELinux security policy is enforced.
+# permissive - SELinux prints warnings instead of enforcing.
+# disabled - No SELinux policy is loaded.
+SELINUX=permissive
+# SELINUXTYPE= can take one of these two values:
+# default - equivalent to the old strict and targeted policies
+# mls     - Multi-Level Security (for military and educational use)
+# src     - Custom policy built from source
+SELINUXTYPE=default
+
+# SETLOCALDEFS= Check local definition changes
+SETLOCALDEFS=0
+\end{alltt}
 
 
 {\bf Solution:}\\
-When you have a small text file which you can read, but root cannot, you are done.
+%When you have a small text file which you can read, but root cannot, you are done.
+When you have enabled and seen the commands used, you are done.
 
-Yes, the root user can disable the SELinux protection :-D
+It is easy to have multiple hours disappear when working with SELinux.
 
 {\bf Discussion:}\\
+Yes, the root user can disable the SELinux protection :-D
 
+I had Firefox crash at least once during this exercise, so beware - fancy and bigger applications may crash when using this!
 
-\chapter{Example AUPs}
+\chapter{Example AUPs up to 30min}
 \label{ex:example-AUP}
 
 {\bf Objective:}\\
@@ -403,10 +558,14 @@ See real world high level policies
 When writing your first policy it may be hard to know what to include. Starting from an example is often easier.
 
 {\bf Suggested method:}\\
-Find your AUP for the ISPs we use, you use, your company uses
+Find your AUP for the ISPs we use, you use, your company uses.
 
 {\bf Hints:}\\
 Policies for different environments are often very different in scope and goals.
+
+Book mentions military and commercial, but an ISP, University and a commercial enterprise have very different methods and requirements.
+
+Example, how do you handle BYOD Bring your own devices, University you expect students to bring them, in a secure enterprise only company devices may be allowed.
 
 {\bf Solution:}\\
 When you have seen at least two different policies you are done.
@@ -414,6 +573,8 @@ When you have seen at least two different policies you are done.
 {\bf Discussion:}\\
 How do you both write AND create awareness about a policy?
 
+
+\end{document}
 
 \chapter{Database Security}
 \label{ex:database-security}

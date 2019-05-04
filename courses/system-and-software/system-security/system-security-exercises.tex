@@ -434,7 +434,7 @@ root@debian:~# setenforce 0   // set mode permissive!
 root@debian:~# cd
 root@debian:~# mkdir /etc/private
 root@debian:~# echo "hey" > /etc/private/README
-root@debian:~# cat /etc/private/test1
+root@debian:~# cat /etc/private/README
 hey
 root@debian:~#
 \end{alltt}
@@ -469,7 +469,7 @@ allow sysadm_t etc_private_t:{dir file} relabelto;
 
 Note last line is missing a sysadm domain, does not work.
 
-Then compile this, \verb+make myprivate.pp+:
+Then compile using this: \verb+make myprivate.pp+
 \begin{alltt}
 root@debian:~/examples# make myprivate.pp
 Compiling default myprivate module
@@ -574,8 +574,6 @@ When you have seen at least two different policies you are done.
 How do you both write AND create awareness about a policy?
 
 
-\end{document}
-
 \chapter{Database Security}
 \label{ex:database-security}
 
@@ -603,23 +601,89 @@ Databases - discussion about Relational Database Management System RDBMS Model a
 \label{ex:syn-flood-101}
 
 {\bf Objective:}\\
-
+Start a webserver attack using SYN flooding tool hping3.
 
 {\bf Purpose:}\\
+See how easy it is to produce packets on a network using hacker programs.
+
+The tool we will use is very flexible and can produce ICMP, UDP and TCP using very few options.
+
+\begin{alltt}\footnotesize
+-1 --icmp
+       ICMP  mode,  by  default  hping3  will  send  ICMP echo-request, you can set other ICMP
+       type/code using --icmptype --icmpcode options.
+
+-2 --udp
+       UDP mode, by default hping3 will send udp to target host's port 0.  UDP header  tunable
+       options are the following: --baseport, --destport, --keep.
+\end{alltt}
+
+TCP mode is default, so no option needed.
 
 
 {\bf Suggested method:}\\
+Connect to the LAB network using Ethernet! Borrow a USB network card if you dont have one.
+
+Start your Kali VM in bridged mode, try a basic TCP flooding attack against the server provided by the instructor, or your own Debian server.
+
+\begin{alltt}\footnotesize
+hping3 --flood -p 80 10.0.45.12
+\end{alltt}
+
+You should see something like this:
+\begin{alltt}\footnotesize
+HPING 10.0.45.12: NO FLAGS are set, 40 headers + 0 data bytes
+hping in flood mode, no replies will be shown
+^C
+--- 10.0.45.12 hping statistic ---
+352339 packets transmitted, 0 packets received, 100% packet loss
+round-trip min/avg/max = 0.0/0.0/0.0 ms
+\end{alltt}
+
+Try doing the most common attacks, RTFM hping3:
+\begin{itemize}
+\item ICMP flooding
+\item UDP flooding, try port 53 and port 123
+\item TCP flooding, try port 22 or port 80 on your debian perhaps
+\end{itemize}
 
 
 {\bf Hints:}\\
+The tool we use can do a lot of different things, and you can control the speed. You can measure at the server being attacked or what you are sending, commonly using ifpps or such programs can help.
 
+This allows you to use the tool to test devices and find the breaking point, which is more interesting than if you can overload, because you always can.
+\begin{alltt}\footnotesize
+-i --interval
+       Wait  the  specified  number  of  seconds or micro seconds between sending each packet.
+       --interval X set wait to X seconds, --interval uX set wait to X micro seconds.  The de‐
+       fault  is  to  wait one second between each packet. Using hping3 to transfer files tune
+       this option is really important in order to increase transfer rate. Even  using  hping3
+       to  perform  idle/spoofing  scanning  you should tune this option, see HPING3-HOWTO for
+       more information.
+
+--fast Alias for -i u10000. Hping will send 10 packets for second.
+
+--faster
+       Alias for -i u1. Faster then --fast ;) (but not as fast as your computer can send pack‐
+       ets due to the signal-driven design).
+
+--flood
+       Sent  packets  as fast as possible, without taking care to show incoming replies.  This
+       is ways faster than to specify the -i u0 option.
+\end{alltt}
 
 {\bf Solution:}\\
-
+When your team has sent +1 million packets per second into the network, from one or two laptops - you are done.
 
 {\bf Discussion:}\\
+Gigabit Ethernet can send up to 1.4 million packets per second, pps.
+
+There is a presentation about DDoS protection with low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
 
 
+
+\end{document}
 
 \chapter{Medical Security Policies}
 \label{ex:medical-security-policy}

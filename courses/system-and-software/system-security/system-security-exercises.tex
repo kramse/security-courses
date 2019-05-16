@@ -694,90 +694,7 @@ The internet is decentralized, but recent years see more centralization - GitHub
 What are some problems in this?
 
 
-\chapter{Perform privilege escalation using files 30min}
-\label{ex:priv-esc-cron}
 
-{\bf Objective:}\\
-Perform a simple privilege escalation attack
-
-{\bf Purpose:}\\
-Try and test a back door script.
-
-{\bf Suggested method:}\\
-
-\begin{enumerate}
-\item Make a non-privileged user
-\item make a system directory writable
-\item create root cronjob without path
-\item Insert a malicious script as one of the commands from the root cron job
-\end{enumerate}
-
-{\bf Hints:}\\
-A cron job runs scheduled commands. They usually perform cleanup functions, removing old files, doing a backup or similar
-
-In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
-
-\begin{alltt}
-root@debian:~# rm /tmp/.xxsh
-root@debian:~# cp /bin/dash /tmp/.xxsh
-root@debian:~# chmod +sw /tmp/.xxsh
-\end{alltt}
-
-Then test using a normal user, another window:
-\begin{alltt}
-hlk@debian:~$ /tmp/.xxsh
-# id
-uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
-#
-\end{alltt}
-
-The effective user id should be 0 which is root.
-
-When this manual process work. Then automate it, make it into a script like in the book. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
-
-This happens in a lot of devices and hosts today.
-
-The main takeaway is that root scripts should ALWAYS have a PATH defined, and ALL directories used by root script should only be writable by root!
-
-{\bf Solution:}\\
-When you have created the script for doing the shell copy you are done.
-
-Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
-
- Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
-
-
-
-{\bf Discussion:}\\
-This was chosen as I found a similar vulnerability in a professional product, in 2019
-
-
-\chapter{Anti-virus and "endpoint security" 20min}
-\label{ex:anti-virus-end-point-security}
-
-{\bf Objective:}\\
-Discuss when to use Anti-virus and "endpoint security"
-
-{\bf Purpose:}\\
-Anti-virus programs have been shown to catch some viruses, useful.
-
-Anti-virus programs have been shown to be insecure programs that also slows down systems, counter-productive and increases target surface and exposure.
-
-{\bf Suggested method:}\\
-Sit in groups 3-5 -- discuss among yourselves. Write down plus and minus for using anti-virus -- especially which use-cases should use AV, and which shouldn't.
-
-{\bf Hints:}\\
-In some cases people have installed AV products for check-mark security, the check-list said to have AV, so we installed a mail scanner on this web server -- bad security.
-
-{\bf Solution:}\\
-When we have done a collected talk and discussion we are done.
-
-{\bf Discussion:}\\
-I dont use anti-virus products at all. I do use a lot of backup though.
-
-Which is more trust-worthy - a restored system or a system cleaned by random anti-virus program?
-
-\end{document}
 \chapter{SSL/TLS scanners 15 min}
 \label{ex:sslscan}
 
@@ -882,6 +799,91 @@ Crack your own passwords
 
 
 {\bf Discussion:}\\
+
+
+\chapter{Perform privilege escalation using files 30min}
+\label{ex:priv-esc-cron}
+
+{\bf Objective:}\\
+Perform a simple privilege escalation attack
+
+{\bf Purpose:}\\
+Try and test a back door script.
+
+{\bf Suggested method:}\\
+
+\begin{enumerate}
+\item Make a non-privileged user
+\item make a system directory writable
+\item create root cronjob without path
+\item Insert a malicious script as one of the commands from the root cron job
+\end{enumerate}
+
+{\bf Hints:}\\
+A cron job runs scheduled commands. They usually perform cleanup functions, removing old files, doing a backup or similar
+
+In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
+
+\begin{alltt}
+root@debian:~# rm /tmp/.xxsh
+root@debian:~# cp /bin/dash /tmp/.xxsh
+root@debian:~# chmod +sw /tmp/.xxsh
+\end{alltt}
+
+Then test using a normal user, another window:
+\begin{alltt}
+hlk@debian:~$ /tmp/.xxsh
+# id
+uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+#
+\end{alltt}
+
+The effective user id should be 0 which is root.
+
+When this manual process work. Then automate it, make it into a script like in the book. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
+
+This happens in a lot of devices and hosts today.
+
+The main takeaway is that root scripts should ALWAYS have a PATH defined, and ALL directories used by root script should only be writable by root!
+
+{\bf Solution:}\\
+When you have created the script for doing the shell copy you are done.
+
+Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
+
+ Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
+
+
+
+{\bf Discussion:}\\
+This was chosen as I found a similar vulnerability in a professional product, in 2019
+
+
+\chapter{Anti-virus and "endpoint security" 20min}
+\label{ex:anti-virus-end-point-security}
+
+{\bf Objective:}\\
+Discuss when to use Anti-virus and "endpoint security"
+
+{\bf Purpose:}\\
+Anti-virus programs have been shown to catch some viruses, useful.
+
+Anti-virus programs have been shown to be insecure programs that also slows down systems, counter-productive and increases target surface and exposure.
+
+{\bf Suggested method:}\\
+Sit in groups 3-5 -- discuss among yourselves. Write down plus and minus for using anti-virus -- especially which use-cases should use AV, and which shouldn't.
+
+{\bf Hints:}\\
+In some cases people have installed AV products for check-mark security, the check-list said to have AV, so we installed a mail scanner on this web server -- bad security.
+
+{\bf Solution:}\\
+When we have done a collected talk and discussion we are done.
+
+{\bf Discussion:}\\
+I dont use anti-virus products at all. I do use a lot of backup though.
+
+Which is more trust-worthy - a restored system or a system cleaned by random anti-virus program?
+
 
 
 

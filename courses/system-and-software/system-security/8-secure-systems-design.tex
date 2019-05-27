@@ -43,23 +43,241 @@
 
 \slide{Principle of least privilege, fail-safe defaults, separation of privilege etc.}
 
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
 
 \slide{Files, objects, users, groups and roles}
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
 
 
 \slide{Naming and Certificates}
 
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
 
 
 \slide{Access Control Lists}
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
 
 
 \slide{DNSSEC}
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
 
 \slide{Hardenize - web site with testing}
 
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
 
 \exercise{ex:email-security}
+
+
+\slide{Setuid demystified}
+
+\begin{quote}
+Access control in Unix systems is mainly based on user
+IDs, yet the system calls that modify user IDs (uid-setting
+system calls), such as setuid, are poorly designed, insufficiently documented, and widely misunderstood and
+misused. This has caused many security vulnerabilities
+in application programs.
+\end{quote}
+
+\emph{Setuid Demystified} Hao Chen, David Wagner, and Drew Dean,
+Proceedings of the 11th USENIX Security Symposium,
+August 05 - 09, 2002
+
+
+\begin{list2}
+\item Sometimes a user need to modify resources not owned by themselves
+\item Most common example is changing their password in the user database
+\item So while the program \verb+passwd+ runs it has the privileges of the root user, setuid-root program
+\item Previously Unix systems would have several 100s of setuid programs, \\
+today OpenBSD has less than 30 I think, and privilege seperated see OpenSSH
+\item Note also the many differences in Unix variants!
+\end{list2}
+
+\slide{}
+
+\begin{quote}
+{\bf setuid()} Although setuid is the only uid-setting sys-
+tem call standardized in POSIX 1003.1-1988, it is also
+the most confusing one. First, the required permission
+differs among Unix systems. {\bf Both Linux and Solaris}
+require the parameter newuid to be equal to either the
+real uid or saved uid if the effective uid is not zero. As
+a surprising result, setuid(geteuid()), which a program-
+mer might reasonably expect to be always permitted, can
+fail in some cases, e.g., when ruid=100, euid=200, and
+suid=100. On the other hand, setuid(geteuid()) always
+succeeds in FreeBSD. {\bf Second, the action of setuid dif-
+fers not only among different operating systems but also
+between privileged and unprivileged processes.} In So-
+laris and Linux, if the effective uid is zero, a successful
+setuid(newuid) call sets all three user IDs to newuid; oth-
+erwise, it sets only the effective user ID to newuid. On
+the other hand, {\bf in FreeBSD a successful setuid(newuid)
+call sets all three user IDs to newuid} regardless of the
+effective uid.
+\end{quote}
+\emph{Setuid Demystified} Hao Chen, David Wagner, and Drew Dean,
+Proceedings of the 11th USENIX Security Symposium,
+August 05 - 09, 2002
+
+This is reality, and very confusing.
+
+\slide{Setuid example CVE-2018-14665}
+
+The three required commands, Hickey said, are:
+\begin{alltt}
+cd /etc; Xorg -fp
+"Root::16431:0:99999:7:::" -logfile
+shadow  :1;su
+\end{alltt}
+Source: Matthew Hickey, cofounder of security firm Hacker House
+
+\begin{list2}
+\item The X11 Window System is often setuid root
+\item Requires access to screen memory, keyboard, mouse etc.
+\item Not the only problem found in X11 over the years, incomplete list at:\\
+\link{https://www.cvedetails.com/vulnerability-list/vendor_id-88/product_id-147/X.org-X11.html}
+\end{list2}
+
+\slide{Formal verification}
+
+\begin{quote}
+Fortunately, we can note that there is a lot of symme-
+try present. If we have {\bf a non-root user ID, the behav-
+ior of the operating system is essentially independent
+of the actual value of this user ID}, and depends only
+on the fact that it is non-zero. For example, the states
+(ruid, euid, suid) = (100, 100, 100) and (200, 200, 200)
+are isomorphic up to a substitution of the value 100 by
+the value 200, since the OS will behave similarly in both
+cases (e.g., setuid(0) will fail in both cases).
+\end{quote}
+\emph{Setuid Demystified} Hao Chen, David Wagner, and Drew Dean,
+Proceedings of the 11th USENIX Security Symposium,
+August 05 - 09, 2002
+
+\begin{list2}
+\item The Setuid Demystified paper moves on to a formal model,
+but Reality bites again:\\
+\link{https://thehackernews.com/2018/12/linux-user-privilege-policykit.html}
+\item \emph{Red Hat has recommended system administrators not to allow any negative UIDs or UIDs greater than 2147483646 in order to mitigate the issue until the patch is released.}
+\item \verb+\fliptable+ everything is insecure
+\end{list2}
+
+
+
+
+
+
+\slide{Qmail Security }
+
+\begin{quote}
+The qmail security guarantee
+In March 1997, I took the unusual step of publicly offering
+\$500 to the first person to publish a verifiable security hole
+in the latest version of qmail: for example, a way for a user
+to exploit qmail to take over another account. My offer still
+stands. Nobody has found any security holes in qmail. I
+hereby increase the offer to \$1000.
+\end{quote}
+\emph{Some thoughts on security after ten years of qmail 1.0},
+Daniel J. Bernstein
+
+\begin{list2}
+\item Started out of need and security problems in existing Sendmail
+\item Bug bounty early on. Donald Knuth has similar for his books
+\end{list2}
+
+\slide{Qmail Security Paper, some answers}
+
+\begin{list2}
+\item Answer 1: eliminating bugs $->$ Enforcing explicit data flow, Simplifying integer semantics, Avoiding parsing
+\item Answer 2: eliminating code  $->$ Identifying common functions, Reusing network tools, Reusing access controls, Reusing the filesystem
+\item Answer 3: eliminating trusted code $->$ Accurately measuring the TCB, Isolating single-source transformations, Delaying multiple-source merges, Do we really need a small TCB?
+\end{list2}
+
+\slide{Qmail vs Postfix}
+
+\begin{quote}
+I failed to place any of the qmail code into untrusted prisons. Bugs anywhere in the code could have been security holes. The way that qmail survived this failure was by having very few bugs, as discussed in Sections 3 and 4.
+\end{quote}
+\emph{Some thoughts on security after ten years of qmail 1.0},
+Daniel J. Bernstein
+
+\begin{list2}
+\item This is NOT a comlete comparison of Qmail and Postfix \link{http://www.postfix.org/}!
+\item Postfix is comprised of many processes and modules. These modules typically are also chrooted and report back status only through very restricted interfaces
+\item It is also possible to turn off many components, allowing the system run with less code
+\item No Postfix program is setuid, all things are run by a master control process. A small setgid program used for mail submission - writing into the queue directory
+\end{list2}
+
+Source: being a Postfix user and \emph{Secure Coding: Principles and Practices}
+Eftir Mark Graff, Kenneth R. Van Wyk, June 2009
+
+
+\slide{Wedge Reduced-Privilege Compartments}
+
+\begin{quote}
+We present Wedge, a system well suited to the
+splitting of complex, legacy, monolithic applications into
+fine-grained, least-privilege compartments. Wedge consists of two synergistic parts: OS primitives that create
+compartments with default-deny semantics, which force
+the programmer to make compartments’ privileges ex-
+plicit; and Crowbar, a pair of run-time analysis tools
+that assist the programmer in determining which code
+needs which privileges for which memory objects.
+\end{quote}
+
+\emph{Wedge: Splitting Applications into Reduced-Privilege Compartments}
+Andrea Bittau, Petr Marchenko, Mark Handley, Brad Karp
+NSDI'08 Proceedings of the 5th USENIX Symposium on Networked Systems Design and Implementation, San Francisco, California — April 16 - 18, 2008
+
+\slide{Pledge, and Unveil, in OpenBSD}
+
+Compare to Pledge, and Unveil, in OpenBSD
+\begin{list2}
+\item Applies to multiple different sorts of programs, privsep, privdrop
+unpriviledged
+\item Illegal operations crash the program. (SIGABRT)
+\item Pledge: Realistic subsets of POSIX functionality
+\item The pledge system call forces the current process into a restricted-service operating mode\\
+ \link{https://man.openbsd.org/pledge.2}
+\item Ping pledges “stdio inet dns” - only need these, no read,write,create-path need to access file system!
+\item Unveil limit filesystem access. Many very simple: unveil(“/dev”, “rw”)
+\item The first call to unveil removes visibility of the entire filesystem from all other filesystem-related system calls (such as open(2), chmod(2) and rename(2)), except for the specified path and permissions.\\ \link{https://man.openbsd.org/unveil.2} 
+\end{list2}
+
+Source: man-pages and\\ \link{https://www.openbsd.org/papers/BeckPledgeUnveilBSDCan2018.pdf}
 
 
 

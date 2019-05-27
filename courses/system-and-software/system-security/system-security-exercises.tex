@@ -893,24 +893,75 @@ Which is more trust-worthy - a restored system or a system cleaned by random ant
 \label{ex:email-security}
 
 {\bf Objective:}\\
-
+Talk and plan roll-out of security mechanisms based on DNS records. Domain Name System. Check you personal domain and domain used for work. If you are new to this I suggest experimenting with your own personal domain, or create one.
 
 {\bf Purpose:}\\
+Make sure everyone attending know about methods to restrict sending of false emails, how to secure this using DNSSEC, SPF, DMARC - DNS based updates to your email domain security
 
-DNSSEC, SPF, DMARC - DNS based updates to your email domain security
+
+{\bf Email security 2019 - Goals}
+
+\begin{itemize}
+\item SPF Sender Policy Framework\\ {\footnotesize\url{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+\item DKIM DomainKeys Identified Mail\\
+{\footnotesize\url{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
+{\footnotesize\url{https://en.wikipedia.org/wiki/DMARC}}
+\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\url{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
+\item Brug allesammen, check efter ændringer!
+\end{itemize}
+
+DNS-based Authentication of Named Entities (dane)
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
 
 
 {\bf Suggested method:}\\
-
+Use services on the internet, such as \link{https://internet.nl/} and \link{https://dmarcian.com/} to see current status for your domains.
 
 {\bf Hints:}\\
+I suggest the following strategy when you implement these methods, if you dare do it right now. If you make a plan.
+
+{\bf Basic mail security 2019}
+\begin{enumerate}
+\item Implement DNSSEC - turn it on, most likely easy
+\item Configure Sender Policy Framework, perhaps only \verb+~all+ tilde means soft fail
+\item Configure DomainKeys Identified Mail
+\item Configure receiving email address for DMARC
+\item Configure Domain-based Message Authentication - reject none
+\end{enumerate}
+
+Spend some time trying different tools for DMARC reporting. A month or a week, depending on the domain and your users. Github alone has 100s of projects concerned with parsing, reporting and working with DMARC.
+
+Then after some time has passed, and you have reviewed reporting from DMARC, turn it on for real:
+\begin{enumerate}
+\item Configure SPF to disallow with hard fail use \verb+-all+ minus
+\item Configure DMARC with reject - reject emails not following policy
+\end{enumerate}
+
+{\bf Advanced mail security 2019}
+\begin{enumerate}
+\item Create real certificates for DANE
+\item Publish them \smiley
+\end{enumerate}
+
+Helpful hints from \link{https://blog.apnic.net/2017/01/06/lets-encrypt-dane/}
 
 
 {\bf Solution:}\\
-
+When the internet is ridden of falsified spam you are done \smiley\ - its up to you.
 
 {\bf Discussion:}\\
+You need to research before making changes to important domains.
 
+If you have domains that \emph{never send email} then add the following SPF and DMARC to avoid misuse.
+
+from my own DSN template for \emph{parked domains}:
+\begin{alltt}
+gdns.template	v=spf1 -all	43200
+_dmarc.gdns.template	v=DMARC1; p=reject;	43200
+\end{alltt}
 
 \end{document}
 

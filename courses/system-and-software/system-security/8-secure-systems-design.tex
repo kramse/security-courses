@@ -43,7 +43,21 @@
 
 
 
-\slide{Books examples}
+\slide{Book examples}
+
+
+\begin{alltt}\footnotesize
+  # This rule ensures that all local mail is delivered using the
+  # smtp transport, everything else will go via the smart host.
+  R$* < @ $* .$m. > $*	$#smtp $@ $2.$m. $: $1 < @ $2.$m. > $3
+  dnl
+  #
+  FEATURE(rbl)
+  FEATURE(access_db)
+  # end
+\end{alltt}
+
+Source: snippet from \link{https://www.tldp.org/LDP/nag2/x14661.html}
 
 \begin{list1}
 \item Our book chapter 14 starts out with some examples:
@@ -58,10 +72,10 @@
 \slide{Principle of Least Privilege}
 
 \begin{list1}
-\item Principle of least privilege
 \item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
-\item
-\item
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
 \end{list1}
 
 
@@ -70,30 +84,31 @@
 \begin{list1}
 \item
 \item {\bf Definition 14-2} The \emph{principle of least authority} states that a subject should be given only the authority that it needs in order to complete its task.
-\item
-\item
-\item
+\item Closely related to principle of least privilege
+\item Depend if there is distinction between \emph{permission} and \emph{authority}
+\item Permission - what actions a process can take on objects directly
+\item Authority - as determining what effects a process may have on an object, either directly or indirectly through its interactions with other processes or subsystems
+\item Book uses the example of information flow, passing information to second subject that can write
 \end{list1}
 
 
 \slide{Principle of Fail-Safe defaults}
 
 \begin{list1}
-\item
 \item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.
-\item
-\item
-\item
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
 \end{list1}
 
 
 \slide{Principle of Economy of Mechanism}
 
 \begin{list1}
-\item
 \item {\bf Definition 14-4} The \emph{principle of economy of mechanism} states that security mechanisms should be as simple as possible.
-\item
-\item
+\item Simple $->$ fewer complications $->$ fewer security errors
+\item Use WPA passphrase instead of MAC address based authentication
 \item
 \end{list1}
 
@@ -101,21 +116,22 @@
 \slide{Principle of Complete Mediation}
 
 \begin{list1}
-\item
 \item {\bf Definition 14-5} The \emph{principle of complete mediation} requires that all accesses to objects be checked to ensure that they are allowed.
-\item
-\item
-\item
+\item Always perform check
+\item Time of check, time of use
+\item Example Unix file descriptors - access check first, then can be reused in the future
+\item Caching can be bad.
 \end{list1}
 
 
 \slide{Principle of Open Design}
 
+\hlkimage{8cm}{debath-stego.png}
+
+Source: picture from \link{https://www.cs.cmu.edu/~dst/DeCSS/Gallery/Stego/index.html}
 \begin{list1}
-\item
 \item {\bf Definition 14-6} The \emph{principle of open design} states that the security of a mechanism should not depend on the secrecy of its design or implementation.
-\item
-\item
+\item Content Scrambling System (CSS) used on DVD movies
 \item Mobile data encryption  A5/1 key - see next page
 \end{list1}
 
@@ -138,23 +154,20 @@ Source: \link{http://cryptome.org/a51-bsw.htm}
 
 \slide{Principle of Separation of Privilege}
 
+\hlkimage{4cm}{security-layers-1-uk.pdf}
 \begin{list1}
-\item
 \item {\bf Definition 14-7} The \emph{principle of separation of privilege} states that a system should not grant permission based on a single condition.
-\item
-\item
-\item
+\item Company checks, CEO fraud
+\item Programs like \emph{su} and \emph{sudo} often requires specific group membership and password
 \end{list1}
 
 
 \slide{Principle of Least Common Mechanism}
 
 \begin{list1}
-\item
 \item {\bf Definition 14-8} The \emph{principle of least common mechanism} states that mechanisms used to access resources should not be shared.
-\item
-\item
-\item
+\item Minimize number of shared mechanisms and resources
+\item Also mentions stack protection, randomization
 \end{list1}
 
 
@@ -162,11 +175,14 @@ Source: \link{http://cryptome.org/a51-bsw.htm}
 \slide{Principle of Least Astonishment}
 
 \begin{list1}
-\item
 \item {\bf Definition 14-9} The \emph{principle of least astonishment} states that security mechanisms should be designed so that users understand the reason that the mechanism works they way it does and that using the mechanism is simple.
-\item
-\item
+\item Security model must be easy to understand and targetted towards users and system administrators
+\item Confusion may undermine the security mechanisms
+\item Make it easy and as intuitive as possible to use
+\item Make output clear, direct and useful\\
+Exception user supplies wrong password, tell login failed but not if user or password was wrong
 \item Make documentation correct, but the program best
+\item Psychological acceptability - should not make resource more difficult to access
 \end{list1}
 
 
@@ -189,9 +205,13 @@ Source: \link{http://cryptome.org/a51-bsw.htm}
 
 \begin{list1}
 \item Naming and certificates, certificates binds cryptographic keys to identifiers
-\item
-\item
-\item
+\item Book describes CA policies and processes in some detail
+\item I recommend using Lets Encrypt \link{https://letsencrypt.org/}
+\item Also\\
+Our main printed book uses these to describe NAT: 10.1.3.241 - 101.43.21.241\\
+10.40/13 belongs to APNIC and was assigned to a real network!\\
+Use the prefixes specifically documented for documentation when writing documentation🙏see RFC3849 and RFC5737
+\item The book also describes problems trusting IP addresses and DNS information, with some references to \emph{cache poisoning} etc.
 \end{list1}
 
 \slide{Domain Name System Security Extensions (DNSSEC)}
@@ -200,9 +220,10 @@ Source: \link{http://cryptome.org/a51-bsw.htm}
 \item DNSSEC was originally specified in the following three RFCs:
 \item RFC 4033 – DNS Security Introduction and Requirements
 \item RFC 4034 – Resource Records for the DNS Security Extensions
-\item RFC 4035 – Protocol Modifications for the DNS Security Extensions
-\item \link{https://www.internetsociety.org/resources/deploy360/2011/dnssec-rfcs-3/}
+\item RFC 4035 – Protocol Modifications for the DNS Security Extensions\\
+ \link{https://www.internetsociety.org/resources/deploy360/2011/dnssec-rfcs-3/}
 \item Using DNSSEC we can put keys into DNS, not trusting the usual browser root CAs
+\item Using the wrong NSEC can mean you can \emph{walk the zone} and get all names! May or may not lead to finding testing and development systems - use NSEC3
 \end{list1}
 
 
@@ -502,6 +523,8 @@ Source: man-pages and\\ \link{https://www.openbsd.org/papers/BeckPledgeUnveilBSD
 \item \link{https://www.ssllabs.com/}
 \item \link{https://securityheaders.com/}
 \item \link{https://webbkoll.dataskydd.net/en}
+\item Using the available protocols can make your \emph{cookies} better protected, use the \emph{secure} and \emph{http only} along with HSTS, strict transport etc.
+\item Sooo many extra things to consider for a web site today!
 \end{list1}
 
 Now we will check our own sites, and create plans.

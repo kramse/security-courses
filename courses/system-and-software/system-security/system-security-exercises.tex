@@ -740,6 +740,8 @@ SSLscan can check your own sites, while Qualys SSLLabs only can test from hostna
 \chapter{Nmap Ikescan IPsec}
 \label{ex:nmap-ikescan}
 
+{\bf unfinished, will be updated later}
+
 {\bf Objective:}\\
 Try Nmap and Ikescan
 
@@ -760,6 +762,8 @@ Try Nmap and Ikescan
 
 \chapter{SSH scanners}
 \label{ex:nmap-ssh-scanner}
+
+{\bf unfinished, will be updated later}
 
 {\bf Objective:}\\
 
@@ -782,6 +786,8 @@ Try Nmap and Ikescan
 
 \chapter{Password Cracking}
 \label{ex:pwcrack-101}
+
+{\bf unfinished, will be updated later}
 
 {\bf Objective:}\\
 
@@ -963,52 +969,154 @@ gdns.template	v=spf1 -all	43200
 _dmarc.gdns.template	v=DMARC1; p=reject;	43200
 \end{alltt}
 
-\end{document}
 
-\chapter{VM escapes}
+
+\chapter{Virtual Machine Escapes 20min}
 \label{ex:vm-escape}
 
-{\bf Objective:}\\
 
+{\bf Objective:}\\
+Research how exploits currently as escaped from Guest Virtual Machine to Host operating system. Multiple examples exist for both client virtualisation and datacenter virtualisation.
 
 {\bf Purpose:}\\
-Research VM escapes
+Research VM escapes - understand that isolation and separation does not always work. Think about how to design systems with this in mind.
+
+Perhaps virtualisation should be built using two clusters, one for external services and one for internal?
 
 {\bf Suggested method:}\\
+Find list of CVE or do internet search. Perform searches using the virtualisation technology used in your networks. Note: even though Virtual box is used as example below other technologies like Microsoft HyperV, VMware, Xen etc. have similar problems!
 
+
+examples:
+
+\begin{itemize}
+\item \link{https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=virtualbox} list multiple vulnerabilities.
+\item \url{https://github.com/MorteNoir1/virtualbox_e1000_0day} \emph{VirtualBox E1000 Guest-to-Host Escape} The E1000 has a vulnerability allowing an attacker with root/administrator privileges in a guest to escape to a host ring3. Then the attacker can use existing techniques to escalate privileges to ring 0 via /dev/vboxdrv.
+\end{itemize}
 
 {\bf Hints:}\\
+Providing virtualisation is today done using hardware features in the CPU of the system. Along with the hardware features are drivers and features provided by the virtualisation system, which has errors.
 
+Having drivers and kernel modules with errors can sometimes result in flaws exploitable by guest virtual machines.
 
 {\bf Solution:}\\
+There is no solution other than to patch systems, when new vulnerabilities are found - update your virtualisation NOW if you are missing updates.
 
+Never open virtual machines from untrusted sources on your laptop with confidential data. Don't trust that the security provided is enough for researching live malware on virtual systems.
 
 {\bf Discussion:}\\
+Is it possible to create multiple virtualisation cluster? - yes, some organisations already have multiple clusters for various reasons. Some might have development, staging and production as different clusters.
+
+Also be aware that a lot of malware has checks trying to find out if it is running in a virtual machine, or isolated in a lab.
 
 
 
-
-
-\chapter{Centralized syslog}
+\chapter{Centralized syslog 15min}
 \label{ex:centralized-syslog-practical}
 
-{\bf Objective:}\\
+{\bf Objective:} \\
+See how server syslog is configured on regular Unix/Linux.
 
-Centralized syslogging and example system
+Centralized syslogging and example system can demonstrate how easy it is to get started
 
 {\bf Purpose:}\\
+The main idea of this exercise is to understand how easy network connected systems can send log data.
 
+This should be the common case, sending logs off system - to avoid an attacker being able to hide tracks and logs from exploits performing intrusion and escalation.
 
 {\bf Suggested method:}\\
-
+Log into your local Linux systems or network devices, see how syslog is configured.
 
 {\bf Hints:}\\
+Look in the config file, may be in /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
 
+Sample output from old-skool syslogd
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
 
 {\bf Solution:}\\
-
+When you understand how to configure syslog from a couple of devices and has looked up which protocol and port it uses. (default is 514/udp)
 
 {\bf Discussion:}\\
+There are syslog senders for Windows too. Other systems define their own format for sending, example Beats - lightweight data shippers \link{https://www.elastic.co/products/beats }
+
+I recommend using the elastic stack, previously the ELK stack, \link{https://www.elastic.co/products/}. The products can be used without license and can give a lot of experience with this kind of product. This will enable you to better describe your logging needs for evaluating other products.
+
+This is done using Logstash as the server - can also receive SNMP traps!
+
+Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite “stash.” - often Elasticsearch
+\link{https://www.elastic.co/products/logstash}
+
+Other very popular systems are:
+
+\begin{itemize}
+\item Splunk \link{https://www.splunk.com}
+\item Graylog \link{https://www.graylog.org/}
+\item InfluxDB \link{https://www.influxdata.com/}
+\item Grafana The open platform for analytics and monitoring \link{https://grafana.com/}
+\item Prometheus Monitoring system \& time series database \link{https://prometheus.io/}
+\end{itemize}
+
+Remember doing logging og performance metrics can also become a security charateristics. Availability is a critical metric for most commercial systems.
+
+
+\chapter{Create Kibana Dashboard 15min}
+\label{ex:kibana-dashboard}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+{\bf Objective:}\\
+See Kibana and understand how it is configured.
+
+{\bf Purpose:}\\
+Kibana is a very popular system for creating dashboards from data in elasticsearch.
+
+Learning how to create and import dashboards is a good exercise.
+
+{\bf Suggested method:}\\
+Instructor will provide a running Elasticsearch and Kibana for this exercise.
+
+Note: usually Kibana should be available on port 5601 on localhost (127.0.0.1) only! It is recommended to keep this configuration and then add a web server like Nginx or Apache in front. This will further allow authentication and other features.
+
+Using Firefox visit Kibana on the link provided by the instructor.
+
+If this is the first time you need to
+ select \verb+logstash-*+ as a default index. Note: Kibana is an advanced and powerful tool in itself.
+
+Read how dashboards can be loaded using shell command, example the ones from:
+\link{https://github.com/StamusNetworks/KTS6}
+
+The commands are similar to
+\begin{alltt}
+git clone https://github.com/StamusNetworks/KTS6.git
+cd KTS6
+bash load.sh
+\end{alltt}
+
+{\bf Hints:}\\
+Logstash and Elastic stack are a great way to get started with dashboarding.
+
+However, running a big installation is harder than it looks. Make sure to have multiple servers and good monitoring.
+
+{\bf Solution:}
+When you have browsed Kibana, seen how you can add graphs and combine them into dashboards - using the GUI you are done. Previously creating dashboards was harder and often required programming knowledge.
+
+{\bf Discussion:}\\
+Making dashboard are an art form. We will NOT start creating beautiful dashboards.
+
+If you want, there is a SELKS LiveCD dedicated to suricata which also includes more tools for administration of rules and getting alerts:\\
+\link{https://www.stamus-networks.com/open-source/}
 
 
 \chapter{File System Forensics}
@@ -1032,7 +1140,7 @@ Centralized syslogging and example system
 {\bf Discussion:}\\
 
 
-
+\end{document}
 \chapter{Clean or rebuild a server}
 \label{ex:clean-or-rebuild}
 

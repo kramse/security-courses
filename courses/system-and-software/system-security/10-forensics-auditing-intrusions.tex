@@ -41,6 +41,19 @@
 
 \end{list1}
 
+\slide{Because tuesday was cancelled}
+
+The following pages will be removed from the curriculum:
+\begin{list1}
+\item Bishop chapter 17: Information Flow
+\item Bishop chapter 18: Confinement Problem
+\item Capsicum: practical capabilities for UNIX
+\item Removing ROP Gadgets from OpenBSD
+\end{list1}
+
+but we will do the exercise Virtual Machine Escapes
+
+\exercise{ex:vm-escape}
 
 
 \slide{Auditing and logging}
@@ -58,7 +71,510 @@
 \slide{Network Security Monitoring}
 
 
+
+
+
+\slide{Logging today}
+\hlkimage{8cm}{moloch-sessions}
+
+\begin{list1}
+\item Log analysis is required today - and we have many logs
+\item Gather logs, parse logs, explain logs - fix stuff
+\item Search your logs with the Elastic stack
+\item Show sample logs from Suricata, Sudo, SSH, ... what we have
+\end{list1}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+\slide{Centralized syslog}
+
+\begin{list1}
+\item Logfiler er en nødvendighed for at have et transaktionsspor
+\item Logfiler giver mulighed for statistik
+\item Logfiler er desuden nødvendige for at fejlfinde
+\item Det kan være relevant at sammenholde logfiler fra:
+\begin{list2}
+\item routere
+\item firewalls
+\item webservere
+\item intrusion detection systemer
+\item adgangskontrolsystemer
+\item ...
+\end{list2}
+\item Husk - tiden er vigtig! Network Time Protocol (NTP) anbefales
+\item Husk at logfilerne typisk kan slettes af en angriber -
+  hvis denne får kontrol med systemet
+\end{list1}
+
+\slide{syslog}
+
+\begin{list1}
+\item syslog er system loggen på UNIX og den er effektiv
+  \begin{list2}
+\item man kan definere hvad man vil se og hvor man vil have det
+  dirigeret hen
+\item man kan samle det i en fil eller opdele alt efter programmer og
+  andre kriterier
+\item man kan ligeledes bruge named pipes - dvs filer i filsystemet
+  som tunneller fra chroot'ed services til syslog i det centrale system!
+\item man kan nemt sende data til andre systemer
+  \end{list2}
+\item Man bør lave en centraliseret løsning
+\end{list1}
+
+\slide{syslogd.conf eksempel}
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+\slide{Andre syslogs syslog-ng}
+
+\begin{list2}
+\item der findes andre syslog systemer eksempelvis syslog-ng
+\item konfigureres gennem \verb+/etc/syslog-ng/syslog-ng.conf+
+\end{list2}
+
+\begin{alltt}
+\small
+options \{
+        long_hostnames(off);
+        sync(0);
+        stats(43200);
+\};
+
+source src { unix-stream("/dev/log"); internal(); pipe("/proc/kmsg"); };
+destination messages { file("/var/log/messages"); };
+destination console_all { file("/dev/console"); };
+log { source(src); destination(messages); };
+log { source(src); destination(console_all); };
+\end{alltt}
+Kan eksempelvis TCP og garanteret aflevering af beskeder
+
 \exercise{ex:centralized-syslog-practical}
+
+
+
+
+\slide{Web server access log}
+
+\begin{alltt}
+\footnotesize
+root# tail -f access_log
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/IPv6ready.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/valid-html401.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /images/snowflake1.png
+HTTP/1.1" 304 0
+::1 - - [19/Feb/2004:09:05:33 +0100] "GET /~hlk/security6.net/images/logo-1.png
+HTTP/1.1" 304 0
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:35 +0100]
+"GET / HTTP/1.1" 200 1456
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:35 +0100]
+"GET /apache_pb.gif HTTP/1.1" 200 2326
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:36 +0100]
+"GET /favicon.ico HTTP/1.1" 404 209
+2001:1448:81:beef:20a:95ff:fef5:34df - - [19/Feb/2004:09:57:36 +0100]
+"GET /favicon.ico HTTP/1.1" 404 209
+\end{alltt}
+\vskip 1cm
+
+Web server logs are pretty standardized, common log format.
+
+
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+- name: Move elasticsearch data into /data
+  command: creates=/data/elasticsearch mv /var/lib/elasticsearch /data/
+- name: Make link to /data/elasticsearch
+  file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+
+% Suricata, Logstash, Elasticsearch, D3JShttp://d3js.org/
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+
+\slide{Logstash pipeline }
+
+\begin{quote}
+  Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite “stash.” (Ours is Elasticsearch, naturally.)\\
+  \link{https://www.elastic.co/products/logstash}
+\end{quote}
+
+\begin{verbatim}
+input { stdin { } }
+output {
+  elasticsearch { host => localhost }
+  stdout { codec => rubydebug }
+}
+\end{verbatim}
+
+
+
+\begin{list2}
+\item Logstash receives via {\bf input}
+\item Processes with {\bf filters} - grok
+\item Forward events with {\bf output}
+\end{list2}
+
+%Source:
+%Config snippet from recommended link\\
+%{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Logstash as SNMPtrap and syslog server}
+
+{\footnotesize
+\begin{verbatim}
+input {
+  snmptrap {
+    host => "0.0.0.0"
+    type => "snmptrap"
+    port => 1062
+    community => "xxxxx"   }
+  tcp {
+    port => 5000
+    type => syslog  }
+  udp {
+    port => 5000
+    type => syslog  }
+}
+\end{verbatim}
+}
+
+\begin{list2}
+\item We run logstash on port 5000 - but use IPtables port forwarding
+\item Have you even configured SNMP traps?
+\item Maybe you have a device sending SNMP traps right now ...
+\end{list2}
+
+\slide{IPtables forwarding}
+
+{\footnotesize
+\begin{verbatim}
+*nat
+:PREROUTING ACCEPT [0:0]
+# redirect all incoming requests on port 514 to port 5000
+-A PREROUTING -p tcp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 162 -j REDIRECT --to-port 1062
+COMMIT
+\end{verbatim}
+}
+
+\centerline{Inserted near beginning of /etc/ufw/before.rules on Ubuntu}
+
+Remember defense in depth, dont run a privileged Java VM process as root \smiley
+
+\slide{Grok expresssions}
+
+{\footnotesize
+\begin{verbatim}
+  filter {
+    if [type] == "syslog" {
+      grok {
+        match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp}
+        %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}
+        (?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Grok expresssions, sample from my archive}
+
+{\footnotesize
+\begin{verbatim}
+filter {
+# decode some SSHD
+if [syslog_program] == "sshd" {
+  grok {
+# May 20 10:27:08 odn1-nsm-01 sshd[4554]: Accepted publickey for hlk from
+10.50.11.17 port 50365 ssh2: DSA 9e:fd:3b:3d:fc:11:0e:b9:bd:22:71:a9:36:d8:06:c7
+
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: Accepted publickey for %{USERNAME:username} from
+  %{IP:src_ip} port %{BASE10NUM:port} ssh2" }
+
+# "May 20 10:27:08 odn1-nsm-01 sshd[4554]: pam_unix(sshd:session):
+session opened for user hlk by (uid=0)"
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: pam_unix\(sshd:session\): session opened for user
+%{USERNAME:username}" }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+
+\slide{Suricata with Dashboards}
+
+\hlkimage{12cm}{kibana-suricata.png}
+
+Picture from Twitter\\
+\link{https://twitter.com/nullthreat/status/445969209840128000}\\
+
+\link{http://suricata-ids.org/}
+
+\slide{IP reputation}
+
+\begin{list1}
+\item Zeek documentation Intel framework\\
+\link{https://docs.zeek.org/en/stable/frameworks/intel.html}\\
+\item Suricata reputation support\\
+\link{https://suricata.readthedocs.io/en/suricata-4.0.5/reputation/index.html}
+\end{list1}
+
+
+\exercise{ex:kibana-dashboard}
+
+
+\slide{Collect Network Evidence from the network}
+
+\begin{list1}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item Source IP address
+\item Destination IP address
+\item IP protocol
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\end{list1}
+
+Source: \link{https://en.wikipedia.org/wiki/NetFlow}
+
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{slidelist}
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{12cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+
+\slide{Next steps}
+
+Always improving things:
+\begin{list1}
+\item Suricata IDS \link{http://www.openinfosecfoundation.org/}
+\item More graphs, with {\bf automatic identification} of IPs under attack
+\item Identification of {\bf short sessions without data} - spoofed addresses
+\item Alerting from {\bf existing} devices
+\item Dashboards with key measurements
+\end{list1}
+
+\vskip 2cm
+\centerline{\bf\Large Conclusion: Combine tools!}
+
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
+And we have the ANSM book
+
+\slide{Network tools - more examples}
+
+\hlkimage{12cm}{using-packetq.png}
+
+\begin{list2}
+\item DNS: DSC and PacketQ \link{https://github.com/DNS-OARC/PacketQ}
+\item Packetbeat \link{https://www.elastic.co/products/beats/packetbeat}
+
+\item \link{http://securityblog.switch.ch/2013/01/22/using-packetq/}
+\item \link{http://jpmens.net/2013/05/27/server-agnostic-logging-of-dns-queries-responses/}
+\end{list2}
+
+
+
+
+
+\slide{Network Forensics ENISA}
+
+\begin{quote}
+  The European Union Agency for Network and Information Security (ENISA) is a centre of expertise for cyber security in Europe.
+
+ENISA is contributing to a high level of network and information security (NIS) within the European Union, by developing and promoting a culture of NIS in society to assist in the proper functioning of the internal market.
+\end{quote}
+
+\link{https://www.enisa.europa.eu/}
+
+ENISA has published a number of network forensics documents which are free to use, so these are our basics.
+
+\slide{Forensic analysis}
+
+\begin{quote}
+Network forensics is a sub-branch of digital forensics relating to the monitoring and analysis of computer
+network traffic for the purposes of information gathering, legal evidence, or intrusion detection 5 .
+\end{quote}
+
+\begin{list1}
+\item Systems used to collect network data for forensics use usually come in three forms:
+\begin{list2}
+\item Packet capture: All packets passing through a certain traffic point are captured and written to storage
+\item Intrusion detection systems
+\item Network flow sensors
+\end{list2}
+\end{list1}
+
+The acronym OSCAR 8 stands for: Obtain information,
+Strategize,
+Collect evidence,
+Analyse,
+Report
+
+Source: Forensic analysis Network Incident Response Handbook, Document for teachers 1.0 DECEMBER 2016, ENISA\\
+\verb+EXE2_Forensic_analysis_II-Handbook.pdf+
+
+
+
+
+\slide{ENISA exercises}
+
+\begin{list2}
+\item We will use these as examples:
+\item ENISA Presenting, correlating and filtering various feeds Handbook, Document for teachers\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/presenting-correlating-and-filtering-various-feeds-handbook}
+\item ENISA Forensic analysis, Network Incident Response\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/2016-resources/exe2_forensic_analysis_ii-handbook}
+\item ENISA Network Forensics, Handbook, Document for teachers\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/network-forensics-handbook}
+\end{list2}
+
+%\slide{Create Incident Reports}
+
+
 
 \exercise{ex:file-system-forensics}
 

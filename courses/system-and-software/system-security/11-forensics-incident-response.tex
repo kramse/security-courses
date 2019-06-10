@@ -159,11 +159,7 @@ also used as Honeynet - monitored network infrastructure
 \end{list1}
 
 
-\slide{History of honeypots}
-
-\hlkimage{10cm}{300px-Fozziecurtain.JPG}
-
-\slide{An Evening with Berferd}
+\slide{History of honeypots -- An Evening with Berferd}
 
 \hlkimage{5cm}{honeypots-tracking-hackers-2003.jpg}
 
@@ -289,23 +285,175 @@ Source: \emph{Know Your Enemy: Honeynets in Universities Deploying a Honeynet at
 
 \begin{list2}
 \item {\bf Definition 27-9} \emph{Digital forensics} is the science of identifying and anlyzing entities, states, and state transitions of events that have occurred or are occurring.
-\item
-\item
-\item
-\item
+\item 1. Consider the entire system -- access to at least the information that the intruder had before and during attack
+\item 2. Assumptions should not control what is logged
+\item 3. Consider the effects of actions as well as the actions
+\item 4. Context assists in understanding meaning
+\item 5. Information must be processed and presented in an understandable way
 \end{list2}
 
-\slide{}
+
+\slide{Definition}
+
+\vskip 4cm
+
+\begin{quote}
+{\hlkbig
+Computer Forensics involves the preservation, identification,
+extraction, documentation and interpretation of computer data.}
+
+\vskip 1 cm
+
+\emph{Computer Forensics: Incident Response Essentials}, Warren
+G. Kruse II og Jay G. Heiser, Addison-Wesley, 2002
+\end{quote}
+
+
+\slide{TASK og Autopsy}
+
+\hlkimage{7cm}{images/sleuthkit.png}
+
+\begin{list1}
+\item Inspired by The Coroners Toolkit (TCT) by  Dan Farmer and Wietse Venema
+\item Created by Brian Carrier
+\item Official home TASK and autopsy \link{www.sleuthkit.org}
+\item TASK are the command line tools, replace TCT
+\item Autopsy is a Forensic Browser -- interface to TASK
+\end{list1}
+
+
+
+\slide{Method in Practice}
 
 \begin{list2}
-\item
-\item
-\item
-\item
-\item
+\item 1. Capture and preserve the current state of the system and network data
+\item 2. Extract information about that state and about prior states
+\item 3. Analyze the data gathered to determine the sequence of actions, which objects they affected, and how
+\item 4. Prepare and report the results of the analysis to the intended audience
+\vskip 1cm
+\item Example steps:
+\item Create list of all files
+\item Create timeline of all changes
+\item Find all deleted files
+\item Check free space, previously deleted files, use file-carving tools
+\item Check other sources, system logs, intrusion detection systems etc.
 \end{list2}
 
+
 \exercise{ex:clean-or-rebuild}
+
+\slide{Chaosreader}
+
+\hlkimage{18cm}{chaosreader2.png}
+\begin{list1}
+\item Older tool chaosreader, can open network dump and provide HTML output
+\item HTML show sessions, pictures etc.
+\item \link{http://chaosreader.sourceforge.net/}
+\item Example output \link{http://chaosreader.sourceforge.net/Chaos01/index.html}
+\end{list1}
+
+
+
+\slide{Myth: laptop passwords protect data}
+\begin{list1}
+\item Myth:
+\item Some still believe passwords on laptops protect data
+\item Truth:
+\item They are only a minor nuisance
+\item The login prompt does not protect the data
+\item It is possible to boot from another disk, or remove disk
+\end{list1}
+
+
+\slide{Are your data secure - data at rest}
+
+\hlkimage{12cm}{images/data-integrity-1.pdf}
+
+\begin{list1}
+\item Stolen laptop, tablet, phone - can anybody read your data?
+\item Do you trust "remote wipe"
+\item How do you in fact wipe data securely off devices, and SSDs?
+\item Encrypt disk and storage devices before using them in the first place!
+\end{list1}
+
+
+\slide{Single user mode boot}
+\begin{list1}
+\item Unix systems often allow single user mode boot\\
+Previously holding command-s on Mac OS X gave single user boot
+\item Laptops can often be booted using PXE network or CD boot
+\item Macbooks boot from CDROM press c
+\item Macbooks can also be turned into \emph{firewire} hard discs\\
+Press t during boot, firewire target mode - same with Thunderbolt now
+\item Unrestricted access to un-encrypted data
+\item Moving hard drive to another computer is also easy
+\end{list1}
+\pause
+\centerline{Physical access to a system -- {\bf game over}}
+
+\slide{Full Disk Encryption (FDE)}
+
+\hlkimage{9cm}{images/apple-filevault.png}
+
+\begin{list1}
+\item Full Disk Encryption protect data from physical access
+\item Available in the most popular client operating systems
+\begin{list2}
+\item Microsoft Windows Bitlocker
+\item Apple Mac OS X - FileVault
+\item FreeBSD GEOM og GBDE - encryption framework
+\item Linux LUKS distributions like Ubuntu ask to encrypt home dir during installation
+\item Some vendors have BIOS passwords, or disk passwords
+\end{list2}
+\end{list1}
+
+\slide{Attacks on disk encryption}
+
+\begin{list2}
+\item Firewire, DMA \& Windows, Winlockpwn via FireWire\\
+Hit by a Bus: Physical Access Attacks with Firewire Ruxcon 2006
+\item Removing memory from live system - data is not immediately lost, and can be read under some circumstances\\
+Lest We Remember: Cold Boot Attacks on Encryption Keys\\
+\link{http://citp.princeton.edu/memory/}
+\item This is very CSI or Hollywoord like - but a real threat
+\item VileFault decrypts encrypted Mac OS X disk image files\\ \link{https://code.google.com/p/vilefault/}
+\item  FileVault Drive Encryption (FVDE) (or FileVault2) encrypted volumes\\
+\link{https://code.google.com/p/libfvde/}
+\end{list2}
+
+\centerline{So perhaps use both hard drive encryption AND turn off computer after use?}
+
+\slide{... and deleting data}
+
+{~}
+\hlkrightpic{8cm}{0cm}{dban-screenshot.png}
+
+\begin{list1}
+\item Getting rid of data from old devices is a pain
+\item Some tools will not overwrite data, leaving it vulnerable to recovery
+\item Even secure erase programs might not work on SSD\\
+ - due to reallocation of blocks
+\item I have used Darik's Boot and Nuke ("DBAN")\\
+\link{http://www.dban.org/}
+\end{list1}
+
+
+\slide{2018 attack}
+
+\hlkimage{12cm}{ssd-attack-2018.png}
+\emph{self-encrypting deception: weakness in the encryption of solid state drives (SSDs)}\\
+\link{https://www.ru.nl/publish/pages/909282/draft-paper.pdf}
+
+
+
+
+\slide{Example incident response procedures}
+
+\begin{list1}
+\item \link{https://cloud.google.com/security/incident-response/}
+\end{list1}
+
+
 
 \exercise{ex:cloud-incident-response}
 

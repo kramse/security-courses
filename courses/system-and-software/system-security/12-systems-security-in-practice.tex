@@ -42,6 +42,7 @@
 \item Chapter 30 User Security
 \end{list1}
 
+Note: Matt Bishop refers to older tools, which I cannot recommend. TCP wrappers, Apache web server, r-protocols rlogin etc. Dont use those -- we have better and more modern alternatives!
 
 \slide{Network Security}
 
@@ -126,30 +127,168 @@ Corporate officers want the systems to be available for 99\% of the time, leavin
 \slide{User Security}
 
 \begin{list1}
-\item
-\item
-\item
+\item User accounts and named users are required for good security
+\item Less shared user accounts, more accountability
+\item System accounts are needed though
 \end{list1}
 
 
+\slide{January 2013: Github Public passwords?}
 
 
-\slide{}
+\hlkimage{15cm}{github-credentials.png}
+
+ Sources:\\
+{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
+\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
+\link{http://www.leakedin.com/}\\
+\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
+}
+
+\vskip 5mm
+\centerline{Use different passwords for different sites, yes - every site!}
+
+\slide{Simple Network Management Protocol}
 
 \begin{list1}
-\item
-\item
-\item
+\item SNMP er en protokol der supporteres af de fleste professionelle
+  netværksenheder, såsom switche, routere
+\item hosts - skal slås til men følger som regel med
+\item SNMP bruges til:
+  \begin{list2}
+    \item \emph{network management}
+    \item statistik
+    \item rapportering af fejl - SNMP traps
+  \end{list2}
+\item {\bfseries sikkerheden baseres på community strings der sendes
+    som klartekst ...}
+\item det er nemmere at brute-force en community string end en
+  brugerid/kodeord kombination
 \end{list1}
 
-
-\slide{}
+\slide{brute force}
 
 \begin{list1}
-\item
-\item
-\item
+\item hvad betyder bruteforcing?\\
+afprøvning af alle mulighederne
 \end{list1}
+
+\begin{alltt}\footnotesize
+Hydra v2.5 (c) 2003 by van Hauser / THC <vh@thc.org>
+Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]]
+[-o FILE] [-t TASKS] [-g TASKS] [-T SERVERS] [-M FILE] [-w TIME]
+[-f] [-e ns] [-s PORT] [-S] [-vV] server service [OPT]
+
+Options:
+  -S        connect via SSL
+  -s PORT   if the service is on a different default port, define it here
+  -l LOGIN  or -L FILE login with LOGIN name, or load several logins from FILE
+  -p PASS   or -P FILE try password PASS, or load several passwords from FILE
+  -e ns     additional checks, "n" for null password, "s" try login as pass
+  -C FILE   colon seperated "login:pass" format, instead of -L/-P option
+  -M FILE   file containing server list (parallizes attacks, see -T)
+  -o FILE   write found login/password pairs to FILE instead of stdout
+...
+\end{alltt}
+
+\demo{snmpwalk og Hydra}
+
+Vi laver sammen noget SNMP scanning og bruteforcing
+
+\slide{Are passwords dead?}
+
+\hlkimage{5cm}{rip-passwords.pdf}
+
+Can we stop using passwords?
+
+Alec Muffett on Passwords has a long list of password related information, from the author of crack \link{http://en.wikipedia.org/wiki/Crack_(password_software)}
+
+\link{http://dropsafe.crypticide.com/muffett-passwords}
+
+\link{https://en.wikipedia.org/wiki/Alec_Muffett}
+
+
+
+\slide{Cain og Abel}
+
+%\hlkimage{10cm}{cain_brute_attack.jpg}
+\hlkimage{14cm}{cain-win.png}
+
+\begin{list1}
+\item Cain og Abel \emph{anbefales til demoer}  \link{http://www.oxid.it}
+\item Bruger selv John the Ripper eller Hashcat hvis jeg skal lave brute forcing
+\end{list1}
+
+\slide{John the ripper}
+
+\begin{quote}
+John the Ripper is a fast password cracker, currently available for
+many flavors of Unix (11 are officially supported, not counting
+different architectures), Windows, DOS, BeOS, and OpenVMS. Its primary
+purpose is to detect weak Unix passwords. Besides several crypt(3)
+password hash types most commonly found on various Unix flavors,
+supported out of the box are Kerberos AFS and Windows NT/2000/XP/2003
+LM hashes, plus several more with contributed patches.
+\end{quote}
+
+\begin{list1}
+\item UNIX passwords kan knækkes med alec Muffets kendte Crack program
+  eller eksempelvis John The Ripper \link{http://www.openwall.com/john/}
+\end{list1}
+
+
+
+\slide{Cracking passwords}
+
+\begin{list2}
+\item Hashcat is the world's fastest CPU-based password recovery tool.
+\item oclHashcat-plus is a GPGPU-based multi-hash cracker using a brute-force attack (implemented as mask attack), combinator attack, dictionary attack, hybrid attack, mask attack, and rule-based attack.
+\item oclHashcat-lite is a GPGPU cracker that is optimized for cracking performance. Therefore, it is limited to only doing single-hash cracking using Markov attack, Brute-Force attack and Mask attack.
+\item John the Ripper password cracker old skool men stadig nyttig
+\end{list2}
+
+Source:\\
+\link{http://hashcat.net/wiki/}\\
+\link{http://www.openwall.com/john/}
+
+
+\slide{Parallella John}
+
+\hlkimage{20cm}{parallella-john.png}
+
+\link{https://twitter.com/solardiz/status/492037995080712192}
+
+Expect specialized hardware to be used by NSA, GCHQ, and perhaps even organised crime
+
+\slide{Stacking Parallella boards}
+\hlkimage{13cm}{4BoardStack.jpg}
+
+\link{http://www.parallella.org/power-supply/}
+
+
+\slide{Passwords vælges ikke tilfældigt}
+
+\hlkimage{20cm}{50-most-used-passwords.png}
+
+Source:
+\link{https://wpengine.com/unmasked/}
+
+
+
+
+\slide{Pass the hash}
+
+Lots of tools in pentesting pass the hash, reuse existing credentials and tokens
+\emph{Still Passing the Hash 15 Years Later}\\
+\link{http://passing-the-hash.blogspot.dk/2013/04/pth-toolkit-for-kali-interim-status.html}
+
+\begin{quote}
+If a domain is built using only modern Windows OSs and COTS products (which know how to operate within these new constraints), and configured correctly with no shortcuts taken, then these protections represent a big step forward.
+\end{quote}
+
+Source:\\
+{\small\link{http://www.harmj0y.net/blog/penetesting/pass-the-hash-is-dead-long-live-pass-the-hash/}
+\link{https://samsclass.info/lulz/pth-8.1.htm}}
 
 
 \slide{Produktionsmodning af miljøer}

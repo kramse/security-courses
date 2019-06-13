@@ -1316,36 +1316,284 @@ Cloud computer forensics seem immature, but must be researched.
 If you organization relies on cloud computing it is critcal to update incident handling procedures for these new challenges.
 
 
-\end{document}
 
-\chapter{System Security in Practice}
-\label{ex:system-security-practice}
 
-{\bf Objective:}\\
+\chapter{Switch configuration and uplink}
+\label{ex:switch-config-vlan}
 
+We will now perform multiple exercises as part of the System Security in Practice.
+
+{\bf Overall Objective:}\\
+Try some of the security mechanisms used in real networks today.
+
+First is to configure VLAN.
+
+{\bf Overall Purpose:}\\
+Learn that a few changes make a huge difference.
+
+{\bf Suggested method:}\\
+Work on our model network, each team has a server and an attacker - reduce attack surface on the server by configuration.
+
+\begin{itemize}
+\item Configure VLAN on switch for the uplink
+\item Enable central logging
+\item Configure SSH keys for more secure access
+\item Enable firewall
+\end{itemize}
+
+\section*{Switch configuration and uplink}
+
+Each team has a switch they \emph{own}
+\begin{list2}
+\item Add VLAN 2770 to switch
+\item Configure uplink port to be a tagged VLAN trunk - port 8
+\item Configure port to connect to local Debian server, port 1.\\ Note: if tagged Debian must be configured with tag too! You can instead configure as Access port without tag. You decide.
+\item Insert USB into Debian server virtual machine
+\end{list2}
+
+\section*{Hardware setup}
+
+Connect power to switch.
+
+Connect uplink to common switch, KramsIX. Use port 8.
+
+Connect port 1 to your laptop. Use USB Ethernet if your laptop does not have Ethernet port. Configure your virtualisation to have this device connected to your Debian server.
+
+\section*{Switch config initial steps to get started}
+
+Reset the switch to default setting - press reset for 15 seconds before doing any configuration.
+
+\begin{enumerate}
+\item Cable a laptop to any port, except the first one - port 1/0/1
+\item Take control of the switch, default settings are in place, see label on bottom and use Ethernet preferably
+\item Add VLAN with ID: 2770 Name: KramsIX
+\item Configure the Uplink port with VLAN tag: 2770
+\item Configure the first port with VLAN tag: 2770\\
+If you keep the port in VLAN 1 you should be able to connect to the switch management via this port using tagged or untagged, as you prefer \smiley
+\item Configure VLAN interface on your server with the IP in the LAN 10.0.45.0/24 - if your team ID is 14, then your IP is 10.0.45.14/24
+\item Add 10.0.45.1 as your default gateway
+\item Use 10.0.45.1 as DNS resolver
+\item Ping 10.0.45.1 from your server
+\end{enumerate}
+
+Switch administration - see under switch for IP and username.
+
+\hlkimage{10cm}{vlan-tag-kramsix.png}
+
+
+Your network config should look something like this:
+\begin{alltt}
+$ cat /etc/network/interfaces
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# Include files from /etc/network/interfaces.d:
+source-directory /etc/network/interfaces.d
+
+auto enx00249b1b2991
+iface enx00249b1b2991 inet static
+  address 192.168.0.2
+  netmask 255.255.255.0
+
+auto vlan2770
+iface vlan2770 inet static
+	vlan-raw-device enx00249b1b2991
+	address 10.0.45.14
+	netmask 255.255.255.0
+  gateway 10.0.45.1
+\end{alltt}
+
+The IP configuration without VLAN tag shown will allow you to reach the switch from the Debian server.
+
+{\bf Hints:}\\
+If you dont want to do this exercise then don't. Just connect your Debian server to the normal network using a bridge or even NAT.
+
+{\bf Solution:}\\
+When your Debian server can reach the course network 10.0.45.0/24 you are done.
+
+{\bf Discussion:}\\
+VLAN separation using the IEEE 802.1q standard is a common method to isolate servers from each other. Commonly used in DMZ networks in server parts, and in Voice over IP networks in LAN setup with clients.
+
+
+\chapter{Centralized Logging}
+\label{ex:central-logging}
+
+
+{\bf Objective:} \\
+See how server syslog is configured on regular Unix/Linux, and send logs to centralized server.
 
 {\bf Purpose:}\\
+The main idea of this exercise is to understand how easy network connected systems can send log data.
 
 
 {\bf Suggested method:}\\
-
-\begin{itemize}
-\item Work on our model network, each team has a router and an attacker - prevent most of the attacks on the Metasploitable server by firewall configuration
-\item Investigate Debian as a server - default settings for Web, we will install a system which requires database and web server configured
-\item Configure SSH keys
-\end{itemize}
+Log into your local Linux systems or network devices, see how syslog is configured.
 
 {\bf Hints:}\\
+Look in the config file, may be in /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
+
+Sample output from old-skool syslogd
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+Advanced users will configure the logging also.
+
+Either add the host given by the instructor \verb+10.0.45.200+ in the \verb+/etc/hosts+ with the name loghost or give it a name and then use that name in the config file.
 
 
 {\bf Solution:}\\
+When you understand how to configure syslog to send towards a central host you are done.
 
+Feel free to re-visit the exercise \nameref{ex:kibana-dashboard}
 
 {\bf Discussion:}\\
+There are syslog senders for Windows too.
 
 
+\chapter{Configure SSH keys for more secure access}
+\label{ex:config-ssh-keys}
+
+{\bf Objective:}\\
+See how SSH keys can be used.
+
+{\bf Purpose:}\\
+Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
+
+Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
+
+{\bf Suggested method:}\\
+First generate a SSH key, use:
+
+\begin{alltt}
+\$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/hlk/.ssh/id_rsa.
+Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
+The key's randomart image is:
++---[RSA 2048]----+
+|      .          |
+|   . o           |
+|   .=            |
+| ..=.      o .   |
+|o.*o. . S o +    |
+|oB==+o   . o     |
+|+*B=.o.   o .    |
+|=++.o +. o o     |
+|oEo=oo .ooo      |
++----[SHA256]-----+
+\end{alltt}
+
+The use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
+\begin{alltt}
+hlk@kunoichi:hlk$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\vskip 5mm
+
+\centerline{This is the best tool for the job!}
+
+The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
+
+{\bf Hints:}\\
+You can publish your SSH keys in public places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
+
+{\bf Solution:}\\
+When you can login using key you are done.
+
+{\bf Discussion:}\\
+We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
+
+\chapter{Enable firewall}
+\label{ex:debian-firewall}
+
+{\bf Objective:}\\
+Turn on a firewall and configure a few simple rules.
+
+{\bf Purpose:}\\
+See how easy it is to restrict incoming connections to a server.
 
 
+{\bf Suggested method:}\\
+Install a utility for firewall configuration.
+
+You should also perform Nmap port scan with the firewall enabled and disabled.
+
+{\bf Hints:}\\
+Using the ufw package it is very easy to configure the firewall on Linux.
+
+Install and configuration can be done using these commands.
+\begin{alltt}
+root@debian01:~# apt install ufw
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following NEW packages will be installed:
+  ufw
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 164 kB of archives.
+After this operation, 848 kB of additional disk space will be used.
+Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
+Fetched 164 kB in 2s (60.2 kB/s)
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
+
+{\bf Solution:}\\
+When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
+
+{\bf Discussion:}\\
+Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
+
+Web interfaces also exist, but are more suited for a centralized firewall.
+
+Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
+
+Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
+
+\end{document}
 
 \chapter{Evaluate our network PCI}
 \label{ex:PCI-evaluation}

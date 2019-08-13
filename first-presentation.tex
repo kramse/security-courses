@@ -1,0 +1,165 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% This is an example presentation
+
+\begin{document}
+
+%\rm
+\selectlanguage{english}
+
+\mytitlepage
+{Creating slides using LaTeX\\Use the old skool foils.cls}
+
+\LogoOn
+
+\slide{Goals for today}
+\vskip 2 cm
+
+%{\hlkbig En 3 dages workshop, hvor du lærer at angribe dit netværk!}
+
+\begin{quote}
+Abstract
+
+Doing slides can be very frustrating. WYSIWYG programs are often clunky and you dont need the "funny animations" anyway :-D
+
+Using LaTeX allows you to quickly write down text and make them into slides. The power of LaTeX also allows you to link exercise booklets and reference with names, numbers across documents easily.
+
+The talk will present my template for doing this, and link to my repository on Github with examples https://github.com/kramse/security-courses
+\end{quote}
+
+\begin{list1}
+\item Introduce the old skool foils.cls which is very \emph{clean}
+\item Introduce some of the basic tools i use in my presentations
+\item You should be able to clone and modify repo afterwards
+\item \LaTeX can do so much by itself
+\end{list1}
+
+\slide{Small example file}
+\VerbatimInput{texfiles/small.tex}
+
+\slide{Starting out}
+
+\begin{list1}
+\item Hey, wait! This is just small text files!
+\item Yes, creating {\color{red}100s} of slides becomes easier
+\item Power comes when integrating multiple files, cross references from slides to exercise booklets
+\item Also using \verb+VerbatimInput+ the example file was included from disk, putting code in preformatted or minted with syntaxhighlighting covers a lot of use-cases - for me
+\item And git all the versions! \smiley
+\end{list1}
+
+
+
+\slide{Example preformatted text}
+
+\begin{alltt}
+\footnotesize # {\bfseries tcpdump -i en0 host 10.20.20.129 or host 10.0.0.11}
+tcpdump: listening on en0
+23:23:30.426342 10.0.0.200.33849 > router.33435: udp 12 {\bf [ttl 1]}
+23:23:30.426742 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.436069 10.0.0.200.33849 > router.33436: udp 12 {\bf [ttl 1]}
+23:23:30.436357 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.437117 10.0.0.200.33849 > router.33437: udp 12 {\bf [ttl 1]}
+23:23:30.437383 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.437574 10.0.0.200.33849 > router.33438: udp 12
+23:23:30.438946 router > 10.0.0.200: icmp: router {\bf udp port 33438 unreachable}
+23:23:30.451319 10.0.0.200.33849 > router.33439: udp 12
+23:23:30.452569 router > 10.0.0.200: icmp: router {\bf udp port 33439 unreachable}
+23:23:30.452813 10.0.0.200.33849 > router.33440: udp 12
+23:23:30.454023 router > 10.0.0.200: icmp: router {\bf udp port 33440 unreachable}
+23:23:31.379102 10.0.0.200.49214 > safri.domain:  6646+ PTR?
+200.0.0.10.in-addr.arpa. (41)
+23:23:31.380410 safri.domain > 10.0.0.200.49214:  6646 NXDomain* 0/1/0 (93)
+14 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+
+\slide{Example pictures in slide - TCP three-way handshake}
+
+\hlkimage{5cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item Tidligere loggede systemer kun når der var etableret en fuld TCP
+  forbindelse\\
+  -- dette kan/kunne udnyttes til \emph{stealth}-scans
+\item Hvis en maskine modtager mange SYN pakker kan dette fylde
+  tabellen over connections op -- og derved afholde nye forbindelser
+  fra at blive oprette -- {\bfseries SYN-flooding}
+\end{list2}
+
+
+
+\slide{Example: Picture and code}
+
+\hlkimage{18cm}{buffer-overflow-1.pdf}
+
+\begin{alltt}\small
+main(int argc, char **argv)
+\{      char buf[200];
+        strcpy(buf, argv[1]);
+        printf("%s\textbackslash{}n",buf);
+\}
+\end{alltt}
+
+
+
+\slide{VXLAN injection}
+
+\hlkimage{19cm}{vxlan-basic-injection.png}
+
+I tested using my pentest server in one AS, sending across an internet exchange into a production network, towards Arista testing devices - no problems, it's just routed layer 3 IP+UDP packets
+
+\slide{Example attacks, What is possible VXLAN Header}
+
+\begin{alltt}\footnotesize
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|R|R|R|R|I|R|R|R|            Reserved                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                VXLAN Network Identifier (VNI) |   Reserved    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Inner Ethernet Header:
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Inner Destination MAC Address                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Inner Destination MAC Address | Inner Source MAC Address      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Inner Source MAC Address                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|OptnlEthtype = C-Tag 802.1Q    | Inner.VLAN Tag Information    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list2}
+\item Above protocol header is copied from RFC text document, and in \verb+alltt+ environment
+\end{list2}
+
+
+
+\slide{Example: Snippets of code with minted Scapy}
+
+First create VXLAN header and inside packet
+\begin{minted}[fontsize=\small]{python}
+vxlanport=4789     # RFC 7384 port 4789, Linux kernel default 8472
+vni=37             # Usually VNI == destination VLAN
+vxlan=Ether(dst=routermac)/IP(src=vtepsrc,dst=vtepdst)/
+   UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vni,flags="Instance")
+broadcastmac="ff:ff:ff:ff:ff:ff"
+randommac="00:51:52:01:02:03"
+attacker="185.27.115.666"
+destination="10.0.0.10"
+# port is the one we want to contact inside the firewall
+insideport=53
+testport=54040
+packet=vxlan/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
+    dst=destination)/UDP(sport=testport,dport=insideport)/
+    DNS(rd=1,id=0xdead,qd=DNSQR(qname="www.wikipedia.org"))
+\end{minted}
+
+{\footnotesize Fun fact, Unbound on OpenBSD reply to DNS requests received in Ethernet packets with broadcast destination and IP destination being the IP of the server}
+
+\myquestionspage
+
+\end{document}

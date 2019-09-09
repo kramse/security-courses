@@ -17,7 +17,7 @@
 \item What is Fuzzing
 \item Example fuzzers
 \item Web fuzzing
-\item Exploitability
+\item Determining Exploitability
 \end{list2}
 \item Exercises
 \begin{list2}
@@ -29,29 +29,339 @@
 \slide{Reading Summary}
 
 \begin{list1}
-\item AoST chapters 10: Implementing a Custome Fuzz Utility
-\item AoST chapters 11: Local Fault Injection
-\item AoST chapters 12: Determining Exploitability
+\item AoST chapter 10: Implementing a custom Fuzz Utility
+\item AoST chapter 11: Local Fault Injection
+\item AoST chapter 12: Determining Exploitability
 \end{list1}
+
+Note: the tool Ethereal was later renamed to Wireshark.
 
 \slide{Goals: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\hlkimage{18cm}{fuzzer.pdf}
 
 \begin{list1}
-\item
+\item /dev/random is a file on Unix that gives random data
+\item Sending random data to programs is called fuzzing and can reveal security problems
+\item Lots of crashes is often the result, and when investigated may be exploitable
+\item Recommended to use fuzzers that can use some structure and knowledge and then randomize individual fields in protocols, file types etc.
 \end{list1}
 
 \slide{What is Fuzzing}
+
+\begin{quote}
+  Fuzzing or fuzz testing is an automated software testing technique that involves providing invalid, unexpected, or random data as inputs to a computer program. The program is then monitored for exceptions such as crashes, failing built-in code assertions, or potential memory leaks. Typically, fuzzers are used to test programs that take structured inputs. This structure is specified, e.g., in a file format or protocol and distinguishes valid from invalid input. An effective fuzzer generates semi-valid inputs that are "valid enough" in that they are not directly rejected by the parser, but do create unexpected behaviors deeper in the program and are "invalid enough" to expose corner cases that have not been properly dealt with.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Fuzzing}
+
+See also the original Fuzz report: \emph{An Empirical Study of the Reliability
+of UNIX Utilities}, Barton P. Miller 1990\\
+and updates \emph{Fuzz Revisited: A Re-examination of the Reliability
+of UNIX Utilities and Services}\\
+\url{http://pages.cs.wisc.edu/~bart/fuzz/}
+
+\slide{Fuzz Revisited}
+
+Fuzz Revisited: A Re-examination of the Reliability
+of
+UNIX Utilities and Services
+
+\begin{quote}
+We have tested the reliability of a large collection of basic UNIX utility programs, X-Window
+applications and servers, and networkservices. We used a simple testing method of subjecting these
+programs to a random inputstream.\\
+...\\
+The result of our testing is that we can crash (with coredump) or hang (infiniteloop) over 40\% (in the
+worst case) of the basic programs and over 25\% of the X-Window applications.\\
+...\\
+We also tested how utility programs checked their return codes from the memory allocation library
+routines by simulating the unavailability of virtual memory. We could crash almost half of the programs
+that we tested in this way.
+\end{quote}
+
+\centerline{october 1995}
+
+
+
 \slide{Example fuzzers}
+
+Types of fuzzers
+A fuzzer can be categorized as follows:[9][1]
+\begin{list2}
+\item A fuzzer can be generation-based or mutation-based depending on whether inputs are generated from scratch or by modifying existing inputs,
+\item A fuzzer can be dumb or smart depending on whether it is aware of input structure, and
+\item A fuzzer can be white-, grey-, or black-box, depending on whether it is aware of program structure.
+\end{list2}
+
+
+\slide{Simple fuzzer}
+
+\begin{alltt}
+$ for i in 10 20 30 40 50
+>> do
+>> ./demo `perl -e "print 'A'x$i"`
+>> done
+AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+\end{alltt}
+
+\centerline{Memory fault/segmentation fault - juicy!}
+
+
+
+\slide{Custom Fuzzers}
+
+\hlkimage{4cm}{anp_cover-front-final.png}
+The book describes in AoST chapter 10: Implementing a custom Fuzz Utility
+
+A very similar method can be found with more detail in the book,\\
+\emph{Attacking Network Protocols A Hacker's Guide to Capture, Analysis, and Exploitation}\\
+by James Forshaw December 2017, 336 pp. ISBN-13: 9781593277505
+
+\url{https://nostarch.com/networkprotocols}
+
+
+\slide{Use Developer Libraries}
+
+Note how the custom fuzzer described in the book used the SOAPpy library and thus created a fuzzer in very few lines of code.
+
+Especially for common and binary protocols re-using existing code helps.
+
+This goes for:
+\begin{list2}
+\item DNS - Domain Name System, a binary protocol
+\item HTTP with encryption, compression, WSDL, REST, XML-RPC etc.
+\item Open source libraries with different file types
+\item
+\end{list2}
+
+
+\slide{Fuzzing local processes}
+
+The book describes in AoST chapter 11: Local Fault Injection, how to send data to local processes through:
+
+\begin{list2}
+\item command line, environment variables, interprocess communication, shared memory, config files, input files, registry keys and system settings
+\item Also the book notes, the kernels running may be vulnerable
+\item
+\item
+\end{list2}
+
+\slide{Attacking Local Applications}
+
+\begin{list2}
+\item Enumerate local resources used by the application
+\item Determine access permissions of shared or persistent resources
+\item Identify the exposed local attack surface area
+\item Best case examine the application source code
+\item Also monitor application behaviors during execution
+\end{list2}
+
+
+\slide{Fuzzing File Formats}
+
+\begin{list2}
+\item Lots of applications open files, and some are not designed for safety and security
+\item File formats are also complex and difficult to parse
+\item
+
+\end{list2}
+
+
+\slide{Example Linux Kernel Vulnerabilities}
+
+The Linux kernel has had some vulnerabilities over the years:\\
+This link is for: Linux » Linux Kernel : Security Vulnerabilities (CVSS score >= 9)\\
+
+{\footnotesize\url{https://www.cvedetails.com/vulnerability-list/vendor_id-33/product_id-47/cvssscoremin-9/cvssscoremax-/Linux-Linux-Kernel.html}}
+
+
+\slide{Linux Kernel Fuzzing}
+
+\begin{list2}
+\item CVE-2016-0758 Integer overflow in lib/asn1\_decoder.c in the Linux kernel before 4.6 allows local users to gain privileges via crafted ASN.1 data.\\
+\url{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-0758}
+\item Linux kernel have about 5 ASN.1 parsers\\
+\url{https://www.x41-dsec.de/de/lab/blog/kernel_userspace/}
+\end{list2}
+
+
 \slide{Web fuzzing}
-\slide{Exploitability}
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
+\slide{Hvad er WebScarab}
+
+\hlkimage{5cm}{images/webscarab_logo.png}
+
+\begin{list1}
+\item WebScarab er et framework
+\item Men de fleste vil nok kalde det et værktøj
+\item Fungerer basalt set som en proxy med mere, meget mere
+\item Hjælper med sikkerhedstest af webapplikationer
+\end{list1}
+
+\slide{WebScarab features}
+
+\begin{list1}
+\item Analyse af HTTP(S) requests
+\item Analyse af URL opbygning
+\item Spidering, enumerating
+\item Bypass client-side validation, javascript validering p<E5> klient
+\item Undersøge Session IDs, er de tilfældige
+\end{list1}
+
+
+\slide{Installation}
+
+\begin{list1}
+\item WebScarab er et Java program - run anywhere
+\item WebScarab findes i to versioner
+\item Den \emph{gamle klassiske} og den nye webscarab-ng
+\item Den klassiske downloades i en færdig Java JAR pakke
+\item Den nye er en Java Webstart pakke
+\item Den klassiske er fin og virker\\
+\link{http://www.owasp.org/index.php/Category:OWASP_WebScarab_Project}
+\item Den nye er under udvikling og er indimellem lidt bøvlet\\
+\link{http://www.owasp.org/index.php/OWASP_WebScarab_NG_Project}\\
+\link{http://dawes.za.net/rogan/webscarab/WebScarab.jnlp}
+\end{list1}
+
+
+\slide{Example fuzzers}
+
+\begin{quote}
+american fuzzy lop is a free software fuzzer that employs genetic algorithms in order to efficiently increase code coverage of the test cases. So far it helped in detection of significant software bugs in dozens of major free software projects, including X.Org Server,[2] PHP,[3] OpenSSL,[4][5] pngcrush, bash,[6] Firefox,[7] BIND,[8][9] Qt,[10] and SQLite.[11]
+
+american fuzzy lop's source code is published on GitHub. Its name is a reference to a breed of rabbit, the American Fuzzy Lop.
+\end{quote}
+
+\begin{list2}
+\item Several books and web sites are dedicated to fuzzing, one such:\\ \url{http://www.fuzzing.org/}
+\item \url{https://en.wikipedia.org/wiki/American_fuzzy_lop_(fuzzer)}
+\item
+\item
+\end{list2}
+
+
+\slide{Determining Exploitability}
+
+\begin{list2}
+\item AoST chapter 12: Determining Exploitability
+\item We have found input that crashes an application, is it exploitable?
+\item Is the application privileged, is the function part of a library used in a privileged application?
+\item Time, Reliability/Reproduccibility, command execution, network access, knowledge
+\item Not all vulnerabilities are remote root arbitrary command execution, often a string of vulnerabilities are put together
+\item Architecture, dynamic environment, hardware
+\end{list2}
+
+\slide{Weak Structural Security}
+
+Our book describes more design flaws:
+\begin{list2}
+\item Large Attack surface
+\item Running a Process at Too High a Privilege Level, dont run everything as root or administrator
+\item No Defense in Depth, use more controls, make a strong chain
+\item Not Failing Securely
+\item Mixing Code and Data
+\item Misplaced trust in External Systems
+\item Insecure Defaults
+\item Missing Audit Logs
+\end{list2}
+
+Repeated here from initial overview - large surface increases risk!
+
+
+\slide{Privilegier privilege escalation}
+\begin{list1}
+\item {\bfseries Privilege escalation} er når man på en eller anden vis
+opnår højere privileger på et system, eksempelvis som
+følge af fejl i programmer der afvikles med højere
+privilegier. Derfor HTTPD servere på Unix afvikles som
+nobody -- ingen specielle rettigheder.
+\item En angriber der kan afvikle vilkårlige kommandoer kan ofte finde
+  en sårbarhed som kan udnyttes lokalt -- få rettigheder = lille skade
+\end{list1}
+
+Eksempel: man finder exploit som giver kommandolinieadgang til et system
+som almindelig bruger
+
+Ved at bruge en local exploit, Linuxkernen kan man måske forårsage fejl
+og opnå root, GNU Screen med SUID bit eksempelvis
+
+
+
+\slide{MITRE ATT\&CK Framework Privilege Escalation}
+
+\begin{quote}
+Privilege Escalation
+The adversary is trying to gain higher-level permissions.
+
+Privilege Escalation consists of techniques that adversaries use to gain higher-level permissions on a system or network. Adversaries can often enter and explore a network with unprivileged access but require elevated permissions to follow through on their objectives. Common approaches are to take advantage of system weaknesses, misconfigurations, and vulnerabilities.
+\end{quote}
+
+And describes approx 30 techniques for doing this, of which  some can be found using fuzzing
+
+Source:
+\url{https://attack.mitre.org/tactics/TA0004/}
+
+
+\slide{Local vs. remote exploits}
+
+\begin{list1}
+\item {\bfseries Local vs. remote}
+angiver om et exploit er rettet mod
+en sårbarhed lokalt på maskinen, eksempelvis
+opnå højere privilegier, eller beregnet
+til at udnytter sårbarheder over netværk
+\item {\bfseries Remote root exploit}
+- den type man frygter mest, idet
+det er et exploit program der når det afvikles giver
+angriberen fuld kontrol, root user er administrator
+på Unix, over netværket.
+\item {\bfseries Zero-day exploits} dem som ikke offentliggøres -- dem
+  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
+  til dem før de offentliggøres og ofte er der umiddelbart ingen
+  rettelser til de sårbarheder
+\end{list1}
+
+
+
+\slide{Zero day 0-day vulnerabilities}
+
+\begin{quote}
+
+  Project Zero's team mission is to "make zero-day hard", i.e. to make it more costly to discover and exploit security vulnerabilities. We primarily achieve this by performing our own security research, but at times we also study external instances of zero-day exploits that were discovered "in the wild". These cases provide an interesting glimpse into real-world attacker behavior and capabilities, in a way that nicely augments the insights we gain from our own research.
+
+  Today, we're sharing our tracking spreadsheet for publicly known cases of detected zero-day exploits, in the hope that this can be a useful community resource:
+
+  Spreadsheet link: 0day "In the Wild"\\
+  \link{https://googleprojectzero.blogspot.com/p/0day.html}
+\end{quote}
+
+\begin{list2}
+\item Not all vulnerabilities are found and reported to the vendors
+\item Some vulnerabilities are exploited \emph{in the wild}
+\end{list2}
+
 
 
 \exercise{ex:brute-force-fuzzing}
-
-
 \exercise{ex:american-fuzzy-lop}
+
+
+
 
 \slidenext{Buy the books!}
 

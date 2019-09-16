@@ -14,15 +14,15 @@
 \begin{list1}
 \item Subjects
 \begin{list2}
+\item C language issues
 \item Memory Corruption Errors
 \item Buffer overflows, stack errors
-\item C language issues
-\item Shell code
 \end{list2}
 \item Exercises
 \begin{list2}
-\item Writing and exploiting a small buffer overflow
-\item Run debugger
+\item \sout{Writing and exploiting a small buffer overflow}
+\item \sout{Run debugger}
+\item Pointers and Structure padding
 \end{list2}
 \end{list1}
 
@@ -38,17 +38,310 @@
 \hlkimage{8cm}{homer-end-is-near.jpg}
 
 \begin{list1}
-\item
+\item Understand more C, and problems associated with C
 \end{list1}
 
-\slide{Memory Corruption Errors}
-\slide{Buffer overflows, stack errors}
+
+\slide{What is C}
+
+\begin{quote}\small
+C (/siː/, as in the letter c) is a general-purpose, procedural computer programming language supporting structured programming, lexical variable scope, and recursion, while a static type system prevents unintended operations. By design, C provides constructs that map efficiently to typical machine instructions and has found lasting use in applications previously coded in assembly language. Such applications include operating systems and various application software for computers, from supercomputers to embedded systems.
+{\bf
+C was originally developed at Bell Labs by Dennis Ritchie between 1972 and 1973 to make utilities running on Unix.} Later, it was applied to re-implementing the kernel of the Unix operating system.[6] During the 1980s, C gradually gained popularity. {\bf Nowadays, it is one of the most widely used programming languages},[7][8] with C compilers from various vendors available for the majority of existing computer architectures and operating systems. C has been standardized by the ANSI since 1989 (see ANSI C) and by the International Organization for Standardization.
+\end{quote}
+
+Source:
+\url{https://en.wikipedia.org/wiki/C_(programming_language)}
+
+
 \slide{C language issues}
-\slide{Shell code}
 
-\exercise{ex:writing-exploit-buffer}
+\hlkimage{3cm}{kernighan-ritchie-c.jpg}
+\begin{list2}
+\item C was very portable
+\item C was standardized
+\item Still lots of unspecified behaviour / undefined behaviour and implementation-defined
+\item So C on one operating system can be very different!
+\item Writing portable and correct code is hard!
+\end{list2}
 
-\exercise{ex:debugger-101}
+\url{https://en.wikipedia.org/wiki/Unspecified_behavior}
+
+
+
+\slide{Hello World}
+
+
+\begin{quote}
+While small test programs have existed since the development of programmable computers, the tradition of using the phrase "Hello, World!" as a test message was influenced by an example program in the seminal 1978 book The C Programming Language.[3] The example program in that book prints "hello, world", and was inherited from a 1974 Bell Laboratories internal memorandum by Brian Kernighan, Programming in C: A Tutorial:[4]
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+main( ) {
+        printf("hello, world\n");
+}
+\end{minted}
+
+\begin{list2}
+\item Very compact, easily readable - more than assembler anyway!
+\end{list2}
+
+Code and quote from
+\url{https://en.wikipedia.org/wiki/%22Hello,_World!%22_program}
+
+\slide{Hello World}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+       (void) argc;
+       (void) argv;
+
+       printf("Hello world!\n");
+
+       return EXIT_SUCCESS;
+}
+\end{minted}
+
+\begin{list2}
+\item Dont forget to define function return value, your variables and arguments to the program and functions
+\item Dont forget to return something useful
+\item Whats an int anyway? integers
+\end{list2}
+
+Source: a better hello world from \url{https://da.wikipedia.org/wiki/Hello_world-program#C}
+
+
+
+\slide{Data types}
+
+\begin{list2}
+\item Character types char, signed char, unsigned char
+\item Integer types, short int, int, long int, long long int - plus unsigned
+\item Floating types float, double, long double
+\item Bit fields a specific number of bits in an object
+\item Signed and unsigned!
+\item Byte order, little or big endian - named from 1726 novel Gulliver's Travels by Jonathan Swift
+\item Big endian also called network order, as used in TCP/IP suite
+\item Lots more types we wont discuss in all details
+\end{list2}
+
+Data types have a \emph{range of values}
+
+See more specific at \url{https://en.wikipedia.org/wiki/C_data_types}\\
+also interesting is the float format\\ \url{https://en.wikipedia.org/wiki/Single-precision_floating-point_format}
+
+\slide{Example integer overflow}
+
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+Hello world! int is 32767
+Hello world! int is now -32768
+\end{alltt}
+
+We wont do the match in binary!
+
+\slide{Compiling C code}
+
+\begin{alltt}\footnotesize
+  user@Projects:~$ mkdir openssh ; cd openssh
+  user@Projects:openssh$ wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz
+  --2019-09-16 20:52:13--  ...
+  2019-09-16 20:52:14 (5.13 MB/s) - ‘openssh-8.0p1.tar.gz’ saved [1597697/1597697]
+  user@Projects:openssh$ wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz.asc
+  --2019-09-16 20:52:18--  ...
+    2019-09-16 20:52:18 (26.5 MB/s) - ‘openssh-8.0p1.tar.gz.asc’ saved [683/683]
+  user@Projects:openssh$ gpg --verify openssh-8.0p1.tar.gz.asc
+  gpg: assuming signed data in 'openssh-8.0p1.tar.gz'
+  gpg: Signature made Thu 18 Apr 2019 12:54:07 AM CEST
+  gpg:                using RSA key 59C2118ED206D927E667EBE3D3E5F56B6D920D30
+  gpg: Can't check signature: No public key
+// fix by getting key etc.{\bf
+user@Projects:openssh$ tar zxf openssh-8.0p1.tar.gz
+user@Projects:openssh$ cd openssh-8.0p1
+user@Projects:openssh-8.0p1$ ./configure && make && sudo make install}
+\end{alltt}
+
+
+\begin{list2}
+\item Very often Linux/Unix software was distributed as archives - tgz - tar gzipped
+\item Preferred to use binary package systems like Debian apt!
+\item Configure checks for libraries and such things, see GNU Autoconf
+\end{list2}
+
+
+
+
+
+\slide{Overiding types, type conversion}
+
+\begin{alltt}
+Unsigned 00000001 is the same as 0000000000000001
+\end{alltt}
+
+\begin{list2}
+\item Value-preserving - there is space in the new type to store all values
+\item Value-changing - new type cannot represent the same values, damn!
+\item To a wider type, we can \emph{sign extend} for signed types and \emph{zero extend} for unsigned types
+\item To a more narrow, need to truncate - bye bye bits, loose precision!
+\item Again, we wont repeat all the bit values and arithmetics, and how C extends the values
+\item Casting can be used to specify the explicit type conversion\\ \verb+(unsigned char) bob+ - treat variable bob as an unsigned char type
+\end{list2}
+
+Read the audit tip on page 245, The compiler can optimize out certain conversions!
+
+
+
+\slide{Type Conversion Vulnerabilities}
+
+\inputminted{c}{programs/conversion1.c}
+
+\begin{list2}
+\item Signed/unsigned conversions
+\item If you pass signed int to this, a conversion might result in a large value insted
+\item This large value will most likely result in overflow
+\item Most libc routines that take a size have \verb+size_t+ which is unsigned!
+\item Signed negative values become very large unsigned
+\end{list2}
+
+
+
+
+
+\slide{Lets browse Listings 6-9 to 6-11}
+
+\begin{list2}
+\item Book examples show l0pht antisniff program which had problems in DNS packet-parsing code
+\item Vulnerability, fixed, not really, new fix for the fix
+\item Note: \emph{L0pht Heavy Industries (pronounced "loft") was a hacker collective active between 1992 and 2000 and located in the Boston, Massachusetts area. } hackers themselves \smiley
+\item \url{https://en.wikipedia.org/wiki/L0pht}
+\end{list2}
+
+
+
+
+\slide{Real vulns}
+
+\begin{quote}
+Hold tight, this may blow your mind…
+A low-privileged user account on most Linux operating systems with UID value anything greater than 2147483647 can execute any systemctl command unauthorizedly—thanks to a newly discovered vulnerability.
+The reported vulnerability actually resides in PolicyKit (also known as polkit)—an application-level toolkit for Unix-like operating systems that defines policies, handles system-wide privileges and provides a way for non-privileged processes to communicate with privileged ones, such as "sudo," that does not grant root permission to an entire process.
+The issue, tracked as {\bf CVE-2018-19788}, impacts PolicyKit version 0.115 which comes pre-installed on most popular Linux distributions, including Red Hat, Debian, Ubuntu, and CentOS.
+...
+Where, \verb+INT_MAX+ is a constant in computer programming that defines what maximum value an integer variable can store, which equals to 2147483647 (in hexadecimal 0x7FFFFFFF).
+\end{quote}
+
+\begin{list2}
+\item Reality bites again:\\
+\link{https://thehackernews.com/2018/12/linux-user-privilege-policykit.html}
+\item \emph{Red Hat has recommended system administrators not to allow any negative UIDs or UIDs greater than 2147483646 in order to mitigate the issue until the patch is released.}
+\end{list2}
+
+
+
+\slide{Suricata VXLAN decode - defensive checks}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+int DecodeVXLAN(ThreadVars *tv, DecodeThreadVars *dtv, Packet *p,
+        const uint8_t *pkt, uint32_t len, PacketQueue *pq)
+{
+    if (unlikely(!g_vxlan_enabled))
+        return TM_ECODE_FAILED;
+    if (len < (sizeof(VXLANHeader) + sizeof(EthernetHdr)))
+        return TM_ECODE_FAILED;
+    const VXLANHeader *vxlanh = (const VXLANHeader *)pkt;
+    if ((vxlanh->flags[0] & 0x08) == 0 || vxlanh->res != 0) {
+        return TM_ECODE_FAILED;
+    }
+#if DEBUG
+    uint32_t vni = (vxlanh->vni[0] << 16) + (vxlanh->vni[1] << 8) + (vxlanh->vni[2]);
+    SCLogDebug("VXLAN vni %u", vni);
+#endif
+    StatsIncr(tv, dtv->counter_vxlan);
+\end{minted}
+
+Source: excerpt from \url{https://github.com/OISF/suricata/blob/master/src/decode-vxlan.c}\\
+Dont read past end of buffer!
+
+\slide{Pointers}
+
+\begin{list2}
+\item Copy example already used pointers
+\item They point to a location in memory - a variable, a structure, some object of some kind
+\item Pointer arithmectic is dangerous
+\item ... but often used for reading structures, from the network
+\item Mismatched values, wrong asumptions, may result in pointers going wrong
+\end{list2}
+
+
+
+
+
+\begin{list2}
+\item Pointers and Structure padding
+\item Lets look at C code from Suricata or Zeek, you choose
+\item Look how the structures for packets are defined
+\end{list2}
+
+\exercise{ex:structure-padding}
+
+
+\slide{Memory Corruption Errors}
+
+
+\begin{list2}
+\item Assume all memory corruption vulnerabilities should be treated as exploitable, until you can prove otherwise
+\item Auditting and exploit creation are different, but highly complementary skills
+\item
+\end{list2}
+
+
+\slide{Buffer overflows, stack errors}
+
+\begin{list2}
+\item
+\item
+\item
+\end{list2}
+
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\end{list2}
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\end{list2}
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\end{list2}
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\end{list2}
 
 
 \slidenext{Buy the books!}

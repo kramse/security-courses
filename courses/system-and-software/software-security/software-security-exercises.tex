@@ -901,41 +901,47 @@ When afl is installed on at least one laptop on the team, and has run a fuzzing 
 {\bf Discussion:}\\
 For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
 
+
+\chapter{Pointers and Structure padding}
+\label{ex:structure-padding}
+
+{\bf Objective:}\\
+Look at some real code from Suricata and Zeek, note how they prevent structure padding.
+
+{\bf Purpose:}\\
+These software applications usually used for security dissect raw packets, which cannot be trusted.
+
+{\bf Suggested method:}\\
+Download the software - either of :
+\begin{list2}
+\item bro-2.6.4.tar.gz from \url{https://www.zeek.org/downloads/bro-2.6.4.tar.gz}
+\item suricata-4.1.4.tar.gz from \url{https://www.openinfosecfoundation.org/download/suricata-4.1.4.tar.gz}
+\end{list2}
+
+Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
+
+{\bf Hints:}\\
+DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+suricata/src+ and doing \verb+less *dns*.h+ or use an editor.
+
+
+{\bf Solution:}\\
+When you have seen the code for \verb+struct DNSHeader_+ and noticed the structs with \verb+__attribute__((__packed__))+. This ensures that structure fields align on one-byte boundaries - on all architectures.
+
+Maybe also investigate the rest of the file \verb+decode-vxlan.c+
+
+{\bf Discussion:}\\
+Manual for Gnu C Compiler Collection can be found at:\\
+\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
+
+
+\begin{quote}
+packed\\
+This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
+\end{quote}
+
+Bonus, can we find some structs missing this?
+
 \end{document}
-
-\chapter{Writing and exploiting a small buffer overflow}
-\label{ex:writing-exploit-buffer}
-
-Writing and exploiting a small buffer overflow
-
-{\bf Objective:}
-
-{\bf Purpose:}
-
-{\bf Suggested method:}
-
-{\bf Hints:}
-
-{\bf Solution:}
-
-{\bf Discussion:}
-
-
-\chapter{Run debugger}
-\label{ex:debugger-101}
-
-{\bf Objective:}
-
-{\bf Purpose:}
-
-{\bf Suggested method:}
-
-{\bf Hints:}
-
-{\bf Solution:}
-
-{\bf Discussion:}
-
 
 
 \chapter{Django String Handling}

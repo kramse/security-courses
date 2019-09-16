@@ -297,54 +297,177 @@ Dont read past end of buffer!
 \begin{list2}
 \item Assume all memory corruption vulnerabilities should be treated as exploitable, until you can prove otherwise
 \item Auditting and exploit creation are different, but highly complementary skills
-\item
 \end{list2}
 
-
-\slide{Buffer overflows, stack errors}
 
 \begin{list2}
-\item
-\item
-\item
+\item Buffer overflows, stack errors
+\item We have already worked through our buffer overflow example, but chapter 5 describes stacks in more detail
+\item Chapter also describes how functions are called and data is stored in \emph{stack frames}
+\item Of interest is the off-by-one errors on page 180, how a single byte overwrite can result in exploitation
+\item Heap overflows
 \end{list2}
 
 
 
-\slide{}
+
+\slide{Shell code}
+
+\begin{minted}[fontsize=\small]{c}
+char *args[] = { "/bin/sh", NULL };
+
+execve("/bin/sh", args, NULL);
+\end{minted}
+
 
 \begin{list2}
-\item
-\item
-\item
+\item The concept of shell code is explained in detail from page 187 and forward
+\item Shell code can be quite small, smallest seems to be 21 bytes for Linux x86
 \end{list2}
+\slide{Integer overflows}
 
-\slide{}
+\begin{alltt}\footnotesize
+----[ 1.2 What is an integer overflow?
+Since an integer is a fixed size (32 bits for the purposes of this paper),
+there is a fixed maximum value it can store.  When an attempt is made to
+store a value greater than this maximum value it is known as an integer
+overflow.  The ISO C99 standard says that an integer overflow causes
+"undefined behaviour", meaning that compilers conforming to the standard
+may do anything they like from completely ignoring the overflow to aborting
+the program.  Most compilers seem to ignore the overflow, resulting in an
+unexpected or erroneous result being stored.
+
+----[ 1.3 Why can they be dangerous?
+Integer overflows cannot be detected after they have happened, so there is
+not way for an application to tell if a result it has calculated previously
+is in fact correct.  This can get dangerous if the calculation has to do
+with the size of a buffer or how far into an array to index.  Of course
+most integer overflows are not exploitable because memory is not being
+directly overwritten, but sometimes they can lead to other classes of bugs,
+frequently buffer overflows.  As well as this, integer overflows can be
+difficult to spot, so even well audited code can spring surprises.
+\end{alltt}
+
+Source:
+\emph{Basic Integer Overflows} by blexim 
+\url{http://www.phrack.com/issues.html?issue=60&id=10#article}
+
+\slide{Integer overflows}
+
+\begin{alltt}\footnotesize
+----[ 1.2 What is an integer overflow?
+Since an integer is a fixed size (32 bits for the purposes of this paper),
+there is a fixed maximum value it can store.  When an attempt is made to
+store a value greater than this maximum value it is known as an integer
+overflow.  The ISO C99 standard says that an integer overflow causes
+"undefined behaviour", meaning that compilers conforming to the standard
+may do anything they like from completely ignoring the overflow to aborting
+the program.  Most compilers seem to ignore the overflow, resulting in an
+unexpected or erroneous result being stored.
+
+----[ 1.3 Why can they be dangerous?
+Integer overflows cannot be detected after they have happened, so there is
+not way for an application to tell if a result it has calculated previously
+is in fact correct.  This can get dangerous if the calculation has to do
+with the size of a buffer or how far into an array to index.  Of course
+most integer overflows are not exploitable because memory is not being
+directly overwritten, but sometimes they can lead to other classes of bugs,
+frequently buffer overflows.  As well as this, integer overflows can be
+difficult to spot, so even well audited code can spring surprises.
+\end{alltt}
+
+Source:
+\emph{Basic Integer Overflows} by blexim
+\url{http://www.phrack.com/issues.html?issue=60&id=10#article}
+
+
+\slide{Return-to-libc}
+
+\begin{alltt}\footnotesize
+  How does the technique look on the stack - a basic view will be something
+  similar to this:
+  [-] Buffer overflow smashing EIP and jumping forward to shellcode
+                                                   1                    2
+  |-------------------|-----------|------------|---------------------------|
+  |             AAAAAAAAAAAA      |    RET     |        SHELLCODE          |
+  |-------------------|-----------|------------|---------------------------|
+                     args              EBP        EIP
+  [-] Buffer overflow doing return-to-libc and executing system function
+                                                    1             2         3
+  |-------------------------------|------------|--------------|------------|
+  |            buffer             |   system   |   fake_ret   |   /bin/sh  |
+  |-------------------------------|------------|--------------|------------|
+                     args               EBP        EIP
+\end{alltt}
+Instead of putting code on the stack, that cannot be executed, put on a fake return address which goes to a function in the C library, like \verb+system("/bin/sh")+
+
+Source:
+\emph{Bypassing non-executable-stack during exploitation using return-to-libc}
+ by c0ntex | c0ntex[at]gmail.com
+
+\slide{Return-oriented programming (ROP)}
+
+\begin{list1}
+\item Nogle ting bliver også sværere - buffer overflow protection
+\item Teknologier som Address Space Layout Randomization ASLR\\ \link{http://en.wikipedia.org/wiki/Address_space_layout_randomization}
+\item No eXecute NX-bit, dele af memory kan ikke afvikles som kode
+\item Data Execution Prevention DEP\\
+\link{http://en.wikipedia.org/wiki/Data_Execution_Prevention}
+\item Modsvar: Return-oriented programming (ROP) is one of the buzzing advanced exploitation techniques these days to bypass NX, ASLR - byg exploits med stumper af eksisterende kode og stakken
+\end{list1}
+
+Kilder: diverse præsentationer fra BlackHat\\
+\link{http://www.blackhat.com/html/bh-us-10/bh-us-10-archives.html}\\
+{\footnotesize\link{https://media.blackhat.com/bh-us-10/presentations/Zovi/BlackHat-USA-2010-DaiZovi-Return-Oriented-Exploitation-slides.pdf}}
+\slide{Return Oriented Programming}
+
+\hlkimage{10cm}{rop-gadget.png}
 
 \begin{list2}
-\item
-\item
-\item
+\item By doing \emph{return chaining} build shell-code from existin program
+\item Instead of returning to
+functions, return to
+instruction sequences
+followed by a return
+instruction
+
+\item Can return into middle of
+existing instructions to
+simulate different
+instructions
+
+\item All we need are useable
+byte sequences anywhere
+in executable memory
+pages
+\item Scan executable memory regions of common shared
+libraries for useful instructions followed by return
+instructions
+\item Chain returns to identified sequences to form all of the
+desired gadgets from a Turing desired gadgets from
+a Turing-complete gadget catalog complete gadget catalog. The gadgets can be used as a backend to a C compiler
 \end{list2}
 
-\slide{}
+{\footnotesize\link{https://media.blackhat.com/bh-us-10/presentations/Zovi/BlackHat-USA-2010-DaiZovi-Return-Oriented-Exploitation-slides.pdf}}
+
+
+
+
+
+\slide{Function call return}
 
 \begin{list2}
-\item
-\item
-\item
-\end{list2}
-
-\slide{}
-
-\begin{list2}
-\item
-\item
-\item
+\item Function calls are implemented using stacks, and they usually return
+\item By finding functions that do something small, and then return an exploit might be able to pack a stack, and return through an exploitation technique known as \emph{Return Oriented Programming} (ROP)
+\item Note: there is a paper on the schedule Removing ROP Gadgets from OpenBSD Todd Mortimer mortimer@openbsd.org, can be downloaded at\\ \url{https://www.openbsd.org/papers/asiabsdcon2019-rop-paper.pdf}
+\item This changes the rules, by changing the entry (prologue) and return from functions (epilogue):\\
+RETGUARD is a mechanism that adds instrumentation to the
+prologue and epilogue of each function that terminates in a
+return instruction.
 \end{list2}
 
 
-\slidenext{Buy the books!}
+\slidenext{}
 
 
 \end{document}

@@ -258,7 +258,175 @@ Check malloc and free very carefully
 \item Example programs shown with flaws in this chapter: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop
 \item Who do you trust?
 \item Can we trust any software?
+
+\item What about Suricata? - CVE list\\
+{\footnotesize\url{https://www.cvedetails.com/vulnerability-list/vendor_id-13364/product_id-27771/Openinfosecfoundation-Suricata.html}}
+\item Spoiler: Bypass vulnerabilities, getting data past the IDS, Denial of Service crashing the IDS
 \end{list2}
+
+
+\slide{Example applications from Microsoft}
+
+How to get ahead? - use existing good examples!
+
+Microsoft has released sample applications.
+
+\begin{quote}
+Secure Development Documentation
+Learn how to develop and deploy secure applications on Azure with our sample apps, best practices, and guidance.
+
+Get started
+Develop a secure web application on Azure
+\end{quote}
+
+Source:
+\url{https://docs.microsoft.com/en-us/azure/security/develop/}
+
+Yes, this describes how to run Alpine Linux on their Azure Cloud.
+
+
+
+\slide{Resources}
+
+\begin{quote}\footnotesize
+Microsoft Security Development Lifecycle (SDL) – The SDL is a software development process from Microsoft that helps developers build more secure software. It helps you address security compliance requirements while reducing development costs.
+
+Open Web Application Security Project (OWASP) – OWASP is an online community that produces freely available articles, methodologies, documentation, tools, and technologies in the field of web application security.
+
+Pushing Left, Like a Boss – A series of online articles that outlines different types of application security activities that developers should complete to create more secure code.
+
+Microsoft identity platform – The Microsoft identity platform is an evolution of the Azure AD identity service and developer platform. It’s a full-featured platform that consists of an authentication service, open-source libraries, application registration and configuration, full developer documentation, code samples, and other developer content. The Microsoft identity platform supports industry-standard protocols like OAuth 2.0 and OpenID Connect.
+
+Security best practices for Azure solutions – A collection of security best practices to use when you design, deploy, and manage cloud solutions by using Azure. This paper is intended to be a resource for IT pros. This might include designers, architects, developers, and testers who build and deploy secure Azure solutions.
+
+Security and Compliance Blueprints on Azure – Azure Security and Compliance Blueprints are resources that can help you build and launch cloud-powered applications that comply with stringent regulations and standards.
+
+Next steps\\
+In the following articles, we recommend security controls and activities that can help you design, develop, and deploy secure applications.
+
+* Design secure applications
+* Develop secure applications
+* Deploy secure applications
+\end{quote}
+
+Source:
+\url{https://docs.microsoft.com/en-us/azure/security/develop/secure-dev-overview}
+
+
+\slide{Good security}
+
+\hlkimage{12cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\end{list1}
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+\slide{First advice}
+
+\begin{list1}
+\item Use technology
+\item Learn the technology - read the freaking manual
+\item Think about the data you have, upload, facebook license?! WTF!
+\item Think about the data you create - nude pictures taken, where will they show up?
+\begin{list2}
+\item Turn off features you don't use
+\item Turn off network connections when not in use
+\item Update software and applications
+\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
+\item Lock devices automatically when not used for 10 minutes
+\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
+\end{list2}
+\end{list1}
+
+
+
+\slide{Jumping through networks and systems}
+
+\begin{list1}
+\item Hackers break into systems they can reach
+\item and hackers break into systems they can reach from hacked systems \smiley
+\item In real life networks, a remote root exploit from the internet to the main database is rare
+\item but jumping through others can possibly break the whole network
+\item There are a lot of hackers which have presented how they hacked companies, example\\
+{\tiny\url{https://arstechnica.com/security/2016/04/how-hacking-team-got-hacked-phineas-phisher/}}
+\end{list1}
+
+\slide{Example hacks we have done during testing}
+
+\begin{list1}
+\item My own examples include pentest assignments where we:
+\begin{list2}
+\item Two servers under test, Solaris\\
+had NFS world export, we could mount, found a backup of the other system, extracted /etc/passwd from backip, user logins with empty password, Solaris Telnet allows login, your password is empty - enter one
+\item Another test had SRX firewall as a core component. Due to misconfiguration we could access with SNMP, and thereby found the complete network structure revealed, how many network segments, subnets, netmask, ARP, interface counters - which lead to access files with password pictures, it was a bank
+\item Countless times we have found either a password file for a database, and used the same passwords for the operating system, or vice versa
+\item Countless times we have found either a password file in test systems, and people have used the same password in production, or vice versa
+\end{list2}
+\end{list1}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{14cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Chroot, Jails and Zones}
+
+\begin{list1}
+\item Many types of \emph{jails} in Unix-like operating systems
+\item Ideas from Unix chroot, not a security feature originally
+\begin{list2}
+\item Unix chroot - still used, but often combined with other things privsep
+\item FreeBSD Jails
+\item SELinux Mandatory Access Controls
+\item Solaris Containers og Zones
+\item VMware virtual servers, is that a jail?
+\item Docker, is that a jail or just a process?
+\end{list2}
+\end{list1}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{4cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{First advice use the modern operating systems}
+
+\begin{list1}
+\item Newer versions of Microsoft Windows, Mac OS X and Linux
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Note: these still have errors and bugs, but are better than older versions
+\item OpenBSD has shown the way in many cases\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\vskip 1cm
+
+\centerline{Always try to make life worse and more costly for attackers}
+
+
 
 \slidenext{}
 

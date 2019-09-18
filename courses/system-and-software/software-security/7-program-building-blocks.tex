@@ -32,17 +32,234 @@
 
 \slide{Goals: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\hlkimage{13cm}{ipv6-address-1.pdf}
 
 \begin{list1}
-\item
+\item Talk about the Design Patterns concept
+\item Present some of the ones often found in programs
+\item Patterns can also be found in other areas, like Patterns in Network Architecture
 \end{list1}
 
+\slide{Design Patterms}
+
+\begin{list2}
+\item \emph{Design Patterns: Elements of Reusable Object-Oriented Software} (1994), Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides
+
+\item The book describes 23 classic software design patterns
+
+\item \url{https://en.wikipedia.org/wiki/Design_Patterns}
+
+\item Ideas of patterns precede this book, but became a more popular subject
+\end{list2}
+
+
+
+
+
 \slide{Common constructs}
-\slide{Recurring code patterns}
-\slide{Example programs with flaws: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop}
 
-\slidenext{Buy the books!}
 
+\begin{list2}
+\item Programs exhibit the same patterns, some examples:
+\item Solve problems in the same domains
+\item Need to store lists of strings / characters etc.
+\item Data structures becomes useful in other programs
+\item Sorting routines needed in many programs
+\end{list2}
+
+
+
+
+
+\slide{Auditing code patterns}
+
+
+\begin{list2}
+\item Book describes various pitfalls, and areas
+\item {\bf Variable Relationship}
+\item Examples presented are C buffers
+\item A variable-pointer to the buffer and the variable with the length
+\item Their relationship can easily get invalidated, leading to vulnerabilities
+\item Question: would object oriented programming help?
+\end{list2}
+
+
+
+\slide{Book examples in beginning Chapter 7}
+
+
+\begin{list2}
+\item Apache was the worlds most popular web server!
+\item \verb+mod_dav+ implements a very complex protocol, file server features using http!
+\item Bind and the resolver libraries were the de facto, and still is, for DNS resolving in most of the open source software world!
+\item Sendmail was the most popular mail server for many years, but replaced mostly by Qmail, Postfix and Exim. Sendmail was used on both open source and commercial Unix operating systems like SunOS, AIX, HP-UX etc.
+\item OpenSSH mentioned next is also the most popular SSH protocol implementation, found in almost all Linux distributions and a wide range of network devices and other internet conected things
+\item OpenSSL is of course the most popular open source crypto library ... famous for the heartbleed bug and other hits
+\end{list2}
+
+
+\slide{Structure and Object Mismanagement}
+
+
+\begin{list2}
+\item Structures in C can help group related data elements
+\item Both auditors and attackers can benefit ...
+\item Object oriented programs and languages encapsulate this
+\item Responsibility is on the object implementation, good!
+\item We saw structures last time
+\end{list2}
+
+
+
+\slide{Uninitialized Variables}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+    Packet *p = SCMalloc(SIZE_OF_PACKET);
+    if (unlikely(p == NULL)) {
+         return 0;
+    }
+    ThreadVars tv;
+    DecodeThreadVars dtv;
+
+    memset(&dtv, 0, sizeof(DecodeThreadVars));
+    memset(&tv,  0, sizeof(ThreadVars));
+    memset(p, 0, SIZE_OF_PACKET);
+\end{minted}
+
+\begin{list2}
+\item Always make sure variables have well defined values.
+\item Defensive programs use memset to clear contents of buffers
+\item Example from Suricata allocating memory, checking it got the memory, clearing contents
+\end{list2}
+
+
+
+\slide{Manipulating Lists - and other data structures}
+
+
+\begin{list2}
+\item Storing data in a list is nice, can add and remove elements
+\item Single linked list, start from head and go through list ... slow
+\item Double linked list can go back again from element
+\item More work updating, moving more pointers ... complex, may introduce errors
+\item Example data structure double linked list\\
+\url{https://algorithms.tutorialhorizon.com/doubly-linked-list-complete-implementation/}
+\item Multiple problems can arise, also using the wrong structure for something can result in vulnerabilities
+\end{list2}
+
+\vskip 1cm
+\centerline{Dont write your data structure libraries yourself}
+
+\slide{Linux Teardrop}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+  size=36
+  offset=3
+  load1="\x00"*size
+  i=IP()   i.dst=target   i.flags="MF"   i.proto=17
+
+  size=4
+  offset=18
+  load2="\x00"*size
+  j=IP()
+  j.dst=target   j.flags=0   j.proto=17   j.frag=offset
+\end{minted}
+
+\begin{list2}
+\item IP fragments, packets are split when crossing a link with lower MTU
+\item If fragments created by an attacker are overlapping it created problem
+\item Scapy example code by Sam Bowne can be found at:\\
+\url{https://samsclass.info/123/proj10/teardrop.htm}
+\item what is Maximum Transmission Unit (MTU)\\
+See \url{https://en.wikipedia.org/wiki/Maximum_transmission_unit} for a description,\\ related/similar \url{https://en.wikipedia.org/wiki/LAND}
+\end{list2}
+
+
+
+\slide{Other problems}
+
+
+\begin{list2}
+\item Hashing algorithms
+\item Only mentioned briefly in the book
+\item There have been multiple problems with hashing algorithms
+\item Denial of Service and arbitrary code can be the result
+\item Example vulns from popular programming languages, others have similar!\\
+\url{https://www.cvedetails.com/vulnerability-list/vendor_id-74/product_id-128/cvssscoremin-7/cvssscoremax-7.99/PHP-PHP.html} search for hash \\
+\url{https://github.com/bk2204/php-hash-dos} specific example in PHP 7.0.0~rc3-3\\
+\url{https://www.ruby-lang.org/en/security/} Ruby has some
+\item also when programmers selected wrong, or weak, hashing algorithms for passwords
+\end{list2}
+
+\slide{Control Flow}
+
+\hlkimage{18cm}{ssl-tls-breaks-timeline.png}
+
+\begin{list2}
+\item If constructs, make sure to exercise each path
+\item Case/switch constructs, make sure to catch a default
+\item Loops being subverted to create buffer overflow, terminating conditions
+\item Forgetting a \verb+break+ in a case
+\end{list2}
+
+
+\slide{Apple Goto Fail CVE-2014-1266}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+if ((err = SSLHashSHA1.update(&hashCtx, &clientRandom)) != 0)
+    goto fail;
+if ((err = SSLHashSHA1.update(&hashCtx, &serverRandom)) != 0)
+    goto fail;
+if ((err = SSLHashSHA1.update(&hashCtx, &signedParams)) != 0)
+    goto fail;
+    goto fail;  /* MISTAKE! THIS LINE SHOULD NOT BE HERE */
+if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
+    goto fail;
+\end{minted}
+
+\begin{list2}
+\item Always going to goto fail
+\item Example code from\emph{Anatomy of a “goto fail” – Apple’s SSL bug explained}\\ {\footnotesize\url{https://nakedsecurity.sophos.com/2014/02/24/anatomy-of-a-goto-fail-apples-ssl-bug-explained-plus-an-unofficial-patch/}}
+
+\end{list2}
+
+
+\slide{Loop running over buffer}
+
+\begin{list2}
+\item MS-RPC DCOM buffer overflow
+\item Ended up in the Blaster worm infecting : \url{https://en.wikipedia.org/wiki/Blaster_(computer_worm)}
+\item notice the timeline, even if patches ARE available people didn't patch
+\item This is why we have \emph{patch tuesdays}
+\item Blaster was not as fast as SQL Slammer, which infected the internet in just minutes
+\item Other example in the book, NTPD, which is also a common and thought to be safe service to run
+\item And \verb+mod_php+ nonterminating buffer vulnerability
+\item Plus a few off-by-one errors in \verb+mod_rewrite+ and OpenBSD ftpd
+\end{list2}
+
+
+\slide{Side effects, corner cases and 32-bit vs 64-bit}
+
+\begin{list2}
+\item Chapter lists a couple of corner cases
+\item Functions can change variables in global scope while doing something
+\item Allocating memory can go wrong, check return values
+\item Asking for 0 bytes of memory is technically legal but may cause problems
+\item Doing 64-bit check with if and then being truncated to 32-bit when doing actual memory allocation function, result in unintended behaviour
+\item Double free is also mentioned, freeing an already free location may exploit heap management routines\\
+Check malloc and free very carefully
+\end{list2}
+
+
+\slide{Who do you trust?}
+
+
+\begin{list2}
+\item Example programs shown with flaws in this chapter: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop
+\item Who do you trust?
+\item Can we trust any software?
+\end{list2}
+
+\slidenext{}
 
 \end{document}

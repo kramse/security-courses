@@ -691,7 +691,7 @@ When you can run and understand what the tool does, you are done.
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
 
 
-\chapter{Real Vulnerabilities}
+\chapter{Real Vulnerabilities up to 30min}
 \label{ex:real-vulns}
 
 
@@ -867,7 +867,7 @@ We can download a lot of packet traces from around the internet, we might use ex
 
 
 
-\chapter{Try American fuzzy lop}
+\chapter{Try American fuzzy lop up to 60min}
 \label{ex:american-fuzzy-lop}
 
 Try American fuzzy lop http://lcamtuf.coredump.cx/afl/
@@ -901,8 +901,38 @@ When afl is installed on at least one laptop on the team, and has run a fuzzing 
 {\bf Discussion:}\\
 For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
 
+\chapter{Small programs with data types}
+\label{ex:c-types}
 
-\chapter{Pointers and Structure padding}
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+
+\chapter{Pointers and Structure padding 30min}
 \label{ex:structure-padding}
 
 {\bf Objective:}\\
@@ -941,8 +971,102 @@ This attribute, attached to struct or union type definition, specifies that each
 
 Bonus, can we find some structs missing this?
 
-\end{document}
 
+\chapter{Use a library in Python up to 60min}
+\label{ex-python-library}
+
+{\bf Objective:}\\
+Try using a programing library in the Python programming language.
+
+{\bf Purpose:}\\
+See how easy it is to produce functionality by re-using existing functions and features available in a popular language.
+
+{\bf Suggested method:}\\
+Start by getting an XML file. Suggested method is to boot your Kali Linux and run a command like \verb+nmap -p 80,443 -A -oA testfile www.zencurity.com+. Output should be testfile.xml and two other files, grepable output \verb+testfile.gnmap+ and text output \verb+testfile.nmap+.
+
+Then using Python import a library to parse XML and print a few values from the XML, or all of them.
+
+Recommended values to print from the file:
+\begin{list2}
+\item Nmap version
+\item Date of the Nmap run, note either use start and convert from Unix time or startstr which is a string
+\item Nmaprun args - aka the command line
+\item Host address
+\item Ports like from the <port protocol="tcp" portid="443">
+\item Anything you feel like
+\end{list2}
+
+{\bf Hints:}\\
+One option is to use the Python ElementTree XML API:\\
+\url{https://docs.python.org/2/library/xml.etree.elementtree.html}
+
+Also - use Python3!
+
+{\bf Solution:}\\
+When you can read a file and process it using Python3.
+
+Improvements, you might consider:
+\begin{list2}
+\item Use Python3 to run the Nmap process
+\item Create command line parameters for the program, making it more useful
+\item Pretty print using formatted output
+\end{list2}
+{\bf Discussion:}\\
+Many examples contain code like this:
+
+\begin{quote}
+Getting child tag's attribute value in a XML using ElementTree
+
+Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
+\end{quote}
+\begin{minted}[fontsize=\footnotesize]{python}
+>>> import xml.etree.ElementTree as ET
+>>> xmlstr = '<foo><bar key="value">text</bar></foo>'
+>>> root = ET.fromstring(xmlstr)
+>>> root.tag
+'foo'
+>>> root[0].tag
+'bar'
+>>> root[0].attrib['key']
+'value'
+\end{minted}
+Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
+
+What is the point of referring to a specific numbered child, when we specifically have the tags?!
+
+What happens if the XML output changes a bit, so another tag is before the expected one! Dont trust Stackoverflow, unless you want a stack overflow \smiley.
+
+\end{document}
+\chapter{}
+\label{}
+
+{\bf Objective:}\\
+
+{\bf Purpose:}\\
+
+{\bf Suggested method:}\\
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+
+{\bf Discussion:}\\
+
+
+\chapter{}
+\label{}
+
+{\bf Objective:}\\
+
+{\bf Purpose:}\\
+
+{\bf Suggested method:}\\
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+
+{\bf Discussion:}\\
 
 \chapter{Django String Handling}
 \label{ex:django-string}

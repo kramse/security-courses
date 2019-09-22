@@ -3,6 +3,7 @@
 \externaldocument{software-security-exercises}
 \selectlanguage{english}
 
+
 \begin{document}
 
 \mytitlepage
@@ -31,18 +32,190 @@
 \item AoSSA chapter 8: Strings and Metacharacters
 \end{list1}
 
+Also checkout \url{https://en.wikipedia.org/wiki/C_string_handling}
+for use when you dont have the book with you.
+
 \slide{Goals: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\hlkimage{9cm}{unicode-1.pdf}
 
 \begin{list1}
-\item
+\item Strings are used in most programs, like Microsoft IIS 4.0/5.0 Unicode bug CVE-2000-0884
+\item Handling letters, numbers, sentences, filenames, ... - string data
+\item Multiple data formats, from American Standard Code for Information Interchange (ASCII), Extended Binary Coded Decimal Interchange Code (EBCDIC), ISO 8859-1 / ISO-8859-15 €€€€
+\item From 7-bit ASCII, 8-bit ASCII to multibyte symbols in Unicode
+\item Lots of opportunity for errors, seaching on google for \emph{unicode bug CVE} gave 500.000 hits!
 \end{list1}
 
 \slide{Processing strings}
+
+\begin{quote}
+Many of the most significant security vulnerabilities of the last decade, (1997-2007) are the result of memory corruption due to mishandling textual data, or logical flaws due to the misinterpretation of the content on the textual data
+\end{quote}
+Source: \emph{The Art of Software Security Assessment Identifying and Preventing
+Software Vulnerabilities} 2007
+
+\begin{list1}
+\item Spoiler, the problems didn't end in 2007
+\item Major areas of string handling:
+\begin{list2}
+\item memory corruption due to string mishandling
+\item Vulnerabilities due to in-band control data in the form of metacharacters
+\item Vulnerabilities resulting from conversions between character encodings in different languages
+\end{list2}
+\item By understanding the {\bf common patterns} associated with these vulnerabilities, you can identify and prevent their occurence
+\end{list1}
+
 \slide{C String handling}
+
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int main(int argc, char **argv)
+{      char buf[10];
+        strcpy(buf, argv[1]);
+        printf("%s\n",buf);
+}
+\end{minted}
+
+
+\begin{list2}
+\item In C there is no native type for strings; strings are formed by constructing arrays of the char data type, with the null character (0x00) marking the end of a string
+\item C++ standard library has a string class, a little safer
+\item Converting between C++ string class and C strings may result in vulnerabilities
+\item Many systems use C at the bottom, C APIs etc.
+\end{list2}
+
+
+\slide{Unbounded String Functions}
+
+\begin{list2}
+\item Unsafe group of functions:
+\item {\bf scanf()} read data from somewhere, multiple variants
+\item {\bf sprintf()} print formatted into string/buffer - overflow\\
+Changing the format string is a whole group in itself
+\item {\bf strcpy()} family is notorious for causing a large number of security vulnerabilities
+\item {\bf strcat()} string concatenation, combining strings can be problemtatic
+\end{list2}
+
+\vskip 1cm
+\centerline{These were the ones people used in the beginning}
+
+\slide{Bounded String Functions}
+
+\begin{list2}
+\item Adding a maximum length to the functions should help:
+\item {\bf snprintf()} copies a maximum number of bytes!
+\item Different semantics on Windows and Unix.
+\item Windows does not guarantee null-termination, returns -1
+\item Unix guarantee null-termination, returns number of chars that would have been written had there been enough room
+\item {\bf strncpy()} does accept a maximum number of bytes to be copied into the destination, but does not guarantee null termination
+\item {\bf strncat()} size to provide is the space left in the buffer, not the size of the whole buffer
+\item Easy to result in off-by-one vulnerabilities
+\end{list2}
+
+\slide{Better Functions from BSD}
+
+\begin{list2}
+\item strlcpy, strlcat  size-bounded string copying and concatenation
+\item {\bf strlcpy()} a variant of strcpy that truncates the result to fit in the destination buffer
+\item {\bf strlcat()} a variant of strcat that truncates the result to fit in the destination buffer
+\item Originally OpenBSD 2.4 in December, 1998
+\item These functions always write one null to the destination buffer
+\item May truncate the result, return size of buffer needed, programmer must check return code and handle this
+\end{list2}
+
+\slide{Parsing String Data}
+
+
+\begin{minted}[fontsize=\footnotesize]{c}
+while (*t != ':') *tt++ = *t++;
+ *tt = 0;
+\end{minted}
+
+\begin{list2}
+\item Example from the book, if the input is larger than destination pointed to by \verb+tt+ then problems can arise
+\item Character expansion, making output bigger can overflow
+\item Another \verb+mod_dav+ and \verb+mod_mime+ vulnerabilities are presented as listings 8-6 and 8-7
+\end{list2}
+
 \slide{Metacharacters}
+
+\begin{list2}
+\item Null 0x00, special in C, but just another char in higher level languages
+\item Space
+\item / used as filename delimiters, and \textbackslash{} in Windows
+\item . dot used in various ways for domain names, file types etc.
+\item Comma-seperated files, using \verb+, . ; :+ etc.
+\item Special characters for syntax purposes, \verb+* % & ?+ etc. Searching for everything or wild card search
+\end{list2}
+
+
+
+\slide{File Name Canonicalization}
+
+\verb+C:\WINDOWS\system32\calc.exe+
+
+or
+\begin{list2}
+\item \verb+C:\WINDOWS\system32\drivers\..\calc.exe+
+\item \verb+calc.exe+
+\item \verb+.\calc.exe+
+\item \verb+..\calc.exe+
+\item \verb+\\?\WINDOWS\system32\calc.exe+
+\item Attacks are called path or directory traversal, using \verb+..+ to enter paths not expected by the application, ref Microsoft IIS Unicode vulnerabilities
+\end{list2}
+
+
+
+\slide{Shell Metacharacters}
+
+\begin{alltt}
+<pre>
+<?php passthru("{\bf{}ping $HOST}"); ?>
+</pre>
+\end{alltt}
+
+
+\begin{list2}
+\item Misc dangerous shell characters, see book for more:
+\item \verb+;+ seperator, execute multiple commands, \verb+|+ pipe, execute multiple commands
+\item \verb+` `+ back ticks, or \verb+$( )+ execute a command and insert result
+\item \verb+< > + redirect input, output etc.
+\item Perl: \verb+print `/usr/bin/finger $input{'command'}`;+
+\item UNIX shell: \verb+`echo hello`+
+\item Microsoft SQL: \verb+exec master..xp_cmdshell 'net user test testpass /ADD'+
+\item I prefer explicit allow filters (white lists) for filtering metacharacters, if at all possible. Easier for a phone number than name, YMMV
+\end{list2}
+
+
+
+\slide{HTML and XML encoding, plus serialization}
+
+\begin{list2}
+\item HTML and XML can contain encoded data \verb+%20+ is a space
+\item Requests sent over HTTP can contain serialization and de-serialization, basically sending code
+\item Multiple layers of decoding can result in problems, like double-decode Microsoft IIS vulnerability CVE-2001-0333
+\end{list2}
+
+
 \slide{Character sets and unicode}
+
+\verb;GET /..%c0%af..%c0%afwinnt/system32/cmd.exe?/c+dir;
+
+\begin{list2}
+\item UTF-8 becoming the standard used, book uses the example from CVE-2000-0884
+\item Calls \verb+cmd.exe+ with any command from URL
+\item Example encoding for \verb+/+
+\item 0x2f
+\item 0xC0 0xAF - the one used above
+\item 0xE0 0x80 0xAF
+\item 0xF0 0x80 0x80 0xAF
+\end{list2}
+
+\exercise{ex:truncate-encoding}
 
 \exercise{ex:django-string}
 

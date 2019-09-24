@@ -105,8 +105,8 @@ Changing the format string is a whole group in itself
 
 \slide{30 Years ago in around 1988 }
 
-\begin{minted}[fontsize=\footnotesize]{c}
 
+\begin{minted}[fontsize=\footnotesize]{c}
 /usr/src/etc/fingerd.c from 4.3BSD:
 main(argc, argv)
 	char *argv[];
@@ -125,6 +125,38 @@ More description in the articles:\\
 {\footnotesize\url{https://spaf.cerias.purdue.edu/tech-reps/823.pdf}} \emph{The Internet Worm Program: An Analysis}
 Purdue Technical Report CSD-TR-823
 Eugene H. Spafford\\ {\footnotesize\url{https://blog.rapid7.com/2019/01/02/the-ghost-of-exploits-past-a-deep-dive-into-the-morris-worm/}}\\ The Ghost of Exploits Past: A Deep Dive into the Morris Worm
+
+
+\slide{Exim CVE-2019-15846 git diff exim-4.92.1 exim-4.92.2}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+
+diff --git a/src/src/string.c b/src/src/string.c
+
+@@ -224,6 +224,8 @@ interpreted in strings.
+ Arguments:
+   pp       points a pointer to the initiating "\" in the string;
+            the pointer gets updated to point to the final character
++           If the backslash is the last character in the string, it
++           is not interpreted.
+ Returns:   the value of the character escape
+ */
+
+@@ -236,6 +238,7 @@ const uschar *hex_digits= CUS"0123456789abcdef";
+ int ch;
+ const uschar *p = *pp;
+ ch = *(++p);
++if (ch == '\0') return **pp;
+\end{minted}
+
+\begin{quote}
+The vulnerability is exploitable by sending a SNI ending in a
+backslash-null sequence during the initial TLS handshake. The exploit
+exists as a POC.
+
+For more details see doc/doc-txt/cve-2019-15846/ in the source code
+repository.
+\end{quote}
 
 \slide{Bounded String Functions}
 

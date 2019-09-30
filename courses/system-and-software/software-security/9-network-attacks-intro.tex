@@ -32,25 +32,1804 @@
 \begin{list1}
 \item AoSSA chapters 14: Network Protocols
 \item AoSSA chapters 15: Firewalls
+\item TCP Synfloods - an old yet current problem, and improving pf's response to it, Henning Brauer, BSDCan 2017
+
 \end{list1}
 
-\slide{Goals: }
+\slide{Goals today: Networking with some pentesting}
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+{\bf What is pentest}
+
+\begin{quote}
+A penetration test, informally pen test, is an attack on a computer system that looks for security weaknesses, potentially gaining access to the computer's features and data.[1][2]
+\end{quote}
 
 \begin{list1}
-\item
+\item Penetration testing is a simulation, with good intentions
+\item People around the world constantly \emph{test your defenses}
+\item Often better to test at planned times
+\item How to create DDoS simulations, tools and process
+\item I use and recommend Kali Linux as the base for this
 \end{list1}
 
-\slide{Internet Protocol}
-\slide{TCP and UDP}
+Source: qoute from \link{https://en.wikipedia.org/wiki/Penetration_test}
+
+\slide{Agreements for testing networks}
+
+\begin{quote}\small
+Danish Criminal Code\\
+Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem.
+\end{quote}
+
+Hacking can result in:
+\begin{list2}
+\item Getting your devices confiscated by the police
+\item Paying damages to persons or businesses
+\item If older getting a fine and a record -- even jail perhaps
+\item Getting a criminal record, making it hard to travel to some countries and working in security
+\item Fear of terror has increased the focus -- so dont step over bounds!
+\end{list2}
+
+Asking for permission and getting an OK before doing invasive tests, always!
+
+\slide{Course Network}
+
+\hlkimage{7cm}{sample-network.png}
+
+\begin{list1}
+\item Our network will be similar to regular networks, as found in enterprises
+\item We have an isolated network, allowing us to sniff and mess with hacking tools.
+\end{list1}
+
+
+
+\slide{Internet Protocol Suite}
+
+
+\hlkimage{10cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Client and servers
+\item Rooted in academice circles
+\item Protocols that are 20 years old, or more! TCP/IP version 4 from around 1983!
+\item Very little encryption for many years. Today HTTPS, but almost nothing else encrypted.
+\end{list1}
+
+
+
+
+\slide{Networks today}
+\hlkimage{13cm}{overview-routing-customer-2015.pdf}
+
+\begin{list1}
+\item Conclusion: Do as much as possible with your existing devices
+\item Tuning and using features like stateless router filters works wonders
+\end{list1}
+
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{5cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith
+eBook ISBN: 9780124172166
+Paperback ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+{\footnotesize\link{https://www.elsevier.com/books/applied-network-security-monitoring/unknown/978-0-12-417208-1}}
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+\slide{Internet is Open Standards!}
+
+{\hlkbig \color{titlecolor}
+We reject kings, presidents, and voting.\\
+We believe in rough consensus and running code.\\
+-- The IETF credo Dave Clark, 1992.}
+
+\begin{list1}
+\item Request for comments - RFC - er en serie af dokumenter
+\item RFC, BCP, FYI, informational\\
+de første stammer tilbage fra 1969
+\item Ændres ikke, men får status Obsoleted når der udkommer en nyere
+  version af en standard
+\item Standards track:\\
+Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
+\item  Åbne standarder = åbenhed, ikke garanti for sikkerhed
+\end{list1}
+
+
+
+
+\slide{Hvad er Internet}
+
+\begin{list1}
+\item Kommunikation mellem mennesker!
+\item Baseret på TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 kalder det packets, ikke datagram)
+\item forbindelsesorienteret, \emph{connection-oriented}
+\item forbindelsesløs, \emph{connection-less}
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+\slide{IP netværk: Internettet historisk set}
+
+\begin{list2}
+\item[1961]  L. Kleinrock, MIT packet-switching teori
+\item[1962]  J. C. R. Licklider, MIT - notes
+\item[1964]  Paul Baran: On Distributed Communications
+\item[1969]  ARPANET startes 4 noder
+\item[1971]  14 noder
+\item[1973]  Arbejde med IP startes
+\item[1973]  Email er ca. 75\% af ARPANET traffik
+\item[1974]  TCP/IP: Cerf/Kahn: A protocol for Packet
+        Network Interconnection
+\item[1983]  EUUG $\rightarrow$ DKUUG/DIKU forbindelse
+\item[1988]  ca. 60.000 systemer på Internettet
+        The Morris Worm rammer ca. 10\%
+\item[2000]  Maj I LOVE YOU ormen rammer
+%\item[2001]  August Code Red ~600.000 servere
+\item[2002]  Ialt ca. 130 millioner på Internet
+\end{list2}
+
+\slide{Internet historisk set -  anno 1969}
+\hlkimage{6cm}{1969_4-node_map.png}
+%size 2
+
+\begin{list2}
+\item Node 1: University of California Los Angeles
+\item Node 2: Stanford Research Institute
+\item Node 3: University of California Santa Barbara
+\item Node 4: University of Utah
+%\item Kilde: \link{http://www.zakon.org/robert/internet/timeline/}
+\end{list2}
+
+\slide{De tidlige notater om Internet}
+
+\begin{list1}
+\item L. Kleinrock \emph{Information Flow in Large Communication nets}, 1961
+\item J.C.R. Licklider, MIT noter fra 1962 \emph{On-Line Man Computer
+  Communication}
+\item Paul Baran, 1964 \emph{On distributed Communications}
+12-bind serie af rapporter\\
+\link{http://www.rand.org/publications/RM/baran.list.html}
+\item V. Cerf og R. Kahn, 1974
+\emph{A protocol for Packet Network Interconnection}
+IEEE Transactions on Communication, vol. COM-22, pp. 637-648, May 1974
+\item De tidlige notater kan findes på nettet!
+\end{list1}
+
+\slide{BSD UNIX}
+
+\hlkimage{4cm}{implementation_freebsd.jpg}
+
+\begin{list1}
+  \item UNIX kildeteksten var nem at få fat i for universiteter og
+  mange andre
+\item Bell Labs/AT\&T var et telefonselskab - ikke et software hus
+\item På Berkeley Universitetet blev der udviklet en del på UNIX og
+  det har givet anledning til en hel gren kaldet BSD UNIX
+\item BSD står for Berkeley Software Distribution
+\item BSD UNIX har blandt andet resulteret i virtual memory management
+  og en masse TCP/IP relaterede applikationer
+\end{list1}
+
+\slide{Hvad er Internet hosts }
+
+\hlkimage{15cm}{potaroo-ipv4-address-report.png}
+\centerline{Cumulative RIR address assignments, per RIR}
+
+\begin{list1}
+\item Source:
+IPv4 Address Report - 28-Jan-2019
+\link{http://www.potaroo.net/tools/ipv4/}
+\end{list1}
+
+\slide{Fælles adresserum}
+
+\vskip 2 cm
+\hlkimage{13cm}{IP-address.pdf}
+
+\begin{list1}
+\item Hvad kendetegner internet idag
+\item Der er et fælles adresserum baseret på 32-bit adresser, example 10.0.0.1
+\end{list1}
+
+\slide{IPv4 addresser og skrivemåde}
+
+\begin{alltt}
+hlk@bigfoot:hlk$ ipconvert.pl 127.0.0.1
+Adressen er: 127.0.0.1
+Adressen er: 2130706433
+hlk@bigfoot:hlk$ ping 2130706433
+PING 2130706433 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.135 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.144 ms
+\end{alltt}
+
+\begin{list1}
+\item IP-adresser skrives typisk som decimaltal adskilt af punktum
+\item Kaldes {\bf dot notation}: 10.1.2.3
+\item Kan også skrive som oktal eller heksadecimale tal
+\end{list1}
+
+\slide{IP-adresser som bits}
+
+\begin{alltt}
+IP-adresse: 127.0.0.1
+Heltal:	2130706433
+Binary:	1111111000000000000000000000001
+\end{alltt}
+
+\begin{list1}
+\item IP-adresser kan også konverteres til bits
+\item Computeren regner binært, vi bruger dot-notationen
+\end{list1}
+
+\slide{Internet ABC}
+
+\begin{list1}
+\item Tidligere benyttede man klasseinddelingen af IP-adresser: A, B, C, D og E
+\item Desværre var denne opdeling ufleksibel:
+\begin{list2}
+\item A-klasse kunne potentielt indeholde 16 millioner hosts
+\item B-klasse kunne potentielt indeholder omkring 65.000 hosts
+\item C-klasse kunne indeholde omkring 250 hosts
+\end{list2}
+\item Derfor bad de fleste om adresser i B-klasser - så de var ved at løbe tør!
+\item D-klasse benyttes til multicast
+\item E-klasse er blot reserveret
+\item Se evt. \link{http://en.wikipedia.org/wiki/Classful\_network}
+\end{list1}
+
+\vskip 5mm
+\centerline{\bf Stop saying C, say /24}
+
+\slide{CIDR Classless Inter-Domain Routing}
+
+\hlkimage{13cm}{CIDR-aggregation.pdf}
+
+\begin{list1}
+\item Subnetmasker var oprindeligt indforstået
+\item Man tildelte flere C-klasser - spare de resterende B-klasser - men det betød en routing table explosion
+\item Idag er subnetmaske en sammenhængende række 1-bit der angiver størrelse på nettet
+\item 10.0.0.0/24 betyder netværket 10.0.0.0 med subnetmaske 255.255.255.0
+\item Nogle få steder kaldes det tillige supernet, supernetting
+\end{list1}
+
+
+\slide{IPv4 addresser opsummering}
+
+\begin{list2}
+\item Altid 32-bit adresser
+\item Skrives typisk med 4 decimaltal dot notation 10.1.2.3
+\item Netværk angives med CIDR Classless Inter-Domain Routing RFC-1519
+\item CIDR notation 10.0.0.0/8 -
+  fremfor 10.0.0.0 med subnet maske 255.0.0.0
+\item Specielle adresser\\
+127.0.0.1 localhost/loopback\\
+0.0.0.0  default route
+\item RFC-1918 angiver private adresser som alle kan bruge
+\end{list2}
+
+\slide{RFC-1918 Private Networks}
+
+\begin{list1}
+\item Der findes et antal adresserum som alle må benytte frit:
+\begin{list2}
+\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
+\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
+\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
+\end{list2}
+\item Address Allocation for Private Internets RFC-1918 adresserne!
+\item NB: man må ikke sende pakker ud på internet med disse som afsender, giver ikke mening
+\end{list1}
+
+\begin{alltt}
+The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
+and 203.0.113.0/24 (TEST-NET-3) are provided for use in
+documentation.
+
+169.254.0.0/16 has been ear-marked as the IP range to use for end node
+auto-configuration when a DHCP server may not be found
+\end{alltt}
+
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
+
+\slide{Netværkshardware}
+
+\begin{list1}
+\item Der er mange muligheder med IP netværk, IP kræver meget lidt
+\item Ofte benyttede idag er:
+\begin{list2}
+\item Ethernet - varianter 10mbit, 100mbit, gigabit, 10G, 100G, 200G, 400G, ...
+\item Wireless 802.11 teknologier
+\item ADSL/ATM teknologier til WAN forbindelser
+\item MPLS ligeledes til WAN forbindelser
+\end{list2}
+\item Ethernet kan bruge kobberledninger eller fiber
+\item WAN forbindelser er typisk fiber på grund af afstanden mellem routere
+\item Tidligere benyttede inkluderer: X.25, modem, FDDI, ATM, Token-Ring
+\end{list1}
+
+\slide{Ethernet stik, kabler og dioder}
+
+\hlkimage{17cm}{ethernetLights.jpg}
+
+\centerline{Dioder viser typisk om der er link, hastighed samt aktivitet}
+
+\slide{Trådløse teknologier}
+
+\hlkimage{10cm}{WCG200v2_med.jpg}
+
+\begin{list1}
+\item Et typisk 802.11 Access-Point (AP) der har Wireless og Ethernet stik/switch
+\end{list1}
+
+\slide{MAC adresser}
+%\hlkimage{10cm}{apple-oui.png}
+
+\begin{alltt}
+00-03-93   (hex)        Apple Computer, Inc.
+000393     (base 16)    Apple Computer, Inc.
+                        20650 Valley Green Dr.
+                        Cupertino CA 95014
+                        UNITED STATES
+\end{alltt}
+\begin{list1}
+\item Netværksteknologierne benytter adresser på lag 2
+\item Typisk svarende til 48-bit MAC adresser som kendes fra Ethernet MAC-48/EUI-48
+\item Første halvdel af adresserne er Organizationally Unique Identifier (OUI)
+\item Ved hjælp af OUI kan man udlede hvilken producent der har produceret netkortet
+\item \link{http://standards.ieee.org/regauth/oui/index.shtml}
+\end{list1}
+
+\slide{Half/full-duplex og speed}
+
+\hlkimage{17cm}{half-full-duplex.pdf}
+
+\begin{list1}
+\item Hvad hastighed overføres data med?
+\item De fleste nyere Ethernet netkort kan køre i fuld-duplex
+\item med full-duplex kan der både sendes og modtages data samtidigt
+\item Ethernet kan benytte auto-negotiation - der ofte virker\\
+Klart bedre i gigabitnetkort men pas på
+\end{list1}
+
+\slide{Broer og routere}
+
+\hlkimage{17cm}{wan-network.pdf}
+\centerline{Fysisk er der en begrænsing for hvor lange ledningerne må være}
+
+\slide{Bridges}
+
+\begin{list1}
+\item Ethernet er broadcast teknologi, hvor data sendes ud på et delt medie - Æteren
+\item Broadcast giver en grænse for udbredningen vs hastighed
+\item Ved hjælp af en bro kan man forbinde to netværkssegmenter på layer-2
+\item Broen kopierer data mellem de to segmenter
+\item Virker som en forstærker på signalet, men mere intelligent
+\item Den intelligente bro kender MAC adresserne på hver side
+\item Broen kopierer kun hvis afsender og modtager er på hver sin side
+\end{list1}
+
+Kilde: For mere information søg efter Aloha-net\\ \link{http://en.wikipedia.org/wiki/ALOHAnet}
+
+\slide{En switch}
+
+\hlkimage{12cm}{switch-1.pdf}
+
+\begin{list1}
+\item Ved at fortsætte udviklingen kunne man samle broer til en switch
+\item En switch idag kan sende og modtage på flere porte samtidig, og med full-duplex
+\item Bemærk performance begrænses af backplane i switchen
+\end{list1}
+
+\slide{Topologier og Spanning Tree Protocol}
+
+\hlkimage{13cm}{switch-STP.pdf}
+
+Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
+
+\slide{Core, Distribution og Access net}
+
+\hlkimage{17cm}{core-dist.pdf}
+
+\centerline{Det er ikke altid man har præcis denne opdeling, men den er ofte brugt}
+
+\slide{Pakker i en datastrøm}
+
+\hlkimage{23cm}{ethernet-frame-1.pdf}
+\begin{list1}
+\item Ser vi data som en datastrøm er pakkerne blot et mønster lagt henover data
+\item Netværksteknologien definerer start og slut på en frame
+\item Fra et lavere niveau modtager vi en pakke, eksempelvis 1500-bytes fra Ethernet driver
+\end{list1}
+
+\slide{IPv4 pakken - header - RFC-791}
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{IPv6 pakken - header - RFC-2460}
+
+\begin{list2}
+\item Simplere - fixed size - 40 bytes
+\item Sjældent brugte felter (fra v4) udeladt (kun 6 vs 10 i IPv4)
+\item Ingen checksum!
+\item Adresser 128-bit
+\item 64-bit aligned, alle 6 felter med indenfor første 64
+\end{list2}
+
+Mindre kompleksitet for routere på vejen medfører
+mulighed for flere pakker på en given router
+
+\slide{IPv6 pakken - header - RFC-2460}
+
+\begin{alltt}\footnotesize
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+
+\slide{IPv6 pakken - extension headers RFC-2460}
+
+\begin{list1}
+\item Fuld IPv6 implementation indeholder:
+\begin{list2}
+\item Hop-by-Hop Options
+\item Routing (Type 0) - deprecated
+\item Fragment - fragmentering KUN i end-points!
+\item Destination Options
+\item Authentication
+\item Encapsulating Security Payload
+\end{list2}
+\item Ja, IPsec er en del af IPv6!
+\end{list1}
+
+\slide{Placering af extension headers}
+
+\begin{alltt}
+\small
+  +---------------+----------------+------------------------
+  |  IPv6 header  | Routing header | TCP header + data
+  |               |                |
+  | Next Header = |  Next Header = |
+  |    Routing    |      TCP       |
+  +---------------+----------------+------------------------
+
+  +---------------+----------------+-----------------+-----------------
+  |  IPv6 header  | Routing header | Fragment header | fragment of TCP
+  |               |                |                 |  header + data
+  | Next Header = |  Next Header = |  Next Header =  |
+  |    Routing    |    Fragment    |       TCP       |
+  +---------------+----------------+-----------------+-----------------
+\end{alltt}
+
+\slide{Hvordan bruger man IPv6}
+
+\begin{center}
+\hlkbig
+\vskip 2 cm
+www.zencurity.com
+
+hlk@zencurity.com
+
+\end{center}
+
+\pause
+DNS AAAA record tilføjes
+
+\begin{alltt}
+www     IN A    91.102.91.17
+        IN AAAA 2001:16d8:ff00:12f::2
+mail    IN A    91.102.91.17
+        IN AAAA 2001:16d8:ff00:12f::2
+\end{alltt}
+
+\slide{IPv6 addresser og skrivemåde}
+
+\hlkimage{17cm}{ipv6-address-1.pdf}
+
+\begin{list2}
+\item 128-bit adresser, subnet prefix næsten altid 64-bit
+\item skrives i grupper af 4 hexcifre ad gangen adskilt af kolon :
+\item foranstillede 0 i en gruppe kan udelades, en række 0 kan erstattes med ::
+\item dvs 0:0:0:0:0:0:0:0 er det samme som \\
+0000:0000:0000:0000:0000:0000:0000:0000
+\item Dvs min webservers IPv6 adresse kan skrives som:
+2001:16d8:ff00:12f::2
+\item Specielle adresser:
+::1 localhost/loopback og
+::  default route
+\item Læs mere i RFC-3513
+\end{list2}
+
+\slide{IPv6 addresser - prefix notation}
+
+\begin{list1}
+\item CIDR Classless Inter-Domain Routing RFC-1519
+\item Aggregatable Global Unicast
+\item 2001::/16 RIR subTLA space
+\begin{list2}
+\item 2001:200::/23 APNIC
+\item 2001:400::/23 ARIN
+\item 2001:600::/23 RIPE
+\end{list2}
+\item 2002::/16 6to4 prefix
+\item 3ffe::/16 6bone allocation
+\item link-local unicast addresses\\
+fe80::/10 genereres udfra MAC addresserne EUI-64
+\end{list1}
+
+
+
+\slide{IP karakteristik}
+
+\begin{list1}
+\item Fælles adresserum, dog version 4 for sig, og IPv6 for sig.
+\item Best effort - kommer en pakke fra er det fint, hvis ikke må højere lag klare det
+\item Kræver ikke mange services fra underliggende teknologi \emph{dumt netværk}
+\item Defineret gennem åben standardiseringsprocess og RFC-dokumenter
+\end{list1}
+
+\slide{Fragmentering og PMTU}
+
+\hlkimage{15cm}{fragments-1.pdf}
+\begin{list1}
+\item Hidtil har vi antaget at der blev brugt Ethernet med pakkestørrelse på 1500 bytes
+\item Pakkestørrelsen kaldes MTU Maximum Transmission Unit
+\item Skal der sendes mere data opdeles i pakker af denne størrelse, fra afsender
+\item Men hvad hvis en router på vejen ikke bruger 1500 bytes, men kun 1000
+\end{list1}
+
+\slide{ICMP Internet Control Message Protocol}
+
+\begin{list1}
+\item Kontrolprotokol og fejlmeldinger
+\item Nogle af de mest almindelige beskedtyper
+\begin{list2}
+\item echo
+\item netmask
+\item info
+\end{list2}
+\item Bruges generelt til \emph{signalering}
+\item Defineret i RFC-792
+\end{list1}
+
+\centerline{\bf NB: nogle firewall-administratorer blokerer alt ICMP - det er forkert!}
+
+\slide{ICMP beskedtyper}
+
+\begin{list1}
+\item Type
+\begin{list2}
+\item 0 = net unreachable;
+\item 1 = host unreachable;
+\item 2 = protocol unreachable;
+\item 3 = port unreachable;
+\item 4 = fragmentation needed and DF set;
+\item 5 = source route failed.
+\end{list2}
+\item Ved at fjerne ALT ICMP fra et net fjerner man nødvendig funktionalitet!
+\item Tillad ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\slide{Hvordan virker ARP?}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
+\end{center}
+
+%server 00:30:65:22:94:a1\\
+%client 00:40:70:12:95:1c\\
+%hacker 00:02:03:04:05:06\\
+
+\slide{Hvordan virker ARP? - 2}
+\begin{list1}
+\item {\bfseries ping 10.0.0.2} udført på server medfører
+\item ARP Address Resolution Protocol request/reply:
+  \begin{list2}
+  \item ARP request i broadcast - Who has 10.0.0.2 Tell 10.0.0.1
+  \item ARP reply (fra 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
+  \end{list2}
+\item IP ICMP request/reply:
+  \begin{list2}
+    \item Echo (ping) request fra 10.0.0.1 til 10.0.0.2
+\item Echo (ping) reply fra 10.0.0.2 til 10.0.0.1
+\item ...
+  \end{list2}
+\item ARP udføres altid på Ethernet før der kan sendes IP trafik
+\item (kan være RARP til udstyr der henter en adresse ved boot)
+\end{list1}
+
+
+\slide{ARP cache}
+
+\begin{alltt}
+\small
+hlk@bigfoot:hlk$ arp -an
+? (10.0.42.1) at 0:0:24:c8:b2:4c on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+\end{alltt}
+
+\begin{list1}
+\item ARP cache kan vises med kommandoen \verb+arp -an+
+\item -a viser alle
+\item -n viser kun adresserne, prøver ikke at slå navne op - typisk hurtigere
+\item ARP cache er dynamisk og adresser fjernes automatisk efter 5-20 minutter hvis de ikke bruges mere
+\item Læs mere med \verb+man 4 arp+
+\end{list1}
+
+
+\slide{TCP three way handshake}
+
+\hlkimage{6cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item Tidligere loggede systemer kun når der var etableret en fuld TCP
+  forbindelse\\
+- dette kan/kunne udnyttes til \emph{stealth}-scans
+\end{list2}
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA vedligeholder en liste over magiske konstanter i IP
+\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
+\item En liste af interesse er port numre, hvor et par eksempler er:
+\begin{list2}
+\item Port 25 SMTP Simple Mail Transfer Protocol
+\item Port 53 DNS Domain Name System
+\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
+\item Port 443 HTTP over TLS/SSL
+\end{list2}
+\item Se flere på \link{http://www.iana.org}
+\end{list1}
+
+\slide{Hierarkisk routing}
+
+\hlkimage{15cm}{routing-1.pdf}
+Hvordan kommer pakkerne frem til modtageren
+
+\slide{IP default gateway}
+
+\hlkimage{11cm}{routing-2.pdf}
+
+\begin{list1}
+\item IP routing er nemt, longest match
+\item En host kender typisk en default gateway i nærheden
+\item En router har en eller flere upstream routere, få adresser den sender videre til
+\end{list1}
+
+
+\slide{Routing}
+
+\begin{list1}
+  \item routing table - tabel over netværkskort og tilhørende adresser
+\item default gateway - den adresse hvortil man sender
+  \emph{non-local} pakker\\kaldes også default route, gateway of last
+  resort
+\item routing styres enten manuelt - opdatering af route tabellen,
+  eller konfiguration af adresser og subnet maske på netkort
+\item eller automatisk ved brug af routing protocols - interne og
+  eksterne route protokoller
+\item de lidt ældre routing protokoller har ingen sikkerhedsmekanismer
+\item {\bf IP benytter longest match i routing tabeller!}
+\item Den mest specifikke route gælder for forward af en pakke!
+\end{list1}
+
+\slide{Routing forståelse}
+
+\begin{alltt}
+\small
+$ netstat -rn
+Routing tables
+
+Internet:
+Destination    Gateway         Flags  Refs      Use  Netif
+default        10.0.0.1        UGSc    23        7    en0
+10/24          link#4          UCS      1        0    en0
+10.0.0.1       0:0:24:c1:58:ac UHLW    24       18    en0
+10.0.0.33      127.0.0.1       UHS      0        1    lo0
+10.0.0.63      127.0.0.1       UHS      0        0    lo0
+127            127.0.0.1       UCS      0        0    lo0
+127.0.0.1      127.0.0.1       UH       4     7581    lo0
+169.254        link#4          UCS      0        0    en0
+\end{alltt}
+
+\vskip 1 cm
+\centerline{Start med kun at se på Destination, Gateway og Netinterface}
+
+
+\slide{Ping}
+
+\begin{list1}
+\item ICMP - Internet Control Message Protocol
+\item Benyttes til fejlbeskeder og til diagnosticering af forbindelser
+\item ping programmet virker ved hjælp af ICMP ECHO request og
+  forventer ICMP ECHO reply
+\item
+\begin{alltt}
+\small {\bfseries
+$ ping 192.168.1.1}
+PING 192.168.1.1 (192.168.1.1): 56 data bytes
+64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
+\end{alltt}
+\end{list1}
+
+\slide{traceroute}
+
+\begin{list1}
+  \item traceroute programmet virker ved hjælp af TTL
+\item levetiden for en pakke tælles ned i hver router på vejen og ved at sætte denne lavt
+  opnår man at pakken \emph{timer ud} - besked fra hver router på vejen
+\item default er UDP pakker, men på UNIX systemer er der ofte mulighed
+  for at bruge ICMP
+\item
+\begin{alltt}
+\small{\bfseries
+$ traceroute 185.129.60.129}
+traceroute to 185.129.60.129 (185.129.60.129),
+30 hops max, 40 byte packets
+ 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
+ 2  router (185.129.60.129)  1.481 ms  1.374 ms  1.261 ms
+\end{alltt}
+\end{list1}
+
+\slide{Wireshark - grafisk pakkesniffer}
+
+\hlkimage{17cm}{images/wireshark-website.png}
+
+\centerline{\link{http://www.wireshark.org}}
+\centerline{både til Windows og UNIX}
+
+
 \slide{Firewalls and related issues}
+
+\begin{quote}
+In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
+\end{quote} Source: Wikipedia
+
+\begin{list1}
+\item \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+\item \link{http://www.wilyhacker.com/} Cheswick chapter 2 PDF
+\emph{A Security Review of Protocols:
+Lower Layers}
+\begin{list2}
+\item Network layer, packet filters, application level, stateless, stateful
+\end{list2}
+\end{list1}
+
+\Large Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+
+\slide{Reading about firewalls}
+
+\begin{list1}
+\item \link{http://www.wilyhacker.com/} Cheswick chapter 3 PDF
+\emph{Security Review: The Upper Layers}
+\begin{list2}
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow SMB through an internet firewall, we are asking for trouble
+\end{list2}
+\end{list1}
+
+Skim chapters from 1st edition:\\
+\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
+
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Med 802.1q tillades VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\end{list1}
+
+
+\slide{Generic IP Firewalls}
+
+\vskip 4 cm
+\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
+  traffik på Internet}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
+  traffik på Internet}
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{6cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{Small networks}
+
+\hlkimage{18cm}{images/kursus-netvaerk.pdf}
+
+
+\slide{Firewall er ikke alene}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
+
+\slide{Unified communications}
+
+\hlkimage{19cm}{firma-netvaerk-wlan}
+
+
+\slide{Firewallrollen idag}
+
+\begin{list1}
+\item Idag skal en firewall være med til at:
+\begin{list2}
+\item Forhindre angribere i at komme ind
+\item Forhindre angribere i at sende traffik ud
+\item Forhindre virus og orme i at sprede sig i netværk
+\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
+  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
+\end{list2}
+\item Det kræver overblik!
+\end{list1}
+
+
+
+\slide{Modern Firewalls}
+
+\begin{list1}
+\item Basalt set et netværksfilter - det yderste fæstningsværk
+\item Indeholder typisk:
+  \begin{list2}
+   \item Grafisk brugergrænseflade til konfiguration - er det en
+   fordel?
+\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
+  ind/ud, porte, protokol, ...
+\item både IPv4 og IPv6
+\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
+  at tilføje/åbne en usikker protokol?
+\item typisk NAT funktionalitet indbygget
+\item typisk mulighed for nogle serverfunktioner: kan agere
+  DHCP-server, DNS caching server og lignende
+  \end{list2}
+\item En router med Access Control Lists - kaldes ofte netværksfilter,
+  mens en dedikeret maskine kaldes firewall
+%  funktionen er reelt den samme - der filtreres traffik
+\end{list1}
+
+
+\slide{Sample rules from OpenBSD PF}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="217.157.20.129"
+webserver="217.157.20.131"
+homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
+wlan="10.0.42.0/24"
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+block in all # default block anything}
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+
+
+
+\slide{Packet filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering er firewalls der filtrerer på IP niveau
+\item Idag inkluderer de fleste stateful inspection
+\end{list1}
+
+\slide{Kommercielle firewalls}
+\begin{list2}
+\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
+\item Cisco ASA \link{http://www.cisco.com}
+\item Clavister firewalls \link{http://www.clavister.com}
+\item Juniper SRX \link{http://www.juniper.net}
+\item Palo Alto \link{https://www.paloaltonetworks.com/}
+\item Fortinet \link{https://www.fortinet.com/}
+\end{list2}
+
+Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
+
+\slide{Open source baserede firewalls}
+\begin{list2}
+\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
+\item Firewall GUIs ovenpå Linux - mange!
+nogle er kommercielle produkter
+\item OpenBSD PF
+\link{http://www.openbsd.org}
+\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
+\item Mac OS X benytter OpenBSD PF
+\item FreeBSD inkluderer også OpenBSD PF
+\end{list2}
+
+NB: kun eksempler og dem jeg selv har brugt
+
+
+\slide{Hardware eller software}
+
+
+\begin{list1}
+\item Man hører indimellem begrebet \emph{hardware firewall}
+\item Det er dog et faktum at en firewall består af:
+\begin{list2}
+\item Netværkskort - som er hardware
+\item Filtreringssoftware - som er \emph{software}!
+\end{list2}
+\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
+  og en APU2C4 med OpenBSD for en software firewall!
+\item Man kan til gengæld godt argumentere for at en dedikeret
+  firewall som en separat enhed kan give bedre sikkerhed
+  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
+\end{list1}
+
+
+
+
+
+
+\slide{Firewall historik}
+
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
+
+\begin{list1}
+\item Firewalls har været kendt siden starten af 90'erne
+\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
+
+\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
+William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
+Addison-Wesley, 2nd edition
+%\item Idag findes mange, men findes der en god generel firewall bog?
+\end{list1}
+
+
+
+\slide{firewall koncepter}
+
+\begin{list1}
+\item Rækkefølgen af regler betyder noget!
+\begin{list2}
+\item To typer af firewalls:
+ First match - når en regel matcher, gør det som angives block/pass
+ Last match  - marker pakken hvis den matcher, til sidst afgøres block/pass
+\end{list2}
+\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
+    man bruger!}
+\item OpenBSD PF er last match
+\item FreeBSD IPFW er first match
+\item Linux iptables/netfilter er last match
+\end{list1}
+
+\slide{First or Last match firewall?}
+
+\hlkimage{18cm}{images/first-last-match-1.pdf}
+
+
+
+\slide{First match - IPFW}
+
+\begin{alltt}
+\hlksmall
+00100 16389  1551541 allow ip from any to any via lo0
+00200     0        0 deny log ip from any to 127.0.0.0/8
+00300     0        0 check-state
+...
+{\bfseries
+65435    36     5697 deny log ip from any to any}
+65535   865    54964 allow ip from any to any
+\end{alltt}
+
+\vskip 2 cm
+
+\centerline{Den sidste regel nås aldrig!}
+
+\slide{Last match - OpenBSD PF}
+
+\begin{alltt}\small
+ext_if="ext0"
+int_if="int0"
+{\bf
+block in}
+pass out keep state
+
+pass quick on \{ lo $int_if \}
+
+# Tillad forbindelser ind på port 80=http og port 53=domain
+# på IP-adressen for eksterne netkort ($ext_if) syntaksen
+pass in on $ext_if proto tcp to ($ext_if) port http keep state
+pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
+\end{alltt}
+
+
+Pakkerne markeres med block eller pass indtil sidste regel\\
+nøgleordet \emph{quick} afslutter match - god til store regelsæt
+
+
+
+\slide{Firewalls og ICMP}
+
+\begin{alltt}
+ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\end{alltt}
+
+\begin{list1}
+\item Ovenstående er IPFW syntaks for at tillade de interessant ICMP beskeder igennem
+\item Tillad ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\slide{Firewall konfiguration}
+
+\begin{list1}
+\item Den bedste firewall konfiguration starter med:
+\begin{list2}
+\item Papir og blyant
+\item En fornuftig adressestruktur
+\end{list2}
+\item Brug dernæst en firewall med GUI første gang!
+\item Husk dernæst:
+\begin{list2}
+\item En firewall skal passes
+\item En firewall skal opdateres
+\item Systemerne bagved skal hærdes!
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Bloker indefra og ud}
+
+\begin{list1}
+\item Der er porte og services som altid bør blokeres
+\item Det kan være kendte sårbare services
+\begin{list2}
+\item Windows SMB filesharing - ikke til brug på Internet!
+\item UNIX NFS - ikke til brug på Internet!
+\end{list2}
+\item Kendte problemer som minimum
+\end{list1}
+
+
+\slide{Anti-pattern dobbelt NAT i eget netværk}
+
+\hlkimage{16cm}{nat-double.pdf}
+
+\begin{list1}
+\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
+ud på internet.
+\vskip 1cm
+\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
+\end{list1}
+
+
+\slide{IPsec og Andre VPN features}
+
+\begin{list1}
+\item De fleste firewalls giver mulighed for at lave krypterede
+  tunneler
+\item Nyttigt til fjernkontorer der skal have usikker traffik henover
+  usikre netværk som Internet
+\item Konceptet kaldes Virtual Private Network VPN
+\item IPsec er de facto standarden for VPN og beskrevet i RFC'er
+\end{list1}
+
+
+\slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
+
+Kernel vulnerabilities, CVE-2019-11477, CVE-2019-11478 and CVE-2019-11479
+
+\begin{quote}{\bf
+Executive Summary}\\
+Three related flaws were found in the Linux kernel’s handling of TCP networking.  The most severe vulnerability could allow a remote attacker to trigger a kernel panic in systems running the affected software and, as a result, impact the system’s availability.
+
+The issues have been assigned multiple CVEs: CVE-2019-11477 is considered an Important severity, whereas CVE-2019-11478 and CVE-2019-11479 are considered a Moderate severity.
+
+The first two are related to the Selective Acknowledgement (SACK) packets combined with Maximum Segment Size (MSS), the third solely with the Maximum Segment Size (MSS).
+
+These issues are corrected either through applying mitigations or kernel patches.  Mitigation details and links to RHSA advsories can be found on the RESOLVE tab of this article.
+\end{quote}
+
+Source: \url{https://access.redhat.com/security/vulnerabilities/tcpsack}
+
 \slide{Intrusion Detection}
-\slide{Host and Networks Based Intrusion Detection (HIDS/NIDS)}
+
+
+\begin{list2}
+\item networkbased intrusion detection systems (NIDS)
+\item item host based intrusion detection systems (HIDS)
+\end{list2}
+
+\slide{Indicators of Compromise and Signatures}
+
+\begin{quote}
+An IOC is any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner. This could include a simple indicator such as the IP address of a command and control (C2) server or a complex set of behaviors that indicate that a mail server is being used as a malicious SMTP relay.
+
+When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Bro-formatted file, it becomes part of a signature. A signature can contain one or more IOCs.
+\end{quote}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+\slide{Reading Summary, False Positives}
+
+\begin{list2}
+\item True Positive (TP). An alert that has correctly identified a specific activity. If a signature was designed to detect a certain type of malware, and an alert is generated when that malware is launched on a system, this would be a true positive, which is what we strive for with every deployed signature.Indicators of Compromise and Signatures
+\item False Positive (FP). An alert has incorrectly identified a specific activity. If a signature was designed to detect a specific type of malware, and an alert is generated for an instance in which that malware was not present, this would be a false positive.
+\item True Negative (TN). An alert has correctly not been generated when a specific activity has not occurred. If a signature was designed to detect a certain type of malware, and no alert is generated without that malware being launched, then this is a true negative, which is also desirable. This is difficult, if not impossible, to quantify in terms of NSM detection.
+\item False Negative (FN). An alert has incorrectly not been generated when a specific activity has occurred.
+\end{list2}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+
+
 \slide{Network Security Monitoring}
+
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{14cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+\slide{Zeek IDS is}
+
+\hlkimage{14cm}{bro-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+{\bf I have a whole 4-hour workshop - feel free to look at it:}\\
+Suricata, Zeek og DNS Capture\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+
+\slide{Kali Linux the new backtrack}
+
+\hlkimage{16cm}{kali-linux.png}
+
+\begin{list1}
+\item Kali \link{http://www.kali.org/}
+\item Use the documentation on Kali website for installation
+\item Use tools web sites for documentation about tools, like\\ \link{https://nmap.org/} and \link{http://www.hping.org/}
+\end{list1}
+
+\slide{Kali}
+
+\hlkimage{10cm}{kali-20-apps.png}
+
+\begin{list1}
+\item Almost 200.000 youtube videos about "kali hack"
+\item You can learn these tools from their respective home pages:\\
+Like \link{http://nmap.org}, \link{http://aircrack-ng.org}
+\item The main site helps with install and VM tools Kali \link{http://www.kali.org/}
+\end{list1}
+
+\slide{Hackerlab setup}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item I recommend getting a hackerlab running on your laptop
+\item Hardware: modern laptop which has CPU virtualization\\
+Dont forget to check BIOS settings for virtualization
+\item Software: your favorite OS: Windows, Mac, Linux
+\item Virtualization software: VMware, Virtual box, HyperV
+\item Hacker software: Kali as a Virtual Machine \link{https://www.kali.org/}
+%\item Soft targets: Metasploitable, Windows 2000, Windows XP, ...
+\end{list2}
+
+
+
+\slide{Availability and Network flooding attacks}
+
+\begin{list2}
+\item Our book spends some time on SYN and other flooding attacks
+\item SYN flood is the most basic and very common on the internet towards 80/tcp and 443/tcp
+\item ICMP and UDP flooding are the next targets
+\item Supporting litterature is TCP Synfloods - an old yet current problem, and improving pf's response to it, Henning Brauer, BSDCan 2017
+\item All of them try to use up some resources
+\begin{list2}
+\item Memory space in specific sections of the kernel, TCP state, firewalls state, number of concurrent sessions/connections
+\item interrupt processing of packets - packets per second
+\item CPU processing in firewalls, pps
+\item CPU processing in server software
+\item Bandwidth - megabits per second mbps
+\end{list2}
+\end{list2}
+
+There is a presentation about DDoS protection with low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+
+
+
+
+\slide{Simulating DDoS packets}
+
+A minimini introduction workshop teaching people how to produce DDoS simulation traffic - usefull for testing their own infrastructures.
+
+We will have a server connected on a switch with multiple 1Gbit port for attackers. Attackers will be connected through 1Gbit ports using USB Ethernet - we have loaners.
+
+Work together to produce enough to take down this server!
+
+WHILE attack is ongoing there will be both the possibility to monitor traffic, monitor port, and decide on changes to prevent the attacks from working.
+
+\slide{Common DDoS attack types}
+
+We will work through common attack types, like:
+
+\begin{list2}
+\item TCP SYN flooding
+\item TCP other flooding
+\item UDP flooding NTP, etc.
+\item ICMP flooding
+\item Misc - stranger attacks and illegal combinations of flags etc.
+\end{list2}
+
+then we will discuss which changes to environment could be implemented.
+
+You will go away from this with tools for producing packets, hping3 and some configurations for protecting - PF rules, switch rules, server firewall rules.
+
+
+
+\slide{hping3 packet generator}
+
+\begin{alltt}\footnotesize
+usage: hping3 host [options]
+  -i  --interval  wait (uX for X microseconds, for example -i u1000)
+      --fast      alias for -i u10000 (10 packets for second)
+      --faster    alias for -i u1000 (100 packets for second)
+      --flood	   sent packets as fast as possible. Don't show replies.
+...
+hping3 is fully scriptable using the TCL language, and packets
+can be received and sent via a binary or string representation
+describing the packets.
+\end{alltt}
+
+\begin{list2}
+\item Hping3 packet generator is a very flexible tool to produce simulated DDoS traffic with specific charateristics
+\item Home page: \link{http://www.hping.org/hping3.html}
+\item Source repository \link{https://github.com/antirez/hping}
+\end{list2}
+
+\centerline{My primary DDoS testing tool, easy to get specific rate pps}
+
+
+\slide{t50 packet generator}
+
+
+\begin{alltt}\footnotesize
+root@cornerstone03:~# t50 -?
+T50 Experimental Mixed Packet Injector Tool 5.4.1
+Originally created by Nelson Brito <nbrito@sekure.org>
+Maintained by Fernando Mercês <fernando@mentebinaria.com.br>
+
+Usage: T50 <host> [/CIDR] [options]
+
+Common Options:
+    --threshold NUM        Threshold of packets to send     (default 1000)
+    --flood                This option supersedes the 'threshold'
+...
+6. Running T50 with '--protocol T50' option, sends ALL protocols sequentially.
+root@cornerstone03:~# t50 -? | wc -l
+264
+\end{alltt}
+
+\begin{list2}
+\item T50 packet generator, another high speed packet generator
+can easily overload most firewalls by producing a randomized traffic with multiple protocols like IPsec, GRE, MIX \\
+home page: \link{http://t50.sourceforge.net/resources.html}
+\end{list2}
+
+\centerline{Extremely fast and breaks most firewalls when flooding, easy 800k pps/400Mbps}
+
+\slide{Process: monitor, attack, break, repeat}
+
+\begin{list2}
+\item Pre-test: Monitoring setup - from multiple points
+\item Pre-test: Perform full Nmap scan of network and ports
+\item Start small, run with delays between packets
+\item Turn up until it breaks, decrease delay - until using \verb+--flood+
+\item Monitor speed of attack on your router interface pps/bandwidth
+\item Give it maximum speed\\
+ \verb+hping3 --flood -1+ and \verb+hping3 --flood -2+
+\item Have a common chat with network operators/customer to talk about symptoms and things observed
+\item Any information resulting from testing is good information
+\end{list2}
+
+\vskip 1cm
+\centerline{Ohh we lost our VPN into the environment, ohh the fw console is dead}
+
+\slide{Before testing: Smokeping}
+
+\hlkimage{15cm}{smokeping-before-testing.png}
+
+\centerline{Before DDoS testing  use Smokeping software}
+
+\slide{Before testing: Pingdom}
+
+\hlkimage{18cm}{forside-pingdom.png}
+
+\centerline{Another external monitoring from Pingdom.com}
+
+
+\slide{Running full port scan on network}
+
+\begin{alltt}
+\small
+# export CUST_NET="192.0.2.0/24"
+# nmap -p 1-65535 -A -oA full-scan $CUST_NET
+\end{alltt}
+
+Performs a full port scan of the network, all ports
+
+Saves output in "all formats" normal, XML, and grepable formats
+
+Goal is to enumerate the ports that are allowed through the network.
+
+Note: This command is pretty harmless, if something dies, then it is\\
+\emph{vulnerable to normal traffic} - and should be fixed!
+
+
+\slide{Running Attacks with hping3}
+
+\begin{alltt}\small
+# export CUST_IP=192.0.2.1
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+ \end{alltt}
+
+\begin{alltt}\small
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+Thu Jan 21 22:37:06 CET 2016
+HPING 192.0.2.1 (eth0 192.0.2.1): S set, 40 headers + 0 data bytes
+
+--- 192.0.2.1 hping statistic ---
+1000000 packets transmitted, 999996 packets received, 1% packet loss
+round-trip min/avg/max = 0.9/7.0/1005.5 ms
+
+real	1m7.438s
+user	0m1.200s
+sys	0m5.444s
+\end{alltt}
+
+\vskip 1cm
+\centerline{Dont forget to do a killall hping3 when done \smiley }
+
+\slide{Recommendations During Test}
+
+\begin{list1}
+\item Run each test for at least 5 minutes, or even 15 minutes\\
+Some attacks require some build-up before resource run out
+\item Take note of any change in response, higher latency, lost probes
+\item If you see a change, then re-test using the same parameters, or a little less first
+\item We want to know the approximate level where it breaks
+\item If you want to change environment, then wait until all scenarios tested
+\end{list1}
+
+\slide{Comparable to real DDoS?}
+
+Tools are simple and widely available but are they actually producing same result as high-powered and advanced criminal botnets. We can confirm that the attack delivered in this test is, in fact, producing the traffic patterns very close to criminal attacks in real-life scenarios.
+
+\begin{list2}
+\item We can also monitor logs when running a single test-case
+\item Gain knowledge about supporting infrastructure
+\item Can your syslog infrastructure handle 800.000 events in $<$ 1 hour?
+\end{list2}
+
+
+\slide{Running the tools}
+
+A basic test would be:
+\begin{list2}
+\item TCP SYN flooding
+\item TCP other flags, PUSH-ACK, RST, ACK, FIN
+\item ICMP flooding
+\item UDP flooding
+\item Spoofed packets src=dst=target \smiley
+\item Small fragments
+\item Bad fragment offset
+\item Bad checksum
+\item Be creative
+\item Mixed packets - like \verb+t50 --protocol T50+
+\item Perhaps esoteric or unused protocols, GRE, IPSec
+\end{list2}
+
+\slide{Test-cases / Scenarios}
+
+\begin{list1}
+\item The minimal run contains at least these:
+\begin{list2}
+\item SYN flood: \verb+hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &+
+\item SYN+ACK: \verb+hping3 -q -c 1000000  -i u60 -S -A -p 80  $CUST_IP &+
+\item ICMP flood: \verb+hping3 -q -c --flood -1 $CUST_IP &+
+\item UDP flood: \verb+hping3 -q -c --flood -1 $CUST_IP &+
+\end{list2}
+\item Vary the speed using the packet interval \verb+-i u60+ up/down
+\item Use flooding with caution, runs max speeeeeeeeeeeed \smiley
+\item TCP testing use a port which is allowed through the network, often 80/443
+\item Focus on attacks which are hard to block, example TCP SYN must be allowed in
+\item Also if you found devices like routers in front of environment\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 22 $ROUTER_IP+\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+
+\end{list1}
+
+\slide{Test-cases / Scenarios, continued Spoof Source}
+
+Spoofed packets src=dst=target \smiley
+
+Flooding with spoofed packet source, within customer range
+
+\begin{alltt}\small
+
+-a --spoof hostname
+    Use this option in order to set a fake IP  source  address,  this
+    option ensures that target will not gain your real address.
+\end{alltt}
+
+\verb+hping3 -q --flood -p 80 -S -a $CUST_IP $CUST_IP+
+
+Preferably using a test-case you know fails, to see effect
+
+Still amazed how often this works
+
+BCP38 anyone!
+
+\slide{Test-cases / Scenarios, continued Small Fragments}
+
+Using the built-in option -f for hping
+
+\begin{alltt}\small
+-f --frag
+    Split  packets  in more fragments, this may be useful in order to test IP
+    stacks fragmentation performance and to test if some packet filter is  so
+    weak  that  can  be  passed using tiny fragments (anachronistic). Default
+    {\bf 'virtual mtu' is 16 bytes}. see also --mtu option.
+\end{alltt}
+
+\begin{list1}
+\item \verb+hping3 -q --flood -p 80 -S -f $CUST_IP+
+\item Similar process with bad checksum and Bad fragment offset
+\end{list1}
+
+\slide{Rocky Horror Picture Show - 1}
+
+\hlkimage{20cm}{smokeping-1.png}
+
+\centerline{Really does it break from 50.000 pps SYN attack?}
+
+\slide{Rocky Horror Picture Show - 2}
+
+\hlkimage{20cm}{smokeping-2.png}
+
+\centerline{Oh no 500.000 pps UDP attacks work?}
+
+\slide{Rocky Horror Picture Show - 3}
+
+\centerline{Oh no spoofing attacks work?}
+
+\hlkimage{20cm}{smokeping-3.png}
+
+
+\exercise{ex:nmap-synscan}
+
+\exercise{ex:nmap-pingsweep}
 
 \exercise{ex:syn-flood}
 
+Exercise booklet contains some bonus exercises, feel free to try them at home
+
+
+
+\slide{Improvements seen after testing}
+
+\begin{list1}
+\item Turning off unneeded features - free up resources
+\item Tuning sesions, max sessions src / dst
+\item Tuning firewalls, max sessions in half-open state, enabling services
+\item Tuning network, drop spoofed src from inside net \smiley
+\item Tuning network, can follow logs, manage network during attacks
+\item ...
+\item And organisation has better understanding of DDoS challenges
+\item Including vendors, firewall consultants, ISPs etc.
+\end{list1}
+
+\vskip 1cm
+\centerline{After tuning of {\bf existing devices/network} improves results 10-100 times}
+
+\slide{Conclusion}
+
+\hlkrightimage{15cm}{network-layers-1.png}
+.
+\begin{list1}
+\item You really should try testing
+\item Investigate your existing devices\\
+all of them, RTFM, upgrade firmware
+\item Choose which devices does which\\
+part - discard early to free resources\\
+for later devices to dig deeper
+\end{list1}
+
+\vskip 2cm
+\centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
+
+\slide{More application testing}
+
+\hlkimage{9cm}{images/linux-tsung-size_rcv.png}
+
+\begin{list1}
+\item We covered only lower layers - but helpful layer 7 testing programs exist
+\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
+\end{list1}
+
+
+\slide{DDoS traffic before filtering}
+\hlkimage{22cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{18cm}{ddos-after-filtering}
+\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
+
+
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a static sample, perhaps better to use BGP flowspec and RTBH */
+term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+...
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers have extensive Class-of-Service (CoS) tools today
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \}
+    then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol-except icmp;
+    \}
+    then discard;
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{ Firewalls - screens, IDS like features}
+
+When you know regular traffic you can decide \emph{normal settings}:
+
+\begin{alltt}\footnotesize
+hlk@srx-kas-05# show security screen ids-option untrust-screen
+icmp \{
+    ping-death;
+\}
+ip \{
+    source-route-option;
+    tear-drop;
+\}
+tcp \{    Note: UDP flood setting also exist
+    syn-flood \{
+        alarm-threshold 10024;
+        attack-threshold 200;
+        source-threshold 10024;
+        destination-threshold 2048;
+        timeout 20;
+    \}
+    land;
+\}
+\end{alltt}
 
 \slidenext{Buy the books!}
 

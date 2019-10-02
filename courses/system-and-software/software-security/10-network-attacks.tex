@@ -31,17 +31,189 @@
 \item Will also use examples from chapters 17: Web Applications, 18: Web Technologies so browse Table of Contents for those.
 \end{list1}
 
-\slide{Goals: }
+\slide{Goals: Introduction to Auditing Application Protocols}
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\hlkimage{6cm}{wireshark-sni-twitter.png}
 
 \begin{list1}
-\item
+\item Often you dont need to audit the whole protocol in detail
+\item Sometimes people can't tell which protocols, ports and services they use ...
+\item And you need to configure a firewall/network filter
+\item Picture from wireshark with Server Name Indication shown, recent Exim CVE-2019-15846 was in SNI parsing
 \end{list1}
 
 \slide{Auditing Application Protocols}
+
+\begin{list2}
+\item Collect documentation
+\item Identify Elements of Unknown Protocols
+\item Use packet sniffers, tcpdump and Wireshark
+\item Initiate the Connection Several Times
+\item Replay traffic, can sometimes replay even encrypted traffic, see wireless WEP attacks
+\end{list2}
+
+
+\slide{Reverse Engineer Applications}
+
+\begin{alltt}\footnotesize
+  (gdb) disas main
+  Dump of assembler code for function main:
+     0x0000000000000580 <+0>:	lea    0x1ed(%rip),%rdi        # 0x774
+     0x0000000000000587 <+7>:	sub    $0x8,%rsp
+     0x000000000000058b <+11>:	mov    $0x7fff,%esi
+     0x0000000000000590 <+16>:	xor    %eax,%eax
+     0x0000000000000592 <+18>:	callq  0x560 <printf@plt>
+     0x0000000000000597 <+23>:	lea    0x1ed(%rip),%rdi        # 0x78b
+     0x000000000000059e <+30>:	mov    $0xffff8000,%esi
+     0x00000000000005a3 <+35>:	xor    %eax,%eax
+     0x00000000000005a5 <+37>:	callq  0x560 <printf@plt>
+     0x00000000000005aa <+42>:	xor    %eax,%eax
+     0x00000000000005ac <+44>:	add    $0x8,%rsp
+     0x00000000000005b0 <+48>:	retq
+  End of assembler dump.
+\end{alltt}
+
+\begin{list2}
+\item It is possible to debug, disassemble and reverse engineer applications
+\item Calling socket functions, seeing structs, data types etc.
+\item Examine strings: HTTP, FTP, SMTP etc. all uses semi-english words GET, EHLO, PASS
+\end{list2}
+
+
+\slide{Special values}
+
+\begin{list2}
+\item Examine special values
+\item What are the defined/used values
+\item What happens if this is changed? Do they cover values outside of the used ranges? Case/switch constructs
+\item Use trace functions in the operating system, can capture, analyze and replay sometimes
+\end{list2}
+
+
+\slide{Buffer Overflow when receiving}
+
+\begin{list2}
+\item When you see data enter the application, identify functions
+\item Consider if they use dangerous functions, strcpy and friends
+\item How much space is available, allocated etc.
+\item Basic stuff and similar across applications
+\vskip 2cm
+\item Repeat everything we learned about string processing, integeroverflows/underflows etc. Just from the network
+\item Often trying to abuse will lead to denial of service
+\vskip 1cm
+\item If some rock solid service starts bouncing down and up, maybe look into traffic received. This is what honeypots also do
+\end{list2}
+
+
+\slide{Binary Protocols}
+
+\begin{list2}
+\item Some protocols use binary formats
+\item Example DNS, which is a complex protocol
+\item When parsing DNS use standard libraries!
+\item When attacking DNS applications, use standard libraries! \smiley
+\item DNS is just an example, new protocols may not be implemented - but someone might have analyzed it or parts already!
+\end{list2}
+
+
+
+\slide{Network Authentication}
+
+\begin{quote}{\bf
+  IPMI Authentication Bypass via Cipher 0}\\
+  Dan Farmer identified a serious failing of the IPMI 2.0 specification, namely that cipher type 0, an indicator that the client wants to use clear-text authentication, actually allows access with any password. Cipher 0 issues were identified in HP, Dell, and Supermicro BMCs, with the issue likely encompassing all IPMI 2.0 implementations. It is easy to identify systems that have cipher 0 enabled using the \verb+ipmi_cipher_zero+ module in the Metasploit Framework.
+\end{quote}
+
+\begin{list2}
+\item Sometimes people add network functionality to existing applications
+\item - and do this badly
+\item We have seen applications like IPMI and others
+\end{list2}
+
+Source: \url{https://blog.rapid7.com/2013/07/02/a-penetration-testers-guide-to-ipmi/}
+
+\slide{Book uses ISAKMP example}
+
+\begin{list2}
+\item IKE(v1) has been critized as being overly complex
+\item Needed bake-off sessions where vendors meet and tried negotiating
+\item Searching for CVE ISAKMP show multiple vulnerabilities in various implementations, including firewalls and tcpdump
+\item AoSSA chapter 16: Network Application Protocols
+\end{list2}
+
+
+
+
+
+
+\exercise{ex:sniff-captive-portal}
+
 \slide{Example protocols and vulnerabilities}
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
 \slide{ASN.1 problems}
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
+
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
+
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
+
+
+\slide{Reversing and Attacking Network Protocols}
+
+\hlkimage{4cm}{anp_cover-front-final.png}
+
+A method with lots detail can be found in the book,\\
+\emph{Attacking Network Protocols A Hacker's Guide to Capture, Analysis, and Exploitation}\\
+by James Forshaw December 2017, 336 pp. ISBN-13: 9781593277505
+
+\url{https://nostarch.com/networkprotocols}
+
+
+
 
 \slidenext{Buy the books!}
 

@@ -32,32 +32,587 @@
 \slide{Reading Summary}
 
 \begin{list1}
-\item
-\item
+\item We will use these as a reference
+\item Security by Design Principles\\
+\url{https://www.owasp.org/index.php/Security_by_Design_Principles}
+\item Selected as OWASP has existed for many years, expect site to survive
+
+\item Likewise we will use the Wikipedia article about \emph{Privacy by Design}\\
+\url{https://en.wikipedia.org/wiki/Privacy_by_design}
 \end{list1}
 
-\slide{Goals: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\slide{Other resources used today}
+
+\begin{list2}
+\item This in danish summarizing the implications of General Data Protection Regulation (GDPR)\\
+{\footnotesize\url{https://www.dubex.dk/aktuelt/nyheder/det-skal-du-vide-om-privacy-by-design-ny-vejledning}}
+\item This one which recommends doing Privacy Impact Assessment (PIA)\\
+{\footnotesize\url{https://itb.dk/persondataforordningen/privacy-by-design-default/}}
+\item ENISA, EU security office, {\footnotesize\url{https://www.enisa.europa.eu/publications/privacy-and-data-protection-by-design}} and {\footnotesize\url{https://www.enisa.europa.eu/publications/big-data-protection}}
+\end{list2}
+
+\vskip 2cm
+\centerline{A lot of this is because of GDPR}
+
+\slide{Goals: Foundation and design}
+
+.
+\hlkrightimage{8cm}{kyler-trautner-693525-unsplash.jpg}
+
+\begin{list2}
+\item How to reach the goal of secure design
+by listing Security Principles for \\
+software like Principle of least privilege, fail-safe defaults, separation of\\
+privilege etc.
+\item Security by Design and Privacy by Design requires a lot of thought and\\ perhaps Benchmarking standards
+like CIS controls Center for Internet\\
+ Security can help
+\item Security Principles for software
+\item Some repetition, hope it gives a nice roundup for the course
+\end{list2}
+
+Picture from Unsplash kyler-trautner-693525-unsplash.jpg
+
+\slide{Weak Structural Security}
+
+Example design flaws:
+\begin{list2}
+\item Large Attack surface
+\item Running a Process at Too High a Privilege Level, dont run everything as root or administrator
+\item No Defense in Depth, use more controls, make a strong chain
+\item Not Failing Securely
+\item Mixing Code and Data
+\item Misplaced trust in External Systems
+\item Insecure Defaults
+\item Missing Audit Logs
+\end{list2}
+
+\slide{Secure Programming for Linux and Unix Howto}
+
+\begin{list1}
+\item More information about systems design and implementation can be found in the free resource:
+\item Secure Programming for Linux and Unix HOWTO, David Wheeler
+\item \link{https://dwheeler.com/secure-programs/Secure-Programs-HOWTO.pdf}
+\item Chapter 5. Validate All Input details input validation in the context of Unix programs
+\item Chapter 6. Restrict Operations to Buffer Bounds (Avoid Buffer Overflow)
+\item Chapter 7. Design Your Program for Security
+\end{list1}
+
+\slide{Example applications from Microsoft}
+
+How to get ahead? - use existing good examples!
+
+Microsoft has released sample applications.
+
+\begin{quote}
+Secure Development Documentation
+Learn how to develop and deploy secure applications on Azure with our sample apps, best practices, and guidance.
+
+Get started
+Develop a secure web application on Azure
+\end{quote}
+
+Source:
+\url{https://docs.microsoft.com/en-us/azure/security/develop/}
+
+Yes, this describes how to run Alpine Linux on their Azure Cloud.
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{14cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{5cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+
+\slide{Principle of Least Privilege}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+
+\slide{Principle of Least Authority}
 
 \begin{list1}
 \item
+\item {\bf Definition 14-2} The \emph{principle of least authority} states that a subject should be given only the authority that it needs in order to complete its task.
+\item Closely related to principle of least privilege
+\item Depend if there is distinction between \emph{permission} and \emph{authority}
+\item Permission - what actions a process can take on objects directly
+\item Authority - as determining what effects a process may have on an object, either directly or indirectly through its interactions with other processes or subsystems
+\item Book uses the example of information flow, passing information to second subject that can write
 \end{list1}
 
-\slide{How to reach the goal of secure design}
-\slide{Security Principles for software}
-\slide{Principle of least privilege, fail-safe defaults, separation of privilege etc.}
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
+
+\slide{Principle of Economy of Mechanism}
+
+\begin{list1}
+\item {\bf Definition 14-4} The \emph{principle of economy of mechanism} states that security mechanisms should be as simple as possible.
+\item Simple $->$ fewer complications $->$ fewer security errors
+\item Use WPA passphrase instead of MAC address based authentication
+\item
+\end{list1}
+
+
+\slide{Principle of Complete Mediation}
+
+\begin{list1}
+\item {\bf Definition 14-5} The \emph{principle of complete mediation} requires that all accesses to objects be checked to ensure that they are allowed.
+\item Always perform check
+\item Time of check, time of use
+\item Example Unix file descriptors - access check first, then can be reused in the future
+\item Caching can be bad.
+\end{list1}
+
+
+\slide{Principle of Open Design}
+
+\hlkimage{8cm}{debath-stego.png}
+
+Source: picture from \link{https://www.cs.cmu.edu/~dst/DeCSS/Gallery/Stego/index.html}
+\begin{list1}
+\item {\bf Definition 14-6} The \emph{principle of open design} states that the security of a mechanism should not depend on the secrecy of its design or implementation.
+\item Content Scrambling System (CSS) used on DVD movies
+\item Mobile data encryption  A5/1 key - see next page
+\end{list1}
+
 \slide{Files, objects, users, groups and roles}
+
+\begin{quote}
+Establish secure defaults
+There are many ways to deliver an “out of the box” experience for users. However, by default, the experience should be secure, and it should be up to the user to reduce their security – if they are allowed.
+
+For example, by default, password aging and complexity should be enabled. Users might be allowed to turn these two features off to simplify their use of the application and increase their risk.
+\end{quote}
+
+Source: OWASP Security by Design Principles\\
+\url{https://www.owasp.org/index.php/Security_by_Design_Principles}
+
+\begin{list2}
+\item Applications dont run in vacuum, they run in existing environments
+\item Make sure to integrate with existing solutions, dont expect a clean slate
+\item Make it easy to use by following convention
+\end{list2}
+
+\slide{Fail securely}
+
+\begin{minted}[fontsize=\footnotesize]{java}
+isAdmin = true;
+try {
+  codeWhichMayFail();
+  isAdmin = isUserInRole( “Administrator” );
+}
+catch (Exception ex) {
+  log.write(ex.toString());
+}
+\end{minted}
+Source: OWASP Security by Design Principles\\
+\url{https://www.owasp.org/index.php/Security_by_Design_Principles}
+
+\begin{list2}
+\item DO use exception handling!
+\item Just make sure code does not end up giving more privileges when failing!
+\end{list2}
+
+\slide{Separation of Duties and Function}
+
+\begin{quote}
+{\bf Separation of duties} (SoD; also known as Segregation of Duties) is the concept of having more than one person required to complete a task. In business the separation by sharing of more than one individual in one single task is an internal control intended to prevent fraud and error.
+\end{quote}
+
+Quote from \url{https://en.wikipedia.org/wiki/Separation_of_duties}
+
+\begin{quote}
+{\bf Separation of function}. Developers do not develop new programs on production systems because of the potential threat to production data.
+\end{quote}
+\emph{Computer Security}, Matt Bishop, 2019
+
+Danish: Funktionsadskillelse
+
+
+\slide{Role-based Access Control (RBAC)}
+
+\begin{quote}
+In computer systems security, {\bf role-based access control (RBAC)}[1][2] or role-based security[3] is an approach to restricting system access to unauthorized users. It is used by the majority of enterprises with more than 500 employees,[4] and can implement mandatory access control (MAC) or discretionary access control (DAC).
+
+Role-based access control (RBAC) is a policy-neutral access-control mechanism defined around {\bf roles and privileges}. The components of RBAC such as role-permissions, user-role and role-role relationships make it simple to perform user assignments. A study by NIST has demonstrated that RBAC addresses many needs of commercial and government organizations[citation needed]. RBAC can be used to facilitate administration of security in large organizations with hundreds of users and thousands of permissions. Although RBAC is different from MAC and DAC access control frameworks, it can enforce these policies without any complication.
+\end{quote}
+Quote from \url{https://en.wikipedia.org/wiki/Role-based_access_control}
+
+
+
+\slide{Example role based system: PostgreSQL security}
+\hlkimage{15cm}{postgresql-security.png}
+
+Feature overview security features in PostgreSQL\\
+\url{https://www.postgresql.org/about/featurematrix/#security}
+
+
 \slide{Security by Design}
+
+\begin{list2}
+\item Doing the above should result in applications which are secure by design
+\item Adhering to the best security principles
+\item Implementing security from design to deployment ensure good security
+\end{list2}
+
+
 \slide{Privacy by Design}
-\slide{Benchmarking standards}
-\slide{CIS controls Center for Internet Security}
+
+\begin{quote}
+Objectives of the report\\
+This report shall promote the discussion on how privacy by design can be implemented with the help
+of engineering methods. It provides a basis for better understanding of the current state of the art
+concerning privacy by design with a focus on the technological side.
+
+“Personal data” means any information relating to an identified or identifiable natural person—for a
+detailed discussion see [19]. This is related to the term personally identifiable information (PII), as e.g.
+used in the privacy framework standardised by ISO/IEC [125].
+\end{quote}
+Source:
+Privacy and Data Protection by Design
+– from policy to engineering\\
+{\footnotesize\url{https://www.enisa.europa.eu/publications/privacy-and-data-protection-by-design}}
+\begin{list2}
+\item Next, if the application is secure, what about handling and protecting personal data
+\end{list2}
+
+\slide{ENISA: List of Recommendations}
+
+\begin{list2}
+\item {\small Policy makers need to support the development of new incentive mechanisms for privacy-friendly services and need to promote them.}
+\item {\small The research community needs to further investigate in privacy engineering, especially with a
+multidisciplinary approach. This process should be supported by research funding agencies.
+The results of research need to be promoted by policy makers and media.}
+\item {\small Providers of software development tools and the research community need to offer tools that
+enable the intuitive implementation of privacy properties.}
+\item {\small Especially in publicly co-founded infrastructure projects, privacy-supporting components,
+such as key servers and anonymising relays, should be included.}
+\item {\small Data protection authorities should play an important role providing independent guidance
+and assessing modules and tools for privacy engineering.}
+\item {\small Legislators need to promote privacy and data protection in their norms.}
+\item {\small Standardisation bodies need to include privacy considerations in the standardisation process.}
+\item {\small Standards for interoperability of privacy features should be provided by standardization bodies.}
+\end{list2}
+
+Source:
+ENISA Privacy and Data Protection by Design
+– from policy to engineering
+
+\slide{Privacy Protection Goals}
+
+\begin{quote}\small
+In ICT
+security the triad of confidentiality, integrity, and availability has been widely accepted. ...
+As complement to these security protection goals, three privacy-specific protection goals were pro-
+posed in 2009 [172], namely unlinkability, transparency, and intervenability.
+\end{quote}
+
+\begin{list2}
+\item {\small \emph{Unlinkability}. Unlinkability ensures that privacy-relevant data cannot be linked across domains that are constituted by a common purpose and context, and that means that processes have to be oper-
+ated in such a way that the privacy-relevant data are unlinkable to any other set of privacy-
+relevant data outside of the domain.}
+\item {\small \emph{Transparency.} Transparency ensures that all privacy-relevant data processing including the
+legal, technical and organisational setting can be understood and reconstructed at any time.
+The information has to be available before, during and after the processing takes place. Thus,
+transparency has to cover not only the actual processing, but also the planned processing (ex-
+ante transparency) and the time after the processing has taken place to know what exactly
+happened (ex-post transparency).}
+\item {\small \emph{Intervenability.} Intervenability ensures intervention is possible concerning all ongoing or
+planned privacy-relevant data processing, in particular by those persons whose data are pro-
+cessed. The objective of intervenability is the application of corrective measures and counter-
+balances where necessary.}
+\item Source:
+ENISA Privacy and Data Protection by Design
+– from policy to engineering
+\end{list2}
 
 
-\exercise{ex:software-design-today}
+
+\slide{Data oriented strategies}
+
+\begin{list2}
+\item Strategy \#1: MINIMISE\\
+The most basic privacy design strategy is MINIMISE, which states that the amount of personal data
+that is processed 27 should be restricted to the minimal amount possible.
+\item Strategy \#2: HIDE
+The second design strategy, HIDE, states that any personal data, and their interrelationships, should
+be hidden from plain view.
+\item Strategy \#3: SEPARATE
+The third design strategy, SEPARATE, states that personal data should be processed in a distributed
+fashion, in separate compartments whenever possible.
+\item Strategy \#4: AGGREGATE
+The fourth design pattern, AGGREGATE, states that Personal data should be processed at the highest
+level of aggregation and with the least possible detail in which it is (still) useful.
+\end{list2}
 
 
-\slidenext{Buy the books!}
+
+\slide{Privacy Impact Assessment (PIA)}
+
+\begin{quote}\small
+Privacy-by-design er en tilgang, der sikrer, at virksomheden indarbejder databeskyttelse som en integreret del af virksomhedens forretningsprocesser, værdikæde og produktlivscyklus. Lige fra produktionsfasen til at produktet havner hos slutbrugeren.
+...
+Udarbejd en konsekvensanalyse (PIA)\\
+En god tilgang til at sikre privacy-by-design/default er, at udarbejde en konsekvensanalyse også kaldet en PIA (Privacy Impact Assessment), der tydeliggør konsekvenserne af virksomhedens databehandling.
+\end{quote}
+
+En PIA skal som minimum indeholde følgende:
+
+\begin{list2}
+\item En beskrivelse af de påtænkte databehandlinger og deres formål.
+\item En vurdering af behandlingens nødvendighed og proportionalitet.
+\item En vurdering af risikoen for de personer, hvis persondata bliver behandlet.
+\item Foranstaltninger til at imødegå risici og demonstrere overholdelse af persondataforordningen.
+\end{list2}
+
+Source: IT-Branchen: Privacy-by-design/default\\ \url{https://itb.dk/persondataforordningen/privacy-by-design-default/}
+
+
+\slide{Security Controls and Frameworks}
+
+\begin{list1}
+\item Multiple exist
+\vskip 1cm
+\begin{list2}
+\item CIS controls Center for Internet Security (CIS) \link{https://www.cisecurity.org}
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019
+\item NIST Cybersecurity Framework (CSF)\\
+Framework for Improving
+Critical Infrastructure Cybersecurity\\ \link{https://www.nist.gov/cyberframework}\\
+\link{http://csrc.nist.gov/publications/PubsSPs.html}
+\item National Security Agency (NSA)\\ \link{http://www.nsa.gov/research/publications/index.shtml}
+\item NSA security configuration guides\\ \link{http://www.nsa.gov/ia/guidance/security_configuration_guides/index.shtml}
+\item Information Systems Audit and Control Association (ISACA)\\
+\link{http://www.isaca.org/Knowledge-Center/Risk-IT-IT-Risk-Management/Pages/default.aspx}
+\end{list2}
+\end{list1}
+
+
+\slide{Risk management defined}
+
+\hlkimage{20cm}{shon-harris-risk-management.png}
+
+Source: Shon Harris \emph{CISSP All-in-One Exam Guide}
+
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+\slide{Center for Internet Security CIS Controls 7.1}
+
+\begin{list2}
+\item
+The five critical tenets of an effective cyber defense system as reflected
+in the CIS Controls are:
+\item {\bf Offense informs defense:} Use knowledge of actual attacks that have
+compromised systems to provide the foundation to continually learn
+from these events to build effective, practical defenses. Include only
+those controls that can be shown to stop known real-world attacks.
+\item {\bf Prioritization:} Invest first in Controls that will provide the greatest risk
+reduction and protection against the most dangerous threat actors
+and that can be feasibly implemented in your computing environment.
+The CIS Implementation Groups discussed below are a great place for
+organizations to start identifying relevant Sub-Controls.
+\item {\bf Measurements and Metrics:} Establish common metrics to provide a
+shared language for executives, IT specialists, auditors, and security
+officials to measure the effectiveness of security measures within
+an organization so that required adjustments can be identified and
+implemented quickly.
+\item {\bf Continuous diagnostics and mitigation:} Carry out continuous
+measurement to test and validate the effectiveness of current security
+measures and to help drive the priority of next steps.
+\item {\bf Automation:} Automate defenses so that organizations can achieve
+reliable, scalable, and continuous measurements of their adherence to
+the Controls and related metrics. \hskip 2cm Source:
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+ CIS-Controls-Version-7-1.pdf
+\end{list2}
+
+
+\slide{Inventory and Control of Hardware Assets}
+
+CIS controls 1-6 are Basic, everyone must do them.
+
+
+\begin{quote}
+CIS Control 1:\\
+Inventory and Control of Hardware Assets\\
+Actively manage (inventory, track, and correct) all hardware devices on the network so that only authorized devices are given access, and unauthorized and unmanaged devices are found and prevented from gaining access.
+\end{quote}
+
+\begin{list1}
+\item What is connected to our networks?
+\item What firmware do we need to install on hardware?
+\item Where IS the hardware we own?
+\item What hardware is still supported by vendor?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What licenses do we have? Paying too much?
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item What software do our employees need to support?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Controlled Use of Administrative Privileges}
+
+\begin{quote}
+CIS Control 4:\\
+Controlled Use of Administrative Privileges\\
+The processes and tools used to track/control/prevent/correct the use, assignment, and configuration of administrative privileges on computers, networks, and applications.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Secure Configuration for Hardware and Software}
+
+\begin{quote}
+CIS Control 5:\\
+Secure Configuration for Hardware and Software on Mobile Devices, Laptops, Workstations and Servers\\
+Establish, implement, and actively manage (track, report on, correct) the security configuration of mobile devices, laptops, servers, and workstations using a rigorous configuration management and change control process in order to prevent attackers from exploiting vulnerable services and settings.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Maintenance, Monitoring and Analysis of Audit Logs}
+
+\begin{quote}
+CIS Control 6:\\
+Maintenance, Monitoring and Analysis of Audit Logs\\
+Collect, manage, and analyze audit logs of events that could help detect, understand, or recover from an attack.
+\end{quote}
+
+\begin{list1}
+\item ... and present it, use it daily, report it to management!
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Exercise: Open Mike and Software Security}
+
+\begin{list2}
+\item What have we learnt in this course?
+\item Do you have tools for improving software security in your organisation?
+\item What are we missing?
+\end{list2}
+
+\slidenext{}
 
 
 \end{document}

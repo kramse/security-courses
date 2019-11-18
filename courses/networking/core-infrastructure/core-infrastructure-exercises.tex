@@ -321,6 +321,7 @@ Whats the difference between:
 \end{list2}
 
 
+
 \chapter{Bonus: DNS and Name Lookups 10 min}
 \label{ex:basic-dns-lookup}
 
@@ -358,227 +359,197 @@ Explain forward and reverse DNS lookup.
 
 
 
+\chapter{Bonus: Zeek on the web 10min}
+\label{ex:zeekweb}
 
-\chapter{Bonus: Nping check ports 10 min}
-\label{ex:nping-tcp}
+
 {\bf Objective:} \\
-Show the use of Nping tool for checking ports through a network
+Try Zeek Network Security Monitor - without installing it.
+
 
 {\bf Purpose:}\\
-Nping can check if probes can reach through a network, reporting success of failure. Allows very specific packets to be sent.
+Show a couple of examples of Zeek scripting, the built-in language found in Zeek Network Security Monitor
+
 
 {\bf Suggested method:}\\
-Run the command using a common port like Web HTTP:
-\begin{alltt}\footnotesize
-root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
-
-Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
-SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
-SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
-SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
-SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
-SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
-
-Max rtt: 40.044ms | Min rtt: 4.677ms | Avg rtt: 15.398ms
-Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)
-Nping done: 1 IP address pinged in 4.07 seconds
-\end{alltt}
-
-{\bf Hints:} \\
-A lot of options are similar to Nmap
-
-{\bf Solution:}\\
-When you have tried it towards an open port, a closed port and an IP/port that is filtered you are done.
-
-{\bf Discussion:}\\
-A colleague of ours had problems sending specific IPsec packets through a provider. Using a tool like Nping it is possible to show what happens, or where things are blocked.
-
-\eject
-Things like changing the TTL may provoke ICMP messages, like this:
-\begin{alltt}\footnotesize
-root@KaliVM:~# nping --tcp -p 80 --ttl 3 www.zencurity.com
-
-Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:08 CEST
-SENT (0.0303s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
-RCVD (0.0331s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28456 iplen=72 ]
-SENT (1.0314s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
-RCVD (1.0337s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28550 iplen=72 ]
-SENT (2.0330s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
-RCVD (2.0364s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28589 iplen=72 ]
-SENT (3.0346s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
-RCVD (3.0733s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=29403 iplen=72 ]
-SENT (4.0366s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
-RCVD (4.0558s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=30235 iplen=72 ]
-
-Max rtt: 38.574ms | Min rtt: 2.248ms | Avg rtt: 13.143ms
-Raw packets sent: 5 (200B) | Rcvd: 5 (360B) | Lost: 0 (0.00%)
-Nping done: 1 IP address pinged in 4.07 seconds
-\end{alltt}
-
-
-\chapter{Bonus: Try pcap-diff 15 min}
-\label{ex:pcap-diff}
-
-{\bf Objective:}\\
-Try both getting an utility tool from Github and running an actual useful tool for comparing packet captures.
-
-{\bf Purpose:}\\
-Being able to get tools and scripts from Github makes you more effective.
-
-The tool we need today is \link{https://github.com/isginf/pcap-diff}
-{\bf Suggested method:}\\
-Git clone the repository, follow instructions for running a packet diff.
-
-Try saving a few packets in a packet capture, then using tcpdump read and write a subset - so you end up with two packet captures:
-\begin{alltt}\footnotesize
-sudo tcpdump -w icmp-dump.cap
-// run ping in another window, which probably creates ARP packets
-// Check using tcpdump
-sudo tcpdump -r icmp-dump.cap arp
-reading from file icmp-dump.cap, link-type EN10MB (Ethernet)
-10:06:18.077055 ARP, Request who-has 10.137.0.22 tell 10.137.0.6, length 28
-10:06:18.077064 ARP, Reply 10.137.0.22 is-at 00:16:3e:5e:6c:00 (oui Unknown), length 28
-10:06:24.776987 ARP, Request who-has 10.137.0.6 tell 10.137.0.22, length 28
-10:06:24.777107 ARP, Reply 10.137.0.6 is-at fe:ff:ff:ff:ff:ff (oui Unknown), length 28
-// Write the dump - but without the ARP packets:
-sudo tcpdump -r icmp-dump.cap -w icmp-dump-no-arp.cap not arp
-\end{alltt}
-
-With these pcaps you should be able to do:
-\begin{alltt}\footnotesize
-sudo pip install scapy
-git clone https://github.com/isginf/pcap-diff.git
-cd pcap-diff/
-
-$ python pcap_diff.py -i ../icmp-dump.cap -i ../icmp-dump-no-arp.cap -o diff.cap
-Reading file ../icmp-dump.cap:
-Found 23 packets
-
-Reading file ../icmp-dump-no-arp.cap:
-Found 19 packets
-
-Diffing packets:
-
-Found 2 different packets
-
-Writing diff.cap
-// Try reading the output packet diff:
-
-$ sudo tcpdump -r diff.cap
-reading from file diff.cap, link-type EN10MB (Ethernet)
-10:06:24.777107 ARP, Reply 10.137.0.6 is-at fe:ff:ff:ff:ff:ff (oui Unknown), length 28
-10:06:24.776987 ARP, Request who-has 10.137.0.6 tell 10.137.0.22, length 28
-\end{alltt}
-
-Note: I ran these on a Debian, so I needed the sudo, if you run this on Kali there is no need to use sudo.
+Go to \link{http://try.bro.org/} and try a few of the examples.
 
 {\bf Hints:}\\
-Git is one of the most popular software development tools, and Github is a very popular site for sharing open source tools.
+The exercise
+\emph{The Summary Statistics Framework} can be run with a specifc PCAP.
+
+\verb+192.168.1.201 did 402 total and 2 unique  requests in the last 6 hours.+
 
 {\bf Solution:}\\
-When you or your team mate has a running pcap-diff then you are done
+You should read the example \emph{Raising a Notice}. Getting output for certain events may be interesting to you.
+
 
 {\bf Discussion:}\\
-I often find that 90\% of my tasks can be done using existing open source tools.
+Zeek Network Security Monitor is an old/mature tool, but can still be hard to get started using. I would suggest that you always start out using the packages available in your Ubuntu/Debian package repositories.
 
-\chapter{Bonus: Discover active systems ping sweep 10 min}
-\label{ex:nmap-pingsweep}
-\hlkimage{5cm}{nmap-zenmap.png}
+They work, and will give a first impression of Zeek. If you later want specific features not configured into the binary packet, then install from source.
 
-{\bf Objective:}\\
-Use nmap to discover active systems
+Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
 
-{\bf Purpose:}\\
-Know how to use nmap to scan networks for active systems.
+\begin{alltt}
+root@NMS-VM:/etc/bro# ls -la
+drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
+drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
+-rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
+-rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
+-rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
+drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
+\end{alltt}
 
-{\bf Suggested method:}\\
-Try different scans,
-\begin{itemize}
-\item Ping sweep to find active systems
-\item Port sweeps to find active systems with specific ports
-\end{itemize}
-
-{\bf Hints:} \\
-Try nmap in sweep mode - and you may run this from Zenmap
-
-{\bf Solution:}\\
-Use the command below as examples:
-\begin{itemize}
-\item Ping sweep \verb+nmap -sP 10.0.45.*+
-\item Port sweeps \verb+nmap -p 80 10.0.45.*+
-\end{itemize}
-
-{\bf Discussion:}\\
-Quick scans quickly reveal interesting hosts, ports and services
-
-Also now make sure you understand difference between single host scan
-10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
-
-
-\chapter{Bonus: Execute nmap TCP and UDP port scan 20 min}
-\label{ex:nmap-synscan}
+\chapter{Bonus: Zeek DNS capturing domain names 10min}
+\label{ex:zeekdnsbasic}
 
 
 {\bf Objective:} \\
-Use nmap to discover important open ports on active systems
+We will now start using Zeek on our systems.
+
 
 {\bf Purpose:}\\
-Finding open ports will allow you to find vulnerabilities on these ports.
+Try Zeek with example traffic, and see what happens.
 
-{\bf Suggested method:}\\
-Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
-ports and use Nmap without ports. What is scanned then?
 
-Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
+{\bf Suggested method packet capture file:}\\
+Note: a dollar sign is the Linux prompt, showing the command after
+\begin{alltt}\small
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ mkdir $HOME/bro;cd $HOME/bro; bro -r ../nitroba.pcap
+... bro reads the packets
+~/bro$ ls
+conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
+sip.log  ssl.log  weird.log  x509.log
+$ less *
+\end{alltt}
 
-If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
+Use :n to jump to the next file in less, go through all of them.
 
-{\bf Hints:} \\
-Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
-1024 ports without doing a Ping first
+{\bf Suggested method Live traffic:}\\
+Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
 
+\begin{alltt}
+root@NMS-VM:/etc/bro# cat node.cfg
+# Example BroControl node configuration.
+#
+# This example has a standalone node ready to go except for possibly changing
+# the sniffing interface.
+
+# This is a complete standalone configuration.  Most likely you will
+# only need to change the interface.
+[bro]
+type=standalone
+host=localhost
+interface=eth0
+...
+\end{alltt}
+
+
+{\bf Hints:}\\
+There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
+
+Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
 {\bf Solution:}\\
-Discover some active systems and most in{ex:basicDebianVM}teresting ports, which are 1-1024 and the built-in list of popular ports.
+When you either run Zeek using a packet capture or using live traffic
+
+Running with a capture can be done using a command line such as:
+\verb+bro -r traffic.pcap+
+
+Using broctl to start it would be like this:
+\begin{alltt}\small
+// install bro first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+\end{alltt}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# cd /var/spool/bro/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+You should be able to spot entries like this:
+\begin{alltt}\small
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
+     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
 
 {\bf Discussion:}\\
-There is a lot of documentation about the nmap portscanner, even a book by the author
-of nmap. Make sure to visit \link{http://www.nmap.org}
+Why is DNS interesting?
 
-TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
 
-When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
+\chapter{Bonus: Zeek TLS capturing certificates 10min}
+\label{ex:zeektlsbasic}
 
-\chapter{Bonus: Perform nmap OS detection 10 min}
-\label{ex:nmap-os}
 
 {\bf Objective:} \\
-Use nmap OS detection and see if you can guess the brand of devices on the network
+Run more traffic through Zeek, see the various files.
+
 
 {\bf Purpose:}\\
-Getting the operating system of a system will allow you to focus your next attacks.
+See that even though HTTPS and TLS traffic is encrypted it often show names and other values from the certificates and servers.
+
 
 {\bf Suggested method:}\\
-Look at the list of active systems, or do a ping sweep.
+Run Zeek capturing live traffic, start https towards some sites. A lot of common sites today has shifted to HTTPS/TLS.
 
-Then add the OS detection using the option \verb+-O+
 
-Better to use -A all the time, includes even more scripts and advanced stuff
-See the next exercise.
+{\bf Hints:}\\
+use broctl start and watch the output directory
 
-{\bf Hints:} \\
-The nmap can send a lot of packets that will get different responses, depending on the operating system. TCP/IP is implemented using various constants chosen by the implementors, they have chosen different standard packet TTL etc.
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# ls *.log
+communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
+stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
+stderr.log weird.log
+\end{alltt}
+
+We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# grep dr.dk ssl.log
+1538983060.546122	CtKYZ625cq3m3jUz9k	10.xxx.0.145	49932	2.17.212.93	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	www.dr.dk	F	-	h2	T	FzmZCt3o9EYcmNaxIi,FKXcmxQHT3znDDMSj	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
+1538983060.674217	CLjZo51fzuTcvPT0lg	200xxxxb:89b0:5cbf	49933	2a02:26f0:2400:2a1::3f46	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	asset.dr.dk	F	-	h2	TFEpW9a1IFe6NTUZNpb,FwV50B4CHIwF1CPlul	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
+\end{alltt}
 
 {\bf Solution:}\\
-Use a command like \verb+nmap -O -p1-100 10.0.45.45+ or  \verb+nmap -A -p1-100 10.0.45.45+
+When you have multiple log files with data from Zeek, and have looked into some of them. You are welcome to ask questions and look into more files.
 
 
 {\bf Discussion:}\\
-nmap OS detection is not a full proof way of knowing the actual operating system, but in most cases in can detect the family and in some cases it can identify the exact patch level of the system.
+How can you hide that you are going to HTTPS sites?
+
+Hint: VPN
+
+
+
+
 
 \chapter{Check your Debian VM 10 min}
 \label{ex:basicDebianVM}
@@ -598,7 +569,7 @@ If your VM is not installed and updated we will run into trouble later.
 {\bf Suggested method:}\\
 Go to \link{https://github.com/kramse/kramse-labs/}
 
-Read the instructions for the setup of a Kali VM.
+Read the instructions for the setup of a Debian VM.
 
 {\bf Hints:}\\
 Sometimes having a router with a GUI can help, but today we do it the most basic way. This ensure we have a good understanding of precisely which parts we have changed.
@@ -617,7 +588,7 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 \label{ex:vlans-routing-rpf}
 
 {\bf Objective:}\\
-Configure a network and connect it to the local internet exchange. We will learn about IPv4 routing, and internet exchanges. We will also be able to configure blocking and firewall rules.
+Configure a network and connect it to the local internet exchange. We will learn about IP routing, and internet exchanges. We will also be able to configure blocking and firewall rules.
 
 Note: it is recommended to do this in teams with two laptops. One laptop stays connected to the local wifi with internet access, for searching. The other one runs a Debian server.
 
@@ -625,7 +596,7 @@ The one running a Debian server will be configured as a router! YMMV but having 
 
 You MAY try using the built-in Ethernet in your laptop for this purpose and use \emph{bridging} to connect it to the network.
 
-{\bf Note: the network does NOT use NAT!} You can use NAT on your router, but it is recommended NOT to. If you enable NAT on your router it will be harder to connect back into your network - need to use features like port forwarding.
+{\bf Note: the network does NOT need NAT!} You can use NAT on your router, but it is recommended NOT to. If you enable NAT on your router it will be harder to connect back into your network - need to use features like port forwarding.
 
 {\bf Purpose:}\\
 The network built for this training allows you to configure network devices without affecting production networks. You can make all the mistakes and no manager will ask you to write incident reports.
@@ -642,6 +613,14 @@ Your router will need an interface in this range, to be able to communicate to t
 
 {\bf Suggested method:}\\
 Follow the instructions below for each part. Use your team and ask questions - learn.
+
+There are some Ansible scripts in the Github repository \url{https://github.com/kramse/kramse-labs} in the directory core-net-lab.
+
+Recommend doing a git clone FIRST, before changing network configuration of the Virtual Machine.
+
+As always there might be some tuning and learning to do on the way.
+
+This is why I have included a lot of bonus exercises in this exercise book.
 
 \subsection*{Enable routing}
 {\bf Make sure routing is actually enabled on your device! Sysctl will show the current setting }
@@ -671,6 +650,22 @@ net.ipv4.ip_forward = 1
 
 also install the \verb+vlan+ package using: \verb+apt-get install vlan+
 
+This can of course be automated using Ansible, with this:
+\begin{alltt}
+  # Set ip forwarding on in /proc and verify token value with the sysctl command
+  - sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
+
+  # Set ip forwarding on in /proc and in the sysctl file and reload if necessary
+  - sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+\end{alltt}
 
 \subsection*{Network Cards}
 
@@ -699,6 +694,14 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
 
 
 \section*{Initial steps to get started}
+
+Start configuring the switch you have.
+We can collect logs about network traffic based on generic netflow, specific types DNS/TLS/protocols, and traffic matching advanced rulesets.
+
+Recommend resetting it first time!
+
+also during configuration, remember to {\bf save config} once in a while.
+
 \begin{enumerate}
 \item Cable a laptop to any port, except the first one - port 1/0/1
 \item Take control of the switch, default settings are in place, see label on bottom and use Ethernet preferably
@@ -785,7 +788,7 @@ How much in this exercise is similar to real networks?
 I would say a lot. The exercise emulates a large part of the technologies used in real networks, including layer 3 routing having a peering internet exchange and a transit provider. Also the lab networks allows for playing with layer 2 features such as port security settings.
 
 
-\chapter{Konfiguration af DHCP server}
+\chapter{Configuration of DHCP server 30min}
 \label{ex:dhcpd-config}
 
 {\bf Objective:}\\
@@ -797,62 +800,154 @@ Getting DHCPD configured ensures that normal people can connect devices easily.
 {\bf Suggested method:}\\
 Look into dhcpd.conf and configure address pool for clients.
 
-
-
 {\bf Hints:}\\
-Log ind pï¿œ systemerne og vis netvï¿œrkskonfigurationen med \verb+ifconfig+
-og dhcpd.conf filen med \verb+cat /etc/dhcpd.conf+ - Luffe er den nemmeste at vï¿œlge.
+DHCPD is the DHCP daemon, helping spirit.
 
-Nï¿œr dhcpd startes pï¿œ OpenBSD benyttes tillige \verb+/etc/dhcpd.interfaces+ til at vï¿œlge
-hvilke netkort der skal svares pï¿œ DHCP.
+It is configured using a small config file: \verb+/etc/dhcp/dhcpd.conf+
 
 {\bf Solution:}\\
-\begin{alltt}
-#
-# DHCP server options.
-# See dhcpd.conf(5) and dhcpd(8) for more information.
-#
-#
-shared-network LOCAL-NET {
-        option  domain-name "kramse.dk";
-        #option  domain-name-servers 192.168.1.3, 192.168.1.5;
-        subnet 10.0.45.0 netmask 255.255.255.0 {
-                option routers 10.0.45.2;
-                range 10.0.45.32 10.0.45.200;
-        }
-}
-\end{alltt}
+You should hopefully end up with a running configuration which allows clients to get an IP and configuration settings.
+
+Example running config \verb+/etc/dhcp/dhcpd.conf+:
+
+\VerbatimInput{../../../../github/kramse-labs/core-net-lab/files/dhcpd.conf}
+
 
 {\bf Discussion:}\\
-Det ville vï¿œre nï¿œsten umuligt for almindelige brugere at benytte en laptop, hvis de manuelt skulle skifte adresse fra netvï¿œrk til netvï¿œrk.
+This service is needed in almost any network.
 
-Det er ofte set at folk der manuelt sï¿œtter en adresse ender med at sï¿œtte router adressen pï¿œ deres netkort, hvad sker der sï¿œ?
+With IPv4 DHCPD is the recommended way.
+
+With IPv6 sometimes a mix of stateless autoconfiguration and DHCPDv6 is used.
 
 
-\chapter{Konfiguration af DNS server}
+\chapter{Bonus: Configuration of Ubound DNS server 20min}
 \label{ex:dns-config}
 
 
-
 {\bf Objective:}\\
-
+Learn how to run your own resolver.
 
 {\bf Purpose:}\\
+DNS is used by all clients today. So we can configure our own DNS resolver, DNS server.
+
+{\bf Suggested method:}\\
+Install Unbound which is the software from \url{https://nlnetlabs.nl/projects/unbound/about/}
+
+{\bf Hints:}\\
+Use the package system:
+
+\verb+sudo apt install unbound+
+
+Make sure it is enabled for boot:
+
+\begin{alltt}\footnotesize
+root@debian-9-lab:~# systemctl enable unbound
+Synchronizing state of unbound.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable unbound
+\end{alltt}
+
+{\bf Solution:}\\
+By default it seems the Debian Unbound has very little configuration, but allows lookup from localhost:
+
+\begin{alltt}\footnotesize
+root@debian-9-lab:~# host www.kramse.org
+www.kramse.org has address 185.129.60.130
+www.kramse.org has IPv6 address 2a06:d380:0:3065::80
+\end{alltt}
+
+It would be required to add a little more, starting with access control:
+
+\begin{alltt}\footnotesize
+# The server clause sets the main parameters.
+server:
+        interface: 0.0.0.0
+        access-control: 127.0.0.0/8 allow
+        access-control: 10.0.0.0/16 allow
+        access-control: 192.168.0.0/16 allow
+        access-control: 10.0.45.0/24 allow
+        access-control: 8.0.0.0/8 allow
+
+\end{alltt}
+
+This allows local clients access to resolving names.
+
+{\bf Discussion:}\\
+Unbound is very feature complete and can perform DNSSEC checks etc. We wont be able to configure and use all these features today.
+
+
+
+\chapter{Bonus: Configuration of BIRD BGP daemon 40min}
+\label{ex:bgp-config}
+
+
+{\bf Objective:}\\
+Learn how to run your BGP service, to announce your network.
+
+{\bf Purpose:}\\
+Border Gateway Protocol (BGP) is a very simple yet complicated technology.
+
+\url{https://en.wikipedia.org/wiki/Border_Gateway_Protocol}
+
+Today just realize:
+\begin{list2}
+\item BGP allows you to tell a network about your IP addresses, named IP prefixes - similar to subnets, like 10.14.0.0/16
+\item BGP allows you to receive network prefixes and add them to your local route table.
+\end{list2}
+
+The internet is built using BGP and in the core networks, Tier 1 networks there is no default route - no 0.0.0.0 route.
+
 
 
 {\bf Suggested method:}\\
-
+Install BIRD which is the software from \url{https://bird.network.cz/}
 
 {\bf Hints:}\\
+Use the package system:
 
+\verb+sudo apt install bird+
+
+Make sure it is enabled for boot:
+
+\begin{alltt}\footnotesize
+root@debian-9-lab:~# systemctl enable bird
+\end{alltt}
 
 {\bf Solution:}\\
+When you install BIRD is has a minimal configuration.
+
+You should first make sure it runs
+
+NOTE: This material expect the version 1.6 of BIRD, so use the documentation from:\\
+\url{https://bird.network.cz/?get_doc&f=bird.html&v=16}
+
+Method:
+\begin{itemize}
+\item Make sure process runs, syntax is correct - check logs
+\item Make sure it connects to the other party, BGP is 179/TCP
+\item Make sure you are sending and receiving the right prefixes
+\item Make sure filters are in place - not needed her, but for production setups!
+\end{itemize}
+
+Many times a router will NOT announce if the route/prefix is not active in the routing tables on the local system. Making what is called a null route is also recommended, so start out by null-routing your whole network locally.
+
+This also prevents a lot of routing loops!
+
+The end result might be similar to this:
+\VerbatimInput{files/bird.conf}
+or This
+\VerbatimInput{files/bird.conf.real}
+
 
 
 {\bf Discussion:}\\
+The BIRD project aims to develop a fully functional dynamic IP routing daemon primarily targeted on (but not limited to) Linux, FreeBSD and other UNIX-like systems and distributed under the GNU General Public License.
+- source: \url{https://bird.network.cz/}
+
+BIRD is very feature complete and can perform filtering checks etc. We wont be able to configure and use all these features today.
 
 
-\chapter{Configure Mirror Port 10min}
+\chapter{How to Configure Mirror Port 10min}
 \label{ex:mirrorport}
 
 
@@ -1091,194 +1186,227 @@ When your team has configured a mirror port and seen traffic using your IDS or j
 How would you monitor a larger network?
 
 
-\chapter{Bonus: Zeek on the web 10min}
-\label{ex:zeekweb}
 
-
+\chapter{Bonus: Nping check ports 10 min}
+\label{ex:nping-tcp}
 {\bf Objective:} \\
-Try Zeek Network Security Monitor - without installing it.
-
+Show the use of Nping tool for checking ports through a network
 
 {\bf Purpose:}\\
-Show a couple of examples of Zeek scripting, the built-in language found in Zeek Network Security Monitor
-
+Nping can check if probes can reach through a network, reporting success of failure. Allows very specific packets to be sent.
 
 {\bf Suggested method:}\\
-Go to \link{http://try.bro.org/} and try a few of the examples.
+Run the command using a common port like Web HTTP:
+\begin{alltt}\footnotesize
+root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
 
-{\bf Hints:}\\
-The exercise
-\emph{The Summary Statistics Framework} can be run with a specifc PCAP.
+Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
+SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
+SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
+SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
+SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
+SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
 
-\verb+192.168.1.201 did 402 total and 2 unique DNS requests in the last 6 hours.+
+Max rtt: 40.044ms | Min rtt: 4.677ms | Avg rtt: 15.398ms
+Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+{\bf Hints:} \\
+A lot of options are similar to Nmap
 
 {\bf Solution:}\\
-You should read the example \emph{Raising a Notice}. Getting output for certain events may be interesting to you.
-
+When you have tried it towards an open port, a closed port and an IP/port that is filtered you are done.
 
 {\bf Discussion:}\\
-Zeek Network Security Monitor is an old/mature tool, but can still be hard to get started using. I would suggest that you always start out using the packages available in your Ubuntu/Debian package repositories.
+A colleague of ours had problems sending specific IPsec packets through a provider. Using a tool like Nping it is possible to show what happens, or where things are blocked.
 
-They work, and will give a first impression of Zeek. If you later want specific features not configured into the binary packet, then install from source.
+\eject
+Things like changing the TTL may provoke ICMP messages, like this:
+\begin{alltt}\footnotesize
+root@KaliVM:~# nping --tcp -p 80 --ttl 3 www.zencurity.com
 
-Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
+Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:08 CEST
+SENT (0.0303s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (0.0331s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28456 iplen=72 ]
+SENT (1.0314s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (1.0337s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28550 iplen=72 ]
+SENT (2.0330s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (2.0364s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28589 iplen=72 ]
+SENT (3.0346s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (3.0733s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=29403 iplen=72 ]
+SENT (4.0366s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (4.0558s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=30235 iplen=72 ]
 
-\begin{alltt}
-root@NMS-VM:/etc/bro# ls -la
-drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
-drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
--rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
--rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
--rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
-drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
+Max rtt: 38.574ms | Min rtt: 2.248ms | Avg rtt: 13.143ms
+Raw packets sent: 5 (200B) | Rcvd: 5 (360B) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 4.07 seconds
 \end{alltt}
 
-\chapter{Bonus: Zeek DNS capturing domain names 10min}
-\label{ex:zeekdnsbasic}
 
+\chapter{Bonus: Try pcap-diff 15 min}
+\label{ex:pcap-diff}
 
-{\bf Objective:} \\
-We will now start using Zeek on our systems.
-
+{\bf Objective:}\\
+Try both getting an utility tool from Github and running an actual useful tool for comparing packet captures.
 
 {\bf Purpose:}\\
-Try Zeek with example traffic, and see what happens.
+Being able to get tools and scripts from Github makes you more effective.
 
+The tool we need today is \link{https://github.com/isginf/pcap-diff}
+{\bf Suggested method:}\\
+Git clone the repository, follow instructions for running a packet diff.
 
-{\bf Suggested method packet capture file:}\\
-Note: a dollar sign is the Linux prompt, showing the command after
-\begin{alltt}\small
-$ cd
-$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
-$ mkdir $HOME/bro;cd $HOME/bro; bro -r ../nitroba.pcap
-... bro reads the packets
-~/bro$ ls
-conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
-sip.log  ssl.log  weird.log  x509.log
-$ less *
+Try saving a few packets in a packet capture, then using tcpdump read and write a subset - so you end up with two packet captures:
+\begin{alltt}\footnotesize
+sudo tcpdump -w icmp-dump.cap
+// run ping in another window, which probably creates ARP packets
+// Check using tcpdump
+sudo tcpdump -r icmp-dump.cap arp
+reading from file icmp-dump.cap, link-type EN10MB (Ethernet)
+10:06:18.077055 ARP, Request who-has 10.137.0.22 tell 10.137.0.6, length 28
+10:06:18.077064 ARP, Reply 10.137.0.22 is-at 00:16:3e:5e:6c:00 (oui Unknown), length 28
+10:06:24.776987 ARP, Request who-has 10.137.0.6 tell 10.137.0.22, length 28
+10:06:24.777107 ARP, Reply 10.137.0.6 is-at fe:ff:ff:ff:ff:ff (oui Unknown), length 28
+// Write the dump - but without the ARP packets:
+sudo tcpdump -r icmp-dump.cap -w icmp-dump-no-arp.cap not arp
 \end{alltt}
 
-Use :n to jump to the next file in less, go through all of them.
+With these pcaps you should be able to do:
+\begin{alltt}\footnotesize
+sudo pip install scapy
+git clone https://github.com/isginf/pcap-diff.git
+cd pcap-diff/
 
-{\bf Suggested method Live traffic:}\\
-Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
+$ python pcap_diff.py -i ../icmp-dump.cap -i ../icmp-dump-no-arp.cap -o diff.cap
+Reading file ../icmp-dump.cap:
+Found 23 packets
 
-\begin{alltt}
-root@NMS-VM:/etc/bro# cat node.cfg
-# Example BroControl node configuration.
-#
-# This example has a standalone node ready to go except for possibly changing
-# the sniffing interface.
+Reading file ../icmp-dump-no-arp.cap:
+Found 19 packets
 
-# This is a complete standalone configuration.  Most likely you will
-# only need to change the interface.
-[bro]
-type=standalone
-host=localhost
-interface=eth0
-...
+Diffing packets:
+
+Found 2 different packets
+
+Writing diff.cap
+// Try reading the output packet diff:
+
+$ sudo tcpdump -r diff.cap
+reading from file diff.cap, link-type EN10MB (Ethernet)
+10:06:24.777107 ARP, Reply 10.137.0.6 is-at fe:ff:ff:ff:ff:ff (oui Unknown), length 28
+10:06:24.776987 ARP, Request who-has 10.137.0.6 tell 10.137.0.22, length 28
 \end{alltt}
 
+Note: I ran these on a Debian, so I needed the sudo, if you run this on Kali there is no need to use sudo.
 
 {\bf Hints:}\\
-There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
+Git is one of the most popular software development tools, and Github is a very popular site for sharing open source tools.
 
-Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
 {\bf Solution:}\\
-When you either run Zeek using a packet capture or using live traffic
-
-Running with a capture can be done using a command line such as:
-\verb+bro -r traffic.pcap+
-
-Using broctl to start it would be like this:
-\begin{alltt}\small
-// install bro first
-kunoichi:~ root# broctl
-Hint: Run the broctl "deploy" command to get started.
-
-Welcome to BroControl 1.5
-Type "help" for help.
-
-[BroControl] > install
-creating policy directories ...
-installing site policies ...
-generating standalone-layout.bro ...
-generating local-networks.bro ...
-generating broctl-config.bro ...
-generating broctl-config.sh ...
-...
-\end{alltt}
-
-\begin{alltt}\small
-// back to Broctl and start it
-[BroControl] > start
-starting bro
-// and then
-kunoichi:bro root# cd /var/spool/bro/bro
-kunoichi:bro root# tail -f dns.log
-\end{alltt}
-
-You should be able to spot entries like this:
-\begin{alltt}\small
-#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
-     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
-1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
-\end{alltt}
-
-Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
-
-\begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
-2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
-\end{alltt}
+When you or your team mate has a running pcap-diff then you are done
 
 {\bf Discussion:}\\
-Why is DNS interesting?
+I often find that 90\% of my tasks can be done using existing open source tools.
 
+\chapter{Bonus: Discover active systems ping sweep 10 min}
+\label{ex:nmap-pingsweep}
+\hlkimage{5cm}{nmap-zenmap.png}
 
-\chapter{Bonus: Zeek TLS capturing certificates 10min}
-\label{ex:zeektlsbasic}
-
-
-{\bf Objective:} \\
-Run more traffic through Zeek, see the various files.
-
+{\bf Objective:}\\
+Use nmap to discover active systems
 
 {\bf Purpose:}\\
-See that even though HTTPS and TLS traffic is encrypted it often show names and other values from the certificates and servers.
-
+Know how to use nmap to scan networks for active systems.
 
 {\bf Suggested method:}\\
-Run Zeek capturing live traffic, start https towards some sites. A lot of common sites today has shifted to HTTPS/TLS.
+Try different scans,
+\begin{itemize}
+\item Ping sweep to find active systems
+\item Port sweeps to find active systems with specific ports
+\end{itemize}
 
-
-{\bf Hints:}\\
-use broctl start and watch the output directory
-
-\begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# ls *.log
-communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
-stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
-stderr.log weird.log
-\end{alltt}
-
-We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
-
-\begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# grep dr.dk ssl.log
-1538983060.546122	CtKYZ625cq3m3jUz9k	10.xxx.0.145	49932	2.17.212.93	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	www.dr.dk	F	-	h2	T	FzmZCt3o9EYcmNaxIi,FKXcmxQHT3znDDMSj	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
-1538983060.674217	CLjZo51fzuTcvPT0lg	200xxxxb:89b0:5cbf	49933	2a02:26f0:2400:2a1::3f46	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	asset.dr.dk	F	-	h2	TFEpW9a1IFe6NTUZNpb,FwV50B4CHIwF1CPlul	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
-\end{alltt}
+{\bf Hints:} \\
+Try nmap in sweep mode - and you may run this from Zenmap
 
 {\bf Solution:}\\
-When you have multiple log files with data from Zeek, and have looked into some of them. You are welcome to ask questions and look into more files.
+Use the command below as examples:
+\begin{itemize}
+\item Ping sweep \verb+nmap -sP 10.0.45.*+
+\item Port sweeps \verb+nmap -p 80 10.0.45.*+
+\end{itemize}
+
+{\bf Discussion:}\\
+Quick scans quickly reveal interesting hosts, ports and services
+
+Also now make sure you understand difference between single host scan
+10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
+
+
+\chapter{Bonus: Execute nmap TCP and UDP port scan 20 min}
+\label{ex:nmap-synscan}
+
+
+{\bf Objective:} \\
+Use nmap to discover important open ports on active systems
+
+{\bf Purpose:}\\
+Finding open ports will allow you to find vulnerabilities on these ports.
+
+{\bf Suggested method:}\\
+Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
+ports and use Nmap without ports. What is scanned then?
+
+Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
+
+If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
+
+{\bf Hints:} \\
+Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
+1024 ports without doing a Ping first
+
+{\bf Solution:}\\
+Discover some active systems and most in{ex:basicDebianVM}teresting ports, which are 1-1024 and the built-in list of popular ports.
+
+{\bf Discussion:}\\
+There is a lot of documentation about the nmap portscanner, even a book by the author
+of nmap. Make sure to visit \link{http://www.nmap.org}
+
+TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
+
+When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
+
+\chapter{Bonus: Perform nmap OS detection 10 min}
+\label{ex:nmap-os}
+
+{\bf Objective:} \\
+Use nmap OS detection and see if you can guess the brand of devices on the network
+
+{\bf Purpose:}\\
+Getting the operating system of a system will allow you to focus your next attacks.
+
+{\bf Suggested method:}\\
+Look at the list of active systems, or do a ping sweep.
+
+Then add the OS detection using the option \verb+-O+
+
+Better to use -A all the time, includes even more scripts and advanced stuff
+See the next exercise.
+
+{\bf Hints:} \\
+The nmap can send a lot of packets that will get different responses, depending on the operating system. TCP/IP is implemented using various constants chosen by the implementors, they have chosen different standard packet TTL etc.
+
+{\bf Solution:}\\
+Use a command like \verb+nmap -O -p1-100 10.0.45.45+ or  \verb+nmap -A -p1-100 10.0.45.45+
 
 
 {\bf Discussion:}\\
-How can you hide that you are going to HTTPS sites?
-
-Hint: VPN
-
+nmap OS detection is not a full proof way of knowing the actual operating system, but in most cases in can detect the family and in some cases it can identify the exact patch level of the system.
 
 
 \chapter{Bonus: Logning med syslogd og syslog.conf 10min}

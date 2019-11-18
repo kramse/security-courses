@@ -54,13 +54,113 @@
 Spend some hours setting up a production network:
 \begin{list1}
 \item Use VLANs, IP subnetting, routing, BGP
-\item Use Automated provisioning scripts for network devices
-\item Use SNMP and setup LibreNMS server
-\item Configure monitoring
-\item Mirror data and start an IDS
+\item Use Automated provisioning scripts Ansible
+\item Use SNMP and introduce some debugging, monitoring tools
+\item Discuss how to Monitor, Mirror data and start an IDS
 \end{list1}
 
 \centerline{We try to do a lot, feel free to focus on specific parts}
+
+\slide{Plan for today}
+
+\begin{list2}
+\item Design a robust network
+\item Isolation and segmentation
+\item (Routing Security) removed, see Running a Modern Network slide set
+\item Switch and access security, port security
+\item (Wireless security) removed
+\end{list2}
+
+Think if you could redesign your office network!
+
+\slide{Reading Ideas}
+
+\begin{list2}
+\item Read
+\item {\small \link{https://nsrc.org/workshops/2018/myren-nsrc-cndo/networking/cndo/en/presentations/Campus_Security_Overview.pdf}}
+\item {\small \link{https://nsrc.org/workshops/2018/tenet-nsrc-cndo/networking/cndo/en/presentations/Campus_Operations_BCP.pdf}}
+\item Download, but dont read it all\\{\small \link{https://nsrc.org/workshops/2015/apricot2015/raw-attachment/wiki/Track1Agenda/01-ISP-Network-Design.pdf}}
+\end{list2}
+
+These are good resources when you come home, and want to build networks!
+
+
+\slide{Internet today}
+
+\hlkimage{8cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers
+\item Roots in academia
+\item Protocols more than 20 years old
+\item HTTP is becoming encrypted, but a lot other traffic is not
+\end{list1}
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{Design a robust network Isolation and segmentation}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+\slide{Basic Network Security Pattern Isolate in VLANs}
+
+\hlkimage{8cm}{images/demo-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter trafik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\item Brug port security til at sikre basale services DHCP, Spanning Tree osv.
+\end{list1}
+
+
+\slide{Our Networks}
+
+We will now configure networks, using our sample switch TP-Link T1500G-10PS
+
+\begin{list1}
+\item Core network provides uplink through a switch / internet exchange
+\item Each team will need:
+\begin{list2}
+\item A switch TP-Link T1500G-10PS L2 features - default config
+\item USB Ethernet - or VLAN compatible virtualization network
+\item Ethernet cables
+\end{list2}
+\end{list1}
+
+
+\slide{Exercise in networking VLANs, Routing and RPF}
+
+
+\begin{list1}
+\item Each team will configure:
+\begin{list2}
+\item Debian VM router-on-a-stick - L3 forwarding
+{\small\link{https://en.wikipedia.org/wiki/One-armed_router}}
+\item Recommended to serve DHCP service, and possibly NTP etc.
+\item Configure Monitoring and LibreNMS - optional
+\item Reconfigure uplink from static routing to BGP - optional
+\item Connect your IDS - optional, Configure port security - optional
+\end{list2}
+\end{list1}
+
+Use the guides from:\\
+{\small \link{https://www.tp-link.com/uk/support/download/t1500g-10ps/\#Related-Documents}}
+
+
 
 \slide{Packet sniffing tools}
 
@@ -68,16 +168,22 @@ Spend some hours setting up a production network:
 \item Tcpdump for capturing packets
 \item Wireshark for dissecting packets manually with GUI
 \item Zeek Network Security Monitor
-\item Snort, old timer Intrusion Detection Engine (IDS)
-\item Suricata, modern robust capable of IDS and IPS (prevention)
-\item ntopng High-speed web-based traffic analysis
-\item Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
+\item Discuss Suricata, modern robust capable of IDS and IPS (prevention),
+ntopng High-speed web-based traffic analysis and Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
 \end{list1}
 
 \vskip 5mm
 \centerline{Often a combination of tools and methods used in practice}
 
 Full packet capture big data tools also exist
+
+
+\slide{Using Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{\link{https://www.wireshark.org}}
+
 
 \slide{Kali Linux the pentest toolbox}
 
@@ -108,62 +214,24 @@ May need to enale it in BIOS
 \slide{What happens today?}
 
 \begin{list1}
-\item Think like a blue team member find hacker traffic
+\item Think like a network architect team member
 \item Get basic tools running
-\item Improve situation
-\begin{list2}
-\item See where the data end up
-\item What kind of data and metadata can we extract
-\item How can we collect and make use of it
-\item Databases and web interfaces, examples shown
-\item Consider what your deployment could be
-\end{list2}
+\item Start rouiting and creating a network
+\item Improve situation, think about how to monitor while building
 \end{list1}
 
 \centerline{Today focus on the lower parts, but user interfaces are important too}
 
-\slide{Security devops}
-
-\begin{list1}
-\item We need devops skillz in security
-\item automate, security is also big data
-\item integrate tools, transfer, sort, search, pattern matching, statistics, ...
-\item tools, languages, databases, protocols, data formats
-\item Use Github! So many libraries and programs that can help, maybe solve  90\% of your problem, and you can glue the rest together
-\item Example introductions:
-\begin{list2}
-\item Seven languages/database/web frameworks in Seven Weeks
-\item Elasticsearch the definitive guide
-\end{list2}
-\end{list1}
-
-\centerline{We are all Devops now, even security people!}
 
 
-
-\slide{Internet today}
-
-\hlkimage{8cm}{images/server-client.pdf}
-
-\begin{list1}
-\item Clients and servers
-\item Roots in academia
-\item Protocols more than 20 years old
-\item HTTP is becoming encrypted, but a lot other traffic is not
-\end{list1}
-
-\slide{OSI og Internet modellerne}
-
-\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
-
-\slide{Using Wireshark}
-
-\hlkimage{13cm}{images/wireshark-http.png}
-
-\centerline{\link{https://www.wireshark.org}}
-
+\exercise{ex:downloadKLR}
+\exercise{ex:basicVM}
 \exercise{ex:wireshark-install}
 \exercise{ex:wireshark-capture}
+
+\exercise{ex:ping}
+\exercise{ex:basic-dns-lookup}
+
 
 \slide{Network mapping}
 
@@ -264,10 +332,6 @@ Don't abuse information gathered}
 
 We try to mimic what you would do in your own networks during the exercises.
 
-Another way of running exercises might be:\\
-\url{https://github.com/jonschipp/ISLET}
-
-Recommended and used by Zeek and Suricata projects.
 
 \slide{Get Started with Zeek}
 
@@ -281,42 +345,6 @@ Recommended and used by Zeek and Suricata projects.
 \end{list1}
 
 \centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
-\slide{Bro demo: Run}
-
-\begin{alltt}\small
-// install zeek first
-kunoichi:~ root# broctl
-Hint: Run the broctl "deploy" command to get started.
-
-Welcome to BroControl 1.5
-Type "help" for help.
-
-[BroControl] > install
-creating policy directories ...
-installing site policies ...
-generating standalone-layout.bro ...
-generating local-networks.bro ...
-generating broctl-config.bro ...
-generating broctl-config.sh ...
-...
-kunoichi:etc root# grep eth0 node.cfg
-interface=eth0
-\end{alltt}
-
-\slide{Zeek demo: Run Zeek}
-
-\begin{alltt}\small
-// back to Broctl and start it
-[BroControl] > start
-starting bro
-// and then
-kunoichi:bro root# pwd
-/usr/local/var/spool/bro
-kunoichi:bro root# tail -f dns.log
-\end{alltt}
-
-More examples at:\\
-\url{https://www.bro.org/sphinx/script-reference/log-files.html}
 
 \exercise{ex:zeekdnsbasic}
 \exercise{ex:zeektlsbasic}
@@ -343,45 +371,20 @@ e OISF and its supporting vendors.
  \link{http://suricata-ids.org/}
  \link{http://openinfosecfoundation.org}
 
+ \exercise{ex:basicDebianVM}
+ \exercise{ex:vlans-routing-rpf}
 
-\exercise{ex:suricatastartstop}
-\exercise{ex:suricataeve1}
-\exercise{ex:mirrorport}
-\exercise{ex:suricatahasboards}
+ \exercise{ex:dhcpd-config}
+ \exercise{ex:dns-config}
+ \exercise{ex:bgp-config}
+ \exercise{ex:mirrorport}
+ \exercise{ex:port-security}
 
-\slide{Netflow}
-
-\begin{slidelist}
-\item Netflow is getting more important, more data share the same links
-\item Accounting is important
-\item Detecting DoS/DDoS and problems is essential
-\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
-\item Currently also investigating sFlow - hopefully more fine grained
-\end{slidelist}
-
-\exercise{ex:suricatanetflow}
-
-
-
-\slide{Zeek JSON}
-
-As shown with Suricata, it is also possible to insert Bro output into Elasticsearch.
-
-One example is shown in the blog posts:
-\url{https://logz.io/blog/bro-elk-part-1/}
-
-
-\slide{Commercial Support}
-
-You can and should use updated rulesets for Suricata.
-
-I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year per sensor. So two sites with Suricata running in both, 2x USD 900
 
 \slide{Summary}
 
-We started from a basic Ubuntu/Debian server, and using Zeek and Suricata we now know more about our network.
+We started from a basic Ubuntu/Debian server, and we now know more about our network.
 
-We can collect logs about network traffic based on generic netflow, specific types DNS/TLS/protocols, and traffic matching advanced rulesets.
 
 We know it is possible to create dashboards and visualizing the data.
 

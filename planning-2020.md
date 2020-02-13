@@ -50,20 +50,29 @@ Keywords: Encryption, TLS, VPN, VLAN IEEE 802.1q, Wifi security, IEEE 802.1x, IK
 
 
 ## TCP/IP Network Advanced Protocols
-This presentation will
-Keywords: Dynamic routing BGP, OSPF, RPKI, prefix filtering, MANRS
+This presentation will contain more advanced use cases for TCP/IP network, typical for network owners.
+
+Keywords: Dynamic routing BGP, OSPF, RPKI, prefix filtering, MANRS, Whois objects, DNS servers
 
 ## Pentesting Networks Basics
+Similar to my existing presentation presentations/pentest/pentest-I-foredrag/
 
 Keywords: Portscanning, Nmap, Zenmap, Kali Linux, sslscan, nikto, bottom up, Burp intro, Metasploit intro
 
 ## Intrusion Detection Basics
+Similar to my existing course
+courses/networking/suricatazeek-workshop/description.md
+
 Keywords: Sniffing networks, Tap/SPAN/Mirror ports, Zeek Security Monitor, Suricata with SELKS, Kibana, Emerging Threats, VXLAN, Kubernetes
 
 ## Network Automation and Monitoring Basics
+Using Ansible with network devices, built from my existing Ansible workshops and materials used in other courses.
+
 Keywords: Ansible for network devices with Junos, OpenBSD and Linux as examples, Netflow, sFlow, monitoring systems, LibreNMS, Oxidized, Smokeping
 
 ## Network Security Advanced Topics
+Misc things from my DDoS presentations etc.
+
 Keywords:
 Advanced firewall infrastuctures
 Network Forensics  

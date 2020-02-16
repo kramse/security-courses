@@ -13,16 +13,17 @@
 
 \slide{Plan for today}
 
+Starting out with Camel
 \begin{list2}
-\item Starting out with Camel
-\item
-\item
+\item Java recap, Java tools needed
+\item Book chapters and examples
+\item Running Camel - using Maven
 \end{list2}
 
 Exercises
 \begin{list2}
-\item
-\item
+\item Book examples from chapters 1 and 2
+\item Various sites and trying out Camel
 \end{list2}
 
 
@@ -30,13 +31,343 @@ Exercises
 \slide{Reading Summary}
 
 \begin{list1}
-\item Camel book chapter 1-2
-
+\item Camel book chapter 1:Meeting Camel
+\item Camel book chapter 2: Routing with Camel
 \item Browse / skim this:\\
-
+Not put into the lecture plan, but if the concepts presented today seems hard, lookup on wikipedia:\\
+\item Java, Java virtual machine,\\
+ \url{https://en.wikipedia.org/wiki/Apache_Ant},\\ \url{https://en.wikipedia.org/wiki/Apache_Maven}
 \end{list1}
 
 
+
+\slide{Todays Agenda - approximate time plan}
+
+\begin{list2}
+\item 45m Working with Java, introducing some tools, configure those tools on your machines
+\item 45m Get the repository from the book, large download, investigate contents
+\item 10:00 Break 15m
+\item 45m Chapter 1 presented and discussed
+\item 45m Get up and running with the book examples
+\item 11:45 Lunch Break
+\item 45m Chapter 2 presented and discussed
+\item 45m Chapter 2 presented and discussed
+\item 14:00 Break 15m
+\item 45m Work with small examples, make Camel download from FTP and HTTP
+\end{list2}
+
+\slide{Java Recap}
+
+\hlkimage{10cm}{java-webserver.png}
+\begin{list2}
+\item Java is a virtual machine environment
+\item Java Runtime Environment (JRE) / Java Development Kit (JDK)
+\end{list2}
+
+\slide{Java Environment Variables}
+
+\begin{list2}
+\item \verb+JAVA_HOME+ points to the JDK installation path\\
+Typical value:
+\begin{alltt}
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+\end{alltt}
+add that to your profile \verb+.profile+, \verb+bashrc+ or similar on Windows
+\item We did that last time for running Apache Tomcat
+\item \verb+CLASSPATH+ the search path for libraries
+\end{list2}
+
+
+
+
+\slide{Make and install programs from source}
+
+\begin{alltt}
+./configure;make;make install
+\end{alltt}
+
+\begin{list1}
+\item Many open source programmer where distributed as a tar file, tape archive
+\item Most programs would use Makefile and auto tools, as shown above
+\begin{list2}
+\item configure software - check operating system, features and libraries
+\item build the software - compile and link
+\item install software - copy files often putting binaries in \verb+/usr/local/bin+
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Java Make Tool Ant}
+
+
+
+\begin{quote}
+Apache Ant is a Java library and command-line tool whose mission is to drive processes described in build files as targets and extension points dependent upon each other. The main known usage of Ant is the build of Java applications. Ant supplies a number of built-in tasks allowing to compile, assemble, test and run Java applications. Ant can also be used effectively to build non Java applications, for instance C or C++ applications. More generally, Ant can be used to pilot any type of process which can be described in terms of targets and tasks.
+\end{quote}
+
+\begin{alltt}
+hlk@debian-lab:~$ ant -v
+Apache Ant(TM) version 1.10.5 compiled on August 27 2018
+Trying the default build file: build.xml
+\end{alltt}
+
+\begin{list2}
+\item Apache Ant
+\item \url{https://ant.apache.org/}
+\end{list2}
+
+
+\slide{Java tools Needed for Camel Maven}
+
+\begin{quote}
+Apache Maven is a software project management and comprehension tool. Based on the concept of a project object model (POM), Maven can manage a project's build, reporting and documentation from a central piece of information.
+\end{quote}
+
+
+\begin{alltt}
+hlk@debian-lab:~$ mvn -v
+Apache Maven 3.5.4 (1edded0938998edf8bf061f1ceb3cfdeccf443fe; 2018-06-17T20:33:14+02:00)
+Maven home: /home/user/projects/system-integration/apache-maven-3.5.4
+Java version: 11.0.6, vendor: Debian, runtime: /usr/lib/jvm/java-11-openjdk-amd64
+\end{alltt}
+
+
+\begin{list2}
+\item Maven - mvn command
+\item  \url{https://en.wikipedia.org/wiki/Apache_Maven}
+\end{list2}
+
+
+
+
+\slide{Software Requirements - amended!}
+
+The following software is required to run the examples:
+\begin{list2}
+\item JDK 8, I used OpenJDK 11 on Debian 10
+\item Maven 3.5 or better, I used \verb+apache-maven-3.5.4+
+\item Apache Camel 2.20.1 or better, I used \verb+apache-camel-2.24.3+
+\item Apache Camel itself can be downloaded from its official website:
+\url{http://camel.apache.org/download.html}
+\item All the examples can be run using Maven.
+\end{list2}
+
+
+
+\slide{Running Maven}
+
+\begin{alltt}\footnotesize
+user@Projects:~$ tail -5 .bashrc
+
+# Add Maven to PATH
+PATH="$HOME/bin:$PATH:$HOME/user/projects/system-integration/apache-maven-3.5.4/bin"
+
+export PATH
+user@Projects:~$ which mvn
+/home/user/projects/system-integration/apache-maven-3.5.4/bin/mvn
+\end{alltt}
+
+\begin{list2}
+\item Download Maven and "install it", as shown above I unpacked version 3.5.4 and pointed my \verb+PATH+ to the directory
+\item Maven uses a \verb+pom.xml+ file - project object model (POM)
+\item This file lists requirements for dependencies etc.
+\item Since we will be using other versions, lets change this file
+\end{list2}
+
+\slide{Maven pom changes}
+
+To use the later versions of the tools Maven and Camel change this:
+\begin{alltt}\footnotesize
+user@Projects:camelinaction2$ git diff
+diff --git a/pom.xml b/pom.xml
+index d9b1b160..7d512cd1 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -12,7 +12,7 @@
+   <inceptionYear>2015</inceptionYear>
+
+   <prerequisites>
+-    <maven>3.5.0</maven>
++    <maven>3.5.4</maven>
+   </prerequisites>
+
+   <developers>
+@@ -58,7 +58,7 @@
+
+     <activemq-version>5.15.7</activemq-version>
+     <activemq-karaf-version>5.13.8</activemq-karaf-version>
+-    <camel-version>2.25.0</camel-version>
++    <camel-version>2.24.3</camel-version>
+
+\end{alltt}
+
+\slide{Clone the repository from the book}
+
+\begin{list2}
+\item We need to run examples from the book
+\item The source code for the examples in this book is available online at GitHub:\\
+\url{https://github.com/camelinaction/camelinaction2}
+\item Clone this repository - about 22Mb
+\item Should take very little time, 2-5 minutes
+\item \verb+ git clone https://github.com/camelinaction/camelinaction2.git+
+\end{list2}
+
+\slide{Inside a project - chapter 1}
+\begin{alltt}
+hlk@debian-lab:camelinaction2$ ls
+LICENSE    appendixA  chapter2	 chapter4   chapter6    chapter8   chapter10  chapter12
+chapter14  chapter16  chapter18  chapter20	errata.txt  mvnw.cmd   README.md  chapter1
+chapter3	 chapter5   chapter7   chapter9   chapter11   chapter13  chapter15  chapter17
+chapter19  docs	mvnw 	{\bf pom.xml}
+\end{alltt}
+
+
+\slide{Chapter 1: file-copy example}
+
+\begin{list2}
+\item We want to run the command for Maven to download tools, and \emph{do stuff}
+\item \verb+mvn compile exec:java+
+\item This might take some time!
+\end{list2}
+
+\slide{Chapter 1}
+
+
+\hlkimage{3cm}{Ibsen-Camel-2ed-HI.png}
+
+\begin{list2}
+\item Meeting Camel
+\item Introducing Camel:\\
+What is Camel?, Why use Camel?
+\item Getting started:\\
+Getting Camel, Your first Camel ride, Camel’s
+message model, Message, Exchange
+\item Camel’s architecture:\\
+Architecture from 10,000 feet, Camel concepts
+\item Your first Camel ride, revisited
+\end{list2}
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\end{list2}
+
+
+
+\slide{Getting the book exampels}
+
+\begin{list2}
+\item Book uses Git repository
+\item
+\end{list2}
+
+
+\slide{Start Cloning}
+
+\begin{list2}
+\item Work in groups of two
+\item Only have one laptop downloading, then the other
+\item Clone Git repository
+\item Start downloading - use the maven command
+\end{list2}
+
+
+\slide{Chapter 2}
+
+\hlkimage{3cm}{Ibsen-Camel-2ed-HI.png}
+
+\begin{list2}
+\item Routing with Camel
+\item  Introducing Rider Auto Parts
+\item  Understanding endpoints\\
+Consuming from an FTP endpoint,
+Sending to a JMS endpoint
+\item  Creating routes in Java\\
+Using RouteBuilder,
+Using the Java DSL
+\item Defining routes in XML\\
+Bean injection and Spring, The XML DSL,
+Using Camel and Spring
+\end{list2}
+
+\slide{Chapter 2, cont}
+
+\hlkimage{3cm}{Ibsen-Camel-2ed-HI.png}
+\begin{list2}
+\item Endpoints revisited\\
+Sending to dynamic endpoints, Using property placeholders
+in endpoint URIs,\\
+ Using raw values in endpoint
+URIs, Referencing registry beans in endpoint URIs
+\item Routing and EIPs\\
+Using a content-based router, Using message
+filters, Using multicasting,\\
+Using recipient
+lists, Using the wireTap method
+\item Summary and best practices
+\end{list2}
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\end{list2}
+
+
+\slide{File Transfer Pattern Revisited}
+
+\begin{list2}
+\item
+\item
+\end{list2}
+
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\end{list2}
+
+
+\slide{Camel Examples}
+
+We can try using Camel
+\begin{list2}
+\item Downloading files from FTP or HTTP sites
+\item Put them in a local directory
+\item Work with small examples, make Camel download from FTP and HTTP
+\end{list2}
+
+
+\slide{Download from FTP or HTTP}
+
+\begin{list2}
+\item What are some differences between these?
+\item Which one do you prefer as programmers?
+\item Which one is easier to implement in the network\\
+Hint: FTP uses dynamic ports - look it up
+\item Running a service, consider if you are providing data - which would you choose\\
+Hint: security history of FTP
+\end{list2}
+
+\slide{Actual example}
+
+\begin{list2}
+\item Go to the web page of the RFC editor \url{https://www.rfc-editor.org/retrieve/bulk/}
+\item Read about the possibilities for downloading in bulk
+\item Pros and cons of using rsync, FTP, HTTP, tgz/zip
+\item Using Camel or rsync, rsync described at \url{https://www.rfc-editor.org/retrieve/rsync/}
+\end{list2}
+
+\centerline{\bf Lesson in system integration, lots of different possibilities exist \smiley}
 
 
 \slidenext

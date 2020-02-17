@@ -154,6 +154,15 @@ The following software is required to run the examples:
 \item All the examples can be run using Maven.
 \end{list2}
 
+\slide{Start Cloning}
+
+\begin{list2}
+\item Work in groups of two
+\item First I will show the process, then you
+\item Only have one laptop downloading, then the other
+\item Clone Git repository
+\item Start the maven command, it will download other files etc.
+\end{list2}
 
 
 \slide{Running Maven}
@@ -195,7 +204,6 @@ index d9b1b160..7d512cd1 100644
 
    <developers>
 @@ -58,7 +58,7 @@
-
      <activemq-version>5.15.7</activemq-version>
      <activemq-karaf-version>5.13.8</activemq-karaf-version>
 -    <camel-version>2.25.0</camel-version>
@@ -226,11 +234,89 @@ chapter19  docs	mvnw 	{\bf pom.xml}
 
 \slide{Chapter 1: file-copy example}
 
+\begin{alltt}
+hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ find data/
+data/
+data/outbox
+data/outbox/message1.xml
+data/inbox
+data/inbox/message1.xml
+\end{alltt}
+
 \begin{list2}
 \item We want to run the command for Maven to download tools, and \emph{do stuff}
 \item \verb+mvn compile exec:java+
 \item This might take some time!
+\item Note: this is a two step process, so split into \verb+mvn compile+ and \verb+exec:java+ if you have trouble running
 \end{list2}
+
+\slide{Success Compile}
+
+\begin{alltt}\footnotesize
+hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ mvn compile
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< com.camelinaction:chapter1-file-copy >----------------
+[INFO] Building Camel in Action 2 :: Chapter 1 :: File Copy Example 2.0.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- maven-resources-plugin:2.4.3:resources (default-resources) @ chapter1-file-copy ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO]
+[INFO] --- maven-compiler-plugin:3.6.1:compile (default-compile) @ chapter1-file-copy ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.270 s
+[INFO] Finished at: 2020-02-17T07:08:02+01:00
+[INFO] ------------------------------------------------------------------------
+\end{alltt}
+
+
+\slide{Success Execute Java - shortened for slide}
+
+\begin{alltt}\footnotesize
+hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ mvn exec:java
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< com.camelinaction:chapter1-file-copy >----------------
+[INFO] Building Camel in Action 2 :: Chapter 1 :: File Copy Example 2.0.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- exec-maven-plugin:1.2.1:java (default-cli) @ chapter1-file-copy ---
+[ion.FileCopierWithCamel.main()] DefaultCamelContext  INFO  Apache Camel 2.24.3 (CamelContext: camel-1) is starting
+[ion.FileCopierWithCamel.main()] FileEndpoint         INFO  Using default memory based idempotent repository with cache max size: 1000
+[ion.FileCopierWithCamel.main()] DefaultCamelContext  INFO  Route: route1 started and consuming from: file://data/inbox?noop=true
+[ion.FileCopierWithCamel.main()] DefaultCamelContext  INFO  Total 1 routes, of which 1 are started
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 11.908 s
+[INFO] Finished at: 2020-02-17T07:11:18+01:00
+[INFO] ------------------------------------------------------------------------
+\end{alltt}
+
+\slide{Success Execute Java - new files}
+
+\begin{alltt}\footnotesize
+$ find data/
+data/
+data/outbox
+data/outbox/message1.xml
+data/outbox/message2.txt
+data/inbox
+data/inbox/message1.xml
+data/inbox/message2.txt
+\end{alltt}
+
+\begin{list2}
+\item Try adding a new file using editor, and re-run\\
+\verb+echo "some data" > data/inbox/message2.txt+
+\end{list2}
+
+
 
 \slide{Chapter 1}
 
@@ -250,31 +336,7 @@ Architecture from 10,000 feet, Camel concepts
 \end{list2}
 
 
-\slide{}
 
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-
-\slide{Getting the book exampels}
-
-\begin{list2}
-\item Book uses Git repository
-\item
-\end{list2}
-
-
-\slide{Start Cloning}
-
-\begin{list2}
-\item Work in groups of two
-\item Only have one laptop downloading, then the other
-\item Clone Git repository
-\item Start downloading - use the maven command
-\end{list2}
 
 
 \slide{Chapter 2}
@@ -313,27 +375,12 @@ lists, Using the wireTap method
 \end{list2}
 
 
-\slide{}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
 \slide{File Transfer Pattern Revisited}
 
 \begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{}
-
-\begin{list2}
-\item
-\item
+\item Unix has a saying, \emph{Everything is a file}
+\item With modern computers and networks, we have URIs and can access files remotely
+\item Example URIs, \url{http://www.example.com/index.html},\\ \url{smb://workgroup;user:password@server/share/folder/file.txt}
 \end{list2}
 
 
@@ -344,7 +391,11 @@ We can try using Camel
 \item Downloading files from FTP or HTTP sites
 \item Put them in a local directory
 \item Work with small examples, make Camel download from FTP and HTTP
+\item Hint:
+\item \url{https://camel.apache.org/components/latest/ftp-component.html}
+\item \url{https://camel.apache.org/components/latest/http-component.html}
 \end{list2}
+
 
 
 \slide{Download from FTP or HTTP}
@@ -367,9 +418,16 @@ Hint: security history of FTP
 \item Using Camel or rsync, rsync described at \url{https://www.rfc-editor.org/retrieve/rsync/}
 \end{list2}
 
+\vskip 1cm
 \centerline{\bf Lesson in system integration, lots of different possibilities exist \smiley}
-
 
 \slidenext
 
 \end{document}
+
+\slide{}
+
+\begin{list2}
+\item
+\item
+\end{list2}

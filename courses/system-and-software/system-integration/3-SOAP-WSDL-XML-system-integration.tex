@@ -167,36 +167,198 @@ Source: \url{}
 \end{list2}
 
 
+\slide{Review Still got the Debian VM running}
+
+\hlkimage{5cm}{Ibsen-Camel-2ed-HI.png}
+
+
+\slide{Chapter 1: file-copy example}
+
+\begin{alltt}
+hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ find data/
+data/
+data/outbox
+data/outbox/message1.xml
+data/inbox
+data/inbox/message1.xml
+\end{alltt}
+
+\begin{list2}
+\item We want to run the command for Maven to download tools, and \emph{do stuff}
+\item \verb+mvn compile exec:java+
+\item This might take some time!
+\item Note: this is a two step process, so split into \verb+mvn compile+ and \verb+exec:java+ if you have trouble running
+\end{list2}
+
+
+
+\slide{Success Compile}
+
+\begin{alltt}\footnotesize
+hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ mvn compile
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< com.camelinaction:chapter1-file-copy >----------------
+[INFO] Building Camel in Action 2 :: Chapter 1 :: File Copy Example 2.0.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- maven-resources-plugin:2.4.3:resources (default-resources) @ chapter1-file-copy ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO]
+[INFO] --- maven-compiler-plugin:3.6.1:compile (default-compile) @ chapter1-file-copy ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.270 s
+[INFO] Finished at: 2020-02-17T07:08:02+01:00
+[INFO] ------------------------------------------------------------------------
+\end{alltt}
+
+
+\slide{Success Execute Java - shortened for slide}
+
+\begin{alltt}\footnotesize
+hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ mvn exec:java
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< com.camelinaction:chapter1-file-copy >----------------
+[INFO] Building Camel in Action 2 :: Chapter 1 :: File Copy Example 2.0.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- exec-maven-plugin:1.2.1:java (default-cli) @ chapter1-file-copy ---
+[ion.FileCopierWithCamel.main()] DefaultCamelContext  INFO  Apache Camel 2.24.3 (CamelContext: camel-1) is starting
+[ion.FileCopierWithCamel.main()] FileEndpoint         INFO  Using default memory based idempotent repository with cache max size: 1000
+[ion.FileCopierWithCamel.main()] DefaultCamelContext  INFO  Route: route1 started and consuming from: file://data/inbox?noop=true
+[ion.FileCopierWithCamel.main()] DefaultCamelContext  INFO  Total 1 routes, of which 1 are started
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 11.908 s
+[INFO] Finished at: 2020-02-17T07:11:18+01:00
+[INFO] ------------------------------------------------------------------------
+\end{alltt}
+
+\slide{Success Execute Java - new files}
+
+\begin{alltt}\footnotesize
+$ find data/
+data/
+data/outbox
+data/outbox/message1.xml
+data/outbox/message2.txt
+data/inbox
+data/inbox/message1.xml
+data/inbox/message2.txt
+\end{alltt}
+
+\begin{list2}
+\item Try adding a new file using editor, and re-run\\
+\verb+echo "some data" > data/inbox/message2.txt+
+\end{list2}
+
+
+
+\slide{Chapter 3: Transforming data with Camel}
+
+\hlkimage{5cm}{Ibsen-Camel-2ed-HI.png}
+
+
+This chapter covers
+\begin{list2}
+\item Transforming data by using EIPs and Java
+\item Transforming XML data
+\item Transforming by using well-known data formats
+\item Writing your own data formats for
+transformations
+\item Understanding the Camel type-converter
+mechanism
+\end{list2}
 
 
 \slide{3.1 Data transformation overview}
 
-\slide{3.2 Transforming data by using EIPs and Java}
+\hlkimage{18cm}{camelbook-3-1-transformation.png}
 
-Using the Message Translator EIP,
-Using the Content Enricher EIP
+\begin{list2}
+\item Data format transformation -- The data format of the message body is transformed
+from one form to another. For example, a CSV record is formatted as XML.
+\item Data type transformation -- The data type of the message body is transformed from
+one type to another. For example, java.lang.String is transformed into javax.
+jms.TextMessage .
+\end{list2}
+
+\slide{Six ways data transformation typically takes place in Camel}
+
+\begin{list2}
+\item Data transformation using EIPs and Java
+\item Data transformation using components
+\item Data transformation using data formats
+\item Data transformation using templates
+\item Data type transformation using Camel’s
+type-converter mechanism
+\item Message transformation in component adapters
+\end{list2}
+
+
+\slide{3.2 Message Translator EIP}
+
+\hlkimage{23cm}{camelbook-3-2-1-msg-trans-eip.png}
+
+\begin{list2}
+
+\item 3.2 Transforming data by using EIPs and Java
+\item Data mapping, the process of mapping between two distinct data models, is a key fac-
+tor in data integration.
+\item Picture shown is using the Message Translator EIP
+\end{list2}
+
+\slide{3.2 Content Enricher EIP}
+
+\hlkimage{23cm}{camelbook-3-2-2-content-enricher-eip.png}
+\begin{list2}
+
+\item Using the Content Enricher EIP
+\end{list2}
 
 
 \slide{3.3 Transforming XML}
 
-Transforming XML with XSLT,
-Transforming XML with object marshaling
+
+\begin{list2}
+\item Transforming XML with XSLT
+\item Transforming XML with object marshaling
+\end{list2}
+
 
 
 \slide{3.4 Transforming with data formats}
 
-Data formats provided with Camel, Using Camel’s CSV data
-format, Using Camel’s Bindy data format, Using
-Camel’s JSON data format, Configuring Camel data formats
+
+\begin{list2}
+\item Data formats provided with Camel
+\item Using Camel’s CSV data format
+\item Using Camel’s Bindy data format
+\item Using Camel’s JSON data format
+\item Configuring Camel data formats
+\end{list2}
 
 \slide{3.5 Transforming with templates}
-Using Apache Velocity
+
+\begin{list2}
+\item Using Apache Velocity
+\end{list2}
 
 \slide{3.6: Understanding Camel type converters}
 
-How the Camel type-converter mechanism works,
-Using Camel type converters, Writing your own
-type converter
+
+\begin{list2}
+\item How the Camel type-converter mechanism works
+\item Using Camel type converters
+\item Writing your own type converter
+\end{list2}
+
 
 \slide{3.7 Summary and best practices}
 

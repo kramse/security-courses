@@ -2,6 +2,7 @@
 \usepackage{zencurity-slides}
 \externaldocument{system-integration-exercises}
 \selectlanguage{english}
+\usepackage{minted}
 
 % Systemintegration
 
@@ -14,7 +15,7 @@
 \slide{Plan for today}
 
 \begin{list2}
-\item Data overview
+\item Data formats overview
 \item XML data, JSON
 \item Data Transformation
 \item WebServices
@@ -24,10 +25,9 @@
 
 Exercises
 \begin{list2}
-\item
-\item
+\item Chapter 3 from the book
+\item Looking at Web Services, discuss web services
 \end{list2}
-
 
 
 \slide{Reading Summary}
@@ -35,147 +35,40 @@ Exercises
 \begin{list1}
 \item Camel chapter 3: Transforming data with Camel
 \item Contains a lot of different formats
+\item We will use Wikipedia a lot today also
 \end{list1}
 
-
-\slide{Data overview XML data, JSON}
-
-\slide{XML data}
-
-\begin{quote}
-  Extensible Markup Language (XML) is a markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable. The World Wide Web Consortium's XML 1.0 Specification[2] of 1998[3] and several other related specifications[4]—all of them free open standards—define XML.[5]
-
-  The design goals of XML emphasize simplicity, generality, and usability across the Internet.[6] It is a textual data format with strong support via Unicode for different human languages. Although the design of XML focuses on documents, the language is widely used for the representation of arbitrary data structures[7] such as those used in web services.
-\end{quote}
-Source: \url{https://en.wikipedia.org/wiki/XML}
+\slide{Todays Agenda - approximate time plan}
 
 \begin{list2}
-\item We have seen XML used for configuration in Apache Tomcat and Camel
-\item Perfect for computers, less for humans
+\item 45m Data formats overview XML and JSON, xsltproc mini exercise
+\item 45m Small Python exercises, try using Python with XML and JSON
+\item 10:00 Break 15m
+\item 45m Chapter 3 presented and discussed including the book examples
+\item 45m Chapter 3 presented and discussed including the book examples
+\item 11:45 Lunch Break
+\item 45m Chapter 3 presented and discussed including the book examples
+\item 45m WebServices, SOAP, WSDL
+\item 14:00 Break 15m
+\item 45m Investigate examples from the internet
 \end{list2}
 
-\slide{XML data example - Nmap output}
-
-\begin{alltt}\footnotesize
-  <?xml version="1.0" encoding="UTF-8"?>
-  <!DOCTYPE nmaprun>
-  <?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
-  <!-- Nmap 7.70 scan initiated Sat Feb 22 23:35:53 2020 as: nmap -oA router -sP 10.0.42.1 -->
-  <nmaprun scanner="nmap" args="nmap -oA router -sP 10.0.42.1" start="1582410953"
-   startstr="Sat Feb 22 23:35:53 2020" version="7.70" xmloutputversion="1.04">
-  <verbose level="0"/>
-  <debugging level="0"/>
-  <host><status state="up" reason="echo-reply" reason_ttl="62"/>
-  <address addr="10.0.42.1" addrtype="ipv4"/>
-  <hostnames>
-  </hostnames>
-  <times srtt="2235" rttvar="5000" to="100000"/>
-  </host>
-  <runstats><finished time="1582410953" timestr="Sat Feb 22 23:35:53 2020" elapsed="0.32"
-   summary="Nmap done at Sat Feb 22 23:35:53 2020; 1 IP address (1 host up)
-   scanned in 0.32 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
-  </runstats>
-  </nmaprun>
-
-\end{alltt}
-
-
-\slide{XML data - documents}
-
-\begin{quote}
-Hundreds of document formats using XML syntax have been developed,[8] including RSS, Atom, SOAP, SVG, and XHTML. XML-based formats have become the default for many office-productivity tools, including Microsoft Office (Office Open XML), OpenOffice.org and LibreOffice (OpenDocument), and Apple's iWork[citation needed]. XML has also provided the base language for communication protocols such as XMPP. Applications for the Microsoft .NET Framework use XML files for configuration, and property lists are an implementation of configuration storage built on XML.[9]
-\end{quote}
-Source: \url{https://en.wikipedia.org/wiki/XML}
-
-\begin{list2}
-\item Document formats using XML may still be proprietary!
-\item Documents using XML can be validated, are they well-formed according to the Document Type Definition (DTD)
-\end{list2}
-
-\slide{XML data - standards}
-
-\begin{quote}
-Many industry data standards, such as Health Level 7, OpenTravel Alliance, FpML, MISMO, and National Information Exchange Model are based on XML and the rich features of the XML schema specification. Many of these standards are quite complex and it is not uncommon for a specification to comprise several thousand pages.[citation needed] In publishing, Darwin Information Typing Architecture is an XML industry data standard. XML is used extensively to underpin various publishing formats.
-\end{quote}
-Source: \url{https://en.wikipedia.org/wiki/XML}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{XML data for Service-oriented architecture (SOA)}
-
-\begin{quote}
-XML is widely used in a Service-oriented architecture (SOA). Disparate systems communicate with each other by exchanging XML messages. The message exchange format is standardised as an XML schema (XSD). This is also referred to as the canonical schema. XML has come into common use for the interchange of data over the Internet. IETF RFC:3023, now superseded by RFC:7303, gave rules for the construction of Internet Media Types for use when sending XML. It also defines the media types application/xml and text/xml, which say only that the data is in XML, and nothing about its semantics.
-\end{quote}
-Source: \url{https://en.wikipedia.org/wiki/XML}
-
-\begin{list2}
-\item We will talk more about SOA later
-\end{list2}
-
-
-
-\slide{Transforming XML using XSLT}
-\begin{quote}
-
-
-XSLT (Extensible Stylesheet Language Transformations) is a language for transforming XML documents into other XML documents,[1] or other formats such as HTML for web pages, plain text or XSL Formatting Objects, which may subsequently be converted to other formats, such as PDF, PostScript and PNG.[2] XSLT 1.0 is widely supported in modern web browsers.[3]
-\end{quote}
-Source: \url{https://en.wikipedia.org/wiki/XSLT}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{xsltproc example using Nmap}
-
-\begin{alltt}\footnotesize
-$ su -
-# apt install nmap xsltproc
-# nmap -sP -oA /tmp/router 91.102.91.18
-# exit
-$ xsltproc /tmp/router.xml > /tmp/router.html
-$ firefox /tmp/router.html
-\end{alltt}
-
-
-\begin{list2}
-\item We can use the command line tool \verb+xlstproc+ for transforming documents
-\item \verb+apt install xsltproc+
-\item Its part of the package Libxslt \url{https://en.wikipedia.org/wiki/Libxslt}
-\end{list2}
-
-
-
-
-
-\slide{Data oveview JSON}
-
-\begin{quote}
-
-\end{quote}
-Source: \url{}
-
-\begin{list2}
-\item
-\item
-\end{list2}
 
 
 \slide{Review Still got the Debian VM running}
 
 \hlkimage{5cm}{Ibsen-Camel-2ed-HI.png}
 
+Running new tools and trying out examples like in the book are important.
+
+You all did good, and helped each other!
+
+The tasks performed can be automated using something called Ansible, but more on that later.
 
 \slide{Chapter 1: file-copy example}
 
 \begin{alltt}
-hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ find data/
+hlk@debian-lab:~/file-copy$ find data/
 data/
 data/outbox
 data/outbox/message1.xml
@@ -195,7 +88,7 @@ data/inbox/message1.xml
 \slide{Success Compile}
 
 \begin{alltt}\footnotesize
-hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ mvn compile
+hlk@debian-lab:~/file-copy$ mvn compile
 [INFO] Scanning for projects...
 [INFO]
 [INFO] ----------------< com.camelinaction:chapter1-file-copy >----------------
@@ -220,7 +113,7 @@ hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ 
 \slide{Success Execute Java - shortened for slide}
 
 \begin{alltt}\footnotesize
-hlk@debian-lab:~/projects/system-integration/camelinaction2/chapter1/file-copy$ mvn exec:java
+hlk@debian-lab:~/file-copy$ mvn exec:java
 [INFO] Scanning for projects...
 [INFO]
 [INFO] ----------------< com.camelinaction:chapter1-file-copy >----------------
@@ -260,9 +153,245 @@ data/inbox/message2.txt
 
 
 
+\slide{Data overview XML data, JSON}
+
+\hlkimage{15cm}{chris-lawton-5IHz5WhosQE-unsplash.jpg}
+
+Photo by Chris Lawton on Unsplash
+
+\slide{XML data}
+
+\begin{quote}
+  Extensible Markup Language (XML) is a markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable. The World Wide Web Consortium's XML 1.0 Specification[2] of 1998[3] and several other related specifications[4]—all of them free open standards—define XML.[5]
+
+  The design goals of XML emphasize simplicity, generality, and usability across the Internet.[6] It is a textual data format with strong support via Unicode for different human languages. Although the design of XML focuses on documents, the language is widely used for the representation of arbitrary data structures[7] such as those used in web services.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XML}
+
+\begin{list2}
+\item We have seen XML used for configuration in Apache Tomcat and Camel
+\item Perfect for computers, less for humans
+\end{list2}
+
+\slide{XML data example - Nmap output}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE nmaprun>
+  <?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+  <!-- Nmap 7.70 scan initiated Sat Feb 22 23:35:53 2020 as: nmap -oA router -sP 10.0.42.1 -->
+  <nmaprun scanner="nmap" args="nmap -oA router -sP 10.0.42.1" start="1582410953"
+   startstr="Sat Feb 22 23:35:53 2020" version="7.70" xmloutputversion="1.04">
+  <verbose level="0"/>
+  <debugging level="0"/>
+  <host><status state="up" reason="echo-reply" reason_ttl="62"/>
+  <address addr="10.0.42.1" addrtype="ipv4"/>
+  <hostnames>
+  </hostnames>
+  <times srtt="2235" rttvar="5000" to="100000"/>
+  </host>
+  <runstats><finished time="1582410953" timestr="Sat Feb 22 23:35:53 2020" elapsed="0.32"
+   summary="Nmap done at Sat Feb 22 23:35:53 2020; 1 IP address (1 host up)
+   scanned in 0.32 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+  </runstats>
+  </nmaprun>
+\end{minted}
+
+
+\slide{XML data - documents}
+
+\begin{quote}
+Hundreds of document formats using XML syntax have been developed,[8] including RSS, Atom, SOAP, SVG, and XHTML. XML-based formats have become the default for many office-productivity tools, including Microsoft Office (Office Open XML), OpenOffice.org and LibreOffice (OpenDocument), and Apple's iWork[citation needed]. XML has also provided the base language for communication protocols such as XMPP. Applications for the Microsoft .NET Framework use XML files for configuration, and property lists are an implementation of configuration storage built on XML.[9]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XML}
+
+\begin{list2}
+\item Document formats using XML may still be proprietary!
+\item Documents using XML can be validated, are they well-formed according to the Document Type Definition (DTD)
+\end{list2}
+
+\slide{XML data - standards}
+
+\begin{quote}
+Many industry data standards, such as Health Level 7, OpenTravel Alliance, FpML, MISMO, and National Information Exchange Model are based on XML and the rich features of the XML schema specification. Many of these standards are quite complex and it is not uncommon for a specification to comprise several thousand pages.[citation needed] In publishing, Darwin Information Typing Architecture is an XML industry data standard. XML is used extensively to underpin various publishing formats.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XML}
+
+\begin{list2}
+\item Dont worry too much about standards at this time
+\item The important standards will often be defined by the business area
+\end{list2}
+
+
+\slide{XML data for Service-oriented architecture (SOA)}
+
+\begin{quote}
+XML is widely used in a Service-oriented architecture (SOA). Disparate systems communicate with each other by exchanging XML messages. The message exchange format is standardised as an XML schema (XSD). This is also referred to as the canonical schema. XML has come into common use for the interchange of data over the Internet. IETF RFC:3023, now superseded by RFC:7303, gave rules for the construction of Internet Media Types for use when sending XML. It also defines the media types application/xml and text/xml, which say only that the data is in XML, and nothing about its semantics.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XML}
+
+\begin{list2}
+\item We will talk more about SOA later
+\end{list2}
+
+
+
+\slide{Transforming XML using XSLT}
+\begin{quote}
+
+
+XSLT (Extensible Stylesheet Language Transformations) is a language for transforming XML documents into other XML documents,[1] or other formats such as HTML for web pages, plain text or XSL Formatting Objects, which may subsequently be converted to other formats, such as PDF, PostScript and PNG.[2] XSLT 1.0 is widely supported in modern web browsers.[3]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XSLT}
+
+\begin{list2}
+\item Can be seen as a mapping between formats, different XML schemas
+\item Also is Turing complete, is a programming language
+\end{list2}
+
+\slide{XSLT example}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="xml" indent="yes"/>
+  <xsl:template match="/persons">
+    <root> <xsl:apply-templates select="person"/> </root>
+  </xsl:template>
+  <xsl:template match="person">
+    <name username="{@username}"> <xsl:value-of select="name" /> </name>
+  </xsl:template>
+</xsl:stylesheet>
+\end{minted}
+
+\begin{list2}
+\item XSLT uses XPath to identify subsets of the source document tree and perform calculations. XPath also provides a range of functions
+\item XSLT functionalities overlap with those of XQuery, which was initially conceived as a query language for large collections of XML documents\\
+Source: \url{https://en.wikipedia.org/wiki/XSLT}
+\end{list2}
+
+\slide{xsltproc example using Nmap}
+
+\begin{alltt}\footnotesize
+$ su -
+# apt install nmap xsltproc
+# nmap -sP -oA /tmp/router 91.102.91.18
+# exit
+$ xsltproc /tmp/router.xml > /tmp/router.html
+$ firefox /tmp/router.html
+\end{alltt}
+
+
+\begin{list2}
+\item We can use the command line tool \verb+xlstproc+ for transforming documents
+\item \verb+apt install xsltproc+
+\item Its part of the package Libxslt \url{https://en.wikipedia.org/wiki/Libxslt}
+\vskip 2cm
+\item Try installing the tools Nmap and \verb+xsltproc+ and reproduce the above
+\item This is an easy tool to try, and very useful too
+\end{list2}
+
+
+
+
+
+\slide{Data oveview JSON}
+
+\begin{quote}
+JavaScript Object Notation (JSON, pronounced /ˈdʒeɪsən/; also /ˈdʒeɪˌsɒn/[note 1]) is an open-standard file format or data interchange format that uses {\bf human-readable text} to transmit data objects consisting of attribute–value pairs and array data types (or any other serializable value). It is a very common data format, with a diverse range of applications, such as serving as replacement for XML in AJAX systems.[6]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/JSON}
+
+\begin{list2}
+\item I like JSON much better than XML
+\item Many web services can supply data in JSON format
+\end{list2}
+
+\slide{JSON example}
+
+\begin{minted}[fontsize=\footnotesize]{json}
+{
+  "first name": "John",
+  "last name": "Smith",
+  "age": 25,
+  "address": {
+    "street address": "21 2nd Street",
+    "city": "New York",
+    "state": "NY",
+    "postal code": "10021"
+  },
+  "phone numbers": [
+    {
+      "type": "home",
+      "number": "212 555-1234"
+    },
+  ],
+}
+\end{minted}
+
+\begin{list2}
+\item This is a basic JSON document, new data attribute-value pairs can be added\\
+Source: \url{https://en.wikipedia.org/wiki/JSON}
+\end{list2}
+
+
+
+\slide{Note about frameworks and libraries}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import xml.etree.ElementTree as ET
+tree = ET.parse('testfile.xml')
+root = tree.getroot()
+
+print(root.tag)
+print('Nmap version: \t\t{:s} '.format(root.attrib['version']))
+print('Nmap started: \t\t{:s} '.format(root.attrib['startstr']))
+print('Nmap command line: \t{:s} '.format(root.attrib['args']))
+
+hosts = tree.findall('./host')
+for host in hosts:
+    print(host.tag)
+    print(host.attrib)
+    for hostvalues in host:
+        print(hostvalues.tag)
+        print(hostvalues.attrib)
+\end{minted}
+
+\begin{list2}
+\item Dont import JSON or XML using home made programs
+\item Example uses xml.etree.ElementTree from Python \url{https://docs.python.org/3.7/library/xml.etree.elementtree.html}
+\end{list2}
+
+\slide{Convert XML to JSON}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import xml.etree.ElementTree as ET
+import json
+def etree_to_dict(t):
+    d = {t.tag : map(etree_to_dict, t.getchildren())}
+    d.update(('@' + k, v) for k, v in t.attrib.items())
+    d['text'] = t.text
+    return d
+
+tree = ET.parse('testfile.xml')
+root = tree.getroot()
+mydict = etree_to_dict(root)
+print(type(tree))
+print(type(root))
+print(type(mydict))
+
+print(mydict)
+
+with open('testfile.json', 'w') as json_file:
+  json.dump(mydict, json_file)
+\end{minted}
+
+Converting using Python is easy
+
+
 \slide{Chapter 3: Transforming data with Camel}
 
-\hlkimage{5cm}{Ibsen-Camel-2ed-HI.png}
+\hlkimage{3cm}{Ibsen-Camel-2ed-HI.png}
 
 
 This chapter covers
@@ -274,6 +403,52 @@ This chapter covers
 transformations
 \item Understanding the Camel type-converter
 mechanism
+\end{list2}
+
+
+\slide{Dependencies}
+
+Some exercises uses deprecated APIs not in JDK 11,
+\begin{alltt}
+Unresolvable class definition; nested exception is
+java.lang.NoClassDefFoundError: javax/xml/bind/JAXBException
+\end{alltt}
+
+\begin{list2}
+\item to avoid problems it is possible to add dependencies to POM, JAXB\\
+see the JDK 9+ pom.xml \url{https://github.com/apache/camel/blob/master/parent/pom.xml#L5741}
+\item This is a common problem, version mismatch - but also what Maven supports
+\item Using an older JDK 8 would also initially help this, but then what?!
+\end{list2}
+
+\slide{Discussion: Legacy code}
+
+Options:
+\begin{list2}
+\item We have legacy code, Camel book sources
+\item Can run under JDK 8
+\item We can create a virtual machine using old JDK running old code
+\vskip 2cm
+\item We can upgrade the code, what does that include?
+\item Using the same libraries, are they supported, known bugs
+\item Upgrade/change into new APIs - how much work?
+\end{list2}
+
+
+\slide{Forked and testing}
+
+I decided that I wanted to change the code \smiley
+
+I have forked the original repository:\\
+\url{https://github.com/kramse/camelinaction2}
+
+YMMV - and no guarantees
+
+Main changes so far:
+\begin{list2}
+\item Parent top-level pom.xml updated version numbers for
+\item Parent top-level pom.xml added JAXB stuff, for making chapter 3 example working
+\item \url{https://github.com/kramse/camelinaction2/commit/35e840110af175c2de8b1093c9b48b673b4921cc}
 \end{list2}
 
 
@@ -309,8 +484,7 @@ type-converter mechanism
 \begin{list2}
 
 \item 3.2 Transforming data by using EIPs and Java
-\item Data mapping, the process of mapping between two distinct data models, is a key fac-
-tor in data integration.
+\item Data mapping, the process of mapping between two distinct data models, is a key factor in data integration.
 \item Picture shown is using the Message Translator EIP
 \end{list2}
 
@@ -324,6 +498,8 @@ tor in data integration.
 
 
 \slide{3.3 Transforming XML}
+
+\hlkimage{13cm}{camel-xslt.png}
 
 
 \begin{list2}
@@ -344,11 +520,126 @@ tor in data integration.
 \item Configuring Camel data formats
 \end{list2}
 
-\slide{3.5 Transforming with templates}
+
+
+\slide{Camel CSV}
+
+
+\begin{minted}[fontsize=\footnotesize]{java}
+from("file://rider/csvfiles")
+  .unmarshal().csv()
+  .split(body()).to("jms:queue:csv.record");
+\end{minted}
 
 \begin{list2}
-\item Using Apache Velocity
+\item Camel has built-in support for many formats
+\item CSV is a very basic method of moving data
 \end{list2}
+
+
+\slide{Camel’s JSON data format}
+
+Listing 3.9   An HTTP service that returns order summaries rendered in JSON format
+\begin{minted}[fontsize=\footnotesize]{xml}
+<bean id="orderService" class="camelinaction.OrderServiceBean"/>
+<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+  <dataFormats>
+    <json id="json" library="Jackson"/>
+  </dataFormats>
+
+  <route>
+    <from uri="jetty://http://0.0.0.0:8080/order"/>
+    <bean ref="orderService" method="lookup"/>
+    <marshal ref="json"/>
+  </route>
+</camelContext>
+\end{minted}
+
+\begin{list2}
+\item Jetty is the small Web server and javax.servlet container \url{https://www.eclipse.org/jetty/}
+\end{list2}
+
+
+
+\slide{Configuring Camel data formats}
+
+\begin{minted}[fontsize=\footnotesize]{java}
+public void configure() {
+  CsvDataFormat myCsv = new CsvDataFormat()
+      .setDelimiter(';')
+      .setHeader(new String[]{
+        "id", "customerId", "date", "item", "amount", "description"});
+  from("direct:toCsv")
+      .marshal(myCsv)
+      .to("file://acme/outbox/csv");
+}
+\end{minted}
+
+\begin{list2}
+\item CSV format can change over time, but often programs are hard to maintain
+\item Also choosing the seperator needs thought
+\end{list2}
+
+\slide{Side note: Zeek Security Monitor handles formats differently}
+
+Zeek has files formatted with a header:
+\begin{alltt}\footnotesize
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
+        rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
+        TC      RD      RA      Z       answers TTLs    rejected
+
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383
+	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0
+   www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
+
+
+
+
+
+
+\slide{3.5 Transforming with templates}
+
+Using Velocity in a Camel route is as simple as this:
+
+\begin{minted}[fontsize=\footnotesize]{java}
+from("direct:sendMail")
+  .setHeader("Subject", constant("Thanks for ordering"))
+  .setHeader("From", constant("donotreply@riders.com"))
+  .to("velocity://rider/mail.vm")
+  .to("smtp://mail.riders.com?user=camel&password=secret");
+\end{minted}
+
+\begin{list2}
+\item Using Apache Velocity is a way to build text using template languages
+\end{list2}
+
+
+\slide{Side note: Jinja templates}
+
+Using Velocity in a Camel route is as simple as this:
+
+\begin{minted}[fontsize=\footnotesize]{html}
+<title>{% block title %}{% endblock %}</title>
+<ul>
+{% for user in users %}
+  <li><a href="{{ user.url }}">{{ user.username }}</a></li>
+{% endfor %}
+</ul>
+\end{minted}
+
+\begin{list2}
+\item An often used other library is Jinja \url{https://jinja.palletsprojects.com/}
+\end{list2}
+
+
 
 \slide{3.6: Understanding Camel type converters}
 
@@ -360,19 +651,58 @@ tor in data integration.
 \end{list2}
 
 
+\slide{Camel type-converter system}
+
+\hlkimage{20cm}{camelbook-type-converter-registry.png}
+\begin{list2}
+\item How the Camel type-converter mechanism works
+\end{list2}
+
+\slide{Example Type Conversion}
+
+\begin{minted}[fontsize=\footnotesize]{html}
+from("file://riders/inbox"){\bf
+  .convertBodyTo(String.class)}
+  .to("jms:queue:inbox");
+\end{minted}
+
+
+
 \slide{3.7 Summary and best practices}
 
+From the book, and my experience, Here are a few key tips you should take away from this chapter:
+\begin{list2}
+\item  Data transformation is often required—Integrating IT systems often requires you to
+use different data formats when exchanging data. Camel can act as the mediator
+and has strong support for transforming data in any way possible. Use the various
+features in Camel to aid with your transformation needs.
+\item Java is powerful—Using Java code isn’t a worse solution than using a fancy map-
+ping tool. Don’t underestimate the power of the Java language. Even if it takes 50
+lines of grunt boilerplate code to get the job done, you have a solution that can
+easily be maintained by fellow engineers.
+\item This chapter, along with chapter 2, covered two crucial features of integration kits:
+routing and transformation.
+\vskip 1cm
+\item Use JSON for humans, Only use CSV as a last resort
+\item Test and keep up to date - dont rely on old APIs and functionality that will go away\\
+Example Python2 $=>$ Python3, LaTeX old packages and ways, upgrade!
+\end{list2}
 
+\slide{Web services SOAP, WSDL}
 
-\slide{Web services SOAP, WSDL, }
+\hlkimage{15cm}{josefina-di-battista-hB25vJNTnNQ-unsplash.jpg}
 
+Photo by Josefina Di Battista on Unsplash
 
 
 \slide{Web Services}
 
-\begin{quote}
-
-\end{quote}
+  The term Web service (WS) is either:
+  \begin{list2}
+  \item  a service offered by an electronic device to another electronic device, communicating with each other via the World Wide Web, or
+  \item a server running on a computer device, listening for requests at a particular port over a network, serving web documents (HTML, JSON, XML, images), and creating web applications services, which serve in solving specific domain problems over the Web (WWW, Internet, HTTP)
+\end{list2}
+Source: \url{https://en.wikipedia.org/wiki/Web_service}
 
 \begin{list2}
 \item Today a generic name for services using the internet
@@ -383,18 +713,12 @@ tor in data integration.
 
 
 
-
-\slide{SOAP - Simple Object Access Protocol}
+\slide{W3C Web Services}
 
 \begin{quote}
-SOAP (abbreviation for Simple Object Access Protocol) is a messaging protocol specification for exchanging structured information in the implementation of web services in computer networks. Its purpose is to provide extensibility, neutrality, verbosity and independence. It uses XML Information Set for its message format, and relies on application layer protocols, most often Hypertext Transfer Protocol (HTTP), although some legacy systems communicate over Simple Mail Transfer Protocol (SMTP), for message negotiation and transmission.
+A web service is a software system designed to support interoperable machine-to-machine interaction over a network. It has an interface described in a machine-processable format (specifically WSDL). Other systems interact with the web service in a manner prescribed by its description using SOAP-messages, typically conveyed using HTTP with an XML serialization in conjunction with other web-related standards.
 \end{quote}
-Source: \url{https://en.wikipedia.org/wiki/SOAP}
-
-\begin{list2}
-\item
-\item
-\end{list2}
+Source -- W3C, Web Services Glossary[3]
 
 
 \slide{WSDL - Web Services Description Language}
@@ -406,60 +730,173 @@ Source: \url{https://en.wikipedia.org/wiki/SOAP}
 \end{quote}
 Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
 
+%\begin{list2}
+%\item
+%\item
+%\end{list2}
+
+\slide{WSDL XML}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="http://www.tmsws.com/wsdl20sample"
+             xmlns:whttp="http://schemas.xmlsoap.org/wsdl/http/"
+             xmlns:wsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+             targetNamespace="http://www.tmsws.com/wsdl20sample">
+
+<documentation>
+    This is a sample WSDL 2.0 document.
+</documentation>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+
+
+\slide{WSDL XML types}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Abstract type -->
+   <types>
+      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns="http://www.tmsws.com/wsdl20sample"
+                targetNamespace="http://www.example.com/wsdl20sample">
+
+         <xs:element name="request"> ... </xs:element>
+         <xs:element name="response"> ... </xs:element>
+      </xs:schema>
+   </types>
+
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Types	Describes the data. The XML Schema language (also known as XSD) is used (inline or referenced) for this purpose.
+
+
+\slide{WSDL XML interfaces}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Abstract interfaces -->
+   <interface name="Interface1">
+      <fault name="Error1" element="tns:response"/>
+      <operation name="Get" pattern="http://www.w3.org/ns/wsdl/in-out">
+         <input messageLabel="In" element="tns:request"/>
+         <output messageLabel="Out" element="tns:response"/>
+      </operation>
+   </interface>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Interface	Defines a Web service, the operations that can be performed, and the messages that are used to perform the operation.
+
+\slide{WSDL XML the binding}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Concrete Binding Over HTTP -->
+   <binding name="HttpBinding" interface="tns:Interface1"
+            type="http://www.w3.org/ns/wsdl/http">
+      <operation ref="tns:Get" whttp:method="GET"/>
+   </binding>
+
+<!-- Concrete Binding with SOAP-->
+   <binding name="SoapBinding" interface="tns:Interface1"
+            type="http://www.w3.org/ns/wsdl/soap"
+            wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
+            wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
+      <operation ref="tns:Get" />
+   </binding>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Binding	Specifies the interface and defines the SOAP binding style (RPC/Document) and transport (SOAP Protocol). The binding section also defines the operations.
+
+\slide{WSDL XML the Service}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Web Service offering endpoints for both bindings-->
+   <service name="Service1" interface="tns:Interface1">
+      <endpoint name="HttpEndpoint"
+                binding="tns:HttpBinding"
+                address="http://www.example.com/rest/"/>
+      <endpoint name="SoapEndpoint"
+                binding="tns:SoapBinding"
+                address="http://www.example.com/soap/"/>
+   </service>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Service	Contains a set of system functions that have been exposed to the Web-based protocols.
+
+
+\slide{SOAP - Simple Object Access Protocol}
+
+\begin{quote}
+SOAP (abbreviation for Simple Object Access Protocol) is a messaging protocol specification for exchanging structured information in the implementation of web services in computer networks. Its purpose is to provide extensibility, neutrality, verbosity and independence. It uses XML Information Set for its message format, and relies on application layer protocols, most often Hypertext Transfer Protocol (HTTP), although some legacy systems communicate over Simple Mail Transfer Protocol (SMTP), for message negotiation and transmission.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/SOAP}
+
+
+Utilizes  UDDI (Universal Description, Discovery, and Integration)
+
+\slide{Web Service Explained }
+
+\begin{quote}
+The term "Web service" describes a standardized way of integrating Web-based applications using the XML, SOAP, WSDL and UDDI open standards over an Internet Protocol backbone. XML is the data format used to contain the data and provide metadata around it, SOAP is used to transfer the data, WSDL is used for describing the services available and UDDI lists what services are available.
+\end{quote}
+Source:\url{https://en.wikipedia.org/wiki/Web_service}
+
+
+\slide{Sample WebServices}
+
+\hlkimage{21cm}{dbc-services.png}
 \begin{list2}
-\item
-\item
+\item Dansk Bibliotekscenter provides web services, lookup into various databases using Web services
+\item \url{https://opensource.dbc.dk/services/services}
+\end{list2}
+
+\slide{Again frameworks and libraries}
+
+A simple “Hello World” http SOAP server:
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import SOAPpy
+def hello():
+    return "Hello World"
+server = SOAPpy.SOAPServer(("localhost", 8080))
+server.registerFunction(hello)
+server.serve_forever()
+\end{minted}
+And the corresponding client:
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import SOAPpy
+server = SOAPpy.SOAPProxy("http://localhost:8080/")
+print server.hello()
+\end{minted}
+
+
+\begin{list2}
+\item Dont process SOAP manually using home made programs
+\item \url{https://pypi.org/project/SOAPpy/}
 \end{list2}
 
 
 
 
+\slide{Investigate examples from the internet}
 
-\slide{}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{}
+\hlkimage{9cm}{ripe-ncc-atlas-json.png}
 
 \begin{list2}
-\item
-\item
-\end{list2}
+\item Which web services do you use? Can we find examples of XML and JSON web services
+%\item Can we run SOAP, perhaps the SOAPpy example
+\item Look into the services provided by DBC, what languages, formats, services - look at their Github account DBCDK
+\item We will use internet data from RIPE NCC Atlas service, if nothing else:\\
+{\footnotesize\url{https://ripe-atlas-tools.readthedocs.io/en/latest/}\\
+\url{https://atlas.ripe.net/docs/api/v2/manual/pdf/ripe_atlas_api_V2_manual.pdf}}
+\item If using the command line to set the API key:\
+\verb+ripe-atlas configure --set authorisation.create=e7fd3981-9592-481e-8bcd-f50d17e65de8+
 
-
-\slide{}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{}
-
-\begin{list2}
-\item
-\item
-\end{list2}
-
-
-\slide{}
-
-\begin{list2}
-\item
-\item
 \end{list2}
 
 

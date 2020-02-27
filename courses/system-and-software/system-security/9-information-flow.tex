@@ -7,21 +7,19 @@
 \begin{document}
 
 \mytitlepage
-{9. Information Flow}
-{KEA Kompetence Computer Systems Security 2019}
+{9. Confinement and isolation}
+{KEA Kompetence Computer Systems Security \the\year}
 
-
-{\bf unfinished, will be updated later}
 
 \slide{Plan for today}
 
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item Firewall Flow Controls
 \item Confinement and isolation
 \item Virtual Machines and Sandboxes
 \item Covert Channels
+\item Firewall Flow Controls
 \end{list2}
 \item Exercises
 \begin{list2}
@@ -34,7 +32,6 @@
 \slide{Reading Summary}
 
 \begin{list1}
-\item Bishop chapter 17: Information Flow
 \item Bishop chapter 18: Confinement Problem
 \item Capsicum: practical capabilities for UNIX
 \item Removing ROP Gadgets from OpenBSD
@@ -53,18 +50,656 @@
 \end{list1}
 
 
-\slide{Firewall Flow Controls}
+\slide{Goals for today: Confinement and isolation}
+
+Todays goals:
+\begin{list2}
+\item Known the problem of keeping applications and data confined
+\end{list2}
 
 
-\slide{Confinement and isolation}
+\slide{The confinement problem}
+
+\begin{list1}
+\item {\bf Definition 18-1} The \emph{confinement problem} is the problem of preventing a server from leaking information that the user of the serrvice considers confidential.
+\item
+\end{list1}
+
+\slide{A covert channel}
+
+\begin{list1}
+\item {\bf Definition 18-2} A \emph{covert channel} is a path of communication that was not designed to be used for communication.
+\item
+\end{list1}
+
+\slide{The rule of transitive confinement}
+
+\begin{list1}
+\item {\bf Definition 18-3} The \emph{rule of transitive confinement} states that if a confined process invokes a second process, the second process must be as confined as the caller.
+\item
+\end{list1}
 
 
-\slide{Virtual Machines and Sandboxes}
+
+\slide{Isolation}
+
+\begin{quote}
+A controlled environment is an environment that contains process execution in such a way that it can only interact with other entities in a manner that preserves its isolation.
+\end{quote}
+Quote from Matt Bishop, Computer Security 2019
+
+\begin{list1}
+\item
+\item
+\end{list1}
+
+
+
+
+\slide{Virtual Machines}
+
+\begin{list1}
+\item {\bf Definition 18-4} A \emph{virtual machine} is a program that simulates the hardware of a (possibly abstract) computer system.
+\item Also called hypervisor
+\item Common technologies include VMware, Virtualbox, HyperV, Qemu, KVM
+\item Qubes OS uses the Xen Project h\url{ttps://xenproject.org/}
+\item Also similarities to sandboxes implemented in Java Virtual Machine (JVM) and other places
+\end{list1}
+
+
+
+\slide{Sandbox definition}
+
+\begin{list1}
+\item {\bf Definition 18-6} A \emph{sandbox} is an environment in which the actions of a process are restricted according to a security policy
+\item Mentions firewall, which is why we also discuss these later today
+\end{list1}
+
+
+
+\slide{Chroot, Jails and }
+
+\begin{list1}
+\item Der findes mange typer \emph{jails} på Unix
+\item Ideer fra Unix chroot som ikke er en egentlig sikkerhedsfeature
+\begin{list2}
+\item Unix chroot - bruges stadig, ofte i daemoner som OpenSSH
+\item FreeBSD Jails
+\item SELinux
+\item Solaris Containers og Zones
+\item VMware virtuelle maskiner, er det et jail?
+\end{list2}
+\item Hertil kommer et antal andre måder at adskille processer - sandkasser
+\item Husk også de simple, database som \verb+_postgresql+, Tomcat som \verb+tomcat+, Postfix postsystem som \verb+_postfix+, SSHD som \verb+sshd+ osv. - simple brugere, få rettigheder
+\end{list1}
+
+\slide{JVM security policies}
+
+\begin{minted}[fontsize=\small]{java}
+// ========== WEB APPLICATION PERMISSIONS =====================================
+// These permissions are granted by default to all web applications
+// In addition, a web application will be given a read FilePermission
+// and JndiPermission for all files and directories in its document root.
+grant {
+    // Required for JNDI lookup of named JDBC DataSource's and
+    // javamail named MimePart DataSource used to send mail
+    permission java.util.PropertyPermission "java.home", "read";
+    permission java.util.PropertyPermission "java.naming.*", "read";
+    permission java.util.PropertyPermission "javax.sql.*", "read";
+...
+};
+// The permission granted to your JDBC driver
+// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
+//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
+// \};
+\end{minted}
+
+\begin{list1}
+\item Eksempel fra \verb+apache-tomcat-6.0.18/conf/catalina.policy+
+\end{list1}
+
+
+\slide{Apple sandbox named generic rules}
+
+\begin{minted}[fontsize=\small]{lisp}
+;; named - sandbox profile
+;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
+;;
+;; WARNING: The sandbox rules in this file currently constitute
+;; Apple System Private Interface and are subject to change at any time and
+;; without notice. The contents of this file are also auto-generated and not
+;; user editable; it may be overwritten at any time.
+;;
+(version 1)
+(debug deny)
+
+(import "bsd.sb")
+
+(deny default)
+(allow process*)
+(deny signal)
+(allow sysctl-read)
+(allow network*)
+\end{minted}
+
+
+\slide{Apple sandbox named specific rules }
+
+\begin{minted}[fontsize=\small]{lisp}
+;; Allow named-specific files
+(allow file-write* file-read-data file-read-metadata
+  (regex "^(/private)?/var/run/named\\pid$"
+         "^/Library/Logs/named\\.log$"))
+
+(allow file-read-data file-read-metadata
+  (regex "^(/private)?/etc/rndc\\.key$"
+         "^(/private)?/etc/resolv\\.conf$"
+         "^(/private)?/etc/named\\.conf$"
+         "^(/private)?/var/named/"))
+\end{minted}
+
+\begin{list1}
+\item Eksempel fra \verb+/usr/share/sandbox+ på Mac OS X
+\end{list1}
+
+
+
+\slide{Design a robust network Isolation and segmentation}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+\slide{Basic Network Security Pattern Isolate in VLANs}
+
+\hlkimage{10cm}{images/demo-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter trafik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\item Brug port security til at sikre basale services DHCP, Spanning Tree osv.
+\end{list1}
+
+\exercise{ex:vm-escape}
 
 
 \slide{Covert Channels}
 
-\exercise{ex:vm-escape}
+\begin{list1}
+\item {\bf Definition 18-7} A \emph{covert storage channel} uses an attribute of the shared resource. A \emph{covert timing channel} uses a temporal or ordering relationship among access to a shared resource
+\item Example the recent Intel CPU attacks meltdown etc.
+\item Book describes ways to detect and mitigate these covert channels, but it is hard
+\item Chapter 17 - which we haven't read discuss information flow, which can be analyzed
+\end{list1}
+
+\slide{Covert Channels}
+
+\begin{list1}
+\item {\bf Definition 18-7} The \emph{}
+\item
+\end{list1}
+
+
+
+
+\slide{Firewall Flow Controls}
+
+\slide{Networks today}
+\hlkimage{13cm}{overview-routing-customer-2015.pdf}
+
+\begin{list1}
+\item Conclusion: Do as much as possible with your existing devices
+\item Tuning and using features like stateless router filters works wonders
+\end{list1}
+
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{5cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith
+eBook ISBN: 9780124172166
+Paperback ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+{\footnotesize\link{https://www.elsevier.com/books/applied-network-security-monitoring/unknown/978-0-12-417208-1}}
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+
+
+\slide{Firewalls and related issues}
+
+\begin{quote}
+In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
+\end{quote} Source: Wikipedia
+
+\begin{list1}
+\item \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+\item \link{http://www.wilyhacker.com/} Cheswick chapter 2 PDF
+\emph{A Security Review of Protocols:
+Lower Layers}
+\begin{list2}
+\item Network layer, packet filters, application level, stateless, stateful
+\end{list2}
+\end{list1}
+
+\Large Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+
+
+\slide{Firewall historik}
+
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
+
+\begin{list1}
+\item Firewalls har været kendt siden starten af 90'erne
+\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
+
+\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
+William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
+Addison-Wesley, 2nd edition
+%\item Idag findes mange, men findes der en god generel firewall bog?
+\end{list1}
+
+
+
+\slide{Reading about firewalls}
+
+\begin{list1}
+\item \link{http://www.wilyhacker.com/} Cheswick chapter 3 PDF
+\emph{Security Review: The Upper Layers}
+\begin{list2}
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow SMB through an internet firewall, we are asking for trouble
+\end{list2}
+\end{list1}
+
+Skim chapters from 1st edition:\\
+\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
+
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Med 802.1q tillades VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\end{list1}
+
+
+\slide{Generic IP Firewalls}
+
+\vskip 4 cm
+\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
+  traffik på Internet}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
+  traffik på Internet}
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{6cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{Small networks}
+
+\hlkimage{18cm}{images/kursus-netvaerk.pdf}
+
+
+\slide{Firewall er ikke alene}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
+
+\slide{Unified communications}
+
+\hlkimage{19cm}{firma-netvaerk-wlan}
+
+
+\slide{Firewallrollen idag}
+
+\begin{list1}
+\item Idag skal en firewall være med til at:
+\begin{list2}
+\item Forhindre angribere i at komme ind
+\item Forhindre angribere i at sende traffik ud
+\item Forhindre virus og orme i at sprede sig i netværk
+\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
+  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
+\end{list2}
+\item Det kræver overblik!
+\end{list1}
+
+
+
+\slide{Modern Firewalls}
+
+\begin{list1}
+\item Basalt set et netværksfilter - det yderste fæstningsværk
+\item Indeholder typisk:
+  \begin{list2}
+   \item Grafisk brugergrænseflade til konfiguration - er det en
+   fordel?
+\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
+  ind/ud, porte, protokol, ...
+\item både IPv4 og IPv6
+\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
+  at tilføje/åbne en usikker protokol?
+\item typisk NAT funktionalitet indbygget
+\item typisk mulighed for nogle serverfunktioner: kan agere
+  DHCP-server, DNS caching server og lignende
+  \end{list2}
+\item En router med Access Control Lists - kaldes ofte netværksfilter,
+  mens en dedikeret maskine kaldes firewall
+%  funktionen er reelt den samme - der filtreres traffik
+\end{list1}
+
+
+\slide{Sample rules from OpenBSD PF}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="217.157.20.129"
+webserver="217.157.20.131"
+homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
+wlan="10.0.42.0/24"
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+block in all # default block anything}
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+
+
+
+\slide{Packet filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering er firewalls der filtrerer på IP niveau
+\item Idag inkluderer de fleste stateful inspection
+\end{list1}
+
+\slide{Kommercielle firewalls}
+\begin{list2}
+\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
+\item Cisco ASA \link{http://www.cisco.com}
+\item Clavister firewalls \link{http://www.clavister.com}
+\item Juniper SRX \link{http://www.juniper.net}
+\item Palo Alto \link{https://www.paloaltonetworks.com/}
+\item Fortinet \link{https://www.fortinet.com/}
+\end{list2}
+
+Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
+
+\slide{Open source baserede firewalls}
+\begin{list2}
+\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
+\item Firewall GUIs ovenpå Linux - mange!
+nogle er kommercielle produkter
+\item OpenBSD PF
+\link{http://www.openbsd.org}
+\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
+\item Mac OS X benytter OpenBSD PF
+\item FreeBSD inkluderer også OpenBSD PF
+\end{list2}
+
+NB: kun eksempler og dem jeg selv har brugt
+
+
+\slide{Hardware eller software}
+
+
+\begin{list1}
+\item Man hører indimellem begrebet \emph{hardware firewall}
+\item Det er dog et faktum at en firewall består af:
+\begin{list2}
+\item Netværkskort - som er hardware
+\item Filtreringssoftware - som er \emph{software}!
+\end{list2}
+\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
+  og en APU2C4 med OpenBSD for en software firewall!
+\item Man kan til gengæld godt argumentere for at en dedikeret
+  firewall som en separat enhed kan give bedre sikkerhed
+  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
+\end{list1}
+
+
+
+
+
+
+
+\slide{firewall koncepter}
+
+\begin{list1}
+\item Rækkefølgen af regler betyder noget!
+\begin{list2}
+\item To typer af firewalls:
+ First match - når en regel matcher, gør det som angives block/pass
+ Last match  - marker pakken hvis den matcher, til sidst afgøres block/pass
+\end{list2}
+\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
+    man bruger!}
+\item OpenBSD PF er last match
+\item FreeBSD IPFW er first match
+\item Linux iptables/netfilter er last match
+\end{list1}
+
+\slide{First or Last match firewall?}
+
+\hlkimage{18cm}{images/first-last-match-1.pdf}
+
+
+
+\slide{First match - IPFW}
+
+\begin{alltt}
+\hlksmall
+00100 16389  1551541 allow ip from any to any via lo0
+00200     0        0 deny log ip from any to 127.0.0.0/8
+00300     0        0 check-state
+...
+{\bfseries
+65435    36     5697 deny log ip from any to any}
+65535   865    54964 allow ip from any to any
+\end{alltt}
+
+\vskip 2 cm
+
+\centerline{Den sidste regel nås aldrig!}
+
+\slide{Last match - OpenBSD PF}
+
+\begin{alltt}\small
+ext_if="ext0"
+int_if="int0"
+{\bf
+block in}
+pass out keep state
+
+pass quick on \{ lo $int_if \}
+
+# Tillad forbindelser ind på port 80=http og port 53=domain
+# på IP-adressen for eksterne netkort ($ext_if) syntaksen
+pass in on $ext_if proto tcp to ($ext_if) port http keep state
+pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
+\end{alltt}
+
+
+Pakkerne markeres med block eller pass indtil sidste regel\\
+nøgleordet \emph{quick} afslutter match - god til store regelsæt
+
+
+
+\slide{Firewalls og ICMP}
+
+\begin{alltt}
+ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\end{alltt}
+
+\begin{list1}
+\item Ovenstående er IPFW syntaks for at tillade de interessant ICMP beskeder igennem
+\item Tillad ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\slide{Firewall konfiguration}
+
+\begin{list1}
+\item Den bedste firewall konfiguration starter med:
+\begin{list2}
+\item Papir og blyant
+\item En fornuftig adressestruktur
+\end{list2}
+\item Brug dernæst en firewall med GUI første gang!
+\item Husk dernæst:
+\begin{list2}
+\item En firewall skal passes
+\item En firewall skal opdateres
+\item Systemerne bagved skal hærdes!
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Bloker indefra og ud}
+
+\begin{list1}
+\item Der er porte og services som altid bør blokeres
+\item Det kan være kendte sårbare services
+\begin{list2}
+\item Windows SMB filesharing - ikke til brug på Internet!
+\item UNIX NFS - ikke til brug på Internet!
+\end{list2}
+\item Kendte problemer som minimum
+\end{list1}
+
+
+\slide{Anti-pattern dobbelt NAT i eget netværk}
+
+\hlkimage{16cm}{nat-double.pdf}
+
+\begin{list1}
+\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
+ud på internet.
+\vskip 1cm
+\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
+\end{list1}
+
+
+\slide{IPsec og Andre VPN features}
+
+\begin{list1}
+\item De fleste firewalls giver mulighed for at lave krypterede
+  tunneler
+\item Nyttigt til fjernkontorer der skal have usikker traffik henover
+  usikre netværk som Internet
+\item Konceptet kaldes Virtual Private Network VPN
+\item IPsec er de facto standarden for VPN og beskrevet i RFC'er
+\end{list1}
+
+
+\slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
+
+Kernel vulnerabilities, CVE-2019-11477, CVE-2019-11478 and CVE-2019-11479
+
+\begin{quote}\footnotesize{\bf
+Executive Summary}\\
+Three related flaws were found in the Linux kernel’s handling of TCP networking.  The most severe vulnerability could allow a remote attacker to trigger a kernel panic in systems running the affected software and, as a result, impact the system’s availability.
+
+The issues have been assigned multiple CVEs: CVE-2019-11477 is considered an Important severity, whereas CVE-2019-11478 and CVE-2019-11479 are considered a Moderate severity.
+
+The first two are related to the Selective Acknowledgement (SACK) packets combined with Maximum Segment Size (MSS), the third solely with the Maximum Segment Size (MSS).
+
+These issues are corrected either through applying mitigations or kernel patches.  Mitigation details and links to RHSA advsories can be found on the RESOLVE tab of this article.
+\end{quote}
+
+Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tcpsack}}
+
+
 
 
 \slidenext

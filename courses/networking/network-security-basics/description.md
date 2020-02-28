@@ -15,14 +15,14 @@ and VLANs can help reduce risk for the network.
 The presentation will contain excerpts from my Communication and
 Network Security 10 ECTS course, which is open source.
 
-
-
 Target audience, anyone interested in network security.
 
 Duration: 4 hours
 
 Keywords: Encryption, TLS, VPN, VLAN IEEE 802.1q, Wifi security, IEEE
 802.1x, IKE version 2, IPsec
+
+Note: slides and materials will be in english, but presentation language will be danish
 
 All materials will be released as open source at:
 https://github.com/kramse/security-courses/

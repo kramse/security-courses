@@ -8,7 +8,7 @@ protocols in use in networks for Virtual Private Network (VPN) and
 Transport Layer Services (TLS).
 
 Network segmentation will be discussed with examples from Zeek Security Monitor
-for getting information about flows and how tools like Access Control Lists (ACL)
+for getting information about flows and how tools like Firewalls, Access Control Lists (ACL)
 and VLANs can help reduce risk for the network.
 
 

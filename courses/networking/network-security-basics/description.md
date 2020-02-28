@@ -22,13 +22,14 @@ Duration: 4 hours
 Keywords: Encryption, TLS, VPN, VLAN IEEE 802.1q, Wifi security, IEEE
 802.1x, IKE version 2, IPsec
 
+### About Materials
 Note: slides and materials will be in english, but presentation language will be danish
 
 All materials will be released as open source at:
 https://github.com/kramse/security-courses/
 
 
-About equipment
+### About equipment
 Bringing a laptop is not required, but welcome. Exercises booklet
 will be referenced, but it is expected that participants will do exercises
 on their own later or at the scheduled hacker days.

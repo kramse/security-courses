@@ -3,6 +3,7 @@
 % hlk@security6.net,
 % My standard packages
 \usepackage{zencurity-network-exercises}
+\usepackage{minted}
 
 \begin{document}
 
@@ -42,8 +43,6 @@ reused after training. A lot is described about setting up your workstation in
 the repo
 
 \link{https://github.com/kramse/kramse-labs}
-
-
 
 \section*{\color{titlecolor}Prerequisites}
 
@@ -216,7 +215,7 @@ When you have browsed the page you are done.
 You can read more about Elasticsearch at the wikipedia page:\\
 \url{https://en.wikipedia.org/wiki/Elasticsearch}
 
-\chapter{Bonus: Check your Debian VM 10 min}
+\chapter{Check your Debian VM 10 min}
 \label{ex:basicDebianVM}
 
 \hlkimage{10cm}{debian-xfce.png}
@@ -244,5 +243,208 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 
 Even Microsoft has made their cloud Linux friendly, and post articles about creating Linux applications:\\
 \url{https://docs.microsoft.com/en-us/azure/security/develop/}
+
+
+
+\chapter{Use Ansible to install Elastic Stack}
+\label{ex:basicansible}
+
+
+{\bf Objective:}\\
+Run Elasticsearch
+
+{\bf Purpose:}\\
+See an example tool used for many integration projects, Elasticsearch from the Elastic Stack
+
+{\bf Suggested method:}\\
+We will run Elasticsearch, either using the method from:\\{\footnotesize
+\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+or by the method described below using Ansible - your choice.
+
+Ansible used below is a configuration management tool \url{https://www.ansible.com/}
+
+I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has ansible and my playbooks: (as root run)
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
+
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
+
+If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+git pull
+\end{minted}
+
+Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
+
+Note: these instructions are originally from the course\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content
+\begin{alltt}
+apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+\chapter{Run Nginx as a load balancer}
+\label{ex:nginx-loadbalancer}
+
+
+{\bf Objective:}\\
+Run Nginx in a load balancing configuration.
+
+{\bf Purpose:}\\
+See an example load balancing tool used for many integration projects, Nginx
+
+{\bf Suggested method:}\\
+Running Nginx as a load balancer does not require a lot of configuration.
+
+First goal: Make Nginx listen on two ports by changing the default configuration.
+
+\begin{list2}
+\item Start by installing Nginx in your Debian, see it works - open localhost port 80 in browser\\
+\verb+apt install nginx+
+\item Copy the configuration file! Keep this backup,\\
+\verb+cd /etc/nginx/;cp nginx.conf nginx.conf.orig+
+\item Add / copy the section for the port 80 server, see below
+\item Change \emph{sites} to use port 81 and port 82
+\end{list2}
+
+
+Creating a new site, based on the default site found on Nginx in Debian:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/etc/nginx# cd /etc/nginx/sites-enabled/
+root@debian-lab:/etc/nginx/sites-enabled# cp default default2
+root@debian-lab:/etc/nginx/sites-enabled# cd /var/www/
+root@debian-lab:/var/www# cp -r html html2
+\end{minted}
+
+Then edit files \verb+default+ to use port 81/tcp and \verb+default2+ to use port 82/tcp
+
+- also make sure \verb+default2+ uses \verb+root /var/www/html2+
+
+Configuration changes made.
+
+These are the changes you should make:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/etc/nginx/sites-enabled# diff default default2
+22,23c22,23
+< 	listen 81 default_server;
+< 	listen [::]:81 default_server;
+---
+> 	listen 82 default_server;
+> 	listen [::]:82 default_server;
+41c41
+< 	root /var/www/html;
+---
+> 	root /var/www/html2;
+\end{minted}
+
+
+
+Config test and restart of Nginx can be done using stop and start commands:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/var/www# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+root@debian-lab:/var/www# service nginx stop
+root@debian-lab:/var/www# service nginx start
+\end{minted}
+
+You can now visit \url{http://127.0.0.1:81} and \url{http://127.0.0.1:82}\\
+ - which show the same text, but you can change the files in \\
+ \verb+/var/www/html+ and \verb+/var/www/html2+
+
+NOTE: also verify that port 80 does \emph{not work} anymore!
+
+Adding the loadbalancer in nginx.conf.
+
+We can now add the two \emph{servers} running into a single loadbalancer with a little configuration:
+
+Add this into \verb+/etc/nginx/nginx.conf+ - inside the section \verb+http { ... }+
+\begin{minted}[fontsize=\footnotesize]{shell}
+upstream myapp1 {
+        server localhost:81;
+        server localhost:82;
+}
+
+server {
+        listen 80;
+
+        location / {
+                proxy_pass http://myapp1;
+        }
+}
+\end{minted}
+
+And test using \url{http://127.0.0.1:80}
+
+
+
+{\bf Hints:}\\
+Make changes to the two sets of HTML files
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:~# cd /var/www/
+root@debian-lab:/var/www# diff html
+html/  html2/
+root@debian-lab:/var/www# diff html/index.nginx-debian.html html2/index.nginx-debian.html
+4c4
+< <title>Welcome to nginx!</title>
+---
+> <title>Welcome to nginx2!</title>
+14c14
+< <h1>Welcome to nginx!</h1>
+---
+> <h1>Welcome to nginx2!</h1>
+\end{minted}
+
+When reloading the page a few times it will switch between the two versions
+
+{\bf Solution:}\\
+When you have Nginx running load balanced, then we are good.
+
+{\bf Discussion:}\\
+Nginx is one of the most popular load balancers and web servers. Many sites use it for processing HTTPS/TLS before reaching application servers.
+
 
 \end{document}

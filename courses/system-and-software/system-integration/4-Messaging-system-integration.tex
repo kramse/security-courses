@@ -14,9 +14,9 @@
 \slide{Plan for today}
 
 \begin{list2}
+\item Enterprise Integration Patterns: Messaging Systems and Messaging Channels
 \item Messaging, MQ systems
 \item Publish-Subscribe
-\item Enterprise Integration Patterns
 \item The Aggregator and Splitter EIPs
 \item The Routing Slip EIP
 \item The Dynamic Router EIP
@@ -46,16 +46,16 @@ and read this\\
 \slide{Todays Agenda - approximate time plan}
 
 \begin{list2}
-\item 45m
-\item 45m
+\item 45m Book chapters 3 and 4 discussion
+\item 45m Book chapters 3 and 4 discussion
 \item 10:00 Break 15m
-\item 45m
-\item 45m
+\item 45m Messaging MQ systems: Apache ActiveMQ, Elasticsearch and Redis
+\item 45m Exercises with these
 \item 11:45 Lunch Break
-\item 45m
-\item 45m
+\item 45m Camebook chapter 5: Enterprise integration patterns
+\item 45m - contains aggregator, splitter, routing slip, dynamic router, load balancer
 \item 14:00 Break 15m
-\item 45m
+\item 45m Exercise: Run Nginx as a load balancer
 \end{list2}
 
 
@@ -73,33 +73,275 @@ Todays goals:
 Photo by Thomas Galler on Unsplash
 
 
-\slide{Messaging, MQ systems}
-
-\begin{list2}
-\item
-\item
-\item
-\end{list2}
-
-
-
-
-\slide{Publish-Subscribe}
-
-
-\begin{list2}
-\item
-\item
-\item
-\end{list2}
-
-
-
-
 \slide{Enterprise Integration Patterns}
 
 EIP book chapters
 
+
+\slide{Enterprise Integration Patterns: Messaging Systems}
+
+\hlkimage{12cm}{camelbook-1-3-1-message.png}
+
+Basic Messaging Concepts
+\begin{list2}
+\item Channels Messaging applications transmit data through a \emph{Message channel}, a virtual pipe that connects a sender to a receiver.
+\item Messages A \emph{message} is an atomic packet of data that can be transmitted on a channel
+\item Pipes and filters can perform actions on the messages as they travel through the system, validation or transformed between formats\\
+We already saw that last time converting data with Camel
+\item Routing a message may have to go through several channels to reach its final destination
+\item Transformation, a \emph{message translator} can convert from one format to another
+\item Endpoints enable applications to send and receive messages
+\end{list2}
+
+\slide{3.1 Data transformation overview}
+
+\hlkimage{18cm}{camelbook-3-1-transformation.png}
+
+\begin{list2}
+\item Messages consist of two parts: Header and Body
+\item See Internet email, picture formats, packet headers
+\item Data is envelopped many times during transmission!
+\item Data format transformation -- The data format of the message body is transformed
+from one form to another. For example, a CSV record is formatted as XML.
+\item Data type transformation -- The data type of the message body is transformed from
+one type to another. For example, java.lang.String is transformed into javax.
+jms.TextMessage .
+\end{list2}
+
+
+\slide{SOAP Request }
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+// HTTP here
+POST / HTTP/1.0
+Host: localhost:8080
+User-agent: SOAPpy xxx (pywebsvcs.sf.net)
+Content-type: text/xml; charset=UTF-8
+Content-length: 340
+SOAPAction: "hello"
+// SOAP start here
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+>
+<SOAP-ENV:Body>
+<hello SOAP-ENC:root="1">
+</hello>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+\end{minted}
+
+\slide{SOAP Response}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+// HTTP here
+HTTP/1.0 200 OK
+Server: <a href="http://pywebsvcs.sf.net">SOAPpy xxx</a> (Python 2.7.16)
+Date: Mon, 24 Feb 2020 13:29:44 GMT
+Content-type: text/xml; charset=UTF-8
+Content-length: 510
+// SOAP start here
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+>
+<SOAP-ENV:Body>
+<helloResponse SOAP-ENC:root="1">
+<Result xsi:type="xsd:string">Hello World</Result>
+</helloResponse>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+\end{minted}
+
+\slide{Routing with Camel}
+
+\hlkimage{15cm}{camelbook-2-1-routing.png}
+
+We already tried using Camel which supports routing messages and data
+
+
+\slide{3.3 Transforming XML}
+
+\hlkimage{13cm}{camelbook-xslt.png}
+
+
+\begin{list2}
+\item Transforming XML with XSLT
+\item Transforming XML with object marshaling
+\end{list2}
+
+
+\slide{Endpoints}
+
+\hlkimage{17cm}{eip-endpoint.png}
+
+\begin{list2}
+\item Endpoints are built-in or added to applications
+\item Interface between internal representation and code, to the external message format
+\end{list2}
+
+
+\slide{Enterprise Integration Patterns: Messaging Channels}
+
+\slide{Messaging Channel Themes}
+
+\begin{quote}\small
+Fixed set of channels — One theme in this chapter is that the set of Message Channels available to an application tends to be static. When designing an application, a developer has to know where to put what types of data to share that data with other applications, and likewise where to look for what types of data coming from other applications. These paths of communication cannot be dynamically created and discovered at runtime; they need to be agreed upon at design time so that the application knows where its data is coming from and where the data is going to. (While it is true that most channels must be staticly defined, there are exceptions to this theme, cases where dynamic channels are practical and useful. One exception is the reply channel in Request-Reply. The requestor can create or obtain a new channel the replier knows nothing about, specify it as the Return Address of a request message, and then the replier can make use of it. Another exception is messaging system implementations that support hierarchical channels. A receiver can subscribe to a parent in the hierarchy, then a sender can publish to a new child channel the receiver knows nothing about, and the subscriber will still receive the message. These relatively unusual cases notwithstanding, channels are usually defined at deployment-time and applications are designed around a known set of channels.)
+\end{quote}
+Source:  more or less same as the book\\{\footnotesize \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingChannelsIntro.html}}
+
+
+\slide{Messaging Channel Themes}
+
+\begin{quote}\small
+Determining the set of channels — A related issue is: Who decides what Message Channels are available, the messaging system or the applications? That is to say: Does the messaging system define certain channels and require the applications to make due with those? Or do the applications determine what channels they need and require the messaging system to provide them? There is no simple answer; designing the needed set of channels is iterative. First the applications determine the channels the messaging system will need to provide. Subsequent applications will try to design their communication around the channels that are available, but when this is not practical, they will require that additional channels be added. When a set of applications already use a certain set of channels, and new applications wish to join in, they too will use the existing set of channels. When existing applications add new functionality, they may require new channels.
+\end{quote}
+Source:  more or less same as the book\\{\footnotesize \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingChannelsIntro.html}}
+
+\slide{Messaging Channel Themes}
+
+
+\begin{quote}\small
+Unidirectional channels — Another common source of confusion is whether a Message Channel is unidirectional or bidirectional. Technically, it’s neither; a channel is more like a bucket that some applications add data to and other applications take data from (albeit a bucket that is distributed across multiple computers in some coordinated fashion). But because the data is in messages that travel from one application to another, that gives the channel direction, making it unidirectional. If a channel were bidirectional, that would mean that an application would both send messages to and receive messages from the same channel, which—while technically possible—makes little sense because the application would tend to keep consuming its own messages, the messages it’s supposed to be sending to other applications. So for all practical purposes, channels are unidirectional. As a consequence, for two applications to have a two-way conversation, they will need two channels, one in each direction (see Request-Reply in the next chapter).
+\end{quote}
+Source:  more or less same as the book\\{\footnotesize \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingChannelsIntro.html}}
+
+
+
+\slide{Point-to-Point Channels}
+\hlkimage{20cm}{EIP-PointToPointSolution.png}
+
+\begin{quote}\footnotesize
+A Point-to-Point Channel ensures that only one receiver consumes any given message. If the channel has multiple receivers, only one of them can successfully consume a particular message. If multiple receivers try to consume a single message, the channel ensures that only one of them succeeds, so the receivers do not have to coordinate with each other. The channel can still have multiple receivers to consume multiple messages concurrently, but only a single receiver consumes any one message.
+\end{quote}
+Source: \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/PointToPointChannel.html}
+
+
+
+\slide{Publish-Subscribe Channel}
+\hlkimage{9cm}{EIP-PublishSubscribeSolution.png}
+
+\begin{quote}\footnotesize
+A Publish-Subscribe Channel works like this: It has one input channel that splits into multiple output channels, one for each subscriber. When an event is published into the channel, the Publish-Subscribe Channel delivers a copy of the message to each of the output channels. Each output channel has only one subscriber, which is only allowed to consume a message once. In this way, each subscriber only gets the message once and consumed copies disappear from their channels.
+\end{quote}
+Source: \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html}
+
+
+\slide{Message Bus}
+
+\hlkimage{9cm}{EIP-MessageBusSolution.png}
+
+\begin{quote}\footnotesize
+A Message Bus is a combination of a common data model, a common command set, and a messaging infrastructure to allow different systems to communicate through a shared set of interfaces. This is analogous to a communications bus in a computer system, which serves as the focal point for communication between the CPU, main memory, and peripherals. Just as in the hardware analogy, there are a number of pieces that come together to form the message bus:
+\end{quote}
+Source: \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageBus.html}
+
+
+\slide{Java Message Service (JMS) Elements}
+
+\begin{list2}
+\item JMS provider
+An implementation of the JMS interface for message-oriented middleware (MOM). Providers are implemented as either a Java JMS implementation or an adapter to a non-Java MOM.
+\item JMS client
+An application or process that produces and/or receives messages.
+JMS producer/publisher
+\item A JMS client that creates and sends messages.
+JMS consumer/subscriber
+\item A JMS client that receives messages.
+JMS message
+An object that contains the data being transferred between JMS clients.
+\item JMS queue
+A staging area that contains messages that have been sent and are waiting to be read (by only one consumer). As the name queue suggests, the messages are delivered in the order sent. A JMS queue guarantees that each message is processed only once.
+\item JMS topic
+A distribution mechanism for publishing messages that are delivered to multiple subscribers.
+\end{list2}
+Source: \url{https://en.wikipedia.org/wiki/Java_Message_Service}
+
+\slide{Publish-Subscribe}
+
+The JMS API supports two distinct models:
+
+\begin{list2}
+\item Point-to-point Under the point-to-point messaging system, messages are routed to individual consumers who maintain queues of incoming messages.
+
+\item Publish-and-subscribe The publish-and-subscribe model supports publishing messages to a particular message "topic". Subscribers may register interest in receiving messages published on a particular message topic. In this model, neither the publisher nor the subscriber knows about each other. A good analogy for this is an anonymous bulletin board.
+
+\end{list2}
+Source: \url{https://en.wikipedia.org/wiki/Java_Message_Service}
+
+
+\slide{Messaging, MQ systems}
+
+There are a couple of systems we can use for message queuing:
+\begin{list2}
+\item Apache ActiveMQ -  Java-based messaging server
+\item Elasticsearch a search engine and document store
+\item Redis Remote Dictionary Server
+\end{list2}
+
+\slide{Apache ActiveMQ}
+
+\begin{quote}
+Apache ActiveMQ™ is the most popular open source, multi-protocol, Java-based messaging server. It supports industry standard protocols so users get the benefits of client choices across a broad range of languages and platforms. Connectivity from C, C++, Python, .Net, and more is available. Integrate your multi-platform applications using the ubiquitous AMQP protocol. Exchange messages between your web applications using STOMP over websockets. Manage your IoT devices using MQTT. Support your existing JMS infrastructure and beyond. ActiveMQ offers the power and flexibility to support any messaging use-case.
+\end{quote}
+
+\url{https://activemq.apache.org/}
+
+
+\slide{Elasticsearch}
+
+\begin{quote}
+Elasticsearch is a search engine based on the Lucene library. It provides a distributed, multitenant-capable full-text search engine with an HTTP web interface and schema-free JSON documents. Elasticsearch is developed in Java.
+\end{quote}
+
+Source: \url{https://en.wikipedia.org/wiki/Elasticsearch}
+
+\begin{list2}
+\item Open core means parts of the software are licensed under various open-source licenses (mostly the Apache License)
+\item
+\item
+\end{list2}
+
+\slide{Redis}
+
+\begin{quote}
+Redis (/ˈrɛdɪs/;[7][8] Remote Dictionary Server)[7] is an in-memory data structure
+project implementing a distributed, in-memory key-value database with optional durability.
+\end{quote}
+
+\begin{list2}
+\item Often used as a queue, a kind of buffer between systems
+\item \url{https://en.wikipedia.org/wiki/Redis}
+\item \url{https://redislabs.com}
+\end{list2}
+
+
+\slide{Real Example using Elasticsearch}
+
+We will read about a real example:
+
+\begin{quote}
+Scaling the Elastic Stack in a Microservices Architecture @ Rightmove\\
+Rightmove is the UK's \#1 Property Portal. In the process of helping people find the places they want to live, we serve 55 million requests a day and use Elasticsearch to power our searches and provide our teams with useful analytics to help support our applications.
+...
+Fast forward to 2017 and we have over 50 microservices all sending their logs to our Elasticsearch cluster. In doing so, we needed a way to scale our configuration on both the hardware and application side of things. So how did we achieve this and what did we learn along the way?
+\end{quote}
+Source:\\
+{\footnotesize\url{https://www.elastic.co/blog/scaling-the-elastic-stack-in-a-microservices-architecture-rightmove}}
+
+\slide{Exercise: Read about Elasticsearch}
+
+Look at the example Elasticsearch
+\hlkimage{15cm}{elastic-logstash-queue-publish.png}
+
+Source:\\
+{\footnotesize\url{https://www.elastic.co/blog/scaling-the-elastic-stack-in-a-microservices-architecture-rightmove}}
 
 
 \slide{Chapter 5}
@@ -208,6 +450,19 @@ custom load balancer
 
 Example from:
 \url{http://nginx.org/en/docs/http/load_balancing.html}
+
+
+\slide{Exercise: Run Nginx as a load balancer}
+
+Goal: Make Nginx listen on two ports
+
+\begin{list2}
+\item Start by installing Nginx in your Debian, see it works - open localhost port 80 in browser\\
+\verb+apt install nginx+
+\item Copy the configuration file! Keep this backup,\\
+\verb+cd /etc/nginx/;cp nginx.conf nginx.conf.orig+
+\item Add / copy the section for the port 80 server
+\end{list2}
 
 %\slide{5.7 Summary and best practices}
 

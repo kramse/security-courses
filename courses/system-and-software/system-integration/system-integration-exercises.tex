@@ -447,4 +447,70 @@ When you have Nginx running load balanced, then we are good.
 Nginx is one of the most popular load balancers and web servers. Many sites use it for processing HTTPS/TLS before reaching application servers.
 
 
+
+
+
+
+
+\chapter{Runing ActiveMQ}
+\label{ex:activemq-install}
+
+\hlkimage{15cm}{activemq-web_console.png}
+
+{\bf Objective:}\\
+Try running ActiveMQ manually - outside of Camel
+
+{\bf Purpose:}\\
+System integration often works with JMS and ActiveMQ implements this.
+We can run ActiveMQ as part of Camel, but lets try running it alone.
+
+{\bf Suggested method:}\\
+Visit the web page \url{https://activemq.apache.org/getting-started}, read and also follow download link.
+
+I used \verb+apache-activemq-5.15.11-bin.tar.gz+
+
+Follow the instructions for getting ActiveMQ up and running on your Debian server.
+
+Best course of actions is to use a root user and directory such as \verb+/opt+ - something like this:
+
+\begin{alltt}
+cd /opt
+tar zxvf /directory/where/you/downloaded/
+mkdir data;chmod a+rwx data/
+./bin/activemq console
+\end{alltt}
+
+
+{\bf Hints:}\\
+ActiveMQ is also available as a package in Debian - try searching with \verb+apt search activemq+
+and can be installed with \verb+apt install activemq+
+
+Note: when installing the package maintainers version the configuration files are often found in the directories below \verb+/etc+ while running an unpacked tgz from the project they are close to the software. YMMV.
+
+{\bf It is not recommended to use the Debian package for this exercise, but for production use it would be.}
+
+In this case there is a configuration file available, but not activated, try this:\\
+\verb+sudo ln -s /etc/activemq/instances-available/main /etc/activemq/instances-enabled/main+
+
+When changing configuration files, if using the Debian package, you can get debug info:
+\verb+/etc/init.d/activemq console main+
+
+One problem I observed was the directory missing, which can be created using this:
+\begin{alltt}
+# mkdir -p  /var/lib/activemq/data/
+# chmod a+rwx  /var/lib/activemq/data/
+\end{alltt}
+
+afterwards when programs drop files, we can check the settings, ownership and tighten this.
+
+{\bf Also this configuration does NOT start the web console!}
+
+{\bf Solution:}\\
+When you have a running ActiveMQ and can see the web administration you are done.
+
+{\bf Discussion:}\\
+What are the benefits of running ActiveMQ from Debian package vs running it from project binaries directly?
+
+What version does your application need? How do you guarantee this?
+
 \end{document}

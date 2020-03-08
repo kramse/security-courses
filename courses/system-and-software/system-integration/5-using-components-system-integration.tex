@@ -44,6 +44,282 @@ and read this\\
 
 
 
+\slide{Todays Agenda - approximate time plan}
+
+\begin{list2}
+\item 08:30 45m Book chapters 5 and 6 discussion
+\item 45m Chapter 5 Message Construction Chapter 6 Simple Messaging
+\item 10:00 Break 15m
+\item 10:15 45m Exercise:
+\item 45m 2x 45m Camebook chapter 6: Using components\\
+ - contains
+\item 11:45 Lunch Break
+\item 12:30 Continued Camelbook chapter 6
+\item 45m Exercise:
+\item 14:00 Break 15m
+\item 45m Investigate examples from the internet
+\end{list2}
+
+
+\slide{Goals for today}
+
+\hlkimage{8cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item
+\item
+\item
+\item Try ActiveMQ
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+\slide{Chapter Using components}
+
+\slide{Camel Components}
+
+\begin{quote}
+Components are the primary extension point in Camel. Over the years since Camel’s
+inception, the list of components has grown. As of version 2.20.1, Camel ships with
+more than 280 components, and dozens more are available separately from other com-
+munity sites.
+\end{quote}
+Source: \emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018
+
+
+\slide{Components chapter 6}
+
+\hlkimage{17cm}{camelbook-6-0-components.png}
+
+\slide{6.1 Overview of Camel components}
+
+\hlkimage{13cm}{camelbook-6-1-component-class.png}
+
+\begin{list2}
+\item Manually adding components
+\item Autodiscovering components
+\end{list2}
+
+\slide{Autodiscovering components}
+
+\hlkimage{13cm}{camelbook-6-1-2-autodiscovery.png}
+
+Autodiscovery is the way the components that ship with Camel are registered. To discover new components, Camel looks in the META-­INF/services/org/apache/camel/
+component directory on the classpath for files. Files in this directory determine the
+name of a component and the fully qualified class name.
+
+
+\slide{6.2 Working with files: File and FTP components}
+
+\hlkimage{20cm}{camelbook-6-2-files-ftp.png}
+
+\begin{list2}
+\item Reading and writing files with the File component,
+\item Accessing remote files with the FTP component
+\end{list2}
+
+To see what happens firsthand, you can try the example by changing to the chapter6/file directory in the book’s source code and executing the following command:
+\verb+mvn camel:run+
+
+\slide{FTP File Transfer Protocol}
+
+\begin{quote}
+  The File Transfer Protocol (FTP) is a standard network protocol used for the transfer of computer files between a client and server on a computer network.
+
+FTP is built on a client-server model architecture using separate control and data connections between the client and the server.[1] FTP users may authenticate themselves with a clear-text sign-in protocol, normally in the form of a username and password, but can connect anonymously if the server is configured to allow it. For secure transmission that protects the username and password, and encrypts the content, FTP is often secured with SSL/TLS (FTPS) or {\bf replaced with SSH File Transfer Protocol (SFTP)}.
+\end{quote}
+
+\url{https://en.wikipedia.org/wiki/File_Transfer_Protocol}
+
+\slide{Camel FTP support}
+
+Camel supports three flavors of FTP:
+\begin{list2}
+\item Plain FTP mode transfer
+\item  Secure FTP (SFTP) for secure transfer
+\item  FTP Secure (FTPS) for transfer with the Transport Layer Se
+\end{list2}
+
+The FTP component inherits all the features and options of the File component, and it
+adds a few more options, as shown in table 6.4. For a complete listing of options for the
+FTP component, see the online documentation (http://camel.apache.org/ftp2.html).
+
+To run this example, change to the chapter6/ftp directory and run this command:
+\verb+mvn camel:run+
+
+Spring does not really want to work.
+
+
+\slide{Java 8 on Debian 10/9/8}
+
+\begin{quote}
+How do I Install Java 8 on Debian?. The first Oracle Java 8 stable version was released on Mar 18, 2014, and available to download and install. Oracle Java PPA for Debian systems is being maintained by Webupd8 Team. JAVA 8 is released with many of new features and security updates. This tutorial will help you to Install Java 8 on Debian 9/8/7 systems using PPA and apt-get command.
+\end{quote}
+
+\url{https://tecadmin.net/install-java-8-on-debian/}
+
+\slide{Install Java 8 on Debian}
+
+\verb+sudo vim /etc/apt/sources.list.d/java-8-debian.list+
+and add following content in it:
+\begin{alltt}
+deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main
+deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main
+\end{alltt}
+
+Run the following to install
+\begin{alltt}
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+java -version
+sudo apt-get install oracle-java8-set-default
+\end{alltt}
+
+
+\slide{6.3 Asynchronous messaging: JMS component}
+
+\begin{list2}
+\item Sending and receiving messages
+\item Request-­reply messaging, Message mappings
+\end{list2}
+
+\slide{Camel with JMS}
+
+Camel doesn’t ship with a JMS provider; you need to configure Camel to use a specific
+JMS provider by passing in a ConnectionFactory instance. For example, to connect to
+an Apache ActiveMQ broker listening on port 61616 of the local host, you could configure the JMS component like this:
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+<property name="connectionFactory">
+<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+<property name="brokerURL" value="tcp://localhost:61616"/>
+</bean>
+</property>
+</bean>
+\end{minted}
+
+The tcp://localhost:61616 URI passed in to ConnectionFactory is JMS provider-­
+specific. In this example, you’re using the ActiveMQConnectionFactory , so the URI is
+parsed by ActiveMQ. The URI tells ActiveMQ to connect to a broker by using TCP on
+port 61616 of the local host.
+
+\slide{Connection Pooling}
+
+The ActiveMQ component\\
+By default, a JMS ConnectionFactory doesn’t pool connections to the broker, so it
+spins up new connections for every message. The way to avoid this is to use connection
+factories that use connection pooling.
+
+For convenience to Camel users, ActiveMQ ships with the ActiveMQ component, which
+automatically configures connection pooling for improved performance. The ActiveMQ
+component is used as follows:
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<bean id="activemq"
+class="org.apache.activemq.camel.component.ActiveMQComponent">
+<property name="brokerURL" value="tcp://localhost:61616"/>
+</bean>
+\end{minted}
+
+Same can be found with database connections.
+
+\slide{Request-reply messaging}
+
+\hlkimage{23cm}{camelbook-6-3-2-request-reply.png}
+
+Camel takes care of this style of messaging so you don’t have to create special reply
+queues, correlate reply messages, and the like. By changing the message exchange pat-
+tern (MEP) to InOut , Camel will enable request-­reply mode for JMS.
+
+\slide{Message mappings: Sending to JMS}
+
+\hlkimage{20cm}{camelbook-6-6-sending-jms.png}
+
+\slide{Message mappings: Receive from JMS}
+
+\hlkimage{20cm}{camelbook-6-7-receive-jms.png}
+
+Note: To disable message mapping for body types, set the mapJmsMessage URI option to
+\verb+false+ .
+
+
+\slide{Header mapping}
+
+Headers in JMS are even more restrictive than body types. In Camel, a header can be
+named anything that will fit in a Java String , and its value can be any Java object. This
+presents a few problems when sending to and receiving from JMS destinations.
+These are the restrictions in JMS:
+\begin{list2}
+\item Header names that start with JMS are reserved; you can’t use these header names.
+\item Header names must be valid Java identifiers.
+\item Header values can be any primitive type and their corresponding object
+types. These include boolean , byte , short , int , long , float , and double .
+Valid object types include Boolean , Byte , Short , Integer , Long , Float , Double ,
+and String .
+\end{list2}
+
+\vskip 2cm
+\centerline{Great example of the conversion problems seen in system integration}
+
+\slide{6.4 Networking: Netty4 component}
+
+\begin{list2}
+\item Using Netty for network programming
+\item Using custom codecs
+\end{list2}
+
+
+\slide{6.5 Working with databases: JDBC and JPA components}
+
+\begin{list2}
+\item Accessing data with the JDBC component
+\item Persisting objects with the JPA component
+\end{list2}
+
+\slide{Using Persistence}
+
+\hlkimage{13cm}{camelbook-5-5-fail-complete.png}
+
+\slide{6.6 In-­memory messaging: Direct, Direct-­VM, SEDA, and VM
+components}
+
+\begin{list2}
+\item Synchronous messaging with Direct and Direct-­VM
+\item Asynchronous messaging with SEDA and VM
+\end{list2}
+
+\slide{6.7 Automating tasks: Scheduler and Quartz2 components}
+
+\begin{list2}
+\item Using the Scheduler component
+\item Enterprise scheduling with Quartz 231
+\end{list2}
+
+\slide{6.8 Working with email}
+
+\begin{list2}
+\item Sending mail with SMTP
+\item  Receiving mail with IMAP
+\end{list2}
+
+\slide{6.9 Summary and best practices}
+
+\slide{}
+
+Investigate examples from the internet
+
+Find applications using Messages
+
+1) Popular app, does Twitter use messaging?
+
+2) One commercial application using or providing messaging
+
+3) One Open Source application using or providing messaging
+
+
 
 \slidenext
 

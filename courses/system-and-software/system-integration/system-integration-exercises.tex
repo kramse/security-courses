@@ -508,9 +508,94 @@ afterwards when programs drop files, we can check the settings, ownership and ti
 {\bf Solution:}\\
 When you have a running ActiveMQ and can see the web administration you are done.
 
+If you want to investigate further get the demos up and running:\\
+\url{https://activemq.apache.org/web-samples}
+
 {\bf Discussion:}\\
 What are the benefits of running ActiveMQ from Debian package vs running it from project binaries directly?
 
 What version does your application need? How do you guarantee this?
+
+
+
+
+
+
+
+\chapter{Runing RabbitMQ with Python}
+\label{ex:rabbitmq-install}
+
+%\hlkimage{15cm}{activemq-web_console.png}
+
+{\bf Objective:}\\
+Try running RabbitMQ with a few Python programs.
+
+{\bf Purpose:}\\
+RabbitMQ is an alternative to ActiveMQ.
+
+{\bf Suggested method:}\\
+Use the RabbitMQ tutorial to send a message. Use the tutorial:\\
+\url{https://www.rabbitmq.com/tutorials/tutorial-one-python.html}
+
+First you would install the server and suporting library - Pika:
+\begin{alltt}
+apt install rabbitmq-server python-pika
+\end{alltt}
+
+\eject
+Check status:
+\begin{alltt}
+# service rabbitmq-server status
+● rabbitmq-server.service - RabbitMQ Messaging Server
+   Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor
+   Active: active (running) since Sun 2020-03-08 13:57:38 CET; 36s ago
+ Main PID: 1663 (beam.smp)
+   Status: "Initialized"
+    Tasks: 87 (limit: 2386)
+   Memory: 77.9M
+   CGroup: /system.slice/rabbitmq-server.service
+           ├─1659 /bin/sh /usr/sbin/rabbitmq-server
+           ├─1663 /usr/lib/erlang/erts-10.2.4/bin/beam.smp -W w -A 64 -MBas agef
+           ├─1898 erl_child_setup 65536
+           ├─1917 inet_gethost 4
+           └─1918 inet_gethost 4
+
+Mar 08 13:57:34 elastilab systemd[1]: Starting RabbitMQ Messaging Server...
+Mar 08 13:57:38 elastilab systemd[1]: rabbitmq-server.service: Supervising proce
+Mar 08 13:57:38 elastilab systemd[1]: Started RabbitMQ Messaging Server.
+Mar 08 13:57:38 elastilab systemd[1]: rabbitmq-server.service: Supervising proce
+root@elastilab:~#
+\end{alltt}
+
+
+Sender:
+\inputminted{python}{programs/sender.py}
+
+Receiver:
+\inputminted{python}{programs/recv.py}
+
+\eject
+{\bf Hints:}\\
+Running receiver would look like this:
+\begin{alltt}
+kramse@elastilab:~/projects/rabbit$ ./recv.py
+ [*] Waiting for messages. To exit press CTRL+C
+ [x] Received 'Hello World!'
+ [x] Received 'Hello World!'
+ [x] Received 'Hello World!'
+\end{alltt}
+
+
+
+{\bf Solution:}\\
+When you have a running RabbitMQ with the Python programs working you are done.
+
+{\bf Discussion:}\\
+RabbitMQ supports many libraries and languages, check out the list on:
+\url{https://www.rabbitmq.com/devtools.html}
+
+What if you want to connect ActiveMQ and RabbitMQ?
+
+Both suppoprt AMQP 1.0 - so this might be a way to support this.
 
 \end{document}

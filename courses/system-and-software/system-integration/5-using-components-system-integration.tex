@@ -3,6 +3,24 @@
 \externaldocument{system-integration-exercises}
 \selectlanguage{english}
 
+\usepackage{tikz}
+\usetikzlibrary{mindmap,trees}
+\usetikzlibrary{shapes.geometric, arrows,automata}
+\usetikzlibrary{positioning}
+
+\tikzset{
+    state/.style={
+           rectangle,
+           rounded corners,
+           draw=black, very thick,
+           minimum height=2em,
+           inner sep=2pt,
+           text centered,
+           },
+}
+
+
+
 % Systemintegration
 
 \begin{document}
@@ -266,11 +284,51 @@ and String .
 
 \slide{6.4 Networking: Netty4 component}
 
+\begin{quote}
+  Another essential mode of integration is using
+low-­level networking protocols, such as the Transmission Control Protocol (TCP)
+and the User Datagram Protocol (UDP). Even if you haven’t heard of these protocols
+before, you’ve definitely used them—protocols such as email, FTP, and HTTP run on
+top of TCP.
+
+To communicate over these and other protocols, Camel uses Netty and Apache
+MINA. Both Netty and MINA are networking frameworks that provide asynchronous
+event-­driven APIs and communicate over various protocols including TCP and UDP.
+In this section, we use Netty to demonstrate low-­level network communication with
+Camel.
+\end{quote}
+
 \begin{list2}
 \item Using Netty for network programming
 \item Using custom codecs
 \end{list2}
 
+\slide{TCP server with Netty}
+
+\hlkimage{20cm}{camelbook-6-4-1-netty-sensor.png}
+
+In Camel, a possible solution is accomplished with a single line:
+\begin{minted}[fontsize=\footnotesize]{java}
+from("netty4:tcp://localhost:8999?textline=true&sync=false")
+.to("jms:operations");
+\end{minted}
+
+Here you set up a TCP server on port 8999 by using Netty, and it parses messages
+by using the textline codec. The sync property is set to false to make this route
+InOnly —any clients sending a message won’t get a reply back.
+
+\slide{Textline codec}
+
+
+\hlkimage{18cm}{camelbook-6-4-1-netty-codec.png}
+
+A codec decodes or encodes the message data into something that the applications
+on either end of the communications link can understand. As figure 6.8 illustrates, the
+textline codec is responsible for grabbing packets as they come in and trying to piece
+together a message that’s terminated by a specified character.
+
+This example is provided in the book’s source in the chapter6/netty directory. Try it by using the following command:
+\verb+mvn test -Dtest=NettyTcpTest+
 
 \slide{6.5 Working with databases: JDBC and JPA components}
 
@@ -283,27 +341,274 @@ and String .
 
 \hlkimage{13cm}{camelbook-5-5-fail-complete.png}
 
+\slide{Camel database support}
+
+In pretty much every enterprise-­level application, you need to integrate with a database at some point, so it makes sense that Camel has first-­class support for accessing databases. Camel has five components that let you access databases in various ways:
+\begin{list2}
+\item \emph{JDBC component} -- Allows you to access JDBC APIs from a Camel route.
+item SQL component—Allows you to write SQL statements directly into the URI of the
+component for using simple queries. This component can also be used for call-
+ing stored procedures.
+\item \emph{JPA component} -- Persists Java objects to a relational database by using the Java Persistence Architecture.
+\item \emph{Hibernate component} -- Persists Java objects by using the Hibernate framework.
+This component isn’t distributed with Apache Camel because of licensing
+incompatibilities. You can find it at the camel-­extra project (https://github.
+com/camel-­extra/camel-­extra).
+\item \emph{MyBatis component} -- Allows you to map Java objects to relational databases.
+\end{list2}
+
+
+\slide{Hibernate framework}
+
+\begin{quote}
+  Hibernate ORM (or simply Hibernate) is an object-relational mapping tool for the Java programming language. It provides a framework for mapping an object-oriented domain model to a relational database. Hibernate handles object-relational impedance mismatch problems by replacing direct, persistent database accesses with high-level object handling functions.
+
+  Hibernate is free software that is distributed under the GNU Lesser General Public License 2.1.
+
+  Hibernate's primary feature is mapping from Java classes to database tables, and mapping from Java data types to SQL data types. Hibernate also provides data query and retrieval facilities. It generates SQL calls and relieves the developer from the manual handling and object conversion of the result set.
+\end{quote}
+
+\url{https://en.wikipedia.org/wiki/Hibernate_(framework)}
+
+\slide{SQLite RDMBS}
+
+\begin{quote}
+  SQLite is a relational database management system (RDBMS) contained in a C library. In contrast to many other database management systems, SQLite is not a client–server database engine. Rather, it is embedded into the end program.
+
+SQLite is ACID-compliant and implements most of the SQL standard, generally following PostgreSQL syntax. ...
+
+SQLite is a popular choice as embedded database software for local/client storage in application software such as web browsers. It is arguably the most widely deployed database engine, as it is used today by several widespread browsers, operating systems, and embedded systems (such as mobile phones), among others.[8] SQLite has bindings to many programming languages.
+\end{quote}
+
+\url{https://en.wikipedia.org/wiki/SQLite}
+
+Both Hibernate and SQLite are very popular
+
+
+\slide{JMS to Database example}
+
+\hlkimage{20cm}{camelbook-jdb-order.png}
+
+\begin{minted}[fontsize=\footnotesize]{java}
+from("jms:accounting")
+.to("bean:orderToSql")
+.to("jdbc:dataSource?useHeadersAsParameters=true");
+\end{minted}
+
+\slide{Uses a bean for mapping}
+
+Listing 6.3   A bean that converts an incoming order to a SQL statement:
+\begin{minted}[fontsize=\footnotesize]{java}
+public class OrderToSqlBean {
+    public String toSql(@XPath("order/@name") String name,
+                        @XPath("order/@amount") int amount,
+                        @XPath("order/@customer") String customer,
+                        @Headers Map<String, Object> outHeaders) {
+        outHeaders.put("partName", name);
+        outHeaders.put("quantity", amount);
+        outHeaders.put("customer", customer);
+        return "insert into incoming_orders"
+            + "(part_name, quantity, customer) values"
+            + " (:?partName, :?quantity, :?customer)";
+    }
+}
+\end{minted}
+
+The last part is an SQL statement doing the \emph{inserting} into the database
+
 \slide{6.6 In-­memory messaging: Direct, Direct-­VM, SEDA, and VM
 components}
+
+\begin{quote}
+  Camel provides four main components in the core to handle in-­memory messaging.
+For synchronous messaging, there are the Direct and Direct-­VM components. For asyn-
+chronous messaging, there are the SEDA and VM components. The only difference
+between Direct and Direct-­VM is that the Direct component can be used for communi-
+cation within a single CamelContext , whereas the Direct-­VM component is a bit broader
+and can be used for communication within a JVM.
+\end{quote}
 
 \begin{list2}
 \item Synchronous messaging with Direct and Direct-­VM
 \item Asynchronous messaging with SEDA and VM
 \end{list2}
 
+Advanced concept we won't go further into, staged event-­driven architecture (SEDA) is described on Wikipedia too \url{https://en.wikipedia.org/wiki/Staged_event-­driven_architecture}
+
+
+
+
+
 \slide{6.7 Automating tasks: Scheduler and Quartz2 components}
+
+\begin{quote}
+  Often in enterprise projects you need to schedule tasks to occur either at a specified
+  time or at regular intervals. Camel supports this kind of service with the Timer, Sched-
+  uler, and Quartz2 components. The Scheduler component is useful for simple recur-
+  ring tasks, but when you need more control of when things get started, the Quartz2
+  component is a must. The Timer component can also be used for simple recurring
+  tasks. The difference is the Scheduler component uses the improved Java scheduler
+  API, as opposed to the Timer component which uses the older java.util.Timer API.
+\end{quote}
 
 \begin{list2}
 \item Using the Scheduler component
 \item Enterprise scheduling with Quartz 231
 \end{list2}
 
+\slide{Lets try them}
+
+
+You can run this simple example by changing to the chapter6/scheduler directory of
+the book’s source and running this command:
+\verb+mvn test -Dtest=SchedulerTest+
+
+You can run this simple example by changing to the chapter6/quartz directory of
+the book’s source and running this command:
+\verb+mvn test -Dtest=QuartzTest+
+
+To try an example using a cron trigger, browse to the chapter6/quartz directory and
+run the QuartzCronTest test case with this Maven command:
+\verb+mvn test -Dtest=QuartzCronTest+
+
+\vskip 2cm
+\centerline{Make changes and rerun the examples also}
+
+
 \slide{6.8 Working with email}
+
+Camel provides several components to work with email:
+\begin{list2}
+\item Mail component—This is the primary component for sending and receiving email
+in Camel.
+\item  AWS-­SES component—Allows you to send email by using the Amazon Simple Email
+Service (SES).
+\item GoogleMail component—Gives you access to Gmail via the Google Mail Web API.
+\end{list2}
+
 
 \begin{list2}
 \item Sending mail with SMTP
 \item  Receiving mail with IMAP
 \end{list2}
+
+
+\slide{SMTP Simple Mail Transfer Protocol}
+
+\begin{quote}
+  The Simple Mail Transfer Protocol (SMTP) is a communication protocol for electronic mail transmission. As an Internet standard, SMTP was first defined in 1982 by RFC 821, and updated in 2008 by RFC 5321 to Extended SMTP additions, which is the protocol variety in widespread use today. Mail servers and other message transfer agents use SMTP to send and receive mail messages.
+\end{quote}
+
+\url{https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
+
+
+\slide{Postfix}
+
+\hlkimage{3cm}{postfix-mouse.png}
+
+\begin{quote}
+  Postfix is a free and open-source mail transfer agent (MTA) that routes and delivers electronic mail.
+
+It is released under the IBM Public License 1.0 which is a free software license. Alternatively, starting with version 3.2.5, it is available under the Eclipse Public License 2.0 at the user's option.[2]
+
+Originally written in 1997 by Wietse Venema at the IBM Thomas J. Watson Research Center in New York, and first released in December 1998[3], Postfix continues as of 2020 to be actively developed by its creator and other contributors.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Postfix_(software)}
+
+Home page: \url{http://www.postfix.org/}
+
+
+\slide{Dovecot}
+
+\begin{quote}
+Dovecot is an open-source IMAP and POP3 server for Unix-like operating systems, written primarily with security in mind.[3] Timo Sirainen originated Dovecot and first released it in July 2002. Dovecot developers primarily aim to produce a lightweight, fast and easy-to-set-up open-source email server.
+
+The primary purpose of Dovecot is to act as mail storage server. Mail is delivered to the server using some mail delivery agent (MDA) and stored for later access with an email client (mail user agent, or MUA).
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Dovecot_(software)}
+
+\begin{quote}
+Dovecot is an open source IMAP and POP3 email server for Linux/UNIX-like systems, written with security primarily in mind. Dovecot is an excellent choice for both small and large installations. It's fast, simple to set up, requires no special administration and it uses very little memory.
+\end{quote}
+Home page: \url{https://www.dovecot.org/}
+
+\slide{Example of SMTP and IMAP}
+
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',scale=0.8, transform shape]
+  \newlength{\boxwidth}
+  \setlength{\boxwidth}{6cm}
+  \newlength{\boxheight}
+  \setlength{\boxheight}{5cm}
+  \newlength{\boxspace}
+  \setlength{\boxspace}{12cm}
+
+  % http://texample.net/tikz/examples/epc-flow-charts/
+
+  % https://www.overleaf.com/learn/latex/LaTeX_Graphics_using_TikZ:_A_Tutorial_for_Beginners_(Part_3)%E2%80%94Creating_Flowcharts
+
+   % Use previously defined 'state' as layout (see above)
+   % use tabular for content to get columns/rows
+   % parbox to limit width of the listing
+   \node[state,text width=\boxwidth,minimum height=\boxheight] (SENDER)
+   {\begin{tabular}{l}
+   {\bf Sending Server}\\
+      Could be Postfix
+   \end{tabular}};
+
+   %
+   \node[state,    	% layout (defined above)
+    text width=\boxwidth, 	% max text width
+    minimum height=\boxheight,
+    %yshift=2cm, 		% move 2cm in y
+    right of=SENDER, 	% Position is to the right of QUERY
+    node distance=\boxspace, 	% distance to First node
+    anchor=center] (RECEIVER) 	% posistion relative to the center of the 'box'
+   {%
+   \begin{tabular}{l}
+   {\bf Receiving Server}\\
+Could be Dovecot
+   \end{tabular}};
+
+   \node[state,
+    below of=SENDER,
+    yshift=-8cm,
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (THUNDERBIRD)
+   {%
+   \begin{tabular}{l}
+   {\bf Sending Client}\\
+    Mail program\\
+    Thunderbird
+   \end{tabular}
+   };
+
+   \node[state,
+    below of=RECEIVER,
+    yshift=-8cm,
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (CLAWS)
+   {%
+   \begin{tabular}{l}
+   {\bf Receiving Client}\\
+    Mail program\\
+    Claws
+   \end{tabular}
+   };
+
+   % draw the paths and and print some Text below/above the graph
+   \path
+   (SENDER) 	edge node[anchor=north,above]{SMTP 25/tcp} (RECEIVER)
+   (THUNDERBIRD) 	edge node[anchor=west,left]{SMTP Submission 587/tcp} (SENDER)
+   (RECEIVER) edge node[anchor=east,right]{IMAPS 993/tcp }   (CLAWS);
+
+\end{tikzpicture}
+\end{center}
+
+
+
 
 \slide{6.9 Summary and best practices}
 

@@ -7,6 +7,10 @@
 \usetikzlibrary{shapes.geometric, arrows,automata}
 \usetikzlibrary{positioning}
 
+\usepackage{jigsaw}
+
+
+
 \tikzset{
     state/.style={
            rectangle,
@@ -447,7 +451,7 @@ Could be Dovecot
 
 
 
-\slide{Securing Thunderbird}
+\slide{Securing Your Email Client}
 
 \hlkimage{10cm}{thunderbird-enigmail-logo.png}
 
@@ -455,7 +459,7 @@ Could be Dovecot
 \item Security settings
 \item Use TLS for SMTP
 \item Use TLS for IMAPS
-\item Disable loading of images
+\item Disable loading of remote content, images, HTML parts, content, bugs, tracking
 \item Disable sending version strings
 \item Add plugins you need, but only those!
 \end{list2}
@@ -529,15 +533,23 @@ Source: {\footnotesize\url{https://www.cvedetails.com/product/3678/Mozilla-Thund
 
 \slide{Thunderbird Settings: }
 
+\begin{quote}
+Email messages can contain remote content such as images or stylesheets. To protect your privacy, Thunderbird does not load remote content automatically, but instead shows a notification bar to indicate that it blocked remote content.
+\end{quote}
+
 \begin{list2}
+\item Privacy and security settings\\{\footnotesize \url{https://support.mozilla.org/da/products/thunderbird/privacy-and-security-settings}\\
+\url{https://support.mozilla.org/en-US/products/thunderbird/privacy-and-security-settings}}
 \item Previously you could override the User-Agent setting, setting it empty:\\
 Does not work anymore
 \url{https://bugzilla.mozilla.org/show_bug.cgi?id=1114475}
+\item GPG and Enigmail for OpenPGP suppoprt - encrypted email\\
+\url{https://support.mozilla.org/en-US/kb/digitally-signing-and-encrypting-messages}
 \end{list2}
 
 \slide{Claws Security Settings}
 
-I my mail application there are other settings you can play with:
+In my mail application there are other settings you can play with:
 
 \begin{list2}
 \item[\faCheck] Render HTML messages as text
@@ -573,6 +585,8 @@ BTW my mail client is not perfect either:\\{\footnotesize
 %Why in 2020 limit my password to 12 chars
 
 \slide{Advanced: Run your mail client in a VM}
+
+\hlkimage{10cm}{claws-email.png}
 
 I run my email client in a VM, which can only connect to my mail server and my printer
 
@@ -612,14 +626,13 @@ I would NOT use these:
 \end{list2}
 
 
-Dont use , Dont use OpenSMTPD
-
+Many more exist: \url{https://en.wikipedia.org/wiki/Comparison_of_mail_servers}
 
 \slide{Postfix}
 
 \hlkimage{3cm}{postfix-mouse.png}
 
-\begin{quote}
+\begin{quote}\footnotesize
   Postfix is a free and open-source mail transfer agent (MTA) that routes and delivers electronic mail.
 
 It is released under the IBM Public License 1.0 which is a free software license. Alternatively, starting with version 3.2.5, it is available under the Eclipse Public License 2.0 at the user's option.[2]
@@ -633,24 +646,24 @@ Home page: \url{http://www.postfix.org/}
 
 \slide{Dovecot}
 
-\begin{quote}
+\begin{quote}\footnotesize
 Dovecot is an open-source IMAP and POP3 server for Unix-like operating systems, written primarily with security in mind.[3] Timo Sirainen originated Dovecot and first released it in July 2002. Dovecot developers primarily aim to produce a lightweight, fast and easy-to-set-up open-source email server.
 
 The primary purpose of Dovecot is to act as mail storage server. Mail is delivered to the server using some mail delivery agent (MDA) and stored for later access with an email client (mail user agent, or MUA).
 \end{quote}
 Source: \url{https://en.wikipedia.org/wiki/Dovecot_(software)}
 
-\begin{quote}
+\begin{quote}\footnotesize
 Dovecot is an open source IMAP and POP3 email server for Linux/UNIX-like systems, written with security primarily in mind. Dovecot is an excellent choice for both small and large installations. It's fast, simple to set up, requires no special administration and it uses very little memory.
 \end{quote}
 Home page: \url{https://www.dovecot.org/}
 
 
-\slide{Advanced: Removed last IP when sending through server}
+\slide{Advanced: Removed headers -- client IP }
 
-Tykling blog example - hides the IP used when sending email, user privacy.
+\hlkimage{18cm}{tykling-blog-email-privacy.png}
 
-
+\url{https://blog.tyk.nu/blog/postfix-and-privacy/} Thank you Thomas
 
 
 \slide{Internet i dag}
@@ -686,57 +699,154 @@ Tykling blog example - hides the IP used when sending email, user privacy.
 
 
 
+\slide{Domain Name System}
 
-\slide{DNS er mere end navneopslag}
+\hlkimage{10cm}{dns-1.pdf}
+
+\begin{list1}
+\item Gennem DHCP får man typisk også information om DNS servere
+\item En DNS server kan slå navne, domæner og adresser op
+\item Foregår via query og response med datatyper kaldet resource records
+\item DNS er en distribueret database, så opslag kan resultere i flere opslag
+\end{list1}
+
+
+\slide{DNS more than just web site name lookup}
 
 % DNS MX, DNS TXT
 
 \begin{list1}
-  \item består af resource records med en type:
+  \item DNS is based on resource records of types:
     \begin{list2}
-\item adresser A-records
-\item IPv6 adresser AAAA-records
-\item autoritative navneservere NS-records
-\item post, mail-exchanger MX-records
-\item flere andre: md ,  mf ,  cname ,  soa ,
+\item A-record is an address
+\item Quad-A AAAA-records are IP version 6 addresses
+\item Authoritative name servers are listed in NS-records
+\item Email exchangers are put into MX-records
+\item Multiple others: md ,  mf ,  cname ,  soa ,
                   mb , mg ,  mr ,  null ,  wks ,  ptr ,
                   hinfo ,  minfo ,  mx ....
+\item Previously there was SRV server records and types being added, but today a lot of functionality is put into TXT records -- a text string with information
 \end{list2}
 \end{list1}
+
 \begin{alltt}
-        IN      MX      10      mail.zencurity.dk.
-        IN      MX      20      mail2.zencurity.dk.
+ns1     IN      A       185.129.60.130
+        IN      AAAA    2a06:d380:0:3065::53
+www     IN      A       185.129.60.130
+        IN      AAAA    2a06:d380:0:3065::80
 \end{alltt}
 
+\slide{DNS Example}
 
 
+\begin{alltt}
+user@Projects:images$ host -t ns zencurity.com
+zencurity.com name server ns1.gratisdns.dk.
+zencurity.com name server ns2.gratisdns.dk.
+zencurity.com name server ns3.gratisdns.dk.
+zencurity.com name server ns4.gratisdns.dk.
+zencurity.com name server ns5.gratisdns.dk.
+user@Projects:images$ host -t mx zencurity.com
+zencurity.com mail is handled by 10 mail.kramse.org.
+\end{alltt}
+
+So this domain is found at the GratisDNS system and uses a single mail server record.
+
+By default all of this happens without encryption and no integrity protection!
+
+Note: I use mostly \verb+host+ while DNS admins typically use \verb+dig+
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA vedligeholder en liste over magiske konstanter i IP
+\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
+\item En liste af interesse er port numre, hvor et par eksempler er:
+\begin{list2}
+\item Port 25 SMTP Simple Mail Transfer Protocol
+\item Port 53 DNS Domain Name System
+\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
+\item Port 443 HTTP over TLS/SSL
+\end{list2}
+\item Se flere på \link{http://www.iana.org}
+\end{list1}
 
 
-\slide{DNSSEC get started now}
+\slide{Basal DNS opsætning}
 
-\hlkimage{12cm}{cz-nic-dnssec-tlsa-validator.png}
+\begin{alltt}
+domain zencurity.net
+nameserver 91.239.100.100
+nameserver 2001:67c:28a4::
+nameserver 89.233.43.71
+nameserver 2a01:3a0:53:53::
+\end{alltt}
+
+\begin{list1}
+\item \verb+/etc/resolv.conf+ angiver navneservere og søgedomæner
+\item typisk indhold er domænenavn og IP-adresser for navneservere
+\item Filen opdateres også automatisk på DHCP klienter
+\item {\bf Husk at man godt kan slå AAAA records op over IPv4}
+\item De viste servere er fra censurfridns.dk og kan benyttes frit
+\end{list1}
+
+\slide{DNS root servere}
+
+\hlkimage{20cm}{root-servers.png}
+
+\link{http://root-servers.org/}
+
+
+\slide{Unbound and NSD}
 
 \begin{quote}
-"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
 \end{quote}
 
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
 
-\slide{Crypto slides here!?}
+My preferred local DNS server.
+
+Also check out uncensored DNS and his DNS over TLS setup!\\
+Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
+
+
+
+
+
+
+\slide{Crypto slides here!}
+
+ Imagine a long presentation inserted here showing:
+\begin{list2}
+\item HTTPS and Transport Layer Security (TLS)\\ \url{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+\item Elliptic Curve Encryption\\
+\url{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\item Diffie-Hellman\\
+ \url{https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange}
+\end{list2}
 
 \slide{SSL og TLS}
 
 \hlkimage{5cm}{crypto-class.png}
 
-\begin{list1}
-\item Oprindeligt udviklet af Netscape Communications Inc.
-\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
-derfor også for Transport Layer Security TLS
-TLS er baseret på SSL Version 3.0
+\begin{list2}
+\item Originally from Netscape Communications Inc.
+\item Secure Sockets Layer SSL was adopted by IETF and generalized into Transport Layer Security TLS
+
 \item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
-\item RFC-3207 SMTP STARTTLS
-\item Det er svært!
-\item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
-\end{list1}
+\item Recommend \emph{Serious Cryptography
+A Practical Introduction to Modern Encryption}
+by Jean-Philippe Aumasson
+November 2017, 312 pp.
+ISBN-13:
+978-1-59327-826-7
+\item Stanford Dan Boneh is writing a crypto book\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
+\end{list2}
 
 
 
@@ -753,6 +863,43 @@ TLS er baseret på SSL Version 3.0
 \end{list2}
 
 
+
+\slide{SMTP TLS}
+
+\begin{quote}
+The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade header.
+\end{quote}
+
+\begin{list1}
+\item SMTP was extended with support for Transport Layer Security TLS
+\item Also called {\bf Opportunistic TLS}, where the quote is also from:\\ \link{https://en.wikipedia.org/wiki/Opportunistic_TLS}
+\end{list1}
+
+
+
+
+\slide{DNSSEC DNS integrity}
+
+\begin{quote}
+The Domain Name System Security Extensions (DNSSEC) is a suite of Internet Engineering Task Force (IETF) specifications for securing certain kinds of information provided by the Domain Name System (DNS) as used on Internet Protocol (IP) networks. It is a set of extensions to DNS which provide to DNS clients (resolvers) cryptographic authentication of DNS data, authenticated denial of existence, and data integrity, but not availability or confidentiality.
+\end{quote}
+Source:\\{\footnotesize
+\url{https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions}}
+
+\slide{DNSSEC in Denmark}
+
+\hlkimage{15cm}{wwwdnsseckeys_02.png}
+
+\centerline{DNSSEC - also for .dk}
+
+Using the root DNSSEC and .dk -- you can add your own certificates!
+
+Source:\\
+\url{https://www.dk-hostmaster.dk/english/tech-notes/dnssec/}
+
+
+DNSSEC is something you should enable ASAP where possible
+
 \slide{DNSSEC and DANE}
 
 \begin{quote}
@@ -765,8 +912,91 @@ keys which are associated with a service located at a domain name."
 \end{quote}
 
 \begin{list1}
-\item DNS-based Authentication of Named Entities (dane)
+\item DNS-based Authentication of Named Entities (DANE)
+\item DANE protocol (RFC 6698)
+\item {\footnotesize\url{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
 \end{list1}
+
+
+\slide{TLSA Records}
+
+\hlkimage{10cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+
+
+
+
+
+\slide{DNSSEC trigger}
+
+\hlkimage{7cm}{dnssec-trigger.png}
+
+Der findes mange DNSSEC programmer, blandt andet DNSSEC-trigger som er en navneserver til din lokale PC
+
+\begin{list2}
+\item DNSSEC Validator for firefox\\ \link{https://addons.mozilla.org/en-us/firefox/addon/dnssec-validator/}
+\item OARC tools \link{https://www.dns-oarc.net/oarc/services/odvr}
+\item \link{http://www.nlnetlabs.nl/projects/dnssec-trigger/}
+\end{list2}
+
+
+
+
+
+
+\begin{tikzpicture}
+
+\tiny
+\sffamily
+
+\begin{scope}
+    \color{blue!40!white}
+    \piece[blue!40!white]{-1}{-1}{0}{0}
+\end{scope}
+\begin{scope}[xshift=1cm]
+    \color{green!30!white}
+    \piece[green!30!white]{1}{1}{0}{1}
+\end{scope}
+\begin{scope}[xshift=2cm]
+    \color{green!30!white}
+    \piece[green!30!white]{0}{1}{0}{-1}
+\end{scope}
+\begin{scope}[xshift=3cm]
+    \color{orange}
+    \piece[orange]{-1}{0}{0}{-1}
+\end{scope}
+
+\begin{scope}[yshift=-1cm]
+    \color{green!50!black}
+    \piece[green!50!black]{0}{-1}{1}{0}
+\end{scope}
+\begin{scope}[xshift=1cm,yshift=-1cm]
+    \color{brown}
+    \piece[brown]{0}{0}{-1}{1}
+\end{scope}
+\begin{scope}[xshift=2cm,yshift=-1cm]
+    \color{blue}
+    \piece[blue]{0}{1}{0}{0}
+\end{scope}
+\begin{scope}[xshift=3cm,yshift=-1cm]
+    \color{blue!25!white}
+    \piece[blue!25!white]{0}{0}{1}{-1}
+\end{scope}
+
+\node at (0.5,0.5) {Abstract};
+\node at (2,0.5) {Literature Review};
+\node at (3.5,0.5) {Discussion};
+
+\node at (0.5,-0.5) {\color{white}Introduction};
+\node at (1.6,-0.5) {Methods};
+\node at (2.4,-0.5) {\color{white}Results};
+\node at (3.5,-0.5) {Conclusions};
+
+\end{tikzpicture}
 
 
 \slide{Part III: Testing email services}
@@ -881,6 +1111,26 @@ Originally sslscan from http://www.titania.co.uk
  but use the version on Kali
 
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
+
+
+\slide{sslscan STARTTLS}
+
+\begin{alltt}\small
+$ sslscan --starttls-smtp mail.kramse.org
+Testing SSL server mail.kramse.org on port 25 using SNI name mail.kramse.org
+  Supported Server Cipher(s):
+Preferred TLSv1.2  256 bits  ECDHE-RSA-AES256-GCM-SHA384   Curve P-256 DHE 256
+Accepted  TLSv1.2  256 bits  ECDHE-RSA-AES256-SHA384       Curve P-256 DHE 256
+Accepted  TLSv1.2  256 bits  ECDHE-RSA-AES256-SHA          Curve P-256 DHE 256
+Accepted  TLSv1.2  256 bits  DHE-RSA-AES256-GCM-SHA384     DHE 2048 bits
+...
+Accepted  TLSv1.2  128 bits  DHE-RSA-AES128-GCM-SHA256     DHE 2048 bits
+Accepted  TLSv1.2  128 bits  DHE-RSA-AES128-SHA256         DHE 2048 bits
+Accepted  TLSv1.2  128 bits  DHE-RSA-AES128-SHA            DHE 2048 bits
+Accepted  TLSv1.2  128 bits  DHE-RSA-CAMELLIA128-SHA256    DHE 2048 bits
+Accepted  TLSv1.2  128 bits  DHE-RSA-CAMELLIA128-SHA       DHE 2048 bits
+\end{alltt}
+
 
 
 \slide{Part IV: Strategy for Your Email Security}

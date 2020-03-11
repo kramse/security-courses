@@ -947,56 +947,188 @@ Der findes mange DNSSEC programmer, blandt andet DNSSEC-trigger som er en navnes
 
 
 
+\slide{Puzzle with SMTP}
 
-\begin{tikzpicture}
 
-\tiny
-\sffamily
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',scale=0.8, transform shape]
+  \setlength{\boxwidth}{4cm}
+  \setlength{\boxheight}{3cm}
+  \setlength{\boxspace}{55mm}
 
-\begin{scope}
-    \color{blue!40!white}
-    \piece[blue!40!white]{-1}{-1}{0}{0}
-\end{scope}
-\begin{scope}[xshift=1cm]
-    \color{green!30!white}
-    \piece[green!30!white]{1}{1}{0}{1}
-\end{scope}
-\begin{scope}[xshift=2cm]
-    \color{green!30!white}
-    \piece[green!30!white]{0}{1}{0}{-1}
-\end{scope}
-\begin{scope}[xshift=3cm]
-    \color{orange}
-    \piece[orange]{-1}{0}{0}{-1}
-\end{scope}
+  % http://texample.net/tikz/examples/epc-flow-charts/
 
-\begin{scope}[yshift=-1cm]
-    \color{green!50!black}
-    \piece[green!50!black]{0}{-1}{1}{0}
-\end{scope}
-\begin{scope}[xshift=1cm,yshift=-1cm]
-    \color{brown}
-    \piece[brown]{0}{0}{-1}{1}
-\end{scope}
-\begin{scope}[xshift=2cm,yshift=-1cm]
-    \color{blue}
-    \piece[blue]{0}{1}{0}{0}
-\end{scope}
-\begin{scope}[xshift=3cm,yshift=-1cm]
-    \color{blue!25!white}
-    \piece[blue!25!white]{0}{0}{1}{-1}
-\end{scope}
+  % https://www.overleaf.com/learn/latex/LaTeX_Graphics_using_TikZ:_A_Tutorial_for_Beginners_(Part_3)%E2%80%94Creating_Flowcharts
 
-\node at (0.5,0.5) {Abstract};
-\node at (2,0.5) {Literature Review};
-\node at (3.5,0.5) {Discussion};
+   % Use previously defined 'state' as layout (see above)
+   % use tabular for content to get columns/rows
+   % parbox to limit width of the listing
+   \node[state,text width=\boxwidth,minimum height=\boxheight] (IP)
+   {\begin{tabular}{l}
+   {\bf IP}
+   \end{tabular}};
+   %
+   \node[state,         % layout (defined above)
+    text width=\boxwidth,       % max text width
+    minimum height=\boxheight,
+    %yshift=2cm,                % move 2cm in y
+    right of=IP,    % Position is to the right of QUERY
+    node distance=\boxspace,    % distance to First node
+    anchor=center] (UDP)   % posistion relative to the center of the 'box'
+   {%
+   \begin{tabular}{l}
+   {\bf UDP}
+   \end{tabular}};
 
-\node at (0.5,-0.5) {\color{white}Introduction};
-\node at (1.6,-0.5) {Methods};
-\node at (2.4,-0.5) {\color{white}Results};
-\node at (3.5,-0.5) {Conclusions};
+   \node[state,
+    right of=UDP,
+    node distance=\boxspace,    % distance to First node
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (TLSA)
+   {%
+   \begin{tabular}{l}
+   {\bf TLSA}
+   \end{tabular}
+   };
 
+%   \node[state,
+%    above of=TLSA,
+%    node distance=\boxspace,    % distance to First node
+%    anchor=center,
+%    minimum height=\boxheight,
+%    text width=\boxwidth] (CERTS)
+%   {%
+%   \begin{tabular}{l}
+%   {\bf Certificate}\\
+%   Let's Encrypt
+%   \end{tabular}
+%   };
+
+   \node[state,
+    right of=TLSA,
+    node distance=\boxspace,    % distance to First node
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (TLS)
+   {%
+   \begin{tabular}{l}
+   {\bf TLS}
+   \end{tabular}
+   };
+
+   \node[state,
+    below of=TLS,
+    yshift=-3cm,
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (STARTTLS)
+   {%
+   \begin{tabular}{l}
+   {\bf STARTTLS}
+   \end{tabular}
+   };
+
+   \node[state,
+    right of=STARTTLS,
+    node distance=\boxspace,    % distance to First node
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (SMTP)
+   {%
+   \begin{tabular}{l}
+   {\bf SMTP}
+   \end{tabular}
+   };
+
+
+      \node[state,
+       right of=TLS,
+       node distance=\boxspace,    % distance to First node
+       anchor=center,
+       minimum height=\boxheight,
+       text width=\boxwidth] (Postfix)
+      {%
+      \begin{tabular}{l}
+      {\bf Postfix}
+      \end{tabular}
+      };
+
+
+   \node[state,
+    below of=IP,
+    yshift=-3cm,
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (TCP)
+   {%
+   \begin{tabular}{l}
+   {\bf TCP}
+   \end{tabular}
+   };
+
+   \node[state,
+    below of=UDP,
+    yshift=-3cm,
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (DNS)
+   {%
+   \begin{tabular}{l}
+   {\bf DNS}
+   \end{tabular}
+   };
+
+   \node[state,
+    right of=DNS,
+    node distance=\boxspace,    % distance to First node
+    anchor=center,
+    minimum height=\boxheight,
+    text width=\boxwidth] (DNSSEC)
+   {%
+   \begin{tabular}{l}
+   {\bf DNSSEC}
+   \end{tabular}
+   };
+
+   % draw the paths and and print some Text below/above the graph
+   \path
+   (IP) edge (TCP)
+   (IP) edge (UDP)
+   (UDP) edge (DNS)
+   (TCP) edge (DNS)
+   (DNS) edge (DNSSEC)
+  % (CERTS) edge (TLSA)
+   (DNSSEC) edge (TLSA)
+   (SMTP) edge (STARTTLS)
+   (TLS) edge (STARTTLS)
+   (TLSA) edge (STARTTLS)
+   (Postfix) edge (SMTP)
+   (TCP) edge[bend right] (SMTP)
+   ;
 \end{tikzpicture}
+\end{center}
+
+\centerline{Quite a lot of pieces, but it works}
+
+
+
+
+\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
+
+\begin{list1}
+\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
+\item Today we have competing standards:
+\item
+\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
+\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
+
+\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
+
+\item How to cofigure DoT \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
+\end{list1}
+
+
 
 
 \slide{Part III: Testing email services}
@@ -1132,6 +1264,20 @@ Accepted  TLSv1.2  128 bits  DHE-RSA-CAMELLIA128-SHA       DHE 2048 bits
 \end{alltt}
 
 
+\slide{Hardenize - web sites with testing}
+
+Multiple sites provide testing of domains and configurations
+\begin{list2}
+\item \link{https://internet.nl/} -- recommended for mail settings
+\item \link{https://dmarcian.com/} -- recommended for mail settings
+\item \link{https://www.hardenize.com/}
+\item \link{https://www.ssllabs.com/} -- recommended for web sites
+%\item \link{https://observatory.mozilla.org/}
+%\item \link{https://securityheaders.com/}
+%\item \link{https://webbkoll.dataskydd.net/en}
+%\item Using the available protocols can make your \emph{cookies} better protected, use the \emph{secure} and \emph{http only} along with HSTS, strict transport etc.
+\end{list2}
+
 
 \slide{Part IV: Strategy for Your Email Security}
 
@@ -1160,21 +1306,6 @@ email domain security
 \end{list2}
 \item Building something \emph{secure} is {\bf hard work!}
 \end{list1}
-
-
-\slide{Existing infrastructures}
-
-\begin{list1}
-\item or even worse you inherited an infrastructure
-\item Multiple networks, with different vendors, rules
-\item Multiple generations of services, applications, technologies
-\item Built over decades
-\item Varying to no documentation
-\item Organizational challenges
-\item Ingrained culture -- frozen in time
-\end{list1}
-
-How do you get started improving security?
 
 
 \slide{Email and Web Browser Protections}
@@ -1206,30 +1337,51 @@ Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.p
 {\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
 \item DMARC Domain-based Message Authentication, Reporting and Conformance\\
 {\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}
-\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
-\item Brug allesammen, check efter ændringer!
+\item Use them all
 \end{list2}
 
-\centerline{Jeg er glad for at teste med \link{https://dmarcian.com/}}
-
-
-\slide{SPF}
-
- SPF Sender Policy Framework\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
-
-
-\slide{DKIM}
-
- DKIM DomainKeys Identified Mail\\
- {\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+A huge part of email security is ensuring our domains are not abused in spoofing attacks, and spam
 
 
 
-\slide{DMARC}
-%
+\slide{Sender Policy Framework (SPF)}
 
+\begin{alltt}
+ $ host -t TXT zencurity.com
+ zencurity.com descriptive text "v=spf1 a mx mx:kramse.dk -all"
+\end{alltt}
+
+\begin{quote}\footnotesize
+Sender Policy Framework (SPF) is an email authentication method designed to detect forging sender addresses during the delivery of the email.[1] SPF alone, though, is limited only to detect a forged sender claimed in the envelope of the email which is used when the mail gets bounced.[1] {\bf Only in combination with DMARC can it be used to detect the forging of the visible sender in emails} (email spoofing[2]), a technique often used in phishing and email spam.
+
+SPF allows the receiving mail server to check during mail delivery that a mail claiming to come from a specific domain is submitted by an IP address authorized by that domain's administrators.[3] The list of authorized sending hosts and IP addresses for a domain is published in the DNS records for that domain.
+\end{quote}
+
+Source:\\{\footnotesize
+\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+
+
+\slide{DomainKeys Identified Mail (DKIM)}
+
+\begin{quote}
+DomainKeys Identified Mail (DKIM) allows the receiver to check that an email claimed to have come from a specific domain was indeed authorized by the owner of that domain.[1] It achieves this by affixing a digital signature, linked to a domain name, to each outgoing email message. The recipient system can verify this by looking up the sender's public key published in the DNS. A valid signature also guarantees that some parts of the email (possibly including attachments) have not been modified since the signature was affixed.[2] Usually, DKIM signatures are not visible to end-users, and are affixed or verified by the infrastructure rather than the message's authors and recipients.
+\end{quote}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+
+\slide{Domain-based Message Authentication (DMARC)}
+
+\begin{quote}\footnotesize
+DMARC (Domain-based Message Authentication, Reporting and Conformance) is an email authentication protocol. It is designed to give email domain owners the ability to protect their domain from unauthorized use, commonly known as email spoofing. The purpose and primary outcome of implementing DMARC is to protect a domain from being used in business email compromise attacks, phishing emails, email scams and other cyber threat activities.
+
+Once the DMARC DNS entry is published, any receiving email server can authenticate the incoming email based on the instructions published by the domain owner within the DNS entry. If the email passes the authentication it will be delivered and can be trusted. If the email fails the check, depending on the instructions held within the DMARC record the email could be delivered, quarantined or rejected.
+
+DMARC extends two existing mechanisms, Sender Policy Framework (SPF) and DomainKeys Identified Mail (DKIM).
+\end{quote}
 DMARC Domain-based Message Authentication, Reporting and Conformance\\
-{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/DMARC}}
 
 
 \slide{DMARC for non-sending Domains}
@@ -1242,21 +1394,7 @@ _dmarc.gdns.template    v=DMARC1; p=reject;     43200
 \end{alltt}
 
 
-\slide{DANE}
- DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
 
-SMTP DANE - RFC 7672,
-
-\slide{MTA-STS}
-
-MTA Strict Transport Security (MTA-STS)
-
-\slide{Authenticated Received Chain (ARC)}
-RFC 8617
-The Authenticated Received Chain (ARC) Protocol, JULY 2019
-
-https://www.rfc-editor.org/info/rfc8617
-OpenARC
 
 \slide{Get Started and Get Resources}
 
@@ -1266,7 +1404,7 @@ Use services on the internet, such as \link{https://internet.nl/} and \link{http
 {\bf Hints:}\\
 I suggest the following strategy when you implement these methods, if you dare do it right now. If you make a plan.
 
-{\bf Basic mail security 2019}
+{\bf Basic mail security}
 \begin{enumerate}
 \item Implement DNSSEC - turn it on, most likely easy
 \item Configure Sender Policy Framework, perhaps only \verb+~all+ tilde means soft fail
@@ -1276,7 +1414,7 @@ I suggest the following strategy when you implement these methods, if you dare d
 \end{enumerate}
 
 
-{\bf Advanced mail security 2019}
+{\bf Advanced mail security}
 \begin{enumerate}
 \item Create real certificates for TLS and DANE, I use Lets Encrypt
 \item Publish them \smiley
@@ -1294,8 +1432,6 @@ zencurity.com & \faCheck & \faCheck & \faCheck &  & \faCheck & \\ \hline
 
 {\bf Discussion:}\\
 You need to research before making changes to important domains.
-
-
 
 
 \slide{Graphs and Dashboards!}
@@ -1328,77 +1464,52 @@ Then after some time has passed, and you have reviewed reporting from DMARC, tur
 \end{list2}
 
 
-\slide{Scripts for doing Lets Encrypt mail certificate}
+\slide{Next steps}
 
-Lets Encrypt certificates
-input Sunny configurations
+Future mail standards - young and not widely used:
+\begin{list2}
+\item MTA Strict Transport Security (MTA-STS)\\
+\url{https://www.rfc-editor.org/rfc/rfc8461.txt}
+\item SMTP TLS Reporting\\
+\url{https://www.rfc-editor.org/info/rfc8460}
+\item OpenARC The Authenticated Received Chain (ARC) Protocol, JULY 2019 RFC 8617\\
+\url{https://www.rfc-editor.org/info/rfc8617}
+\end{list2}
+
+Some input from Sidsel, thank you, and more information at:\\{\footnotesize
+\url{https://www.version2.dk/blog/fremtidens-mailstandarder-dane-mta-sts-tls-reporting-openarc-1082819}}
+
+\vskip 5mm
+\centerline{\bf I only support TLS encrypted email since august 2019, and have few problems}
+\url{https://www.version2.dk/blog/skal-starttls-vaere-krav-foelsomme-email-1088758}
+
+\slide{Checking for new standards}
+
+\begin{quote}
+Update (23 April 2019): Gmail has become the first major email provider to support MTA-STS and TLSRPT, making it easier to justify deploying these new standards. More information is available in their blog post.
+
+Update (26 Sep 2018): MTA-STS has been officially published as RFC 8461.
+
+MTA-STS (full name SMTP Mail Transfer Agent Strict Transport Security) is a new standard that aims to improve the security of SMTP by enabling domain names to opt into strict transport layer security mode that requires authentication (valid public certificates) and encryption (TLS). In this blog post we discuss why MTA-STS exists and how it's used, as well as announce full support for its most recent draft in Hardenize.
+\end{quote}
+
+Source: \url{https://www.hardenize.com/blog/mta-sts}
+
+
+
 
 \slide{Advanced Network tools - examples}
 
 \hlkimage{12cm}{kibana-solido.png}
 
 \begin{list2}
-\item Net: Bro \link{http://www.bro-ids.org} Suricata \link{http://suricata-ids.org}
-\item DNS: DSC and PacketQ \link{https://github.com/dotse/packetq/wiki}
+\item Net: Zeek \link{https://www.zeek.org/} Suricata \link{http://suricata-ids.org}
+\item DNS: DSC and PacketQ \link{https://github.com/dotse/packetq/wiki}\\
+Storing query logs, old school or needed?
 \item Syslog: Elasticsearch, Logstash, and Kibana, called ELK stack or Elastic stack
 \item Use these to see inside systems using DNS and SMTP for unauthorized traffic
 \end{list2}
 
-
-\slide{Storing query logs, old school or needed?}
-
-\hlkimage{6cm}{bro-sample-ssl-scripts.png}
-
-\begin{list2}
-\item DNS query logs, keep it for at least a week?\\
-- with DSC and PacketQ \link{https://github.com/DNS-OARC/PacketQ}
-\item SSL/TLS log with Bro/Suricata\\
-{\footnotesize\link{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
-\item Log with Elasticsearch?\\
-{\footnotesize\link{https://www.elastic.co/guide/en/elasticsearch/guide/current/index.html}}
-%\item Even netflow session logging, full 1:1 - NFSen, Suricata Flow mode?
-%\item Moloch \link{https://github.com/aol/moloch}
-\end{list2}
-
-\centerline{Uetisk? eller smart hvis man vil spore hvor malware kom ind}
-
-
-
 \myquestionspage
-
-\slide{Extras}
-
-\slide{Book: Defensive Security Handbook (DSH)}
-
-\hlkimage{6cm}{defensive-security-handbook.jpg}
-
-\emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}, Lee Brotherston, Amanda Berlin ISBN: 978-1-491-96038-7
-
-\slide{Reading List}
-
-\begin{list1}
-\item Read ATT\&CK 101 Blog Post\\
-\link{https://medium.com/mitre-attack/att-ck-101-17074d3bc62}
-\item and browse MITRE ATT\&CK web site\\ \link{https://attack.mitre.org/}
-\end{list1}
-
-
-\slide{Hardenize - web sites with testing}
-
-\begin{list1}
-\item Multiple sites provide testing of domains and configurations
-\item \link{https://www.hardenize.com/}
-\item \link{https://internet.nl/}
-\item \link{https://observatory.mozilla.org/} - try www.zencurity.dk which fails
-\item \link{https://www.ssllabs.com/}
-\item \link{https://securityheaders.com/}
-\item \link{https://webbkoll.dataskydd.net/en}
-\item Using the available protocols can make your \emph{cookies} better protected, use the \emph{secure} and \emph{http only} along with HSTS, strict transport etc.
-\end{list1}
-
-Now we will check our own sites, and create plans. Which parts are most interesting to you? Not having your domains abused for spamming or headers and security of your own web sites?
-
-
-
 
 \end{document}

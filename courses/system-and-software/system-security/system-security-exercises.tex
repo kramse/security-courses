@@ -1435,6 +1435,131 @@ Other very popular systems are:
 Remember doing logging og performance metrics can also become a security charateristics. Availability is a critical metric for most commercial systems.
 
 
+\chapter{Getting started with the Elastic Stack 15 min}
+\label{gettingstartedelastic}
+
+\hlkimage{10cm}{illustrated-screenshot-hero-kibana.png}
+
+Screenshot from \url{https://www.elastic.co/kibana}
+
+{\bf Objective:}\\
+Get ready to start using Elasticsearch, read - but dont install.
+
+{\bf Purpose:}\\
+We need some tools to demonstrate integration. Elasticsearch is a search engine and ocument store used in a lot of different systems, allowing cross application integration.
+
+
+{\bf Suggested method:}\\
+Visit the web page for \emph{Getting started with the Elastic Stack} :\\
+{\footnotesize\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+Read about the tools, and the steps needed for manual installation.
+
+{\bf You dont need to install the tools currently}, I recommend using Debian and Ansible for bringing up Elasticsearch.
+You are of course welcome to install, or try the Docker method.
+
+
+{\bf Hints:}\\
+Elasticsearch is the name of the search engine and document store. Today Elastic Stack contains lots of different parts.
+
+We will focus on these parts:
+\begin{itemize}
+\item Elasticsearch - the core engine
+\item Logstash - a tool for parsing logs and other data.\\
+\url{https://www.elastic.co/logstash}
+\begin{quote}
+"Logstash dynamically ingests, transforms, and ships your data regardless of format or complexity. Derive structure from unstructured data with grok, decipher geo coordinates from IP addresses, anonymize or exclude sensitive fields, and ease overall processing."
+\end{quote}
+\item Kibana - a web application for accessing and working with data in Elasticsearch\\
+\url{https://www.elastic.co/kibana}
+\end{itemize}
+
+{\bf Solution:}\\
+When you have browsed the page you are done.
+
+{\bf Discussion:}\\
+You can read more about Elasticsearch at the wikipedia page:\\
+\url{https://en.wikipedia.org/wiki/Elasticsearch}
+
+
+\chapter{Use Ansible to install Elastic Stack}
+\label{ex:basicansiblees}
+
+
+{\bf Objective:}\\
+Run Elasticsearch
+
+{\bf Purpose:}\\
+See an example tool used for many integration projects, Elasticsearch from the Elastic Stack
+
+{\bf Suggested method:}\\
+We will run Elasticsearch, either using the method from:\\{\footnotesize
+\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+or by the method described below using Ansible - your choice.
+
+Ansible used below is a configuration management tool \url{https://www.ansible.com/}
+
+I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has ansible and my playbooks: (as root run)
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
+
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
+
+If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+git pull
+\end{minted}
+
+Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
+
+Note: these instructions are originally from the course\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content
+\begin{alltt}
+apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
 \chapter{Create Kibana Dashboard 15min}
 \label{ex:kibana-dashboard}
 
@@ -1972,9 +2097,19 @@ Evaluate our network, quick gap analysis for becoming PCI compliant
 Consider the term scope and influence on securing an environment.
 
 {\bf Suggested method:}\\
-Write down the current status, What are the network parts, organization (team two people) and applications (Nginx running on single Debian server?).
+Consider a small network like the one used for exercises. Consider the requirements for running exercises, why did we isolate this part from the rest of the network.
 
-Consider the impact of adding wireless network to this setup.
+What are the parts used:
+\begin{itemize}
+\item Router(s), switches, network equipment
+\item Firewall(s)
+\item Design DMZ, LAN, WLAN
+\item "Servers" - your laptops with Debian
+\end{itemize}
+
+Write down the current status, What are the network parts, organization and applications (Nginx running on single Debian server?).
+
+Consider the impact of adding wireless network to this setup. Is this a requirement, could we do without it.
 
 Consider if firewalls would be best practice or an actual requirement, how to implement this requirement for your organization.
 

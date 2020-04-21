@@ -29,6 +29,7 @@
 \item EtherApe
 \item Nmap and Nping
 \item Pcap-diff
+\item Flooding with hping3
 \end{list2}
 \end{list1}
 
@@ -36,18 +37,21 @@
 \slide{Reading Summary}
 
 \begin{quote}
-PPA chapter 5,6,7,8,12 - 124 pages\\
-Strange Attractors and TCP/IP Sequence Number Analysis
+Read: PPA chapters 4,5,6 - 66 pages\\
+(Original reading PPA chapter 5,6,7,8,12 - 124 pages)\\
+Skim: Strange Attractors and TCP/IP Sequence Number Analysis
 \end{quote}
 
 \begin{list1}
 \item The chapters read for this time, main things:
-\item PPA chapter 5: Advanced Wireshark Features
+\item PPA chapter 4: Working with Captured Packets
 \begin{list2}
-\item Networks have end-points and conversations on multiple layers
-\item Wireshark is advanced, try right-clicking different places
-\item Name resolution includes low level MAC addresses, and IP - names
-\item More than 1000 dissectors, but beware some have security issues!
+\item Reading, saving and exporting capture files with packets from Wireshark
+\item Merging two files with Wireshark
+\item Finding, Marking, Printing packets
+\item Capture options including Capture Filters vs Display Filters
+\item Capture Filters are libpcap/Berkeley Packet
+Filter (BPF) syntax - same as \verb+tcpdump+
 \end{list2}
 \item also more than 20 illustrations in one chapter, not hard to read
 \end{list1}
@@ -58,9 +62,22 @@ Strange Attractors and TCP/IP Sequence Number Analysis
 \slide{Reading Summary, continued}
 
 \begin{list1}
+\item The chapters read for this time, main things:
+\item PPA chapter 5: Advanced Wireshark Features
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Wireshark is advanced, try right-clicking different places
+\item Name resolution includes low level MAC addresses, and IP - names
+\item More than 1000 dissectors, but beware some have security issues!
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary, continued}
+
+\begin{list1}
 \item PPA chapter 6: Packet Analysis on the Command Line
 \begin{list2}
-\item TShark and Tcpdump, \verb+tcpdump –nei eth0+\\
+\item TShark and Tcpdump, I often use: \verb+tcpdump –nei eth0+\\
 \verb+tshark -z expert -r download-slow.pcapng+
 
 \item Remote packet dumps, \verb+tcpdump –i eth0 –w packets.pcap+
@@ -96,7 +113,7 @@ ping: local error: Message too long, mtu=1500
 
 \begin{list1}
 \item PPA chapter 7: Network Layer Protocols
-Command Line
+Command Line, was originally for today!
 \begin{list2}
 \item What is normal network traffic?
 \item Great reference chapter for basic protocols
@@ -111,7 +128,7 @@ Command Line
 
 \begin{list1}
 \item PPA chapter 8: Transport Layer Protocols
-Command Line
+Command Line, was originally for today!
 \begin{list2}
 \item Again the TCP 3-way handshake is described Note: can be done in 4 packets
 \item Closed TCP returns Reset (RST) packet, closed UDP returns ICMP port unreachable
@@ -124,7 +141,7 @@ Command Line
 \hlkimage{14cm}{ppa-passive-fingerprinting.png}
 
 \begin{list1}
-\item PPA chapter 12: Packet Analysis for Security
+\item PPA chapter 12: Packet Analysis for Security, was originally for today!
 \begin{list2}
 \item Syn scan
 \item the ARP protocol is inherently insecure
@@ -207,7 +224,7 @@ Nmap ("Network Mapper") is a free and open source (license) utility for network 
 \end{quote}
 
 \begin{list1}
-\item Initial release September 1997; 20 years ago
+\item Initial release September 1997; +20 years ago
 \item Today a package of programs for Windows, Mac, BSD, Linux, ... source
 \item Flexible, powerful, and free! Includes other tools!
 \item Lets check release notes, 7.70 pt.\\
@@ -452,6 +469,7 @@ switch_url=http://wifi.aal.dk/login.html&ap_mac=70:db:98:73:e5:a0&
 \item Dette ID er gemt i din enhed, fra fabrikken, kan sjældent ændres
 \item Alle i nærheden kan se denne MAC, og dermed din enheds unikke hardwareadresse.
 \item Kendere ved at man kan skifte sin MAC midlertidigt, og det gør telefoner ofte når de scanner efter netværk idag - hvis de overhovedet scanner
+\item Søg på macchanger \link{https://pkg.kali.org/pkg/macchanger}
 \end{list2}
 
 
@@ -480,13 +498,12 @@ EtherApe is a graphical network monitor for Unix modeled after etherman. Featuri
 \slide{Intro to routing protocols attacks}
 
 
-\hlkimage{8cm}{openbgpd-network-2.pdf}
+\hlkimage{10cm}{openbgpd-network-2.pdf}
 
 \begin{list1}
-\item Når netværkene vokser bliver det administrativt svært at vedligeholde
-\item Det skalerer dårligt med statiske routes til netværk
-\item Samtidig vil man gerne have redundante forbindelser
-\item Til dette brug har man STP på switch niveau og dynamisk routing på IP niveau
+\item Networks grow and static configuration gets cumbersome, hard to maintain
+\item Static routing does not scale, and we also require redundancy
+\item Typical techs used RSTP on Layer 2 switching and Dynamic routing Layer 3 IP level
 \end{list1}
 
 
@@ -503,26 +520,27 @@ EtherApe is a graphical network monitor for Unix modeled after etherman. Featuri
 \end{list1}
 
 
-\slide{Hosting og internet-udbydere}
+\slide{Hosting and internet providers}
 
 \hlkimage{17cm}{network-bgp-asn.png}
 
 \begin{list2}
-\item Jeg var engang i en position hvor vi transporterede data for mange kunder
-\item Det var data som information, just eat, kino.dk, ...
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
 \end{list2}
 
 
 \slide{OSPF Open Shortest Path First}
 
-\begin{list1}
-\item Er en dynamisk routing protocol som benyttes til intern routing
-\item OSPF version 3 er beskrevet i RFC-2740
-\item OSPF bruger hverken TCP eller UDP, men sin egen protocol med ID 89
-\item OSPF bruger en metric/cost pr link for at udregne smart routing
+\hlkimage{8cm}{openospfd-network-clean.pdf}
+
+\begin{list2}
+\item Dynamic routing protocol for internal routing updates
+\item OSPF version 3 RFC-2740
+\item OSPF uses neither TCP or UDP,but protocol ID 89
+\item OSPF uses a metric/cost per link and calculates on each node
 \item \link{http://en.wikipedia.org/wiki/Open_Shortest_Path_First}
-\item Vores setup svarer til OpenBGPD setup, blot med OpenOSPFD
-\end{list1}
+\end{list2}
 
 
 \slide{Network Security Threats}
@@ -530,28 +548,30 @@ EtherApe is a graphical network monitor for Unix modeled after etherman. Featuri
 \begin{list1}
 \item Low level and Network Layer Attacks
 \begin{list2}
-\item Yersinia, see next slide
-\item IP based creating strange fragments, overlapping, missing, SMALLL
+\item "Yersinia is a network tool designed to take advantage of some weakeness in different network protocols. It pretends to be a solid framework for analyzing and testing the deployed networks and systems."\\
+evil l2 tools - STP, CDP, DTP, DHCP, HSRP, IEEE 802.1Q, IEEE 802.1X, ISL, VTP\\
+\link{https://github.com/tomac/yersinia}
+\item IP based creating strange fragments, overlapping, missing, SMALLL with fragroute/fragrouter
 \item LAND - same destination and source address
+\item THC-IPV6 - attacking the IPV6 protocol suite
 \end{list2}
+\item Note: Evil repeats itself, like doing ARP poisoning across MPLS
 \end{list1}
 
-\centerline{Attackers are very creative!}
+\vskip 1cm
+\centerline{\Large Attackers are very creative!}
 
-\slide{New Loki - ikke alt er layer 7}
+\slide{Loki - ikke alt er layer 7}
 
 \begin{quote}
-At the beginning LOKI was made to combine some stand-alone {\bf command line tools}, like the \verb+bgp_cli+, the \verb+ospf_cli+
-or the \verb+ldp_cli+ and to give them a {\bf user friendly, graphical interface}. In the meantime LOKI is more than just the comb
-ination of the single tools, it gave its modules the opportunity to base upon each other (like {\bf combining ARP-spoofing from th
-e ARP module with some man-in-the-middle actions, rewriting MPLS-labels for example)} and even inter operate with each other. (Fre
-mh<E6>vning: HLK)
+At the beginning LOKI was made to combine some stand-alone {\bf command line tools}, like the \verb+bgp_cli+, the \verb+ospf_cli+ or the \verb+ldp_cli+ and to give them a {\bf user friendly, graphical interface}. In the meantime LOKI is more than just the combination of the single tools, it gave its modules the opportunity to base upon each other (like {\bf combining ARP-spoofing from the ARP module with some man-in-the-middle actions, rewriting MPLS-labels for example)} and even inter operate with each other.
 \end{quote}
+(bold by me)
 
 \begin{list1}
 \item \link{https://www.c0decafe.de/loki.html} Loki
 \item \link{http://www.packetstan.com/2011/02/running-loki-on-backtrack-4-r2.html}
-\item "Yersinia is a network tool designed to take advantage of some weakeness in different network protocols. It pretends to be a solid framework for analyzing and testing the deployed networks and systems."  \link{http://www.yersinia.net/}
+
 \end{list1}
 
 
@@ -569,7 +589,7 @@ mh<E6>vning: HLK)
 Source: \link{https://blog.cloudflare.com/rpki/}
 
 \begin{list1}
-\item RPKI \link{https://en.wikipedia.org/wiki/Resource_Public_Key_Infrastructure}
+\item \link{https://en.wikipedia.org/wiki/Resource_Public_Key_Infrastructure}
 \item Authenticated routing protocols passwords, secrets etc.
 \end{list1}
 
@@ -586,6 +606,18 @@ Routinator connects to the Trust Anchors of the five Regional Internet Registrie
 \item Update your records in the Whois system, read about RIPE here:\\ {\small\link{https://www.ripe.net/manage-ips-and-asns/resource-management/certification}}
 \end{list1}
 
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
+
+
 \slide{DDoS protection and flooding}
 
 \hlkimage{12cm}{overview-routing-customer-2015.pdf}
@@ -595,21 +627,55 @@ Routinator connects to the Trust Anchors of the five Regional Internet Registrie
 \item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
 \end{list2}
 
-\slide{Båndbreddestyring og policy based routing}
 
-\begin{list1}
-\item Mange routere og firewalls idag kan lave båndbredde allokering til
-  protokoller, porte og derved bestemte services
-  \item Specielt relevant for DDoS beskyttelse
-  \item Findes på F5 BigIP, Cisco, Junos osv.
-\item Mest kendte er i Open Source:
+\slide{Availability and Network flooding attacks}
+
 \begin{list2}
-\item OpenBSD - integreret i PF
-\item FreeBSD har dummynet
-\item Linux Traffic Control
+\item SYN flood is the most basic and very common on the internet towards 80/tcp and 443/tcp
+\item ICMP and UDP flooding are the next targets
+\item Supporting litterature is TCP Synfloods - an old yet current problem, and improving pf's response to it, Henning Brauer, BSDCan 2017
+\item All of them try to use up some resources
+\begin{list2}
+\item Memory space in specific sections of the kernel, TCP state, firewalls state, number of concurrent sessions/connections
+\item interrupt processing of packets - packets per second
+\item CPU processing in firewalls, pps
+\item CPU processing in server software
+\item Bandwidth - megabits per second mbps
 \end{list2}
-\item Det kaldes også traffic shaping
-\end{list1}
+\end{list2}
+
+There is a presentation about DDoS protection with low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+
+
+\slide{Simulating DDoS packets}
+
+A minimini introduction workshop teaching people how to produce DDoS simulation traffic - usefull for testing their own infrastructures.
+
+We will have a server connected on a switch with multiple 1Gbit port for attackers. Attackers will be connected through 1Gbit ports using USB Ethernet - we have loaners.
+
+Work together to produce enough to take down this server!
+
+WHILE attack is ongoing there will be both the possibility to monitor traffic, monitor port, and decide on changes to prevent the attacks from working.
+
+\slide{Common DDoS attack types}
+
+We will work through common attack types, like:
+
+\begin{list2}
+\item TCP SYN flooding
+\item TCP other flooding
+\item UDP flooding NTP, etc.
+\item ICMP flooding
+\item Misc - stranger attacks and illegal combinations of flags etc.
+\end{list2}
+
+then we will discuss which changes to environment could be implemented.
+
+You will go away from this with tools for producing packets, hping3 and some configurations for protecting - PF rules, switch rules, server firewall rules.
+
+
+
 
 \slide{hping3 packet generator}
 
@@ -678,6 +744,37 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 \vskip 1cm
 \centerline{Ohh we lost our VPN into the environment, ohh the fw console is dead}
 
+\slide{Before testing: Smokeping}
+
+\hlkimage{15cm}{smokeping-before-testing.png}
+
+\centerline{Before DDoS testing  use Smokeping software}
+
+\slide{Before testing: Pingdom}
+
+\hlkimage{18cm}{forside-pingdom.png}
+
+\centerline{Another external monitoring from Pingdom.com}
+
+
+\slide{Running full port scan on network}
+
+\begin{alltt}
+\small
+# export CUST_NET="192.0.2.0/24"
+# nmap -p 1-65535 -A -oA full-scan $CUST_NET
+\end{alltt}
+
+Performs a full port scan of the network, all ports
+
+Saves output in "all formats" normal, XML, and grepable formats
+
+Goal is to enumerate the ports that are allowed through the network.
+
+Note: This command is pretty harmless, if something dies, then it is\\
+\emph{vulnerable to normal traffic} - and should be fixed!
+
+
 \slide{Running Attacks with hping3}
 
 \begin{alltt}\small
@@ -712,6 +809,11 @@ Some attacks require some build-up before resource run out
 \item We want to know the approximate level where it breaks
 \item If you want to change environment, then wait until all scenarios tested
 \end{list1}
+
+\exercise{ex:syn-flood}
+
+Exercise booklet contains some bonus exercises, feel free to try them at home
+
 
 \slide{Comparable to real DDoS?}
 
@@ -760,6 +862,65 @@ A basic test would be:
 \verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+
 \end{list1}
 
+\slide{Test-cases / Scenarios, continued Spoof Source}
+
+Spoofed packets src=dst=target \smiley
+
+Flooding with spoofed packet source, within customer range
+
+\begin{alltt}\small
+
+-a --spoof hostname
+    Use this option in order to set a fake IP  source  address,  this
+    option ensures that target will not gain your real address.
+\end{alltt}
+
+\verb+hping3 -q --flood -p 80 -S -a $CUST_IP $CUST_IP+
+
+Preferably using a test-case you know fails, to see effect
+
+Still amazed how often this works
+
+BCP38 anyone!
+
+\slide{Test-cases / Scenarios, continued Small Fragments}
+
+Using the built-in option -f for hping
+
+\begin{alltt}\small
+-f --frag
+    Split  packets  in more fragments, this may be useful in order to test IP
+    stacks fragmentation performance and to test if some packet filter is  so
+    weak  that  can  be  passed using tiny fragments (anachronistic). Default
+    {\bf 'virtual mtu' is 16 bytes}. see also --mtu option.
+\end{alltt}
+
+\begin{list1}
+\item \verb+hping3 -q --flood -p 80 -S -f $CUST_IP+
+\item Similar process with bad checksum and Bad fragment offset
+\end{list1}
+
+\slide{Rocky Horror Picture Show - 1}
+
+\hlkimage{20cm}{smokeping-1.png}
+
+\centerline{Really does it break from 50.000 pps SYN attack?}
+
+\slide{Rocky Horror Picture Show - 2}
+
+\hlkimage{20cm}{smokeping-2.png}
+
+\centerline{Oh no 500.000 pps UDP attacks work?}
+
+\slide{Rocky Horror Picture Show - 3}
+
+\centerline{Oh no spoofing attacks work?}
+
+\hlkimage{20cm}{smokeping-3.png}
+
+
+
+
 \slide{Experiences from testing}
 
 How much bandwidth can big danish companies handle!
@@ -795,6 +956,24 @@ Note: attackers can send full 10Gbit 14mill pps from Core i7 with 3 cores ...
 \vskip 1cm
 \centerline{After tuning of {\bf existing devices/network} improves results 10-100 times}
 
+\slide{Båndbreddestyring og policy based routing}
+
+\begin{list1}
+\item Mange routere og firewalls idag kan lave båndbredde allokering til
+  protokoller, porte og derved bestemte services
+  \item Specielt relevant for DDoS beskyttelse
+  \item Findes på F5 BigIP, Cisco, Junos osv.
+\item Mest kendte er i Open Source:
+\begin{list2}
+\item OpenBSD - integreret i PF
+\item FreeBSD har dummynet
+\item Linux Traffic Control
+\end{list2}
+\item Det kaldes også traffic shaping
+\item Ide, sæt ICMP til max 20Mbps, UDP til 10\% af båndbredde
+\end{list1}
+
+
 \slide{Conclusion DDoS and network attacks}
 
 \hlkrightimage{15cm}{network-layers-1.png}
@@ -810,6 +989,15 @@ for later devices to dig deeper
 
 \vskip 3cm
 \centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
+
+\slide{More application testing}
+
+\hlkimage{9cm}{images/linux-tsung-size_rcv.png}
+
+\begin{list1}
+\item We covered only lower layers - but helpful layer 7 testing programs exist
+\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
+\end{list1}
 
 
 \slidenext

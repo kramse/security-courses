@@ -1056,6 +1056,140 @@ Receiving systems, and those en route to the service, should be checked for reso
 
 
 
+\chapter{Configure SSH keys for more secure access}
+\label{ex:config-ssh-keys}
+
+{\bf Objective:}\\
+See how SSH keys can be used.
+
+{\bf Purpose:}\\
+Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
+
+Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
+
+{\bf Suggested method:}\\
+First generate a SSH key, use:
+
+\begin{alltt}
+\$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/hlk/.ssh/id_rsa.
+Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
+The key's randomart image is:
++---[RSA 2048]----+
+|      .          |
+|   . o           |
+|   .=            |
+| ..=.      o .   |
+|o.*o. . S o +    |
+|oB==+o   . o     |
+|+*B=.o.   o .    |
+|=++.o +. o o     |
+|oEo=oo .ooo      |
++----[SHA256]-----+
+\end{alltt}
+
+Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
+\begin{alltt}
+hlk@kunoichi:hlk$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\vskip 5mm
+
+\centerline{This is the best tool for the job!}
+
+The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
+
+{\bf Hints:}\\
+You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
+
+{\bf Solution:}\\
+When you can login using key you are done.
+
+{\bf Discussion:}\\
+We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
+
+\chapter{Enable firewall}
+\label{ex:debian-firewall}
+
+{\bf Objective:}\\
+Turn on a firewall and configure a few simple rules.
+
+{\bf Purpose:}\\
+See how easy it is to restrict incoming connections to a server.
+
+
+{\bf Suggested method:}\\
+Install a utility for firewall configuration.
+
+You should also perform Nmap port scan with the firewall enabled and disabled.
+
+{\bf Hints:}\\
+Using the ufw package it is very easy to configure the firewall on Linux.
+
+Install and configuration can be done using these commands.
+\begin{alltt}
+root@debian01:~# apt install ufw
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following NEW packages will be installed:
+  ufw
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 164 kB of archives.
+After this operation, 848 kB of additional disk space will be used.
+Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
+Fetched 164 kB in 2s (60.2 kB/s)
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
+
+{\bf Solution:}\\
+When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
+
+{\bf Discussion:}\\
+Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
+
+Web interfaces also exist, but are more suited for a centralized firewall.
+
+Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
+
+Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
+
 
 
 
@@ -1077,12 +1211,113 @@ Look into the manual page of nmap or the web site book about nmap scanning
 {\bf Solution:}\\
 Run nmap and get results.
 
+Notice how the output changes if you enable/disable the firewall on the system under test. Nmap tries to report open, filtered and closed in a sensible way. So if most ports are filtered and scanning 100 ports it might say 98 filtered, 1 open and 1 close for instance.
+
 {\bf Discussion:}\\
 Some services will show software versions allowing an attacker easy lookup at web sites to known vulnerabilities and often exploits that will have a high probability of success.
 
 Make sure you know the difference between a vulnerability which is discovered, but not really there, a false positive, and a vulnerability not found due to limitations in the testing tool/method, a false negative.
 
 A sample false positive might be reporting that a Windows server has a vulnerability that you know only to exist in Unix systems.
+
+
+\chapter{SSH scanners}
+\label{ex:nmap-ssh-scanner}
+
+{\bf Objective:}\\
+Try ssh scanners, similar to sslscan and Nmap sshscan
+
+{\bf Purpose:}\\
+We often need to find older systems with old settings.
+
+{\bf Suggested method:}\\
+Use Nmap with built-in scripts for getting the authentication settings from SSH servers
+
+{\bf Hints:}\\
+Nmap includes lots of scripts, look into the directory on Kali:
+
+\begin{alltt}\footnotesize
+$ ls /usr/share/nmap/scripts/*ssh*
+/usr/share/nmap/scripts/ssh2-enum-algos.nse   /usr/share/nmap/scripts/ssh-publickey-acceptance.nse
+/usr/share/nmap/scripts/ssh-auth-methods.nse  /usr/share/nmap/scripts/ssh-run.nse
+/usr/share/nmap/scripts/ssh-brute.nse	      /usr/share/nmap/scripts/sshv1.nse
+/usr/share/nmap/scripts/ssh-hostkey.nse
+
+$ sudo nmap -A -p 22 --script "ssh2-enum-algos,ssh-auth-methods" 10.0.45.2
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-02-20 08:46 CET
+Nmap scan report for 10.0.42.6
+Host is up (0.0038s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     Cisco/3com IPSSHd 6.6.0 (protocol 2.0)
+| ssh-auth-methods:
+|   Supported authentication methods:
+|     publickey{\color{red}
+|_    password}
+| ssh2-enum-algos:
+|   kex_algorithms: (1)
+|       diffie-hellman-group1-sha1
+|   server_host_key_algorithms: (1)
+|       ssh-dss
+|   encryption_algorithms: (6)
+|       aes128-cbc
+|       aes192-cbc
+|       aes256-cbc
+|       blowfish-cbc{\color{red}
+|       cast128-cbc
+|       3des-cbc}
+|   mac_algorithms: (4)
+|       hmac-sha1
+|       hmac-sha1-96
+|       hmac-md5
+|       hmac-md5-96
+|   compression_algorithms: (1)
+|_      none
+\end{alltt}
+
+{\bf Solution:}\\
+When you have tried running against one or two SSH servers, you are done.
+
+{\bf Discussion:}\\
+I recommend disabling password login on systems connected to the internet.
+
+Having only public key authentication reduces or even removes the possibility for brute force attacks succeeding.
+
+I also move the service to a random high port, which then requires an attacker must perform port scan to find it - more work.
+
+Thus a better and more modern OpenSSH would look like this:
+\begin{alltt}\footnotesize
+PORT      STATE SERVICE VERSION
+4xxxx/tcp open  ssh     OpenSSH 7.9 (protocol 2.0)
+| ssh-auth-methods:
+|   Supported authentication methods:
+|     publickey
+| ssh2-enum-algos:
+|   kex_algorithms: (4)
+|       curve25519-sha256@libssh.org
+|       diffie-hellman-group16-sha512
+|       diffie-hellman-group18-sha512
+|       diffie-hellman-group14-sha256
+|   server_host_key_algorithms: (4)
+|       rsa-sha2-512
+|       rsa-sha2-256
+|       ssh-rsa
+|       ssh-ed25519
+|   encryption_algorithms: (6)
+|       chacha20-poly1305@openssh.com
+|       aes128-ctr
+|       aes192-ctr
+|       aes256-ctr
+|       aes128-gcm@openssh.com
+|       aes256-gcm@openssh.com
+|   mac_algorithms: (3)
+|       umac-128-etm@openssh.com
+|       hmac-sha2-256-etm@openssh.com
+|       hmac-sha2-512-etm@openssh.com
+|   compression_algorithms: (2)
+|       none
+|_      zlib@openssh.com
+\end{alltt}
 
 
 \chapter{Nmap full scan - strategy 15 min}
@@ -1181,6 +1416,67 @@ Also check out the Ndiff tool
 \end{alltt}
 
 (I ran a scan, removed a port from the first XML file and re-scanned)
+
+
+\chapter{Bonus: Nmap Ikescan IPsec}
+\label{ex:nmap-ikescan}
+
+{\bf Objective:}\\
+Try Nmap and Ikescan
+
+{\bf Purpose:}\\
+Check settings on Internet Key Exchange protocol, which is a part of IPsec IP security framework - which is used for Virtual Private Network (VPN) tunnels.
+
+{\bf Suggested method:}\\
+Ike-scan is available in the Kali package system, so install using apt.
+
+It seems the code is now on Github:\\
+\url{https://github.com/royhills/ike-scan}
+
+Where you can read more about running the tool.
+
+{\bf Hints:}\\
+This tools sends a lot of proposals to a firewall/VPN gateway and recognizes the responses.
+
+You should look for 3DES, DES and older versions of MAC algorithms like MD5 and SHA1.
+
+Note: you can also try the ike-version script in Nmap, which can give a little extra information:
+\begin{alltt}
+-- @usage
+-- nmap -sU -sV -p 500 <target>
+-- nmap -sU -p 500 --script ike-version <target>
+--
+-- @output
+-- PORT    STATE SERVICE REASON       VERSION
+-- 500/udp open  isakmp  udp-response Fortinet FortiGate v5
+-- | ike-version:
+-- |   vendor_id: Fortinet FortiGate v5
+-- |   attributes:
+-- |     Dead Peer Detection v1.0
+-- |_    XAUTH
+-- Service Info: OS: Fortigate v5; Device: Network Security Appliance; CPE: cpe:/h:fortinet:fortigate
+\end{alltt}
+
+Note: port 500/udp and 3500/udp are the common ones used for IKE.
+
+{\bf Solution:}\\
+When you have tried the tool against at least one VPN gateway you are done. Perhaps try it against your company VPN, this is NOT an attack - more like a probe sent.
+
+{\bf Discussion:}\\
+You should review and update settings for encryption at least once a year, or when news of another attack on algorithms are found.
+
+The current recommendation for VPN connections with IKE are listed below.
+
+\begin{quote}
+  Use the following guidelines when configuring Internet Key Exchange (IKE) in VPN technologies:\\
+* Avoid IKE Groups 1, 2, and 5.\\
+* Use IKE Group 15 or 16 and employ 3072-bit and 4096-bit DH, respectively.\\
+* When possible, use IKE Group 19 or 20. They are the 256-bit and \\
+384-bit ECDH groups, respectively.\\
+* Use AES for encryption.
+\end{quote}
+Paper:\\
+{\small \link{https://www.cisco.com/c/en/us/about/security-center/next-generation-cryptography.html}}
 
 
 

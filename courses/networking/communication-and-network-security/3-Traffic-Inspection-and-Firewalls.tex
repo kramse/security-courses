@@ -37,7 +37,7 @@
 ANSM chapter 1,2,3 - 73 pages\\
 \link{https://en.wikipedia.org/wiki/Firewall_(computing)}\\
 \link{http://www.wilyhacker.com/} Cheswick chapter 2 og 3 PDF, ca 55 pages
-  Skim chapters from 1st edition:\\
+\item Skim chapters from 1st edition:\\
 \link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
 \end{quote}
 
@@ -126,11 +126,58 @@ threats to your organization, quantify risk, identify relevant data feeds, and r
 \end{list2}
 \end{list1}
 
-\slide{Network visibility: Netflow with NFSen}
+\slide{Netflow}
 
-\hlkimage{18cm}{nfsen-udp-flood.png}
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{slidelist}
+
+\slide{Collect Network Evidence from the network}
+
+\begin{list1}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\item today Netflow version 9 or IPFIX
+\end{list1}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
+
+
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
 
 \centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{12cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
 
 
 \slide{How to get started}
@@ -164,6 +211,66 @@ threats to your organization, quantify risk, identify relevant data feeds, and r
 \item Other popular examples include Graylog and Grafana
 \end{list1}
 
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+- name: Move elasticsearch data into /data
+  command: creates=/data/elasticsearch mv /var/lib/elasticsearch /data/
+- name: Make link to /data/elasticsearch
+  file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
 
 \slide{Reading Summary, continued}
 
@@ -173,7 +280,8 @@ In computing, a firewall is a network security system that monitors and controls
 
 \begin{list1}
 \item \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
-\item \link{http://www.wilyhacker.com/} Cheswick chapter 2 PDF
+\item \link{http://www.wilyhacker.com/}
+\item Cheswick chapter 2 PDF
 \emph{A Security Review of Protocols:
 Lower Layers}
 \begin{list2}
@@ -186,21 +294,16 @@ to do network security monitoring!
 
 \slide{Reading Summary, continued}
 
-\begin{quote}
-
-\end{quote} Source:
-
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
 \begin{list1}
-\item \link{http://www.wilyhacker.com/} Cheswick chapter 3 PDF
+\item \link{http://www.wilyhacker.com/}
+\item Cheswick chapter 3 PDF
 \emph{Security Review: The Upper Layers}
 \begin{list2}
 \item How to configure firewalls often boil down to, should we allow protocol X
 \item If we allow SMB through an internet firewall, we are asking for trouble
 \end{list2}
 \end{list1}
-
-Skim chapters from 1st edition:\\
-\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
 
 
 \slide{Together with Firewalls - VLAN Virtual LAN}
@@ -247,6 +350,13 @@ IEEE 802.1x  Port Based Network Access Control
 \end{list1}
 
 
+\slide{Unified communications}
+
+\hlkimage{19cm}{firma-netvaerk-wlan}
+
+
+
+
 \slide{Generic IP Firewalls}
 
 \vskip 4 cm
@@ -259,22 +369,20 @@ IEEE 802.1x  Port Based Network Access Control
 \centerline{\hlkbig En firewall er noget som {\color{red}tillader}
   traffik på Internet}
 
-\slide{Defense in depth}
+\slide{Firewall historik}
 
-%\hlkimage{10cm}{Bartizan.png}
-\hlkimage{15cm}{medieval-clipart-5}
-\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
 
-\slide{Defense in depth - layered security}
+\begin{list1}
+\item Firewalls har været kendt siden starten af 90'erne
+\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
+\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
+William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
+Addison-Wesley, 2nd edition
+  %\item Idag findes mange, men findes der en god generel firewall bog?
+\end{list1}
 
-\hlkimage{6cm}{security-layers-1-uk.pdf}
 
-\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
-
-
-\slide{Small networks}
-
-\hlkimage{18cm}{images/kursus-netvaerk.pdf}
 
 
 \slide{Firewall er ikke alene}
@@ -283,9 +391,6 @@ IEEE 802.1x  Port Based Network Access Control
 
 \centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
 
-\slide{Unified communications}
-
-\hlkimage{19cm}{firma-netvaerk-wlan}
 
 
 \slide{Firewallrollen idag}
@@ -340,7 +445,8 @@ set skip lo0
 # things not used
 spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
 {\bf
-block in all # default block anything}
+# default block anything
+block in all }
 # egress and ingress filtering - disallow spoofing, and drop spoofed
 block in quick from $spoofed to any
 block out quick from any to $spoofed
@@ -444,21 +550,26 @@ NB: kun eksempler og dem jeg selv har brugt
 
 
 
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{6cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
 
 
-\slide{Firewall historik}
+\slide{Small networks}
 
-\hlkimage{3cm}{images/cheswick-cover2e.jpg}
+\hlkimage{18cm}{images/kursus-netvaerk.pdf}
 
-\begin{list1}
-\item Firewalls har været kendt siden starten af 90'erne
-\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
+\exercise{ex:config-ssh-keys}
+\exercise{ex:debian-firewall}
 
-\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
-William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
-Addison-Wesley, 2nd edition
-%\item Idag findes mange, men findes der en god generel firewall bog?
-\end{list1}
 
 
 \slide{m0n0wall}
@@ -466,13 +577,13 @@ Addison-Wesley, 2nd edition
 \hlkimage{6cm}{images/m0n0wall-1.pdf}
 
 \begin{list1}
-\item Tidlig firewall bygget på FreeBSD
+\item Firewall bygget på FreeBSD med grafisk web interface
 \item Idag erstattet af pfSense \link{https://www.pfsense.org/}\\
 og OPNsense \link{https://opnsense.org/}
 \item De nye bruges i produktion i danske firmaer
 \end{list1}
 
-\slide{firewall koncepter}
+\slide{Firewall koncepter}
 
 \begin{list1}
 \item Rækkefølgen af regler betyder noget!
@@ -559,6 +670,27 @@ COMMIT
 
 \centerline{NB: husk at aktivere IP forwarding}
 
+\slide{Anbefaler UFW Uncomplicated Firewall}
+
+\begin{alltt}\footnotesize
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Langt nemmere at bruge
+
+
 \slide{Firewalls og ICMP}
 
 \begin{alltt}
@@ -566,7 +698,7 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \end{alltt}
 
 \begin{list1}
-\item Ovenstående er IPFW syntaks for at tillade de interessant ICMP beskeder igennem
+\item Ovenstående er IPFW syntaks for at tillade de interessante ICMP beskeder igennem
 \item Tillad ICMP types:
 \begin{list2}
 \item 3 Destination Unreachable
@@ -611,6 +743,7 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 
 
 \exercise{ex:nmap-service}
+\exercise{ex:nmap-ssh-scanner}
 \exercise{ex:nmap-strategy}
 \exercise{ex:nmap-html}
 
@@ -800,17 +933,6 @@ tcp \{    Note: UDP flood setting also exist
     land;
 \} Always select your own settings YMMV
 \end{alltt}
-
-
-
-\slide{ Routing RTBH Realtime Blackhole}
-
-\begin{list1}
-\item What about a really big DDoS?
-\item and routers can do more
-\end{list1}
-
-
 
 
 \slide{uRPF unicast Reverse Path Forwarding}

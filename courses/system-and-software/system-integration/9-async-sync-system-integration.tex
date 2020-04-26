@@ -77,7 +77,7 @@ Exercises
 
 \slide{MessagePack, gRPC, protobuf, Apache Thrift etc.}
 
-
+\hlkimage{15cm}{buffer-overflow-1.pdf}
 \begin{list2}
 \item We know JSON and XML, but there are alternatives
 \item We will do a quick survey of some of the other popular methods for sending data back and forth
@@ -114,7 +114,7 @@ In computer science, {\bf marshalling or marshaling} is the process of transform
 Source: {\footnotesize\\
 \link{https://en.wikipedia.org/wiki/Marshalling_(computer_science)}}
 
-\slide{TCP/IP and External Data Representation}
+\slide{TCP/IP and External Data Representation 1987}
 
 .
 \hlkrightpic{14cm}{0cm}{compare-osi-ip.png}
@@ -124,8 +124,36 @@ External Data Representation (XDR) is a standard data serialization format, for 
 \end{quote}
 
 Source: {\footnotesize\\
-\link{https://en.wikipedia.org/wiki/External_Data_Representation}}
+\link{https://en.wikipedia.org/wiki/External_Data_Representation}\\ \link{https://tools.ietf.org/html/rfc1014}}
 
+\slide{Chapter 3: Transforming data with Camel}
+
+\hlkimage{3cm}{Ibsen-Camel-2ed-HI.png}
+
+
+We covered a whole chapter about transforming data:
+\begin{list2}
+\item Transforming data by using EIPs and Java
+\item Transforming XML data
+\item Transforming by using well-known data formats
+\item Writing your own data formats for
+transformations
+\item Understanding the Camel type-converter
+mechanism
+\end{list2}
+
+\slide{Camel type-converter system}
+
+\hlkimage{13cm}{camelbook-type-converter-registry.png}
+\begin{list2}
+\item How the Camel type-converter mechanism works
+\end{list2}
+
+\begin{minted}[fontsize=\footnotesize]{html}
+from("file://riders/inbox"){\bf
+  .convertBodyTo(String.class)}
+  .to("jms:queue:inbox");
+\end{minted}
 
 \slide{MessagePack}
 
@@ -337,6 +365,45 @@ def main():
 \end{minted}
 
 
+
+\slide{Remote Procedure Invocation}
+
+\hlkimage{7cm}{EncapsulatedSynchronousIntegration.png}
+
+Remote Procedure Invocation — Have each application expose some of its procedures so that they can be invoked remotely, and have applications invoke those to run behavior and exchange data.
+Common systems and technologies used:
+\begin{list2}
+\item Java remote method invocation (RMI), Unix RPC
+\item XMLHttpRequest (XHR) JavaScript in the browser makes connections and requests:\\ \url{https://en.wikipedia.org/wiki/XMLHttpRequest}
+\item Common Object Request Broker Architecture (CORBA) used in the 1990s but not very relevant anymore
+\item See more at \url{https://en.wikipedia.org/wiki/Remote_procedure_call}
+\end{list2}
+
+\slide{Messaging}
+
+\hlkimage{7cm}{Messaging.png}
+
+Messaging — Have each application connect to a common messaging system, and exchange data and invoke behavior using messages.
+
+Common systems and technologies used:
+\begin{list2}
+\item Java Message Service (JMS) API is a Java message-oriented middleware Application Programming Interface (API)
+\item Apache ActiveMQ, RabbitMQ, Oracle WebLogic
+\item See more at \url{https://en.wikipedia.org/wiki/Message_passing}
+\end{list2}
+
+
+
+\slide{Endpoints}
+
+\hlkimage{17cm}{eip-endpoint.png}
+
+\begin{list2}
+\item Endpoints are built-in or added to applications
+\item Interface between internal representation and code, to the external message format
+\end{list2}
+
+
 \slide{Lets try running the Thrift Python and Java }
 
 \begin{list2}
@@ -372,60 +439,431 @@ ISBN: 978-0-13-385858-7
 \slide{SOA chapter 8: Service API and Contract Design\\
 with Web Services}
 
-\begin{quote}
-
-\end{quote}
-
-Typical considerations can include:
+a contract-first approach with Web services:
 \begin{list2}
-\item
+\item Web service contracts can be designed to accurately represent the context and function of their corresponding service candidates.
+\item Conventions can be applied to Web service operation names to produce standardized endpoint definitions.
+\item The granularity of operations can be modeled in abstract to provide consistent and predictable API designs that also establish a message size and volume ratio suitable for the target communications infrastructure.
+\item Service consumers are required to conform to the expression of the service contract, not vice versa.
+\item The design of business-centric Web service contracts can be assisted by business analysts who may be able to help establish an accurate expression of business
+logic.
 \end{list2}
 Source: {\footnotesize\\
 \emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{SOA chapter 8: Service API and Contract Design\\
+with Web Services}
+
+References multipls patterns:
+\begin{list2}
+\item Dual Protocols [339] pattern The service inventory architecture is designed to support services based on primary and secondary protocols
+\item Concurrent Contracts [332] pattern, a single body of service logic can expose two alternative service contracts that allow it to be invoked via two different communication protocols
+\item Service Façade [360] pattern  A separate façade component is incorporated into the service design.
+\item Decoupled Contract [337]. The service contract is physically decoupled from its implementation
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{lightweight XML schema Example 8.1}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<xml:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://www.example.org/tls/employee/schema/accounting/">
+  <xml:element name="EmployeeHoursRequestType">
+    <xml:complexType>
+      <xml:sequence>
+        <xml:element name="ID" type="xml:integer"/>
+      </xml:sequence>
+    </xml:complexType>
+  </xml:element>
+  <xml:element name="EmployeeHoursResponseType">
+    <xml:complexType>
+      <xml:sequence>
+        <xml:element name="ID" type="xml:integer"/>
+        <xml:element name="WeeklyHoursLimit" type="xml:short"/>
+      </xml:sequence>
+    </xml:complexType>
+  </xml:element>
+</xml:schema>
+\end{minted}
+
+\begin{list2}
+
+\item Sometimes we will use large complex schemas, other times redefine a small narrow and lightweight scheme
+\end{list2}
+
+
+\slide{Namespaces and origins}
+
+\hlkimage{8cm}{soabook-8-7.png}
+
+\begin{list2}
+\item The schema definitions include targetNamespace which can show origins, who owns this schema!
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+
+
+\slide{Initial service contract}
+
+\hlkimage{11cm}{soabook-8-8-initial-service-contract.png}
+
+\begin{list2}
+\item Resulting from the modelling is an initial service contract describing operation names\\
+Later standardized as just \verb+GetWeeklyHoursLimit+ and \verb+UpdateHistory+
+\end{list2}
+Source: {\footnotesize
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{Apply Naming Standards}
+
+\begin{quote}\footnotesize
+\begin{list2}\footnotesize
+\item Service candidates with high reuse potential should always be stripped of any naming characteristics that hint at the business processes for which
+they were originally built. For example, instead of naming an operation
+GetTimesheetSubmissionID, it can be simply reduced to GetTimesheetID or
+even just GetID.
+\item Entity services need to remain representative of the entity models from which their corresponding service candidates were derived. Therefore, the naming conventions used must reflect those established in the organization’s original entity models. Typically, this type of service uses the noun-only naming structure. Examples of suitable entity service names are Invoice, Customer, and Employee.
+\item Service operations for entity services should be verb-based and should not repeat the entity name. For example, an entity service called Invoice should not have an operation named AddInvoice.
+\item Utility services need to be named according to the processing context under which their operations are grouped. Both the verb+noun or noun only conventions can be used. Simplifi ed examples of suitable utility service names are
+CustomerDataAccess, SalesReporting, and GetStatistics.
+\item Utility service operations need to clearly communicate the nature of their individual functionality. Examples of suitable utility service operation names are GetReport, ConvertCurrency, and VerifyData.
+\item While microservices are not always subjected to the same design standards as agnostic services, it is still recommended that the conventions for service and operation names be applied consistently to whatever extent possible.
+\end{list2}
+
+Whatever naming standards are chosen, the key is that they must be consistently
+applied throughout all services within a given service inventory.
+\end{quote}
+
+Source: {\footnotesize
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Apply a Suitable Level of Contract API Granularity}
+
+\hlkimage{14cm}{soabook-8-11-granularity.png}
+
+Source: {\footnotesize
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{Be Inherently Extensible}
+
+\begin{quote}{\bf
+Design Web Service Operations to Be Inherently Extensible}\\
+Regardless of how well services are designed when first deployed, they can never be fully prepared for what the future holds. Some types of business process changes result in the need for the scope of entities to be broadened. As a result, corresponding business services may need to be extended. While the application of Service Reusability (295) and Service Composability (302) are thought through when partitioning logic as part of the service modeling process, extensibility is more of a physical design quality that needs to be considered during design.
+\end{quote}
+
+\begin{list2}
+\item Creating contracts and designing services is not easy
+\end{list2}
+
+Source: {\footnotesize
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
 
 \slide{Chapter 9: Service API and Contract Design with\\
 REST Services and Microservices}
 
 
 \begin{quote}
-
+REST service contracts are typically designed around the primary functions of HTTP methods, which make the documentation and expression of REST service contracts distinctly different from operation-based Web service contracts. Regardless of the differences in notation, the same overarching contract-first approach to designing REST service contracts is paramount when building services for a standardized service inventory.
 \end{quote}
 
-Typical considerations can include:
 \begin{list2}
-\item
+\item REST entity service contracts are typically dominated by service capabilities that include inherently idempotent and reliable GET, PUT, or DELETE methods
+\item This chapter provides service contract design guidance for service candidates modeled as a result of the service-oriented analysis stage covered in Chapter 7.
 \end{list2}
 Source: {\footnotesize\\
 \emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+
+
+\slide{REST Service}
+
+
+\hlkimage{12cm}{soabook-9-1-REST.png}
+
+\begin{list2}
+\item Very typical REST URL/method \verb+GET /invoice/{invoice-id}+
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+
+\slide{}
+
+
+\begin{quote}
+The following is a series of common guidelines and considerations for designing REST service contracts.
+\end{quote}
+
+
+\begin{list2}
+\item Uniform Contract Design Considerations
+\item Designing and Standardizing Methods
+\item Designing and Standardizing HTTP Headers
+\item Designing and Standardizing HTTP Response Codes
+\item Customizing Response Codes
+\item Designing Media Types
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Designing and Standardizing HTTP Response Codes}
+
+\begin{list2}
+\item 100-199 are informational codes used as low-level signaling mechanisms, such as a confirmation of a request to change protocols
+\item 200-299 are general success codes used to describe various kinds of success conditions
+\item 300-399 are redirection codes used to request that the consumer retry a request to a different resource identifier, or via a different intermediary
+\item 400-499 represent consumer-side error codes that indicate that the consumer has produced a request that is invalid for some reason, example 404 file not found
+\item 500-599 represent service-side error codes that indicate that the consumer’s request may have been valid but that the service has been unable to process it for internal reasons.
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Idempotence}
+
+\begin{quote}
+Idempotence (UK: /ˌɪdɛmˈpoʊtəns/,[1] US: /ˌaɪdəm-/)[2] is the property of certain operations in mathematics and computer science whereby they can be applied multiple times without changing the result beyond the initial application. The concept of idempotence arises in a number of places in abstract algebra (in particular, in the theory of projectors and closure operators) and functional programming (in which it is connected to the property of referential transparency).
+
+The term was introduced by Benjamin Peirce[3] in the context of elements of algebras that remain invariant when raised to a positive integer power, and literally means "(the quality of having) the same power", from idem + potence (same + power).
+\end{quote}
+
+\begin{list2}
+\item The term idempotent is used multiple times regarding REST and HTTP methods.
+\end{list2}
+
+Source: {\footnotesize\\
+\link{https://en.wikipedia.org/wiki/Idempotence}}
+
+\slide{Computer science examples}
+
+\begin{quote}
+A function looking up a customer's name and address in a database is typically idempotent, since this will not cause the database to change. Similarly, changing a customer's address to XYZ is typically idempotent, because the final address will be the same no matter how many times XYZ is submitted.
+...
+
+In the Hypertext Transfer Protocol (HTTP), idempotence and safety are the major attributes that separate HTTP verbs. Of the major HTTP verbs, GET, PUT, and DELETE should be implemented in an idempotent manner according to the standard, but POST need not be.[15] GET retrieves a resource; PUT stores content at a resource; and DELETE eliminates a resource.
+...
+
+In service-oriented architecture (SOA), a multiple-step orchestration process composed entirely of idempotent steps can be replayed without side-effects if any part of that process fails.
+\end{quote}
+
+
+Source: {\footnotesize\\
+\link{https://en.wikipedia.org/wiki/Idempotence}}
+
+
+\slide{Designing Schemas for Media Types}
+
+
+\begin{quote}
+Within a service inventory, most custom media types created to represent business data and documents will be defi ned using XML Schema or JSON Schema. This can essentially establish a set of standardized data models that are reused by REST services within the inventory to whatever extent feasible.
+\end{quote}
+
+\begin{list2}
+\item Data used inside methods and operations should be standardized
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{Example 9.2 provides an example of a flexible schema design}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+Media type = application/vnd.com.actioncon.po+xml
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://example.org/schema/po"
+  xmlns="http://example.org/schema/po">
+  <xsd:element name="LineItemList" type="LineItemListType"/>
+  <xsd:complexType name="LineItemListType">
+    <xsd:element name="LineItem" type="LineItemType" minOccurs="0"/>
+  </xsd:complexType>
+  <xsd:complexType name="LineItemType">
+    <xsd:sequence>
+      <xsd:element name="productID" type="xsd:anyURI"/>
+      <xsd:element name="productName" type="xsd:string"/>
+      <xsd:element name="available" type="xsd:boolean" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>
+\end{minted}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+\slide{We already mentioned this from the first book}
+
+\begin{quote}
+Data format — Integrated applications must agree on the format of the data they exchange, or must have an intermediate traslator to unify applications that insist on different data formats. A related issue is data format evolution and extensibility—how the format can change over time and how that will affect the applications.
+\end{quote}
+\emph{Enterprise Integration Patterns}, Gregor Hohpe and Bobby Woolf, 2004
+
+\slide{Data or functionality}
+
+\begin{quote}
+Data or functionality — Integrated applications may not want to simply share data, they may wish to share functionality such that each application can invoke the functionality in the others. Invoking functionality remotely can be difficult to achieve, and even though it may seem the same as invoking local functionality, it works quite differently, with significant consequences for how well the integration works.
+\end{quote}
+\emph{Enterprise Integration Patterns}, Gregor Hohpe and Bobby Woolf, 2004
+
+\slide{Remote Communication / Asynchronicity}
+
+\begin{quote}
+Remote Communication / Asynchronicity — Computer processing is typically synchronous, such that a procedure waits while its subprocedure executes. It’s a given that the subprocedure is available when the procedure wants to invoke it. However, a procedure may not want to wait for the subprocedure to execute; it may want to invoke the subprocedure asynchronously, starting the subprocedure but then letting it execute in the background. This is especially true of integrated applications, where the remote application may not be running or the network may be unavailable—the source application may wish to simply make shared data available or log a request for a subprocedure call, but then go on to other work confident that the remote application will act sometime later.
+\end{quote}
+\emph{Enterprise Integration Patterns}, Gregor Hohpe and Bobby Woolf, 2004
+
+
+\slide{Shared Database}
+
+\hlkimage{7cm}{SharedDatabaseIntegration.png}
+
+Shared Database — Have the applications store the data they wish to share in a common database.
+
+Common systems and technologies used:
+\begin{list2}
+\item database management system (DBMS) using Structured Query Language (SQL), relational database examples:\\
+\item PostgresSQL, Oracle DM, Microsoft SQL, MySQL
+\url{https://en.wikipedia.org/wiki/SQL}
+\item NoSQL databases has been a new input with examples like:
+MongoDB, CouchDB, Redis, RIAK\\
+\url{https://en.wikipedia.org/wiki/NoSQL}
+\end{list2}
 
 
 \slide{Chapter 10: Service API and Contract Versioning\\
 with Web Services and REST Services}
 
 \begin{quote}
-
+After a service contract is deployed, consumer programs will naturally begin forming dependencies on it. When we are subsequently forced to make changes to the contract, we need to figure out:
+\begin{list2}
+\item Whether the changes will negatively impact existing (and potentially future) service consumers
+\item How changes that will and will not impact consumers should be implemented and communicated
+\end{list2}
 \end{quote}
 
-Typical considerations can include:
+Included in the chapter are references to:
 \begin{list2}
-\item
+\item Versioning Web Services
+\item Versioning REST Services
+\item Fine and Coarse-Grained Constraints
 \end{list2}
 Source: {\footnotesize\\
 \emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+\slide{Versioning and Compatibility}
+
+\begin{list2}
+\item Backwards Compatibility\\
+A backwards-compatible change to a REST-compliant service contract might involve adding some new resources or adding new capabilities to existing resources. In each of these cases the existing service consumers will only invoke the old methods on the old resources, which continue to work as they previously did.
+\item Forwards Compatibility\\
+When a service contract is designed in such a manner so that it can support a range of future consumer programs, it is considered to have an extent of forwards compatibility. This means that the contract can essentially accommodate how consumer programs will evolve over time.
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Incompatible Changes}
+
+\begin{list2}
+\item Compatible Changes vs Incompatible Changes\\
+If after a change a contract is no longer compatible with consumers, then it is considered to have received an incompatible change. These are the types of changes that can break an existing contract and therefore impose the most challenges when it comes to versioning.
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{10.4 Version Identifiers}
+
+\begin{quote}
+Versions are almost always communicated with version numbers. The most common
+format is a decimal, followed by a period and then another decimal, as shown here: version="2.0"
+\end{quote}
+
+From a compatibility perspective, we can associate additional meaning to these numbers. Specifically, the following convention has emerged in the industry:
+\begin{list2}
+\item A minor version is expected to be backwards-compatible with other minor versions associated with a major version. For example, version 5.2 of a program should be fully backwards-compatible with versions 5.0 and 5.1.
+\item A major version is generally expected to break backwards compatibility with programs that belong to other major versions. This means that program version 5.0 is not expected to be backwards-compatible with version 4.0.
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
 
 
 \slide{Appendix B: REST Constraints Reference}
 
 \begin{quote}
-
+This appendix provides profile tables for the REST constraints referenced throughout this book
 \end{quote}
 
-Typical considerations can include:
 \begin{list2}
-\item
+\item Client-Server \emph{Solution logic is separated into consumer and service logic that share a technical contract.}
+\item Stateless \emph{Services remain stateless between request/response message exchanges with service consumers.}
+\item Cache \emph{Service consumers can cache and reuse response message data.}
+\item Uniform Contract \emph{Service consumers and services share a common, overarching, generic technical contract.}
+\item  Layered System \emph{A solution can be comprised of multiple architectural layers.}
+\item Code-on-Demand \emph{Service consumers support the execution of deferred service logic.}
 \end{list2}
 Source: {\footnotesize\\
 \emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+
+
+
+\slide{Elasticsearch}
+
+\begin{quote}
+Elasticsearch is a search engine based on the Lucene library. It provides a distributed, multitenant-capable full-text search engine with an HTTP web interface and schema-free JSON documents. Elasticsearch is developed in Java.
+\end{quote}
+
+Source: \url{https://en.wikipedia.org/wiki/Elasticsearch}
+
+\begin{list2}
+\item Open core means parts of the software are licensed under various open-source licenses (mostly the Apache License)
+\item Various browser tools and plugins for ES exist, to make life easier
+\item I often use ES for storing Log Messages and Events from multiple systems, a SIEM Security information and event management.
+\end{list2}
+
+
+
+\slide{Elasticsearch REST}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+
+\item
+\end{list2}
+
+
+
 
 \slidenext
 

@@ -11,6 +11,20 @@
 {Communication and Network Security \the\year}
 
 
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Introduce Encryption
+\item Present the common algorithms, protocols, and tools used
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
 \slide{Plan for today}
 
 {~}
@@ -32,20 +46,109 @@
 \end{list2}
 \end{list1}
 
-Home-work, look into {\small  \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}}
 
-\slide{Reading Summary, continued}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15\\
+Introduction and basics
+\item 30min break\\
+
+\item 18:45 - 19:30\\
+
+\item 15min break\\
+
+\item 19:45 -20:30 45min\\
+\end{list2}
+
+
+\slide{Reading Summary}
 
 \begin{quote}
 It is not clear that the link layer is the right one for security. In a coffeeshop, the security association is terminated by the store: is there any reason you should trust the shopkeeper? Perhaps link-layer security makes some sense in a home, where you control both the access point and the wireless machines. However, we prefer end-to-end security at the network layer or in the
 applications.
 \end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin
 
+
+
+\begin{list2}
+\item Read: PPA chapters 7,8,9
+\item PPA chapter 7: Network Layer Protocols
+\item PPA chapter 8: Transport Layer Protocols
+\item PPA chapter 9: Common Upper-Layer Protocols
+\item Skim: table of contents of RFC5246 The TLS Protocol Version 1.2
+\item wikipedia page \link{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+\end{list2}
+
+
+\slide{Reading Summary, continued}
+
 \begin{alltt}\footnotesize
-Skim:\\
-\link{https://tools.ietf.org/html/rfc5246} The Transport Layer Security (TLS) Protocol Version 1.2\\
-\link{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+user@Projects:~$ ping -s 1472 -M do 91.102.91.18
+PING 91.102.91.18 (91.102.91.18) 1472(1500) bytes of data.
+1480 bytes from 91.102.91.18: icmp_seq=1 ttl=244 time=7.43 ms
+1480 bytes from 91.102.91.18: icmp_seq=2 ttl=244 time=7.20 ms
+...
+user@Projects:~$ ping -s 1474 -M do 91.102.91.18
+PING 91.102.91.18 (91.102.91.18) 1474(1502) bytes of data.
+ping: local error: Message too long, mtu=1500
+ping: local error: Message too long, mtu=1500
+^C
+--- 91.102.91.18 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1025ms
 \end{alltt}
+
+\begin{list1}
+\item PPA chapter 7: Network Layer Protocols
+\begin{list2}
+\item What is normal network traffic?
+\item Great reference chapter for basic protocols
+\item Plus basic IPv6
+\item Re PATH MTU etc. Linux MTU 1500 check \verb+ping -s 1472 -M do+
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary, continued}
+
+\hlkimage{10cm}{tcp_state_diagram.png}
+
+\begin{list1}
+\item PPA chapter 8: Transport Layer Protocols
+\begin{list2}
+\item Again the TCP 3-way handshake is described Note: can be done in 4 packets
+\item Closed TCP returns Reset (RST) packet, closed UDP returns ICMP port unreachable
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary, continued}
+
+\hlkimage{10cm}{dns-1.pdf}
+
+\begin{list1}
+\item PPA chapter 9: Common Upper-Layer Protocols
+\begin{list2}
+\item Dynamic Host Configuration Protocol (DHCP) port 67/udp and 68/udp, and options
+\item Domain Name System (DNS) common query types A, NS, CNAME, MX, TXT, AAAA, AXFR, IXFR
+\end{list2}
+\end{list1}
+
+
+
+
+
+
+\slide{Confidentiality Integrity Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data holdes hemmelige
+\item Integrity - data ændres ikke uautoriseret
+\item Availability - data og systemet er tilgængelige når de skal bruges
+\end{list1}
+
 
 \slide{What is data?}
 
@@ -65,29 +168,15 @@ Skim:\\
 Source: picture of my son less than 24 hours old - precious!
 
 
-\slide{Confidentiality Integrity Availability}
-
-\hlkimage{8cm}{cia-triad-uk.pdf}
-
-\begin{list1}
-\item We want to protect something
-\item Confidentiality - data holdes hemmelige
-\item Integrity - data ændres ikke uautoriseret
-\item Availability - data og systemet er tilgængelige når de skal bruges
-\end{list1}
-
-
 \slide{Why think of security?}
 
 \hlkimage{8cm}{1984-not-instruction-manual.jpg}
 
 
 \begin{quote}
-	Privacy is necessary for an open society in the electronic age. Privacy is not secrecy. A private matter is something one doesn't want the whole world to know, but a secret matter is something one doesn't want anybody to know. Privacy is the power to selectively reveal oneself to the world. ~A Cypherpunk's Manifesto by Eric Hughes, 1993
+	Privacy is necessary for an open society in the electronic age. Privacy is not secrecy. A private matter is something one doesn't want the whole world to know, but a secret matter is something one doesn't want anybody to know. Privacy is the power to selectively reveal oneself to the world.
 \end{quote}
-
-Copied from \link{https://cryptoparty.org/wiki/CryptoParty}
-
+Source: A Cypherpunk's Manifesto by Eric Hughes, 1993
 
 \slide{Solidaritetskryptering}
 
@@ -150,6 +239,19 @@ Source: \link{https://en.wikipedia.org/wiki/Cryptography}
 Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
 \link{https://www.schneier.com/book-ce.html}
 
+\slide{Serious Cryptography}
+
+\hlkimage{5cm}{serious_crypto_cover-front-final.png}
+
+
+\emph{Serious Cryptography
+A Practical Introduction to Modern Encryption}
+by Jean-Philippe Aumasson
+November 2017, 312 pp.
+ISBN-13:
+978-1-59327-826-7
+\link{https://nostarch.com/seriouscrypto}
+
 
 \slide{Encryption Decryption}
 
@@ -162,29 +264,6 @@ Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
 \item Kryptografi benytter algoritmer som sammen med nøgler giver en
   ciffertekst
 \item  - der kun kan læses ved hjælp af den tilhørende nøgle
-\end{list1}
-
-\slide{Public key kryptografi - 1}
-
-\hlkimage{12cm}{images/crypto-public-key.pdf}
-
-\begin{list1}
-\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
-  nøgle til kryptering og dekryptering
-\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
-  separate nøgler til kryptering og dekryptering
-\end{list1}
-
-\slide{Public key kryptografi - 2}
-
-\hlkimage{12cm}{images/crypto-public-key-2.pdf}
-
-\begin{list1}
-\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
-  nøgle til at dekryptere
-\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
-  signere dokumenter\\ - som så verificeres med den offentlige nøgle
-\item NB: Kryptering alene sikrer ikke anonymitet
 \end{list1}
 
 
@@ -201,6 +280,9 @@ Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
 Encryption Software to Avoid\\
 \link{http://www.interhack.net/people/cmcurtin/snake-oil-faq.html}
 \end{list1}
+
+
+
 
 
 \slide{DES, Triple DES og AES}
@@ -244,26 +326,102 @@ In RSA, this asymmetry is based on the practical difficulty of the factorization
 \item  Quote from: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
 \end{list2}
 
+
+\slide{RSA operation}
+
+\begin{quote}\small
+The RSA algorithm involves four steps: key generation, key distribution, encryption and decryption.
+
+A basic principle behind RSA is the observation that it is practical to find three very large positive integers e, d and n such that with modular exponentiation for all integers $m$ (with $0 ≤ m < n$):
+
+${\displaystyle (m^{e})^{d}\equiv m{\pmod {n}}} {\displaystyle (m^{e})^{d}\equiv m{\pmod {n}}}$
+
+and that knowing e and n, or even m, it can be extremely difficult to find d. The triple bar (≡) here denotes modular congruence.
+
+In addition, for some operations it is convenient that the order of the two exponentiations can be changed and that this relation also implies:
+
+${\displaystyle (m^{d})^{e}\equiv m{\pmod {n}}} {\displaystyle (m^{d})^{e}\equiv m{\pmod {n}}}$
+
+RSA involves a public key and a private key. The public key can be known by everyone, and it is used for encrypting messages. The intention is that messages encrypted with the public key can only be decrypted in a reasonable amount of time by using the private key. The public key is represented by the integers n and e; and, the private key, by the integer d (although n is also used during the decryption process. Thus, it might be considered to be a part of the private key, too). m represents the message (previously prepared with a certain technique explained below).
+\end{quote}
+
+Source: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{12cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{12cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter\\ - som så verificeres med den offentlige nøgle
+\item NB: Kryptering alene sikrer ikke anonymitet
+\end{list1}
+
+\slide{Elliptic Curve }
+
+\begin{quote}
+Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
+\end{quote}
+
+\begin{list2}
+\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\end{list2}
+
+\slide{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+	\item
+\end{list2}
+
+
+\slide{Base64}
+
+\begin{quote}
+In computer science, Base64 is a group of binary-to-text encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. The term Base64 originates from a specific MIME content transfer encoding. Each Base64 digit represents exactly 6 bits of data. Three 8-bit bytes (i.e., a total of 24 bits) can therefore be represented by four 6-bit Base64 digits.
+\end{quote}
+
+\begin{list2}
+	\item Encoding data is not secure, can be decoded
+	\item \link{https://en.wikipedia.org/wiki/Base64}
+\end{list2}
+
+
+
 \slide{Hashing - MD5 message digest funktion}
 
 \hlkimage{16cm}{images/message-digest-1.pdf}
 
 \begin{list1}
 \item HASH algoritmer giver en næsten unik værdi baseret på input
-%\item output fra algoritmerne kaldes ogs<E5> message digest
-%\item MD5 er et eksempel p<E5> en meget brugt algoritme
-%\item MD5 algoritmen har f<F8>lgende egenskaber:
-%  \begin{list2}
-%  \item output er 128-bit "fingerprint" uanset l<E6>ngden af input
+
 \item værdien ændres radikalt selv ved små ændringer i input
-%  \end{list2}
 \item MD5 er blandt andet beskrevet i RFC-1321: The MD5 Message-Digest
   Algorithm
-%\item Algoritmen MD5 er baseret p<E5> MD4, begge udviklet af Ronald
-%  L. Rivest kendt fra blandt andet RSA Data Security, Inc
-\item Både MD5 og SHA-1 er idag gamle og skal ikke bruges mere
+\item Algoritmen MD5 er baseret på MD4, begge udviklet af Ronald
+  L. Rivest
+\item Både MD5 og SHA-1 er idag gamle og skal generelt ikke bruges mere
 \item Idag benyttes eksempelvis \link{https://en.wikipedia.org/wiki/PBKDF2}
 \end{list1}
+
+
 
 
 \slide{Old skool NT hashes}
@@ -342,6 +500,8 @@ Source:\\
 \link{https://samsclass.info/lulz/pth-8.1.htm}}
 
 
+\slide{Encryption on the web}
+
 \slide{Diffie Helman exchange}
 
 {~}
@@ -356,17 +516,6 @@ Diffie–Hellman key exchange (DH)[nb 1] is a method of securely exchanging cryp
 \item Quote from: {\small \link{https://en.wikipedia.org/wiki/Diffie-Hellman_key_exchange}}
 \item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
 \end{list2}
-
-\slide{Elliptic Curve }
-
-\begin{quote}
-Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
-\end{quote}
-
-\begin{list2}
-\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
-\end{list2}
-
 
 
 \slide{Transport Layer Security (TLS)}
@@ -383,6 +532,8 @@ TLS er baseret på SSL Version 3.0
 \item Det er svært!
 \item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
 \end{list1}
+
+
 
 
 \slide{SSL/TLS udgaver af protokoller}
@@ -580,14 +731,15 @@ check you own site \link{https://www.ssllabs.com/ssltest/}
 
 
 
-\slide{Feb 2015 Decrypting TLS Browser Traffic With Wireshark }
+\slide{Decrypting TLS Browser Traffic With Wireshark }
 
 \hlkimage{16cm}{wireshark-decrypt-ssl.png}
 
-\begin{list1}
+\begin{list2}
 \item  Firefox and Chrome both support logging the symmetric session key used to encrypt TLS traffic to a file
 \item Wireshark can read this file - and decrypt sessions - Nifty trick
-\end{list1}
+\item Another option is to use Burp
+\end{list2}
 
 
 Source: great blog article about the features used\\
@@ -662,7 +814,8 @@ SSLsplit is designed to transparently terminate connections that are redirected 
 
 
 \exercise{ex:SSLScanner}
-
+\exercise{ex:burp-basic}
+\exercise{ex:burp-tls}
 \exercise{ex:sslstrip}
 \exercise{ex:mitmproxy}
 \exercise{ex:sslsplit}

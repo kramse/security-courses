@@ -11,6 +11,20 @@
 {Communication and Network Security \the\year}
 
 
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Introduce Virtual Private Networks
+\item Present the common protocols, and some tools used
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
 \slide{Plan for today}
 
 {~}
@@ -26,8 +40,61 @@
 \end{list2}
 \item Exercises
 \begin{list2}
-\item go through the ones used by participants, how are they secured why/why not
-\item Sniff data without VPN and after VPN turned on
+\item
+\end{list2}
+\end{list1}
+
+
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15\\
+Introduction and basics
+\item 30min break\\
+
+\item 18:45 - 19:30\\
+
+\item 15min break\\
+
+\item 19:45 -20:30 45min\\
+\end{list2}
+
+
+
+\slide{Reading Summary, continued}
+
+\hlkimage{6cm}{zeek-ids.png}
+
+\begin{list1}
+\item ANSM chapter 7: Detection Mechanisms and Indicators of Compromise, and Signatures
+
+\begin{list2}
+\item Indicators of Compromise (IOC) any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner
+\item Background information, useful when we talk about Zeek (previously Bro) later
+\item Intrusion Detection Systems try to detect ... but what if we know that some domains, servers, IPs etc are signs of bad activity - even compromise
+\item IP reputation - some IPs are used for controlling malware command and control (C2) servers etc.
+\item A signature can contain one or more IOCs
+\end{list2}
+\end{list1}
+
+
+\slide{Reading Summary, continued}
+
+%\hlkimage{7cm}{NSM_Phases-300x238.png}
+
+\begin{list1}
+\item ANSM chapter 8: Reputation-Based Detection
+\begin{list2}
+\item The most basic form of intrusion detection is reputation-based detection
+\item Similar concept to blacklisting SMTP spam relays
+\item I often recommend \link{https://github.com/stamparm/maltrail} as a source of lists
+\item Other sources are lists like RIPE NCC delegated, which IP prefixes are handed out in different countries\\
+\link{https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest}\\
+\verb+ripencc|DK|ipv4|185.129.60.0|1024|20151130|allocated|+
+\item Mentions SiLK \link{https://tools.netsa.cert.org/silk/}\\
+If we end up having time today, or another day, we should look into this tool chain also!
 \end{list2}
 \end{list1}
 
@@ -99,6 +166,54 @@ Skim:\\
 \item IETF IPsec does work cross-vendors - sometimes, and is also increasingly becoming blocked or unusable due to NAT :-(
 \item Recommended starting point OpenVPN - free and open, clients for "anything"
 \end{list1}
+
+\slide{VPN without encryption}
+
+\begin{quote}
+Multiprotocol Label Switching (MPLS) is a routing technique in telecommunications networks that directs data from one node to the next based on short path labels rather than long network addresses, thus avoiding complex lookups in a routing table and speeding traffic flows.[
+
+...
+MPLS works by prefixing packets with an MPLS header, containing one or more labels.
+\end{quote}
+
+Source:\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching}}
+
+\begin{list2}
+\item The term VPN is also used in cases without encryption
+\item MPLS allows multiple customers to use the same IP prefixes, like 10/8
+\item MPLS is used in many provider networks
+\item Another example is Generic Routing Encapsulation (GRE), which is often then protected with IPsec
+\item People today also uses Virtual Extensible LAN (VXLAN) for cloud computing
+\end{list2}
+
+\exercise{ex:frankenpacket}
+
+\exercise{ex:frankenpacket-creation}
+
+
+\slide{Linux Wireguard VPN}
+
+\begin{quote}\small
+WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
+\end{quote}
+
+Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
+
+\begin{list2}
+\item Going to be interesting!
+\item single round trip key exchange, based on NoiseIK
+\item Short pre-shared static keys—Curve25519
+\item strong perfect forward secrecy
+\item Transport
+speed is accomplished using ChaCha20Poly1305 authenticated-encryption
+\item encapsulation of packets in UDP
+\item WireGuard can be
+simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
+\end{list2}
+
+\exercise{ex:wireguard-setup}
+
 
 \slide{IPsec}
 
@@ -224,7 +339,7 @@ Pakkerne før og efter:
 
 \slide{rc.ipsec.client - client setup - adresser}
 
-\begin{alltt}\small
+\begin{alltt}\footnotesize
 #!/bin/sh
 # /etc/rc.ipsec.client - IPsec client configuration
 # built from http://rt.fm/~jcs/ipsec_wep.phtml
@@ -245,7 +360,7 @@ setkey -F -P
 
 \slide{rc.ipsec.client - client setup - SAs}
 
-\begin{alltt}\small
+\begin{alltt}\footnotesize
 # Establish Security Associations
 # 1000 is from the server to the client
 # 1001 is from the client to the server
@@ -307,19 +422,18 @@ ipsecadm new esp -spi 1001 -src $SECCLIENT -dst $SECSERVER \
 
 \begin{alltt}\small
 # Create flows
-#
 # Data going from the outside to the client
-ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
+ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \\
 -addr 0.0.0.0 0.0.0.0 $SECCLIENT 255.255.255.255 -dontacq
 # IPv6
-#ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
+#ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \\
 #-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
 
 # Data going from the client to the outside
-ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
+ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \\
 -addr $SECCLIENT 255.255.255.255 0.0.0.0 0.0.0.0 -dontacq
 # IPv6
-#ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
+#ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \\
 #-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
 \end{alltt}
 
@@ -367,7 +481,7 @@ crypto map dyn 10 ipsec-isakmp
  match address 120
 \end{alltt}
 
-\centerline{Not recommended settings! See later!}
+\centerline{\bf Not recommended settings! See later! People still use these examples!}
 
 \slide{Routing and addresses}
 
@@ -451,19 +565,35 @@ Ending ike-scan 1.9: 256 hosts scanned in 40.465 seconds (6.33 hosts/sec).
 0 returned handshake; 6 returned notify
 \end{alltt}
 
+\exercise{ex:-ipsec-wireshark}
+
 
 \slide{VPN indstillinger}
 
-\hlkimage{12cm}{crypto-rot13.pdf}
+\hlkimage{8cm}{crypto-rot13.pdf}
 
 \begin{list1}
-\item PPTP, hvis du bruger det så er det godt du er kommet :-D
 \item Check hvert år:
 \begin{list2}
-\item Certifikater/nøgler - ligesom TLS lange og rulles indimellem
+\item Certifikater/nøgler - ligesom TLS mange bits og skiftes indimellem
+\item Check algoritmerne, ingen 3DES!
+\item Check Diffie Helman groups
+\item Enable Perfect Forward Secrecy
 \item Check både client VPN og site-2-site
 \end{list2}
 \end{list1}
+
+\slide{Forward Secrecy}
+
+\begin{quote}
+In cryptography, forward secrecy (FS), also known as perfect forward secrecy (PFS), is a feature of specific key agreement protocols that gives assurances that session keys will not be compromised even if the private key of the server is compromised.[1] Forward secrecy protects past sessions against future compromises of secret keys or passwords.[2] By generating a unique session key for every session a user initiates, the compromise of a single session key will not affect any data other than that exchanged in the specific session protected by that particular key.
+\end{quote}
+
+\begin{list2}
+  \item \link{https://en.wikipedia.org/wiki/Forward_secrecy}
+\end{list2}
+
+
 
 \slide{Anbefalinger til VPN}
 
@@ -484,6 +614,7 @@ Paper:
 \item DH-Group - +15 tak
 \item Check både client VPN og site-2-site
 \item Skift til IKEv2
+\item Selv disse råd er måske ikke tilstrækkelige nu!
 \end{list2}
 
 
@@ -506,25 +637,6 @@ et problem som kaldes \emph{TCP in TCP meltdown}
 
 
 
-\slide{Linux Wireguard VPN}
-
-\begin{quote}\small
-WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
-\end{quote}
-
-Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
-
-\begin{list2}
-\item Going to be interesting!
-\item single round trip key exchange, based on NoiseIK
-\item Short pre-shared static keys—Curve25519
-\item strong perfect forward secrecy
-\item Transport
-speed is accomplished using ChaCha20Poly1305 authenticated-encryption
-\item encapsulation of packets in UDP
-\item WireGuard can be
-simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
-\end{list2}
 
 \slide{Microsoft DirectAccess and VPN (RAS)}
 

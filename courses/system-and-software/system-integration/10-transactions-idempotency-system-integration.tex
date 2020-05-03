@@ -362,19 +362,152 @@ This chapter covers
 local and global transactions
 \item Using transactions with messaging and databases
 \item Rolling back transactions
-\item Compensating when transactions aren’t supported
+%\item Compensating when transactions aren’t supported
 \item Preventing duplicate messages by using idempotency
 \item Learning about the idempotent repository
 implementations shipped out of the box
 \end{list2}
+
 Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018, 2nd edition
+ISBN: 978-1-61729-293-4}
 
-\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018}, 2nd edition
-ISBN: 978-1-61729-293-4
+\slide{A Transaction}
+
+\begin{enumerate}
+\item Find the book \emph{Camel in Action}, 2nd Edition.
+\item Put the book into the basket.
+\item Maybe continue shopping and look for other books.
+\item Go to the checkout.
+\item Enter shipping and credit card details.
+\item Confirm the purchase.
+\item Wait for the confirmation.
+\item Leave the web store.
+\end{enumerate}
+
+The ultimate resolution of this transaction is one of two states: either the purchase is accepted and confirmed, or the purchase is declined, leaving your credit card balance uncharged.
+
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018, 2nd edition
+ISBN: 978-1-61729-293-4}
 
 
+\slide{ACID}
+
+\begin{quote}
+In computer science, {\bf ACID (atomicity, consistency, isolation, durability)} is a set of properties of database transactions intended to guarantee validity even in the event of errors, power failures, etc. In the context of databases, a sequence of database operations that satisfies the ACID properties (and these can be perceived as a single logical operation on the data) is called a transaction. For example, a transfer of funds from one bank account to another, even involving multiple changes such as debiting one account and crediting another, is a single transaction.
+\end{quote}
+
+Source: {\footnotesize\\
+\link{http://en.wikipedia.org/wiki/ACID}}
 
 
+\slide{Atomic Transactions}
+
+\begin{quote}
+  That’s why the series of events is described as atomic:
+  either they all are completed or they all fail—it’s all or nothing. In transactional terms,
+  they either \emph{commit} or \emph{roll back}.
+
+\end{quote}
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018, 2nd edition
+ISBN: 978-1-61729-293-4}
+
+\begin{list2}
+\item Books uses Spring TransactionManager
+\item I recommend using available - and mature solutions like this -- don't write your own if you can avoid it
+\item Which one is up to you though!
+\end{list2}
+
+\slide{The Spring JmsTransactionManager}
+
+\hlkimage{10cm}{camelbook-12-4-transaction.png}
+
+\begin{list2}
+\item A database transaction is started, make changes and is then committed -- written as one into the database
+\item May update multiple tables and rows
+\end{list2}
+
+
+\slide{A Note about testing}
+
+\hlkimage{12cm}{activemq-web_console.png}
+
+\begin{quote}
+  For example, the book’s source
+  code uses Apache ActiveMQ and Derby as live resources. We picked these because
+  they can be easily downloaded using Apache Maven and they’re lightweight and
+  embeddable, which makes them perfect for unit testing.
+\end{quote}
+
+\begin{list2}
+\item Many developers write tests, for functions
+\item Many do not write tests for transactions like shown in the book!
+\item The book show it is possible, by including freely available tools with Maven
+\end{list2}
+
+
+\slide{Global Transactions Jta- vs Jms-TransactionManager}
+
+\begin{quote}
+This transaction manager is appropriate for handling distributed transactions, i.e. transactions that span multiple resources, and for controlling transactions on application server resources (e.g. JDBC DataSources available in JNDI) in general. For a single JDBC DataSource, DataSourceTransactionManager is perfectly sufficient
+
+In Java, JTA is an implementation of the XA standard protocol, which is a global
+transaction protocol. To be able to use XA, the resource drivers must be XA-­
+compliant, which some JDBC and most JMS drivers are. JTA is part of the Java EE spec-
+ification, which means that any Java EE–compliant application server must provide
+JTA support. This is one of the benefits of Java EE servers, which have JTA out of the
+box, unlike some lightweight alternatives, such as Apache Tomcat.
+\end{quote}
+
+Source: Camel book and web site spring.io\\{\footnotesize
+\link{https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/jms/connection/JmsTransactionManager.html}\\
+\link{https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/jta/JtaTransactionManager.html}}
+
+
+\slide{JTA software}
+
+\begin{quote}
+
+\end{quote}
+
+JTA is also available in OSGi containers such as Apache Karaf, ServiceMix, or JBoss
+Fuse. Using JTA outside a Java EE server takes some work to set up because you have to
+find and use a JTA transaction manager, such as one of these:
+\begin{list2}
+\item Atomikos (external third party) -- \link{http://www.atomikos.com}
+\item  Narayana (JBoss AS/WildFly) -- \link{http://narayana.io}
+\item  Apache Geronimo (Java EE) -- \link{http://geronimo.apache.org}
+\item  Apache Aries (OSGi platform) -- \link{http://aries.apache.org}
+\end{list2}
+
+For more information on JTA, see the Wikipedia page on the subject:
+\link{http://en.wikipedia.org/wiki/Java_Transaction_API} . XA is also briefly discussed here: \link{http://en.wikipedia.org/wiki/X/Open_XA} .
+
+
+\slide{Idempotency}
+
+\begin{quote}
+  The term idempotent is used in mathematics to describe a function that can be applied
+  multiple times without changing the result beyond the initial result. In computing,
+  idempotent is used to describe an operation that will produce the same results if exe-
+  cuted once or multiple times.
+  Idempotency is documented in the EIP book as the Idempotent Consumer pattern.
+\end{quote}
+
+In Camel, the Idempotent Consumer EIP is used to ensure routing a message once
+and only once. To achieve this, Camel needs to be able to detect duplicate messages,
+which involves the following two procedures:
+
+\begin{list2}
+\item Generating a unique key for each message
+\item Storing and retrieving previously seen keys
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018, 2nd edition
+ISBN: 978-1-61729-293-4}
 
 \slide{Camel chapter 13: Parallel processing}
 
@@ -387,10 +520,10 @@ This chapter covers
 \item Handling scalability with Camel
 \item Writing asynchronous Camel components
 \end{list2}
-Source: {\footnotesize\\
 
-\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018}, 2nd edition
-ISBN: 978-1-61729-293-4
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018, 2nd edition
+ISBN: 978-1-61729-293-4}
 
 
 

@@ -237,48 +237,12 @@ view "internal" \{
 
 \slide{Små DNS tools bind-version - Shell script}
 
-\begin{alltt}\small
-#! /bin/sh
-# Try to get version info from BIND server
-PROGRAM=`basename $0`
-. `dirname $0`/functions.sh
-if [ $# -ne 1 ]; then
-   echo "get name server version, need a target! "
-   echo "Usage: $0 target"
-   echo "example $0 10.1.2.3"
-   exit 0
-fi
-TARGET=$1
-# using dig
-start_time
-dig @$1 version.bind chaos txt
-echo Authors BIND er i versionerne 9.1 og 9.2 - måske ...
-dig @$1 authors.bind chaos txt
-stop_time
-\end{alltt}
-\centerline{\link{http://www.kramse.dk/files/tools/dns/bind-version}}
+\inputminted{bash}{programs/bind-version}
 
 \slide{Små DNS tools dns-timecheck - Perl script}
 
-\begin{alltt}\small
-#!/usr/bin/perl
-# modified from original by Henrik Kramshøj, hlk@kramse.dk
-# Original from: http://www.rfc.se/fpdns/timecheck.html
-use Net::DNS;
-
-my $resolver = Net::DNS::Resolver->new;
-$resolver->nameservers($ARGV[0]);
-my $query = Net::DNS::Packet->new;
-$query->sign_tsig("n","test");
-
-my $response = $resolver->send($query);
-foreach my $rr ($response->additional) {
-  print "localtime vs nameserver $ARGV[0] time difference: ";
-  print$rr->time_signed - time() if $rr->type eq "TSIG";
-}
-\end{alltt}
-% inserting stupid $ to stop EMACS from
-\centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
+\inputminted{perl}{programs/dns-timecheck}
+%\centerline{\link{http://www.kramse.dk/files/tools/dns/dns-timecheck}}
 
 \slide{Unbound and NSD}
 

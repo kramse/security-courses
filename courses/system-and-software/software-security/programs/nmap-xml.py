@@ -14,9 +14,9 @@ root = tree.getroot()
 #        print(subelem.attrib)
 
 print(root.tag)
-print('Nmap version: {:s} '.format(root.attrib['version']))
-print('Nmap started: {:s} '.format(root.attrib['startstr']))
-print('Nmap command line: {:s} '.format(root.attrib['args']))
+print('Nmap version: \t\t{:s} '.format(root.attrib['version']))
+print('Nmap started: \t\t{:s} '.format(root.attrib['startstr']))
+print('Nmap command line: \t{:s} '.format(root.attrib['args']))
 
 #print (root.find('./host').attrib)
 

@@ -13,6 +13,20 @@
 
 
 
+\slide{Goals for today}
+
+%\hlkimage{8cm}{}
+
+Todays goals:
+\begin{list2}
+\item Talk about DNS and email standards
+\item We already discussed DNSSEC
+\item Try running DNS servers!
+\end{list2}
+
+Trying to make today less heavy with information.
+
+
 \slide{Plan for today}
 
 \begin{list1}
@@ -31,7 +45,7 @@ Exercises
 \begin{list2}
 \item Check some examples like how danish banks are using DMARC, and how your own companies can start using it
 \item SSLscan with SMTP TLS
-
+\item Run a DNS server Unbound
 \end{list2}
 \end{list1}
 
@@ -51,7 +65,7 @@ Exercises
 
 \slide{Fokus \the\year: DNS og email}
 
-%\hlkrightpic{5cm}{2cm}{brian-patrick-tagalog-680954-unsplash.jpg}
+%\hlkrightpic{6cm}{0cm}{brian-patrick-tagalog-680954-unsplash.jpg}
 {~}
 
 \begin{list2}
@@ -130,12 +144,13 @@ www     IN      A       185.129.60.130
         IN      AAAA    2a06:d380:0:3065::80
 \end{alltt}
 
-\slide{Mere end navneopslag}
+
+\slide{DNS er mere end navneopslag}
 
 \begin{list1}
   \item består af resource records med en type:
     \begin{list2}
-\item IPv4 adresser A-records
+\item adresser A-records
 \item IPv6 adresser AAAA-records
 \item autoritative navneservere NS-records
 \item post, mail-exchanger MX-records
@@ -145,8 +160,8 @@ www     IN      A       185.129.60.130
 \end{list2}
 \end{list1}
 \begin{alltt}
-        IN      MX      10      mail.zencurity.com.
-        IN      MX      20      mail2.zencurity.com.
+        IN      MX      10      mail.zencurity.dk.
+        IN      MX      20      mail2.zencurity.dk.
 \end{alltt}
 
 \slide{Basal DNS opsætning}
@@ -243,17 +258,14 @@ view "internal" \{
    zone "." \{
        type hint;   file "root.cache"; \};
    // localhost forward lookup
-   zone "localhost." \{
-        type master; file "internal/db.localhost";   \};
+   zone "localhost." \{ type master; file "internal/db.localhost";   \};
    // localhost reverse lookup from IPv4 address
-   zone "0.0.127.in-addr.arpa" \{
-        type master; file "internal/db.127.0.0"; notify no;   \};
+   zone "0.0.127.in-addr.arpa" \{ type master; file "internal/db.127.0.0"; notify no;   \};
 ...
 \}
 \end{alltt}
 
-Maybe Git this {\small
-\link{https://labs.ripe.net/Members/ondrej_caletka/managing-dns-zones-using-git}}
+BIND is still used a lot, but I recommend Unbound for recursive servers, and outsourcing authoritative DNS
 
 
 \slide{Unbound and NSD}
@@ -271,9 +283,9 @@ My preferred local DNS server. We will now stop and look at this configuration f
 Also check out uncensored DNS and his DNS over TLS setup!\\
 Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
 
+\exercise{ex:dns-server-test}
 
-
-\slide{Simple Mail Transfer Protocol introduction}
+\slide{SMTP Simple Mail Transfer Protocol}
 
 \begin{alltt}\tiny
 hlk@bigfoot:hlk$ telnet mail.kramse.dk 25
@@ -294,10 +306,11 @@ QUIT
 221 Bye
 \end{alltt}
 
-\begin{list1}
+\begin{list2}
 \item RFC-821 SMTP Simple Mail Transfer Protocol fra 1982
-\item {\small \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}}
-\end{list1}
+\item \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
+\end{list2}
+
 
 \slide{e-mail servere}
 
@@ -362,17 +375,17 @@ Escape character is '^]'.
 \end{alltt}
 %$
 
-Skal ikke tillade relaying, og vil blive misbrugt meget hurtigt.
+Skal ikke tillade relaying
 
 Idag benyttes ofte en stjålet brugerkonto med brugernavn og kodeord til at sende spam.
 
-\exercise{ex:email-server-test}
+
 
 
 \slide{Postservere til klienter}
 
 \begin{list1}
-\item SMTP  som vi har gennemgået er til at sende mail mellem servere
+\item SMTP som vi har gennemgået er til at sende mail mellem servere
 \item Når vi skal hente post sker det typisk med POP3 eller IMAP
 \begin{list2}
 \item POP3 Post Office Protocol version 3 RFC-1939
@@ -528,7 +541,7 @@ Sources:\\
 
 \slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
 
-\begin{list1}
+\begin{list2}
 \item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
 \item Today we have competing standards:
 \item
@@ -538,33 +551,36 @@ Sources:\\
 \item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
 
 \item How to cofigure DoT \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
-\end{list1}
+\end{list2}
 
 
-\slide{sslscan}
+\slide{sslscan - can do STARTTLS with SMTP too}
 
-\begin{alltt}\small
-root@kali:~# sslscan --ssl2 web.kramse.dk
-Version: 1.10.5-static
-OpenSSL 1.0.2e-dev xx XXX xxxx
-
-Testing SSL server web.kramse.dk on port 443
+\begin{alltt}\footnotesize
+$ sslscan --starttls-smtp mail.kramse.org
+Connected to 91.102.91.22
+Testing SSL server mail.kramse.org on port 25 using SNI name mail.kramse.org
 ...
-  SSL Certificate:
-Signature Algorithm: sha256WithRSAEncryption
-RSA Key Strength:    2048
-
-Subject:  *.kramse.dk
-Altnames: DNS:*.kramse.dk, DNS:kramse.dk
-Issuer:   AlphaSSL CA - SHA256 - G2
+  Supported Server Cipher(s):
+Preferred TLSv1.2  256 bits  ECDHE-RSA-AES256-GCM-SHA384   Curve 25519 DHE 253
+Accepted  TLSv1.2  256 bits  DHE-RSA-AES256-GCM-SHA384     DHE 2048 bits
+Accepted  TLSv1.2  256 bits  DHE-RSA-AES256-SHA256         DHE 2048 bits
+Accepted  TLSv1.2  256 bits  DHE-RSA-AES256-SHA            DHE 2048 bits
+Accepted  TLSv1.2  256 bits  ECDHE-RSA-CHACHA20-POLY1305   Curve 25519 DHE 253
+Accepted  TLSv1.2  256 bits  DHE-RSA-CHACHA20-POLY1305     DHE 2048 bits
+Accepted  TLSv1.2  256 bits  DHE-RSA-CAMELLIA256-SHA256    DHE 2048 bits
+Accepted  TLSv1.2  256 bits  DHE-RSA-CAMELLIA256-SHA       DHE 2048 bits
+...
+Subject:  mail.kramse.org
+Altnames: DNS:mail.kramse.org
+Issuer:   Let's Encrypt Authority X3
+Not valid before: Mar 24 15:05:20 2020 GMT
+Not valid after:  Jun 22 15:05:20 2020 GMT
 \end{alltt}
 
 Source:
 Originally sslscan from http://www.titania.co.uk
  but use the version on Kali
-
-SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
-
 
 
 \slidenext

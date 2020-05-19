@@ -2807,48 +2807,49 @@ Using the logic operators NOT, AND, OR and discussing, should we rather sort thi
 
 
 
-\chapter{Test an e-mail server 10min}
-\label{ex:email-server-test}
+\chapter{Test a DNS server 30min}
+\label{ex:dns-server-test}
 
 {\bf Objective:}\\
-Try communicating with SMTP commands.
+Try communicating with DNS commands.
 
 {\bf Purpose:}\\
-Learn how basic the protocol is.
+Learn how basic the setup of Unbound DNS server is.
 
 {\bf Suggested method:}\\
-Use Kali and the telnet command line tool, if not available try nc - netcat.
+Setup Unbound on Debian using the instructions from\\
+\link{https://nlnetlabs.nl/documentation/unbound/howto-setup/}
 
-\begin{alltt}
-[hlk]$ {\bfseries telnet mail.zencurity.com 25}
-Connected.
-Escape character is '^]'.
-220 server ESMTP Postfix
-{\bfseries helo test}
-250 server
-{\bfseries mail from: postmaster@pentest.dk}
-250 Ok
-{\bfseries rcpt to: root@pentest.dk}
-250 Ok
-{\bfseries data}
-354 End data with <CR><LF>.<CR><LF>
-{\bfseries skriv en kort besked}
-.
-250 Ok: queued as 91AA34D18
-{\bfseries quit}
-\end{alltt}
+Note: there is a binary unbound package which can be installed with \verb+apt install unbound+ so use that, and config is then in \verb+/etc/unbound+ .
+
+Use Kali and the command line tools to test your server, if not available try ping - which will do a lookup. Retry the commands from exercise: {\bf \nameref{ex:basic-dns-lookup}}
+which is number {\bf \ref{ex:basic-dns-lookup}}.
 
 {\bf Hints:}\\
-My servr should actually not allow you to send the email, lets hope it doesn't
+The documentation for Unbound includes a small example with the access-control directive, which is the most important one for recursive use.
+
+\begin{alltt}\footnotesize
+  # unbound.conf for a local subnet.
+  server:
+      interface: 0.0.0.0
+      interface: ::0
+      access-control: 192.168.0.0/16 allow
+      access-control: ::1 allow
+      verbosity: 1
+\end{alltt}
 
 {\bf Solution:}\\
-When you have tried sending a few emails you are done.
+When you have tried sending a few DNS requests you are done.
 
 {\bf Discussion:}\\
-How do we enforce new versions of protocol - as old as SMTP?!
+How do we enforce new versions of protocol - as old as DNS?!
 
+\link{https://dnsflagday.net}
 
+If you like, purge the Unbound software including config, with\\
+\verb+apt-get purge unbound+
 
+and try installing Pi-Hole \link{https://pi-hole.net/}
 
 \chapter{VLANs, Routing and RPF - 2h}
 \label{ex:vlans-routing-rpf}
@@ -3064,7 +3065,7 @@ Have you configured port description? Try it!
 
 Real networks have policies for port description settings.
 
-\chapter{IDS with Zeek and Suricata - 30min}
+\chapter{Bonus Real IDS with Zeek and Suricata - 30min}
 \label{ex:suricata-real-network}
 
 {\bf Objective:}\\
@@ -3116,7 +3117,7 @@ Source: {\small\link{https://community.cisco.com/t5/networking-documents/underst
 
 
 
-\chapter{Configure port security - 30 min}
+\chapter{Bonus: Configure port security - 30 min}
 \label{ex:port-security}
 
 {\bf Objective:}\\

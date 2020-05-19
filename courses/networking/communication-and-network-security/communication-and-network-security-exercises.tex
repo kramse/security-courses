@@ -2762,6 +2762,7 @@ See for instance the information from:
 \end{itemize}
 
 
+
 \chapter{Integrating Zeek IDS with the Elastic Stack 30min}
 \label{ex:zeek-to-elastic}
 
@@ -2769,28 +2770,40 @@ See for instance the information from:
 Integrate Zeek with Logstash, and elastic stack
 
 {\bf Purpose:}\\
-Show how logstash filters and mutates fields from log files.
+Use a Filebeat which can take data in JSON and insert into Elasticsearch.
 
 {\bf Suggested method:}\\
-Follow the instructions for reading the Zeek log files with Logstash into ES:\\
-\link{https://logz.io/blog/bro-elk-part-1/}
+Follow the instructions for reading the Zeek log files with Filebeat.
 
-Higly recommended to do this in multiple steps.
+This requires:
+\begin{itemize}
+\item Install filebeat, either manually or add to Ansible
+\end{itemize}
 
-First, make sure it reads the data - using filebeat is one way.
+Note: your installation already has the Debian repositories, so just using \verb+apt install filebeat+ should be enough.
 
-Second, when data show up in ES and Kibana, notice how it is not split into fields.
+Then enable the Zeek module:
+\begin{alltt}
+root@server:~# filebeat modules enable zeek
+\end{alltt}
 
-Third, insert the if-statement containing bro-conn into the logstash configuration.
+This is not enough, so read the next hint.
 
 {\bf Hints:}\\
-Logstash make it easy to match and mutate fields, make sure the current config and real config are in sync with the names and fields.
+Filebeat also provides a Dashboard for Zeek, whichj can be inserted using:\\
+\verb+filebeat setup -e+
+Writes quite a lot of data to the screen.
+
 
 {\bf Solution:}\\
 When your team have Zeek data to show in Kibana you are done.
 
 {\bf Discussion:}\\
-Which log files from Zeek are most interesting to digest?
+We will now spend a lot of time going into the Dashboard
+
+Zeek data, which fields are used in the Dashboard, how we can go through them. GeoIP, network direction - enough interesting part for one evening!
+
+Using the logic operators NOT, AND, OR and discussing, should we rather sort things away from the Dashboard or focus on them?
 
 
 

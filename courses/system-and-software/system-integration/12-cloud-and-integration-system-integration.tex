@@ -40,6 +40,7 @@ Photo by Thomas Galler on Unsplash
 \slide{Time schedule}
 \begin{list2}
 \item 08:30 2x 45 min with 10min break\\
+Kubernetes\\
 Camel chapter 18: Microservices with Docker and Kubernetes
 \item 10:15 2x 45 min with 10min break\\
 Repeat stuff, relate to other parts\\
@@ -66,13 +67,15 @@ Questions and exercises
 Exercises
 \begin{list2}
 \item Running Java microservices on Docker
-\item Optional Getting started with Kubernetes -- run Minikube
+\item Getting started with Kubernetes -- run Minikube
 \end{list2}
 
 
 
 
 \slide{Part I 08:30 2x 45 min}
+
+Kubernetes
 
 Microservices with Docker and Kubernetes
 
@@ -82,48 +85,82 @@ Microservices with Docker and Kubernetes
 %\hlkimage{}{}
 
 \begin{quote}
-
+  Package Software into Standardized Units for Development, Shipment and Deployment
+  A container is a standard unit of software that packages up code and all its dependencies so the application runs quickly and reliably from one computing environment to another. A Docker container image is a lightweight, standalone, executable package of software that includes everything needed to run an application: code, runtime, system tools, system libraries and settings.
 \end{quote}
+Source: \\{\footnotesize
+\url{https://www.docker.com/resources/what-container}}
 
 \begin{list2}
-  \item
+  \item One of the most popular deployment methods today
 \end{list2}
 
-\slide{Kubernetes history}
+\slide{Containerized Applications}
+
+\hlkimage{8cm}{container-what-is-container.png}
+
+Source: {\footnotesize
+\url{https://www.docker.com/resources/what-container}}
+
+\begin{list2}
+  \item See also \link{https://en.wikipedia.org/wiki/Linux_namespaces}\\
+   \emph{Various container software use Linux namespaces in combination with cgroups to isolate their processes, including Docker[11] and LXC.}
+\end{list2}
+
+\slide{Docker Images and layers}
+
+\hlkimage{10cm}{container-layers.jpg}
+
+\begin{quote}
+A Docker image is built up from a series of layers. Each layer represents an instruction in the image’s Dockerfile. Each layer except the very last one is read-only.
+\end{quote}
+
+Source: {\footnotesize
+\link{https://docs.docker.com/storage/storagedriver/}}
+
+
+
+\slide{Kubernetes}
 
 %\hlkimage{}{}
 
 \begin{quote}
-
+  Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
+  It groups containers that make up an application into logical units for easy management and discovery. Kubernetes builds upon 15 years of experience of running production workloads at Google, combined with best-of-breed ideas and practices from the community.
 \end{quote}
+Source: {\footnotesize
+\link{https://kubernetes.io/}}
 
+Key points:
 \begin{list2}
-  \item
+\item Open source originally from Google
+\item Scalable
+\item Uses containers inside
+\item Infrastructure as code
 \end{list2}
 
-\slide{Kubernetes today}
+
+\slide{Infrastructure as code}
 
 %\hlkimage{}{}
 
 \begin{quote}
-
+{\bf Infrastructure as code (IaC)} is the process of managing and provisioning computer data centers through machine-readable definition files, rather than physical hardware configuration or interactive configuration tools.[1] The IT infrastructure managed by this comprises both physical equipment such as bare-metal servers as well as virtual machines and associated configuration resources. The definitions may be in a version control system. It can use either scripts or declarative definitions, rather than manual processes, but the term is more often used to promote declarative approaches.
 \end{quote}
+Source: {\footnotesize
+\link{https://en.wikipedia.org/wiki/Infrastructure_as_code}}
 
 \begin{list2}
-  \item
+  \item Has become the norm in many places
 \end{list2}
 
 
-\slide{Kubernetes scaling and resilience}
+\slide{Exercise: Lets run Kubernetes}
 
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
+\hlkimage{10cm}{kubernetes-minikube.png}
 
 \begin{list2}
-  \item
+  \item \link{https://kubernetes.io/docs/tutorials/hello-minikube/}
 \end{list2}
 
 
@@ -132,7 +169,13 @@ Microservices with Docker and Kubernetes
 
 This chapter covers
 \begin{list2}
-\item
+\item Running Camel on Docker
+\item Getting started with Kubernetes
+\item Running and debugging Camel on Kubernetes
+\item Understanding essential Kubernetes concepts
+\item Building resilient microservices on Kubernetes
+\item Testing Camel microservices on Kubernetes
+\item Introducing fabric8, Kubernetes Helm, and OpenShift
 \end{list2}
 
 Source: {\footnotesize\\
@@ -141,85 +184,106 @@ ISBN: 978-1-61729-293-4}
 
 
 
-\slide{Running Camel on Docker}
+\slide{18.1.2 Running Camel on Docker}
 
 %\hlkimage{}{}
 
-\begin{quote}
 
-\end{quote}
+  the Dockerfile you’ll use to run the Spring Boot client microservice contains
+  just three lines of text:
+\begin{alltt}
+  FROM openjdk:latest
+  COPY maven /maven/
+  CMD java -jar maven/spring-­docker-2.0.0.jar
+\end{alltt}
+
+  A Docker image is a compressed TAR file that includes the Dockerfile in the root
+  alongside other files you want to include in the image. The Spring Boot Docker image
+  consists of only two files:
+\begin{alltt}
+  maven/spring-­docker-2.0.0.jar
+  Dockerfile
+\end{alltt}
 
 \begin{list2}
   \item We have seen problems with various JDK versions
   \item Running on Docker might be simpler
+  \item Help available: {\footnotesize\link{https://docs.docker.com/develop/develop-images/dockerfile_best-practices/}}
 \end{list2}
 
 
 
-\slide{Getting started with Kubernetes}
+\slide{Getting started with Kubernetes: Minikube}
 
-%\hlkimage{}{}
 
-\begin{quote}
+\begin{alltt}
+  minikube start --cpus 2 --memory 2048 --disk-­size 10g
+\end{alltt}
+The last parameter is important; it specifies which VM driver to use (see Minikube documentation for details). After the installation is complete, you can get the status of Minikube:
+\begin{alltt}
+  $ minikube status
+  minikubeVM: Running
+  localkube: Running
+  kubectl: Correctly Configured: pointing to minikube-­vm at 192.168.64.2
+\end{alltt}
 
-  \end{quote}
+This means the local Kubernetes cluster is up and running.
 
-  \begin{list2}
-    \item
-    \end{list2}
+\begin{list2}
+\item We already saw Minikube running in our browser
+\end{list2}
 
 
 \slide{Running and debugging Camel on Kubernetes}
 
-    %\hlkimage{}{}
+%\hlkimage{}{}
 
-    \begin{quote}
+\begin{quote} {\bf
+18.3 Running Camel and other applications in Kubernetes}
+When you {\bf run applications\\
+on Kubernetes, they run as containers loaded from Docker images.} The information you learned in the previous section about running Camel on Docker is required knowledge for working with Kubernetes.
+\end{quote}
 
-    \end{quote}
-
-    \begin{list2}
-      \item
-    \end{list2}
+\begin{list2}
+\item
+\end{list2}
 
 \slide{Understanding essential Kubernetes concepts}
 
 %\hlkimage{}{}
 
-\begin{quote}
+\begin{alltt}
+$ kubectl get deployment -o yaml hello-­world
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: 2017-11-04T20:33:36Z
+  generation: 1
+  labels:
+    foo: bar
+  name: hello-­world
+  ...
+\end{alltt}
 
-  \end{quote}
-
-  \begin{list2}
-    \item
-    \end{list2}
+\begin{list2}
+\item Example YAML file from Kubernetes
+\end{list2}
 
 
 
 
 \slide{Building resilient microservices on Kubernetes}
 
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
+\hlkimage{18cm}{kubernetes-scaling-up.png}
 
 \begin{list2}
-  \item
+\item Kubernetes can be told to create more pods/containers
+\item AND can check if it alive and good
 \end{list2}
 
 
-\slide{Testing Camel microservices on Kubernetes}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
-\begin{list2}
-  \item
-\end{list2}
 
 \slide{Introducing fabric8, Kubernetes Helm, and OpenShift}
 
@@ -229,22 +293,30 @@ ISBN: 978-1-61729-293-4}
 
 \end{quote}
 
+Book lists multiple tools that can help making Java applications Kubernetes-ready:
 \begin{list2}
-  \item
+\item Docker Maven plugin
+\item Kubernetes-ready fabric8 Maven plugin
+\item Kubernetes Helm
+\item OpenShift
 \end{list2}
 
-
+We wont go into detail with these, and check if better tools are available before use
 
 \slide{Securing Kubernetes}
 
 %\hlkimage{}{}
 
 \begin{quote}
-
+  Attacking and Defending Kubernetes, with Ian Coldwater\\
+  Ian Coldwater specializes in breaking and hardening Kubernetes, containers, and cloud native infrastructure. A pre-eminent voice in the Kubernetes security community, Ian is currently a Lead Platform Security Engineer at Heroku. Ian joins Adam Glick and Craig Box to talk about the offensive and defensive arts.
 \end{quote}
+{\footnotesize\link{https://www.heroku.com/podcasts/kubernetes-podcast-from-google/attacking-and-defending-kubernetes-with-ian-coldwater}}
 
 \begin{list2}
-  \item Ian Coldwater
+  \item Securing Kubernetes can be hard work
+  \item
+  \item follow Ian Coldwater, @IanColdwater \link{https://twitter.com/iancoldwater}
 \end{list2}
 
 
@@ -450,7 +522,7 @@ The following tools and environments are examples that were introduced in this c
 \item Programming languages and frameworks Java, Spring, Python
 \item Systems for running integration: TomCat, Jetty, Docker, Camel
 \item Networking and network protocols: TCP/IP, HTTP, DNS, FTP, SMTP
-\item Formats XML, XSLT, JSON, WSDL, GRPC, msgpack, protobuf, apache thrift
+\item Formats XML, XSLT, YAML, JSON, WSDL, GRPC, msgpack, protobuf, apache thrift
 \item Web technologies and services: REST, API, SOAP
 \item Databases: JDBC, Postgresql, ACID
 \item Tools like Maven, Linux, APT, Ansible, Nginx, cURL, Git and Github
@@ -469,9 +541,9 @@ The following tools and environments are examples that were introduced in this c
 \begin{list2}
 \item[1] Enterprise Integration Patterns (EIP)
 \item[2] Service-oriented Architecture (SOA)
-\item[3] Systems for running integration: {\bf Camel} TomCat, Jetty, Docker, Kubernetes
+\item[3] Systems for running integration: {\bf Camel}, TomCat, Jetty, Docker, Kubernetes
 \item[4] Networking and network protocols: TCP/IP, HTTP, DNS, FTP, SMTP
-\item[5] Integration formats XML, XSLT, JSON, WSDL, in relation to system-integration
+\item[5] Integration formats XML, XSLT, YAML, JSON, WSDL, in relation to system-integration
 \item[6] Web technologies and services: REST, API, SOAP
 \item[7] Databases: JDBC, Postgresql, ACID, persistence, resilience
 \item[8] Toolboxes Maven, Linux, APT, Ansible, Nginx, cURL, Git and Github

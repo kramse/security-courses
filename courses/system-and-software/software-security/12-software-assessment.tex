@@ -1,0 +1,432 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{software-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{11. Software Assessment}
+{KEA Kompetence OB2 Software Security 2019}
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Review using the red book, similarities to green book
+\item Repetition, common problems, how to improve software security
+\item How to do Review and audit of software
+\item Attack and Response
+\item Attack graphs
+\item Attack surfaces, and reducing them
+%\item Common Vulnerabilities and Exposure CVE
+%\item Common Weakness Enumeration CWE
+\item MITRE ATT\&CK framework
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Layout a plan for securing the Juice Shop
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item AoSSA chapters 1: Software Vulnerability Fundamentals
+\item AoSSA chapters 2: Design Review
+\item AoSSA chapters 3: Operational Review
+\item AoSSA chapters 4: Application Review Process
+\end{list1}
+
+Was many pages, skim if you need to.
+
+\slide{Goals: Software Assessment Introduction}
+
+\hlkimage{10cm}{nesa-by-makers-IgUR1iX0mqM-unsplash.jpg}
+
+\begin{list1}
+\item We have learned a lot about insecure coding, in some detail
+\item Often we will not review and assess code on the lowest levels
+\item Photo by NESA by Makers on Unsplash
+\end{list1}
+
+
+
+\slide{Software Vulnerability Fundamentals}
+
+\begin{list2}
+\item Vulnerability, bugs, exploiting with an exploit
+\item
+\item AoSSA Chapter 1 refer to a book - which now is available in updated version\\
+\emph{Computer Security: Art and Science}, 2nd edition 2019! Matt Bishop ISBN: 9780321712332\\
+We use this book in the course \emph{Computer Systems Security}
+\item Security policies are introduced with a few examples: formal specifications, formal written policy or informal ambiguous collection
+\item Real organisations have policies from high level mission-type statements down to detailed instructions for operationel procedures
+\item Often organized in a information security management system (ISMS)
+\end{list2}
+
+\slide{Security policy}
+
+\begin{quote}
+A security policy defines \emph{secure} for a system or a set of systems.\\
+Matt Bishop, Computer Security 2019
+\end{quote}
+
+\begin{list1}
+\item Secure states
+\item Transitions between states, what is allowed
+\item Breach of security - system enters an unauthorized state
+\item Is it possible to return from insecure to a secure state?
+\item Book also defines Confidentiality, Integrity and Availability more precisely
+\item \emph{Origin integrity} authentication
+\item Military security policy (coinfidentiality) vs commercial security policy (integrity)
+\end{list1}
+
+\slide{Assumptions}
+
+\begin{quote}
+Any security policy, mechanism, or procedure is based on assumptions that, if incorrect, destroy the superstructure on which it is built.\\
+Matt Bishop, Computer Security 2019
+\end{quote}
+
+\begin{list1}
+\item Example, vendor patches
+\item Important points:
+\begin{list2}
+\item Is patch correct? Example Spectre and heartbleed
+\item Vendor test environments equal to intended environments
+\item Installed correctly - including operator skills
+\end{list2}
+\end{list1}
+
+\slide{Types of Access Control}
+
+\begin{quote}
+{\bf Definition 4-13.} If an individual user can set an access control mechanism to allow or deny access to an object, that mechanism is a \emph{discretionary access control (DAC)}, also called an \emph{identity-based access control (IBAC)}
+
+{\bf Definition 4-14.}  When a system mechanism controls access to an object and an individual user cannot alter that access, the control is a \emph{mandatory access control (MAC)}, occasionally cale a \emph{rule-based access control}
+\end{quote}
+
+Quote from Matt Bishop, Computer Security 2019
+
+\slide{Examples from real life systems}
+
+Example systems implementing DAC/MAC:
+\begin{list2}
+\item Unix file permissions - DAC
+\item SELinux - Mandatory Access Control architecture to the Linux Kernel
+\item Sun's Trusted Solaris uses a mandatory and system-enforced access control mechanism
+\end{list2}
+
+See also:
+\url{https://en.wikipedia.org/wiki/Discretionary_access_control}\\
+\url{https://en.wikipedia.org/wiki/Mandatory_access_control}
+
+
+\slide{Confidentiality, Integrity and Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data kept a secret
+\item Integrity - data is not subjected to unauthorized changes
+\item Availability - data and systems are available when needed
+\end{list1}
+
+\slide{Security is a process}
+
+\begin{list1}
+\item Remember:
+\begin{list2}
+\item what is information and security?
+\item Data kept electronically
+\item Data kept in physical form
+\item Dont forget the human element of security
+\end{list2}
+\item Incident Response and Computer Forensics reaction to incidents
+\item Good security is the result of planning and long-term work
+\end{list1}
+\vskip 1cm
+\centerline{\color{titlecolor}\LARGE Security is a process, not a product, Bruce Schneier}
+
+Source for quote: \link{https://www.schneier.com/essays/archives/2000/04/the_process_of_secur.html}
+
+
+\slide{Work together}
+
+\hlkimage{9cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+
+\slide{How to do Review and audit of software}
+
+\begin{quote}
+Auditing an application is the process of analyzing application code (in source or binary form) to uncover vulnerabilities that attackers might exploit
+\end{quote}
+Source: AoSSA chapter 1
+
+\begin{list2}
+\item Identify and close security holes
+\item Auditing vs black box testing
+\item Black box testing is quick to get started, like fuzzing
+\item Example in book, a certain input \verb+mode+ triggers a special code path with \verb+sprintf+
+\item Incoporate Code Auditing into the Secure Software Development Lifecycle (SDLC)
+\end{list2}
+
+\slide{Software Development Lifecycle}
+
+\begin{quote}
+  A full lifecycle approach is the only way to achieve secure software.\\
+  --Chris Wysopal
+\end{quote}
+
+\begin{list2}
+\item Often security testing is an afterthought
+\item Vulnerabilities emerge during design and implementation
+\item Before, during and after approach is needed
+\end{list2}
+
+\slide{Secure Software Development Lifecycle}
+
+\begin{list2}
+\item SSDL represents a structured approach toward implementing and performing secure software development
+\item Security issues evaluated and addressed early
+\item During business analysis
+\item through requirements phase
+\item during design and implementation
+\end{list2}
+
+\slide{Design vs Implementation}
+
+Software vulnerabilities can be divided into two major categories:
+\begin{list2}
+\item Design vulnerabilities
+\item Implementation vulnerabilities
+\end{list2}
+
+Even with a well-thought-out security design a program can contain implementation flaws.
+
+\slide{Common Secure Design Issues}
+
+\begin{list2}
+\item Design must specify the security model's structure\\
+Not having this written down is a common problem
+\item Common problem AAA Authentication, Authorization, Accounting (book uses audited)
+\item Weak or Missing Session Management
+\item Weak or Missing Authentication
+\item Weak or Missing Authorization
+\end{list2}
+
+
+\slide{Operationel Vulnerabilities}
+
+\begin{list2}
+\item Security Problems that arise through the operational procedures
+\item General use of a piece of software in a specific environment
+\item How the software interacts with its environment
+\item Recommendation, automate deployment!
+\item Taking days to install, configure and deploy software is a {\bf red flag}
+\end{list2}
+
+
+\slide{Design Review}
+
+\begin{list2}
+\item Design review is a useful tool for identifying vulnerabilities in application architecture and prioritizing components for implementation review
+\item Optimize the process, which parts are most security critical
+\item Algorithms, problem domain logic, key algorithms
+\item Trust relationships and trust boundaries
+\end{list2}
+
+
+\slide{Enforcing Security Policy}
+
+\begin{list2}
+\item AoSSA repeats the same problems:
+\item Authentication
+\item Untrustworthy credentials
+\item Insufficient Validation
+\item Authorization
+\item Accountability
+\end{list2}
+
+
+\slide{Confidentiality}
+
+\begin{list2}
+\item Encryption algorithms
+\item Book describes the common terms used in this area
+\item Use the \emph{IT Security Guidelines for Transport Layer Security (TLS)} from the dutch National Cyber Security Centre\\
+{\footnotesize\url{https://english.ncsc.nl/publications/publications/2019/juni/01/it-security-guidelines-for-transport-layer-security-tls}}
+
+\item and Cisco \emph{Next Generation Cryptography}\\
+{\footnotesize\url{https://tools.cisco.com/security/center/resources/next_generation_cryptography}}
+\end{list2}
+
+
+
+
+\slide{Application Architecture Modelling}
+
+\begin{list2}
+\item Unified Markup Language (UML)
+\item Class diagrams
+\item Component diagrams
+\item Use cases
+\item Data flow diagram (DFD)
+\item Processes
+\item Data stores
+\item External entities
+\item Data flow
+\item Trust boundary
+\item Threat identification is the process of determining an appplcations security exposure based on your knowledge of the system
+\end{list2}
+
+
+\slide{Microsoft Secure Development Lifecycle}
+
+There are five major threat modeling steps:
+\begin{list2}
+\item Defining security requirements.
+\item Creating an application diagram.
+\item Identifying threats.
+\item Mitigating threats.
+\item Validating that threats have been mitigated.
+Threat modeling should be part of your routine development lifecycle, enabling you to progressively refine your threat model and further reduce risk.
+\end{list2}
+
+Sources:\\
+\url{https://www.microsoft.com/en-us/securityengineering/sdl}\\
+\url{https://www.microsoft.com/en-us/securityengineering/sdl/threatmodeling}
+
+\slide{Risk-Based Security Testing}
+
+\begin{quote}
+Focus testing on areas where difficulty of attack is least and the impact is highest.\\
+  --Chris Wysopal
+\end{quote}
+
+\begin{list1}
+\item Time and resources are constrained
+\item Software development must be prioritized
+\item Threat modelling / risk modelling exist to help this
+\begin{list2}
+\item Identify threat paths
+\item Identify threats
+\item Identify vulnerabilities
+\item Rank/prioritize the vulnerabilities
+\end{list2}
+\end{list1}
+
+Sounds easy enough, harder to do
+
+
+\slide{Attack trees}
+
+\hlkimage{7cm}{paper-attacktrees-fig1.png}
+
+\begin{list2}
+\item Attacks can be said to be based on a chain of dependencies, or graphs
+\item To achieve goal, need to achieve sub goal x, y, and z -- Break the chain and the attack fails!
+\item Simple example, installing updates remove a dependency for a vulnerability
+\item Attack trees, picture from Bruce Schneier Attack Trees article December 1999:\\ {\footnotesize\link{https://www.schneier.com/academic/archives/1999/12/attack_trees.html}}
+\end{list2}
+
+
+
+\slide{Exposure, Attack surfaces, and reducing them}
+
+\begin{list2}
+\item Incident prevention
+\item Real-time intrusion detection systems (IDS/IPS)
+\item {\bf Definition 27-7} An \emph{attack surface} is the set of entry points and data that attackers can use to compromise a system.
+\item Reducing the chance of success also helps, randomization
+\item Use stack and heap protection
+\item Address space layout randomization (ASLR) is a host-level moving target defense.
+\item OpenBSD even randomizes the kernel on install -- kernel address randomized link (KARL)
+\item Limit number of listening services, change insecure defaults, implement access control and firewalls
+\item Remove anything but the necessary request methods on web servers \verb+GET+, \verb+HEAD+ and \verb+POST+
+\item Restrict access to administrative interfaces
+\item Implement network segmentation
+\end{list2}
+
+
+
+\slide{MITRE ATT\&CK framework}
+
+\hlkimage{14cm}{mitre-attack.png}
+
+Great resource for attack categorization
+\link{https://attack.mitre.org/}
+
+
+\slide{Security Assessment Frameworks}
+
+
+\begin{list2}
+\item Structured approach to testing, finding and eliminating security flaws
+\item Information Systems Security Assessment Framework ISSAF
+\item Penetration Testing Execution Standard (PTES)
+\item PCI Penetration testing guide, Payment Card Industry Data Security Standard (PCI DSS)
+\item Technical Guide to Information Security Testing and Assessment (NIST800-115) (GISTA)
+\item Open Source Security Testing Methodology Manual (OSSTMM)
+\item CREST Penetration Testing Guide
+\end{list2}
+
+Which one to choose?
+
+From the book Bishop and \link{https://www.owasp.org/index.php/Penetration_testing_methodologies}
+
+
+
+
+\slide{Application Review Process}
+
+\begin{list2}
+\item Rationale - to be successful, any process you adopt must be pragmatic, flexible, and results driven
+\item Code review is a fundamentally creative process, is that true?
+\item Code review is a skill
+\item Preassessment, application review, documentation/analysis, remediation support
+\item Scoping, information collection
+\end{list2}
+
+\slide{Code-Auditing Strategies}
+
+\begin{list2}
+\item Code comprehension (CC) strategies, analyze source code directly to discover vulnerabilities
+\item Candidate point (CP) strategies, two-step create list of potential issues, and examine the source code to determine the relevance of these issues
+\item Design generalization (DG) strategies, analyzing potential medium- to high-level logic and design flaws
+\end{list2}
+
+\slide{Code Auditor's Toolbox}
+
+\begin{list2}
+\item Source Code Navigators - good editors and Integrated development environment (IDEs)
+\item Cross referencing, text searching, multiple language support, syntax highlighting, graphing capabilities, scripting capabilities
+\item Note: new tools are being developed all the time, book examples are older
+\end{list2}
+
+
+\slide{Green book, red book}
+
+\begin{list2}
+\item Review using the red book, similarities to green book
+\item Repetition, common problems, how to improve software security
+\item Too similar? Nice with repetition?
+\item Replace with a threat modelling book?
+\end{list2}
+
+
+\exercise{ex:secure-juiceshop}
+
+\slidenext{}
+
+
+\end{document}

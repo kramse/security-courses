@@ -1,0 +1,431 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{software-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{7. Program Building Blocks}
+{KEA Kompetence OB2 Software Security 2019}
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Common constructs
+\item Recurring code patterns
+\item Example programs with flaws: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Use a XML library in Python
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item AoSSA chapter 7: Program Building Blocks
+\end{list1}
+
+\slide{Goals: }
+
+\hlkimage{13cm}{ipv6-address-1.pdf}
+
+\begin{list1}
+\item Talk about the Design Patterns concept
+\item Present some of the ones often found in programs
+\item Patterns can also be found in other areas, like Patterns in Network Architecture
+\end{list1}
+
+\slide{Design Patterns}
+
+\begin{list2}
+\item \emph{Design Patterns: Elements of Reusable Object-Oriented Software} (1994), Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides
+
+\item The book describes 23 classic software design patterns
+
+\item \url{https://en.wikipedia.org/wiki/Design_Patterns}
+
+\item Ideas of patterns precede this book, but became a more popular subject
+\end{list2}
+
+
+
+\slide{Common constructs}
+
+
+\begin{list2}
+\item Programs exhibit the same patterns, some examples:
+\item Solve problems in the same domains
+\item Need to store lists of strings / characters etc.
+\item Data structures becomes useful in other programs
+\item Sorting routines needed in many programs
+\end{list2}
+
+
+
+
+
+\slide{Auditing code patterns}
+
+
+\begin{list2}
+\item Book describes various pitfalls, and areas
+\item {\bf Variable Relationship}
+\item Examples presented are C buffers
+\item A variable-pointer to the buffer and the variable with the length
+\item Their relationship can easily get invalidated, leading to vulnerabilities
+\item Question: would object oriented programming help?
+\end{list2}
+
+
+
+\slide{Book examples in beginning Chapter 7}
+
+
+\begin{list2}
+\item Apache was the worlds most popular web server!
+\item \verb+mod_dav+ implements a very complex protocol, file server features using http!
+\item Bind and the resolver libraries were the de facto, and still is, for DNS resolving in most of the open source software world!
+\item Sendmail was the most popular mail server for many years, but replaced mostly by Qmail, Postfix and Exim. Sendmail was used on both open source and commercial Unix operating systems like SunOS, AIX, HP-UX etc.
+\item OpenSSH mentioned next is also the most popular SSH protocol implementation, found in almost all Linux distributions and a wide range of network devices and other internet conected things
+\item OpenSSL is of course the most popular open source crypto library ... famous for the heartbleed bug and other hits
+\end{list2}
+
+
+\slide{Structure and Object Mismanagement}
+
+
+\begin{list2}
+\item Structures in C can help group related data elements
+\item Both auditors and attackers can benefit ...
+\item Object oriented programs and languages encapsulate this
+\item Responsibility is on the object implementation, good!
+\item We saw structures last time
+\end{list2}
+
+
+
+\slide{Uninitialized Variables}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+    Packet *p = SCMalloc(SIZE_OF_PACKET);
+    if (unlikely(p == NULL)) {
+         return 0;
+    }
+    ThreadVars tv;
+    DecodeThreadVars dtv;
+
+    memset(&dtv, 0, sizeof(DecodeThreadVars));
+    memset(&tv,  0, sizeof(ThreadVars));
+    memset(p, 0, SIZE_OF_PACKET);
+\end{minted}
+
+\begin{list2}
+\item Always make sure variables have well defined values.
+\item Defensive programs use memset to clear contents of buffers
+\item Example from Suricata allocating memory, checking it got the memory, clearing contents
+\end{list2}
+
+
+
+\slide{Manipulating Lists - and other data structures}
+
+
+\begin{list2}
+\item Storing data in a list is nice, can add and remove elements
+\item Single linked list, start from head and go through list ... slow
+\item Double linked list can go back again from element
+\item More work updating, moving more pointers ... complex, may introduce errors
+\item Example data structure double linked list\\
+\url{https://algorithms.tutorialhorizon.com/doubly-linked-list-complete-implementation/}
+\item Multiple problems can arise, also using the wrong structure for something can result in vulnerabilities
+\end{list2}
+
+\vskip 1cm
+\centerline{Dont write your data structure libraries yourself}
+
+\slide{Linux Teardrop}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+  size=36
+  offset=3
+  load1="\x00"*size
+  i=IP()   i.dst=target   i.flags="MF"   i.proto=17
+
+  size=4
+  offset=18
+  load2="\x00"*size
+  j=IP()
+  j.dst=target   j.flags=0   j.proto=17   j.frag=offset
+\end{minted}
+
+\begin{list2}
+\item IP fragments, packets are split when crossing a link with lower MTU
+\item If fragments created by an attacker are overlapping it created problem
+\item Scapy example code by Sam Bowne can be found at:\\
+\url{https://samsclass.info/123/proj10/teardrop.htm}
+\item what is Maximum Transmission Unit (MTU)\\
+See \url{https://en.wikipedia.org/wiki/Maximum_transmission_unit} for a description,\\ related/similar \url{https://en.wikipedia.org/wiki/LAND}
+\end{list2}
+
+
+
+\slide{Other problems}
+
+
+\begin{list2}
+\item Hashing algorithms
+\item Only mentioned briefly in the book
+\item There have been multiple problems with hashing algorithms
+\item Denial of Service and arbitrary code can be the result
+\item Example vulns from popular programming languages, others have similar!\\
+\url{https://www.cvedetails.com/vulnerability-list/vendor_id-74/product_id-128/cvssscoremin-7/cvssscoremax-7.99/PHP-PHP.html} search for hash \\
+\url{https://github.com/bk2204/php-hash-dos} specific example in PHP 7.0.0~rc3-3\\
+\url{https://www.ruby-lang.org/en/security/} Ruby has some
+\item also when programmers selected wrong, or weak, hashing algorithms for passwords
+\end{list2}
+
+\slide{Control Flow}
+
+\hlkimage{18cm}{ssl-tls-breaks-timeline.png}
+
+\begin{list2}
+\item If constructs, make sure to exercise each path
+\item Case/switch constructs, make sure to catch a default
+\item Loops being subverted to create buffer overflow, terminating conditions
+\item Forgetting a \verb+break+ in a case
+\end{list2}
+
+
+\slide{Apple Goto Fail CVE-2014-1266}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+if ((err = SSLHashSHA1.update(&hashCtx, &clientRandom)) != 0)
+    goto fail;
+if ((err = SSLHashSHA1.update(&hashCtx, &serverRandom)) != 0)
+    goto fail;
+if ((err = SSLHashSHA1.update(&hashCtx, &signedParams)) != 0)
+    goto fail;
+    goto fail;  /* MISTAKE! THIS LINE SHOULD NOT BE HERE */
+if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
+    goto fail;
+\end{minted}
+
+\begin{list2}
+\item Always going to goto fail
+\item Example code from\emph{Anatomy of a “goto fail” – Apple’s SSL bug explained}\\ {\footnotesize\url{https://nakedsecurity.sophos.com/2014/02/24/anatomy-of-a-goto-fail-apples-ssl-bug-explained-plus-an-unofficial-patch/}}
+
+\end{list2}
+
+
+\slide{Loop running over buffer}
+
+\begin{list2}
+\item MS-RPC DCOM buffer overflow
+\item Ended up in the Blaster worm infecting : \url{https://en.wikipedia.org/wiki/Blaster_(computer_worm)}
+\item notice the timeline, even if patches ARE available people didn't patch
+\item This is why we have \emph{patch tuesdays}
+\item Blaster was not as fast as SQL Slammer, which infected the internet in just minutes
+\item Other example in the book, NTPD, which is also a common and thought to be safe service to run
+\item And \verb+mod_php+ nonterminating buffer vulnerability
+\item Plus a few off-by-one errors in \verb+mod_rewrite+ and OpenBSD ftpd
+\end{list2}
+
+
+\slide{Side effects, corner cases and 32-bit vs 64-bit}
+
+\begin{list2}
+\item Chapter lists a couple of corner cases
+\item Functions can change variables in global scope while doing something
+\item Allocating memory can go wrong, check return values
+\item Asking for 0 bytes of memory is technically legal but may cause problems
+\item Doing 64-bit check with if and then being truncated to 32-bit when doing actual memory allocation function, result in unintended behaviour
+\item Double free is also mentioned, freeing an already free location may exploit heap management routines\\
+Check malloc and free very carefully
+\end{list2}
+
+
+\slide{Who do you trust?}
+
+
+\begin{list2}
+\item Example programs shown with flaws in this chapter: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop
+\item Who do you trust?
+\item Can we trust any software?
+
+\item What about Suricata? - CVE list\\
+{\footnotesize\url{https://www.cvedetails.com/vulnerability-list/vendor_id-13364/product_id-27771/Openinfosecfoundation-Suricata.html}}
+\item Spoiler: Bypass vulnerabilities, getting data past the IDS, Denial of Service crashing the IDS
+\end{list2}
+
+
+\slide{Example applications from Microsoft}
+
+How to get ahead? - use existing good examples!
+
+Microsoft has released sample applications.
+
+\begin{quote}
+Secure Development Documentation
+Learn how to develop and deploy secure applications on Azure with our sample apps, best practices, and guidance.
+
+Get started
+Develop a secure web application on Azure
+\end{quote}
+
+Source:
+\url{https://docs.microsoft.com/en-us/azure/security/develop/}
+
+Yes, this describes how to run Alpine Linux on their Azure Cloud.
+
+
+
+\slide{Resources}
+
+\begin{quote}\footnotesize
+Microsoft Security Development Lifecycle (SDL) – The SDL is a software development process from Microsoft that helps developers build more secure software. It helps you address security compliance requirements while reducing development costs.
+
+Open Web Application Security Project (OWASP) – OWASP is an online community that produces freely available articles, methodologies, documentation, tools, and technologies in the field of web application security.
+
+Pushing Left, Like a Boss – A series of online articles that outlines different types of application security activities that developers should complete to create more secure code.
+
+Microsoft identity platform – The Microsoft identity platform is an evolution of the Azure AD identity service and developer platform. It’s a full-featured platform that consists of an authentication service, open-source libraries, application registration and configuration, full developer documentation, code samples, and other developer content. The Microsoft identity platform supports industry-standard protocols like OAuth 2.0 and OpenID Connect.
+
+Security best practices for Azure solutions – A collection of security best practices to use when you design, deploy, and manage cloud solutions by using Azure. This paper is intended to be a resource for IT pros. This might include designers, architects, developers, and testers who build and deploy secure Azure solutions.
+
+Security and Compliance Blueprints on Azure – Azure Security and Compliance Blueprints are resources that can help you build and launch cloud-powered applications that comply with stringent regulations and standards.
+
+Next steps\\
+In the following articles, we recommend security controls and activities that can help you design, develop, and deploy secure applications.
+
+* Design secure applications
+* Develop secure applications
+* Deploy secure applications
+\end{quote}
+
+Source:
+\url{https://docs.microsoft.com/en-us/azure/security/develop/secure-dev-overview}
+
+
+\slide{Good security}
+
+\hlkimage{12cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\end{list1}
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+\slide{First advice}
+
+\begin{list1}
+\item Use technology
+\item Learn the technology - read the freaking manual
+\item Think about the data you have, upload, facebook license?! WTF!
+\item Think about the data you create - nude pictures taken, where will they show up?
+\begin{list2}
+\item Turn off features you don't use
+\item Turn off network connections when not in use
+\item Update software and applications
+\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
+\item Lock devices automatically when not used for 10 minutes
+\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
+\end{list2}
+\end{list1}
+
+
+
+\slide{Jumping through networks and systems}
+
+\begin{list1}
+\item Hackers break into systems they can reach
+\item and hackers break into systems they can reach from hacked systems \smiley
+\item In real life networks, a remote root exploit from the internet to the main database is rare
+\item but jumping through others can possibly break the whole network
+\item There are a lot of hackers which have presented how they hacked companies, example\\
+{\tiny\url{https://arstechnica.com/security/2016/04/how-hacking-team-got-hacked-phineas-phisher/}}
+\end{list1}
+
+\slide{Example hacks we have done during testing}
+
+\begin{list1}
+\item My own examples include pentest assignments where we:
+\begin{list2}
+\item Two servers under test, Solaris\\
+had NFS world export, we could mount, found a backup of the other system, extracted /etc/passwd from backip, user logins with empty password, Solaris Telnet allows login, your password is empty - enter one
+\item Another test had SRX firewall as a core component. Due to misconfiguration we could access with SNMP, and thereby found the complete network structure revealed, how many network segments, subnets, netmask, ARP, interface counters - which lead to access files with password pictures, it was a bank
+\item Countless times we have found either a password file for a database, and used the same passwords for the operating system, or vice versa
+\item Countless times we have found either a password file in test systems, and people have used the same password in production, or vice versa
+\end{list2}
+\end{list1}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{14cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Chroot, Jails and Zones}
+
+\begin{list1}
+\item Many types of \emph{jails} in Unix-like operating systems
+\item Ideas from Unix chroot, not a security feature originally
+\begin{list2}
+\item Unix chroot - still used, but often combined with other things privsep
+\item FreeBSD Jails
+\item SELinux Mandatory Access Controls
+\item Solaris Containers og Zones
+\item VMware virtual servers, is that a jail?
+\item Docker, is that a jail or just a process?
+\end{list2}
+\end{list1}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{4cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{First advice use the modern operating systems}
+
+\begin{list1}
+\item Newer versions of Microsoft Windows, Mac OS X and Linux
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Note: these still have errors and bugs, but are better than older versions
+\item OpenBSD has shown the way in many cases\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\vskip 1cm
+
+\centerline{Always try to make life worse and more costly for attackers}
+
+\exercise{ex-python-library}
+
+\slidenext{}
+
+\end{document}

@@ -402,7 +402,7 @@ Release Date: December 2008
  \link{http://shop.oreilly.com/product/9780596005955.do}
 
 
-\chapter{Run parts of a Django tutorial 30min}
+\chapter{Optional: Run parts of a Django tutorial 30min}
 \label{ex:django-intro}
 
 {\bf Objective:}\\
@@ -812,6 +812,419 @@ written by Björn Kimminich is available as PDF which you can buy, or you can re
 The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
 
 Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
+
+
+
+
+\chapter{Nikto 15 min}
+\label{ex:nikto-webscanner}
+
+{\bf Objective:}\\
+Try the program Nikto locally your workstation
+
+
+{\bf Purpose:}\\
+Running Nikto will allow you to analyse web servers quickly.
+
+\hlkimage{2cm}{nikto.jpg}
+
+\begin{quote}
+{\bf Description}
+Nikto is an Open Source (GPL) web server scanner which performs
+comprehensive tests against web servers for multiple items, including
+over 3200 potentially dangerous files/CGIs, versions on over 625
+servers, and version specific problems on over 230 servers. Scan items
+and plugins are frequently updated and can be automatically updated
+(if desired).
+\end{quote}
+
+Source: Nikto web server scanner \link{http://cirt.net/nikto2}
+
+
+\begin{list1}
+\item Easy to run, free and quickly reports on static URLs resulting in a interesting response
+\item \verb+nikto -host 127.0.0.1 -port 8080+
+\item When run with port 443 will check TLS sites
+\end{list1}
+
+
+
+
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+\begin{alltt}
+\footnotesize
+Script started on Tue Nov  7 17:43:54 2006
+$  nikto -host 127.0.0.1 -port 8080 ^M
+---------------------------------------------------------------------------
+- Nikto 1.35/1.34     -     www.cirt.net
++ Target IP:       127.0.0.1
++ Target Hostname: localhost.pentest.dk
++ Target Port:     8080
++ Start Time:      Tue Nov  7 17:43:59 2006
+...
++ /examples/ - Directory indexing enabled, also default JSP examples. (GET)
++ /examples/jsp/snp/snoop.jsp - Displays information about page
+retrievals, including other users. (GET)
++ /examples/servlets/index.html - Apache Tomcat default JSP pages
+present. (GET)
+\end{alltt}
+%$
+
+{\bf Hints:}\\
+Nikto can find things like a debug.log, example files, cgi-bin directories etc.
+
+If the tool is not available first try: \verb+apt-get install nikto+
+
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
+
+
+\chapter{Optional: Postman API Client 20 min}
+\label{ex:postman-api}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Get a program capable of sending REST HTTP calls installed.
+
+
+{\bf Purpose:}\\
+Debugging REST is often needed, and some tools like Elasticsearch is both configured and maintained using REST APIs.
+
+{\bf Suggested method:}\\
+Download the app from
+\link{https://www.postman.com/downloads/}
+
+Available for Windows, Mac and Linux.
+
+{\bf Hints:}\\
+You can run the application without signing in anywhere.
+
+{\bf Solution:}\\
+When you have performed a REST call from within this tool, you are done.
+
+Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
+
+If you have Elasticsearch installed and running try: \link{http://127.0.0.1:9200}
+
+{\bf Discussion:}\\
+Multiple applications and plugins can perform similar functions. This is a standalone app.
+
+Tools like Elasticsearch has plugins allowing decoupling of the API and plugins. Example: \link{https://www.elastic.co/what-is/elasticsearch-monitoring} and \link{https://www.elastic.co/what-is/open-x-pack}
+
+
+
+\chapter{Optional: Use Ansible to install Elastic Stack}
+\label{ex:basicansible}
+
+
+{\bf Objective:}\\
+Run Elasticsearch
+
+{\bf Purpose:}\\
+See an example tool used for many integration projects, Elasticsearch from the Elastic Stack
+
+{\bf Suggested method:}\\
+We will run Elasticsearch, either using the method from:\\{\footnotesize
+\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+or by the method described below using Ansible - your choice.
+
+Ansible used below is a configuration management tool \url{https://www.ansible.com/}
+
+I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has ansible and my playbooks: (as root run)
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
+
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
+
+If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+git pull
+\end{minted}
+
+Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
+
+Note: these instructions are originally from the course\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content
+\begin{alltt}
+apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+
+\chapter{Optional: Getting started with the Elastic Stack - 60 min}
+\label{ex:dateformats}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Get a working Elasticsearch, so we can do requests.
+
+{\bf Purpose:}\\
+Elasticsearch uses REST extensively in their application.
+
+{\bf Suggested method:}\\
+either use the
+\emph{Getting started with the Elastic Stack}
+\link{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}
+
+OR my Ansible based approach - which some already ran.
+
+The ansible is described in exercise \ref{ex:basicansible} on \pageref{ex:basicansible}
+
+{\bf Hints:}\\
+We dont really need a lot in the Elasticsearch database, and you can run most tasks with zero data. Graphs will not be as pretty though.
+
+{\bf Solution:}\\
+When you have a running Elasticsearch you are done, and ready for next exercise.
+
+The web page for the getting started show multiple sections:
+\begin{itemize}
+\item Elasticsearch - the core engine, this must be done manually or with Ansible
+\item Kibana - the analytics and visualization platform
+\item Beats - data shippers, a way to get some data into ES
+\item Logstash (optional) offers a large selection of plugins to help you parse, enrich, transform, and buffer data from a variety of sources
+\end{itemize}
+
+Each describes a part and are recommended reading.
+
+{\bf Discussion:}\\
+We could have used a lot of other servers and service, which ones would you prefer?
+
+If you have access to Azure, you can try Azure REST API Reference\\ \link{https://docs.microsoft.com/en-us/rest/api/azure/}
+
+\chapter{Optional: Making requests to Elasticsearch - 15-75min}
+\label{ex:es-rest-api}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Use APIs for accessing Elasticsearch data, both internal and user data.
+
+{\bf Purpose:}\\
+Learn how to make requests to an API.
+
+{\bf Suggested method:}\\
+Go to the list of exposed Elasticsearch REST APIs:\\
+\link{https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html}
+
+The Elasticsearch REST APIs are exposed using JSON over HTTP.
+
+Select a category example, Cluster APIs, then select Nodes Info APIs. This will show URLs you can use:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+# return just process
+curl -X GET "localhost:9200/\_nodes/process?pretty"
+# same as above
+curl -X GET "localhost:9200/\_nodes/_all/process?pretty"
+
+curl -X GET "localhost:9200/_nodes/plugins?pretty"
+
+# return just jvm and process of only nodeId1 and nodeId2
+curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/jvm,process?pretty"
+# same as above
+curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
+# return all the information of only nodeId1 and nodeId2
+curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/_all?pretty"
+\end{minted}
+
+When you can see this works, then feel free to install X-Pack and monitoring plugins
+
+{\bf Hints:}\\
+Pretty Results can be obtained using the pretty parameter.
+\begin{quote}
+When appending ?pretty=true to any request made, the JSON returned will be pretty formatted (use it for debugging only!). Another option is to set ?format=yaml which will cause the result to be returned in the (sometimes) more readable yaml format.
+\end{quote}
+
+Lots of tutorials exist for accessing Elasticsearch
+
+A couple of examples:
+\begin{itemize}
+\item \link{https://aws.amazon.com/blogs/database/elasticsearch-tutorial-a-quick-start-guide/}
+\item \link{https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04}
+\end{itemize}
+
+{\bf Solution:}\\
+When you have seen examples of the API, understand the references with underscore, like \verb+_nodes+ and pretty printing you are done.
+
+I recommend playing with Elasticsearch plugins and X-pack.\\
+\link{https://www.elastic.co/downloads/x-pack}
+
+Note: In versions 6.3 and later, X-Pack is included with the default distributions of Elastic Stack, with all free features enabled by default.
+
+Also Kibana can be used for creating nice dashboards and become applications more or less.
+
+{\bf Discussion:}\\
+You can also try calling the REST API from Python
+
+Similar to what we did previously in this course:
+\inputminted{python}{programs/rest-1.py}
+
+
+\end{document}
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+If the tool is not available first try: \verb+apt-get install *thetool*+
+
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
+
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+If the tool is not available first try: \verb+apt-get install *thetool*+
+
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
+
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+If the tool is not available first try: \verb+apt-get install *thetool*+
+
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
 
 
 \chapter{Wireshark 15 min}
@@ -1626,3 +2039,40 @@ There is no solution, the discussion is the solution.
 There are some things that can be \emph{fixed} in production, and some can't easily be redone without major interruption
 
 \end{document}
+
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+If the tool is not available first try: \verb+apt-get install *thetool*+
+
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\

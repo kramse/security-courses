@@ -4,29 +4,43 @@
 \selectlanguage{english}
 
 \begin{document}
+
 \mytitlepage
-{4. Web Application Hacking Intro}
+{5. Web Application Security: Recon}
 {KEA Kompetence OB2 Software Security 2019}
 
 \slide{Plan for today}
 
 \begin{list1}
 \item Subjects
+\item Web Application Security: Recon
 \begin{list2}
-\item
+\item Structured approach to discovery, information gathering, mapping
+\item The Structure of a Modern Web Application
+\item REST APIs, JSON
+\item Authentication and Authorization Systems
+\item Finding domains, subdomains and vhosts
 \end{list2}
 \item Exercises
 \begin{list2}
-\item
+\item Work with real life sites, your sites, my sites and JuiceShop
 \end{list2}
 \end{list1}
 
 
 \slide{Reading Summary}
 
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
 \begin{list1}
-\item
-\item
+\item WAS Part I. Recon, chapters 1-8, very short chapters
+\item 1. The History of Software Security
+\item 2. Introduction to Web Application Reconnaissance
+\item 3. The Structure of a Modern Web Application
+\item 4. Finding Subdomains
+\item 5. API Analysis
+\item 6. Identifying Third-Party Dependencies
+\item 7. Identifying Weak Points in Application Architectur
+\item 8. Part I Summary
 \end{list1}
 
 \slide{Goals: }
@@ -34,10 +48,775 @@
 \hlkimage{8cm}{homer-end-is-near.jpg}
 
 \begin{list1}
-\item
+\item Be able to discover parts of web application environments
+\item Perform Information Gathering Web Application Mapping
 \end{list1}
 
-\slidenext{Buy the books!}
+
+
+
+\slide{Selecting Technologies for your enterprise}
+
+\hlkimage{14cm}{software.pdf}
+
+
+
+
+\slide{Why talk about selecting technologies }
+
+\hlkimage{7cm}{johnny_automatic_blueprints.png}
+
+
+\begin{list2}
+\item A big part of systems integration it to make sure applications can work together
+\item Data interchange
+\item Running systems require skills, many different technologies, many humans needed
+\item Managing complexity with many systems become harder
+\end{list2}
+
+Later today we will discuss this subject more with the hand-in assigment
+
+\slide{Secure Infrastructures starts with architecture and design}
+
+%\hlkimage{5cm}{secure_coding.png}
+
+\vskip 2cm
+\hlkrightimage{5cm}{secure_coding.png}
+{\emph{Secure Coding: Principles and Practices} af Mark G. Graff, Kenneth R. Van Wyk 2003}
+
+
+
+\begin{list1}
+\item Architecture and design while you are thinking about the application
+\item Implementation while you are writing the application
+\item Operations After the application is in production
+\item Approx. 200 pages, but very dense with information.
+\end{list1}
+
+
+\slide{Operating Systems}
+
+\hlkimage{4cm}{tux.jpg}
+
+\begin{list2}
+\item Applications need to run within some controlled system
+\item What is an operating system today?
+\item Is Docker an operating system? What is Docker?
+\end{list2}
+
+
+
+\slide{Use the Modern Operating Systems}
+
+\begin{list1}
+\item Newer versions of Microsoft Windows, Mac OS X and Linux
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Note: these still have errors and bugs, but are better than older versions
+\item Check end-of-life and when updates will stop for each version
+\item OpenBSD has shown the way in many cases\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\vskip 1cm
+
+\centerline{Always try to make life worse and more costly for attackers}
+
+
+
+
+
+\slide{Technologies used in enterprises}
+
+The following tools and environments are examples that are used in enterprises today:
+
+\begin{list2}
+\item Programming languages and frameworks Java, Spring, Python
+\item Development environments IDE NetBeans / Eclipse / IntelliJ, Atom
+\item Systems for running Java: TomCat / GlassFish
+\item Networking and network protocols: TCP/IP, HTTP, DNS
+\item Formats XML, JSON, WSDL, GRPC, msgpack, protobuf, apache thrift
+\item Web technologies and services: REST, API, HTML5, CSS
+%\item BPL, UML
+\item Tools like cURL, Git and Github
+\item Integration tools Camel
+\item Message queueing systems: MQ
+\item Aggregated example platforms: Elastic stack, logstash, elasticsearch, kibana, grafana
+\item Cloud and virtualisation Docker, Kubernetes, Azure, AWS, microservices
+\end{list2}
+
+\centerline{This list is not complete, but what was discussed in System Integration course!}
+
+
+
+\slide{What about dependencies}
+
+
+\hlkimage{4cm}{kyler-trautner-693525-unsplash.jpg}
+
+\begin{list2}
+\item Are you using some special software, or hardware
+\item Does your application depend on some tools, library that needs help
+\end{list2}
+
+
+
+
+
+\slide{Data overview XML data, JSON}
+
+\hlkimage{15cm}{chris-lawton-5IHz5WhosQE-unsplash.jpg}
+
+Photo by Chris Lawton on Unsplash
+
+\slide{XML data}
+
+\begin{quote}
+  Extensible Markup Language (XML) is a markup language that defines a set of rules for encoding documents in a format that is both human-readable and machine-readable. The World Wide Web Consortium's XML 1.0 Specification[2] of 1998[3] and several other related specifications[4]—all of them free open standards—define XML.[5]
+
+  The design goals of XML emphasize simplicity, generality, and usability across the Internet.[6] It is a textual data format with strong support via Unicode for different human languages. Although the design of XML focuses on documents, the language is widely used for the representation of arbitrary data structures[7] such as those used in web services.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XML}
+
+\begin{list2}
+\item We have seen XML used for configuration in Apache Tomcat and Camel
+\item Perfect for computers, less for humans
+\end{list2}
+
+\slide{XML data example - Nmap output}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+  <?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE nmaprun>
+  <?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+  <!-- Nmap 7.70 scan initiated Sat Feb 22 23:35:53 2020 as: nmap -oA router -sP 10.0.42.1 -->
+  <nmaprun scanner="nmap" args="nmap -oA router -sP 10.0.42.1" start="1582410953"
+   startstr="Sat Feb 22 23:35:53 2020" version="7.70" xmloutputversion="1.04">
+  <verbose level="0"/>
+  <debugging level="0"/>
+  <host><status state="up" reason="echo-reply" reason_ttl="62"/>
+  <address addr="10.0.42.1" addrtype="ipv4"/>
+  <hostnames>
+  </hostnames>
+  <times srtt="2235" rttvar="5000" to="100000"/>
+  </host>
+  <runstats><finished time="1582410953" timestr="Sat Feb 22 23:35:53 2020" elapsed="0.32"
+   summary="Nmap done at Sat Feb 22 23:35:53 2020; 1 IP address (1 host up)
+   scanned in 0.32 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+  </runstats>
+  </nmaprun>
+\end{minted}
+
+
+\slide{XML data - documents}
+
+\begin{quote}
+Hundreds of document formats using XML syntax have been developed,[8] including RSS, Atom, SOAP, SVG, and XHTML. XML-based formats have become the default for many office-productivity tools, including Microsoft Office (Office Open XML), OpenOffice.org and LibreOffice (OpenDocument), and Apple's iWork[citation needed]. XML has also provided the base language for communication protocols such as XMPP. Applications for the Microsoft .NET Framework use XML files for configuration, and property lists are an implementation of configuration storage built on XML.[9]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XML}
+
+\begin{list2}
+\item Document formats using XML may still be proprietary!
+\item Documents using XML can be validated, are they well-formed according to the Document Type Definition (DTD)
+\end{list2}
+
+\slide{Transforming XML using XSLT}
+\begin{quote}
+
+
+XSLT (Extensible Stylesheet Language Transformations) is a language for transforming XML documents into other XML documents,[1] or other formats such as HTML for web pages, plain text or XSL Formatting Objects, which may subsequently be converted to other formats, such as PDF, PostScript and PNG.[2] XSLT 1.0 is widely supported in modern web browsers.[3]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/XSLT}
+
+\begin{list2}
+\item Can be seen as a mapping between formats, different XML schemas
+\item Also is Turing complete, is a programming language
+\end{list2}
+
+\slide{XSLT example}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+  <xsl:output method="xml" indent="yes"/>
+  <xsl:template match="/persons">
+    <root> <xsl:apply-templates select="person"/> </root>
+  </xsl:template>
+  <xsl:template match="person">
+    <name username="{@username}"> <xsl:value-of select="name" /> </name>
+  </xsl:template>
+</xsl:stylesheet>
+\end{minted}
+
+\begin{list2}
+\item XSLT uses XPath to identify subsets of the source document tree and perform calculations. XPath also provides a range of functions
+\item XSLT functionalities overlap with those of XQuery, which was initially conceived as a query language for large collections of XML documents\\
+Source: \url{https://en.wikipedia.org/wiki/XSLT}
+\end{list2}
+
+\slide{xsltproc example using Nmap}
+
+\begin{alltt}\footnotesize
+$ su -
+# apt install nmap xsltproc
+# nmap -sP -oA /tmp/router 91.102.91.18
+# exit
+$ xsltproc /tmp/router.xml > /tmp/router.html
+$ firefox /tmp/router.html
+\end{alltt}
+
+
+\begin{list2}
+\item We can use the command line tool \verb+xlstproc+ for transforming documents
+\item \verb+apt install xsltproc+
+\item Its part of the package Libxslt \url{https://en.wikipedia.org/wiki/Libxslt}
+\vskip 2cm
+\item Try installing the tools Nmap and \verb+xsltproc+ and reproduce the above
+\item This is an easy tool to try, and very useful too
+\end{list2}
+
+
+
+
+
+\slide{Data overview JSON}
+
+\begin{quote}
+JavaScript Object Notation (JSON, pronounced /ˈdʒeɪsən/; also /ˈdʒeɪˌsɒn/[note 1]) is an open-standard file format or data interchange format that uses {\bf human-readable text} to transmit data objects consisting of attribute–value pairs and array data types (or any other serializable value). It is a very common data format, with a diverse range of applications, such as serving as replacement for XML in AJAX systems.[6]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/JSON}
+
+\begin{list2}
+\item I like JSON much better than XML
+\item Many web services can supply data in JSON format
+\end{list2}
+
+\slide{JSON example}
+
+\begin{minted}[fontsize=\footnotesize]{json}
+{
+  "first name": "John",
+  "last name": "Smith",
+  "age": 25,
+  "address": {
+    "street address": "21 2nd Street",
+    "city": "New York",
+    "state": "NY",
+    "postal code": "10021"
+  },
+  "phone numbers": [
+    {
+      "type": "home",
+      "number": "212 555-1234"
+    },
+  ],
+}
+\end{minted}
+
+\begin{list2}
+\item This is a basic JSON document, new data attribute-value pairs can be added\\
+Source: \url{https://en.wikipedia.org/wiki/JSON}
+\end{list2}
+
+
+
+\slide{Note about frameworks and libraries}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import xml.etree.ElementTree as ET
+tree = ET.parse('testfile.xml')
+root = tree.getroot()
+
+print(root.tag)
+print('Nmap version: \t\t{:s} '.format(root.attrib['version']))
+print('Nmap started: \t\t{:s} '.format(root.attrib['startstr']))
+print('Nmap command line: \t{:s} '.format(root.attrib['args']))
+
+hosts = tree.findall('./host')
+for host in hosts:
+    print(host.tag)
+    print(host.attrib)
+    for hostvalues in host:
+        print(hostvalues.tag)
+        print(hostvalues.attrib)
+\end{minted}
+
+\begin{list2}
+\item Dont import JSON or XML using home made programs
+\item Example uses xml.etree.ElementTree from Python\\
+\url{https://docs.python.org/3.7/library/xml.etree.elementtree.html}
+\end{list2}
+
+\slide{Convert XML to JSON}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import xml.etree.ElementTree as ET
+import json
+def etree_to_dict(t):
+    d = {t.tag : map(etree_to_dict, t.getchildren())}
+    d.update(('@' + k, v) for k, v in t.attrib.items())
+    d['text'] = t.text
+    return d
+
+tree = ET.parse('testfile.xml')
+root = tree.getroot()
+mydict = etree_to_dict(root)
+print(type(tree))
+print(type(root))
+print(type(mydict))
+
+print(mydict)
+
+with open('testfile.json', 'w') as json_file:
+  json.dump(mydict, json_file)
+\end{minted}
+
+Converting using Python is easy
+
+
+
+\slide{Web services SOAP, WSDL}
+
+\hlkimage{15cm}{josefina-di-battista-hB25vJNTnNQ-unsplash.jpg}
+
+Photo by Josefina Di Battista on Unsplash
+
+
+\slide{Web Services}
+
+  The term Web service (WS) is either:
+  \begin{list2}
+  \item  a service offered by an electronic device to another electronic device, communicating with each other via the World Wide Web, or
+  \item a server running on a computer device, listening for requests at a particular port over a network, serving web documents (HTML, JSON, XML, images), and creating web applications services, which serve in solving specific domain problems over the Web (WWW, Internet, HTTP)
+\end{list2}
+Source: \url{https://en.wikipedia.org/wiki/Web_service}
+
+\begin{list2}
+\item Today a generic name for services using the internet
+\item Web servers such as Apache HTTPD, Nginx etc. provide a service to thew internet allowing access using HTTP
+\item Source for some parts on this slide, \url{https://en.wikipedia.org/wiki/Web_service}
+\end{list2}
+
+
+
+
+\slide{W3C Web Services}
+
+\begin{quote}
+A web service is a software system designed to support interoperable machine-to-machine interaction over a network. It has an interface described in a machine-processable format (specifically WSDL). Other systems interact with the web service in a manner prescribed by its description using SOAP-messages, typically conveyed using HTTP with an XML serialization in conjunction with other web-related standards.
+\end{quote}
+Source -- W3C, Web Services Glossary[3]
+
+
+\slide{WSDL - Web Services Description Language}
+
+\begin{quote}
+  The Web Services Description Language (WSDL /ˈwɪz dəl/) is an XML-based interface description language that is used for describing the functionality offered by a web service. The acronym is also used for any specific WSDL description of a web service (also referred to as a WSDL file), which provides a machine-readable description of how the service can be called, what parameters it expects, and what data structures it returns. Therefore, its purpose is roughly similar to that of a type signature in a programming language.
+
+  The current version of WSDL is WSDL 2.0. The meaning of the acronym has changed from version 1.1 where the "D" stood for "Definition".
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+%\begin{list2}
+%\item
+%\item
+%\end{list2}
+
+\slide{WSDL XML}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://www.w3.org/ns/wsdl"
+             xmlns:tns="http://www.tmsws.com/wsdl20sample"
+             xmlns:whttp="http://schemas.xmlsoap.org/wsdl/http/"
+             xmlns:wsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+             targetNamespace="http://www.tmsws.com/wsdl20sample">
+
+<documentation>
+    This is a sample WSDL 2.0 document.
+</documentation>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+
+
+\slide{WSDL XML types}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Abstract type -->
+   <types>
+      <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns="http://www.tmsws.com/wsdl20sample"
+                targetNamespace="http://www.example.com/wsdl20sample">
+
+         <xs:element name="request"> ... </xs:element>
+         <xs:element name="response"> ... </xs:element>
+      </xs:schema>
+   </types>
+
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Types	Describes the data. The XML Schema language (also known as XSD) is used (inline or referenced) for this purpose.
+
+
+\slide{WSDL XML interfaces}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Abstract interfaces -->
+   <interface name="Interface1">
+      <fault name="Error1" element="tns:response"/>
+      <operation name="Get" pattern="http://www.w3.org/ns/wsdl/in-out">
+         <input messageLabel="In" element="tns:request"/>
+         <output messageLabel="Out" element="tns:response"/>
+      </operation>
+   </interface>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Interface	Defines a Web service, the operations that can be performed, and the messages that are used to perform the operation.
+
+\slide{WSDL XML the binding}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Concrete Binding Over HTTP -->
+   <binding name="HttpBinding" interface="tns:Interface1"
+            type="http://www.w3.org/ns/wsdl/http">
+      <operation ref="tns:Get" whttp:method="GET"/>
+   </binding>
+
+<!-- Concrete Binding with SOAP-->
+   <binding name="SoapBinding" interface="tns:Interface1"
+            type="http://www.w3.org/ns/wsdl/soap"
+            wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/"
+            wsoap:mepDefault="http://www.w3.org/2003/05/soap/mep/request-response">
+      <operation ref="tns:Get" />
+   </binding>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Binding	Specifies the interface and defines the SOAP binding style (RPC/Document) and transport (SOAP Protocol). The binding section also defines the operations.
+
+\slide{WSDL XML the Service}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+<!-- Web Service offering endpoints for both bindings-->
+   <service name="Service1" interface="tns:Interface1">
+      <endpoint name="HttpEndpoint"
+                binding="tns:HttpBinding"
+                address="http://www.example.com/rest/"/>
+      <endpoint name="SoapEndpoint"
+                binding="tns:SoapBinding"
+                address="http://www.example.com/soap/"/>
+   </service>
+\end{minted}
+Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
+
+Service	Contains a set of system functions that have been exposed to the Web-based protocols.
+
+
+\slide{SOAP - Simple Object Access Protocol}
+
+\begin{quote}
+SOAP (abbreviation for Simple Object Access Protocol) is a messaging protocol specification for exchanging structured information in the implementation of web services in computer networks. Its purpose is to provide extensibility, neutrality, verbosity and independence. It uses XML Information Set for its message format, and relies on application layer protocols, most often Hypertext Transfer Protocol (HTTP), although some legacy systems communicate over Simple Mail Transfer Protocol (SMTP), for message negotiation and transmission.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/SOAP}
+
+
+Utilizes  UDDI (Universal Description, Discovery, and Integration)
+
+\slide{Web Service Explained }
+
+\begin{quote}
+The term "Web service" describes a standardized way of integrating Web-based applications using the XML, SOAP, WSDL and UDDI open standards over an Internet Protocol backbone. XML is the data format used to contain the data and provide metadata around it, SOAP is used to transfer the data, WSDL is used for describing the services available and UDDI lists what services are available.
+\end{quote}
+Source:\url{https://en.wikipedia.org/wiki/Web_service}
+
+
+\slide{Again frameworks and libraries}
+
+A simple “Hello World” http SOAP server:
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import SOAPpy
+def hello():
+    return "Hello World"
+server = SOAPpy.SOAPServer(("localhost", 8080))
+server.registerFunction(hello)
+server.serve_forever()
+\end{minted}
+And the corresponding client:
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import SOAPpy
+server = SOAPpy.SOAPProxy("http://localhost:8080/")
+print server.hello()
+\end{minted}
+
+
+\begin{list2}
+\item Dont process SOAP manually using home made programs
+\item \url{https://pypi.org/project/SOAPpy/}
+\end{list2}
+
+
+\slide{SOAP Request }
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+// HTTP here
+POST / HTTP/1.0
+Host: localhost:8080
+User-agent: SOAPpy xxx (pywebsvcs.sf.net)
+Content-type: text/xml; charset=UTF-8
+Content-length: 340
+SOAPAction: "hello"
+// SOAP start here
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+>
+<SOAP-ENV:Body>
+<hello SOAP-ENC:root="1">
+</hello>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+\end{minted}
+
+\slide{SOAP Response}
+
+\begin{minted}[fontsize=\footnotesize]{xml}
+// HTTP here
+HTTP/1.0 200 OK
+Server: <a href="http://pywebsvcs.sf.net">SOAPpy xxx</a> (Python 2.7.16)
+Date: Mon, 24 Feb 2020 13:29:44 GMT
+Content-type: text/xml; charset=UTF-8
+Content-length: 510
+// SOAP start here
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope
+  SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+>
+<SOAP-ENV:Body>
+<helloResponse SOAP-ENC:root="1">
+<Result xsi:type="xsd:string">Hello World</Result>
+</helloResponse>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+\end{minted}
+
+
+\slide{REST Service}
+
+
+\hlkimage{9cm}{soabook-9-1-REST.png}
+
+\begin{list2}
+\item Very typical REST URL/method \verb+GET /invoice/{invoice-id}+
+\item See also \link{https://en.wikipedia.org/wiki/Representational_state_transfer}
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{10.1 RESTful services}
+
+\hlkimage{13cm}{camelbook-10-1-restful.png}
+
+\begin{quote}
+  RESTful services, also known as REST services, has become a popular architectural style
+  used in modern enterprise projects. REST was defined by Roy Fielding in 2000 when
+  he published his paper, and today REST is a foundation that drives the modern APIs
+  on the web. You can also think of it as a modern web service, in which the APIs are
+  RESTful and HTTP based so they’re easily consumable on the web.
+\end{quote}
+
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018}
+
+\slide{Python and REST}
+
+\inputminted{python}{programs/rest-1.py}
+
+\begin{list2}
+\item  Lets try to use some Python to access a REST service.
+\item  We will use the JSONPlaceholder which is a free online REST API:
+\link{https://jsonplaceholder.typicode.com/}
+\item Start at the site: \link{https://jsonplaceholder.typicode.com/guide.html} and try running a few of the examples with your browser
+\item Then try using the same URLS in the Requests HTTP library from Python,\\
+\link{https://requests.readthedocs.io/en/master/}
+\end{list2}
+
+
+
+\slide{Designing and Standardizing HTTP Response Codes}
+
+\begin{list2}
+\item 100-199 are informational codes used as low-level signaling mechanisms, such as a confirmation of a request to change protocols
+\item 200-299 are general success codes used to describe various kinds of success conditions
+\item 300-399 are redirection codes used to request that the consumer retry a request to a different resource identifier, or via a different intermediary
+\item 400-499 represent consumer-side error codes that indicate that the consumer has produced a request that is invalid for some reason, example 404 file not found
+\item 500-599 represent service-side error codes that indicate that the consumer’s request may have been valid but that the service has been unable to process it for internal reasElasticsearch exposes REST APIs that are used by the UI components and can be called directly to configure and access Elasticsearch features.ons.
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{Elastic stack Kibana}
+
+\hlkimage{10cm}{illustrated-screenshot-hero-kibana.png}
+
+Screenshot from \url{https://www.elastic.co/kibana}
+
+Elasticsearch is a search engine and ocument store used in a lot of different systems, allowing cross application integration.
+
+\slide{Getting started with Elastic Stack}
+
+Easy to get started using the tutorial \emph{Getting started with the Elastic Stack} :\\
+{\footnotesize\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+Today Elastic Stack contains lots of different parts.
+
+\begin{list2}
+\item Elasticsearch - the core engine
+\item Logstash - a tool for parsing logs and other data.\\
+\url{https://www.elastic.co/logstash}
+\begin{quote}
+"Logstash dynamically ingests, transforms, and ships your data regardless of format or complexity. Derive structure from unstructured data with grok, decipher geo coordinates from IP addresses, anonymize or exclude sensitive fields, and ease overall processing."
+\end{quote}
+\item Kibana - a web application for accessing and working with data in Elasticsearch\\
+\url{https://www.elastic.co/kibana}
+\end{list2}
+
+
+
+
+\slide{TCP/IP and External Data Representation 1987}
+
+
+\begin{quote}
+External Data Representation (XDR) is a standard data serialization format, for uses such as computer network protocols. It allows data to be transferred between different kinds of computer systems. Converting from the local representation to XDR is called encoding. Converting from XDR to the local representation is called decoding.
+\end{quote}
+\hlkrightpic{14cm}{-2cm}{compare-osi-ip.png}
+
+Source: {\footnotesize\\
+\link{https://en.wikipedia.org/wiki/External_Data_Representation}\\ \link{https://tools.ietf.org/html/rfc1014}}
+
+
+
+
+\slide{Exercise: Communicate with HTTP}
+
+Try this - use netcat/ncat, available in Nmap package from \url{Nmap.org}:
+\begin{alltt}
+\small
+$ {\bf netcat www.zencurity.com 80
+GET / HTTP/1.0}
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 01 Feb 2020 20:30:06 GMT
+Content-Type: text/html
+Content-Length: 0
+Last-Modified: Thu, 04 Jan 2018 15:03:08 GMT
+Connection: close
+ETag: "5a4e422c-0"
+Referrer-Policy: no-referrer
+Accept-Ranges: bytes
+...
+\end{alltt}
+
+
+\slide{Basic test tools TCP - Telnet and OpenSSL}
+
+\begin{list1}
+\item Telnet used for terminal connections over TCP, but is clear-text
+\item Telnet can be used for testing connections to many older protocols which uses text commands
+\begin{list2}
+\item \verb+telnet mail.kramse.dk 25+ create connection to port 25/tcp
+\item \verb+telnet www.kramse.dk 80+ create connection to port 80/tcp
+\end{list2}
+\item Encrypted connections often use TLS and can be tested using OpenSSL command line tool \verb+openssl+
+\begin{list2}
+\item \verb+openssl s_client -host www.kramse.dk -port 443+\\
+create connection to port 443/tcp with TLS
+\item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
+create connection to port 993/tcp with TLS
+\end{list2}
+\item Using OpenSSL in client-mode allows the use of the same commands like Telnet after connection
+\end{list1}
+
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+\exercise{ex:nikto-webscanner}
+
+\slide{Git intro}
+
+\begin{quote}
+Git (/ɡɪt/)[7] is a distributed version-control system for tracking changes in source code during software development.[8] It is designed for coordinating work among programmers, but it can be used to track changes in any set of files. Its goals include speed,[9] data integrity,[10] and support for distributed, non-linear workflows.[11]
+\end{quote}
+
+Source: \url{https://en.wikipedia.org/wiki/Git}
+
+\begin{list2}
+\item We will introduce Git and Github - commercial Git hosting company\\
+\url{https://en.wikipedia.org/wiki/Git}
+\item Try creating a Git repository, remember to add a README
+\item Checkout the repository
+\item Edit a file
+\item add and commit it
+\end{list2}
+
+Use the Github Hello World example: \url{https://guides.github.com/activities/hello-world/}
+
+
+\exercise{ex:postman-api}
+
+
+\slide{Shared Database}
+
+\hlkimage{7cm}{SharedDatabaseIntegration.png}
+
+Shared Database — Have the applications store the data they wish to share in a common database.
+
+Common systems and technologies used:
+\begin{list2}
+\item database management system (DBMS) using Structured Query Language (SQL), relational database examples:\\
+\item PostgresSQL, Oracle DM, Microsoft SQL, MySQL
+\url{https://en.wikipedia.org/wiki/SQL}
+\item NoSQL databases has been a new input with examples like:
+MongoDB, CouchDB, Redis, RIAK\\
+\url{https://en.wikipedia.org/wiki/NoSQL}
+\end{list2}
+
+
+
+
+\slidenext{}
 
 
 \end{document}

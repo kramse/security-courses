@@ -6,8 +6,8 @@
 \begin{document}
 
 \mytitlepage
-{6. Software Programming \& Memory Corruption}
-{KEA Kompetence OB2 Software Security 2019}
+{7. Software Programming \& Memory Corruption}
+{KEA Kompetence OB2 Software Security}
 
 \slide{Plan for today}
 
@@ -28,14 +28,19 @@
 
 \slide{Reading Summary}
 
+\centerline{Browse if you need to, many pages}
+
 \begin{list1}
-\item AoSSA chapters 6: C Language Issues
-\item AoSSA chapters 5: Memory Corruption
+\item \emph{Hacking, 2nd Edition: The Art of Exploitation}, Jon Erickson chapters 1-3
+\item If you have it 24-deadly chapters 5-8
+\item Browse: \emph{Smashing The Stack For Fun And Profit}, Aleph One, \emph{Bypassing non-executable-stack during exploitation using return-to-libc} by c0ntex,\emph{Basic Integer Overflows} by blexim.
+
+
 \end{list1}
 
 \slide{Goals: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+\hlkimage{10cm}{homer-end-is-near.jpg}
 
 \begin{list1}
 \item Understand more C, and problems associated with C
@@ -44,7 +49,7 @@
 
 \slide{What is C}
 
-\begin{quote}\small
+\begin{quote}
 C (/siː/, as in the letter c) is a general-purpose, procedural computer programming language supporting structured programming, lexical variable scope, and recursion, while a static type system prevents unintended operations. By design, C provides constructs that map efficiently to typical machine instructions and has found lasting use in applications previously coded in assembly language. Such applications include operating systems and various application software for computers, from supercomputers to embedded systems.
 {\bf
 C was originally developed at Bell Labs by Dennis Ritchie between 1972 and 1973 to make utilities running on Unix.} Later, it was applied to re-implementing the kernel of the Unix operating system.[6] During the 1980s, C gradually gained popularity. {\bf Nowadays, it is one of the most widely used programming languages},[7][8] with C compilers from various vendors available for the majority of existing computer architectures and operating systems. C has been standardized by the ANSI since 1989 (see ANSI C) and by the International Organization for Standardization.
@@ -167,11 +172,14 @@ user@Projects:openssh$ cd openssh-8.0p1
 user@Projects:openssh-8.0p1$ ./configure && make && sudo make install}
 \end{alltt}
 
+\slide{Summary compiling software}
 
 \begin{list2}
 \item Very often Linux/Unix software was distributed as archives - tgz - tar gzipped
-\item Preferred to use binary package systems like Debian apt!
 \item Configure checks for libraries and such things, see GNU Autoconf
+\item Tries to discover which options are required, which other libraries are available etc.
+\item Today we mostly use package managers with binary packages and signatures
+\item Preferred to use binary package systems like Debian apt!
 \end{list2}
 
 
@@ -193,7 +201,7 @@ Unsigned 00000001 is the same as 0000000000000001
 \item Casting can be used to specify the explicit type conversion\\ \verb+(unsigned char) bob+ - treat variable bob as an unsigned char type
 \end{list2}
 
-Read the audit tip on page 245, The compiler can optimize out certain conversions!
+Audit tip: The compiler can optimize out certain conversions! This can affect both cryptographic processes and other things! Beware
 
 
 
@@ -213,34 +221,36 @@ Read the audit tip on page 245, The compiler can optimize out certain conversion
 
 
 
-\slide{Lets browse Listings 6-9 to 6-11}
+\slide{Lets browse chapter 2 programming}
 
+Book examples show small programs, hello world style
 \begin{list2}
-\item Book examples show l0pht antisniff program which had problems in DNS packet-parsing code
-\item Vulnerability, fixed, not really, new fix for the fix
-\item Note: \emph{L0pht Heavy Industries (pronounced "loft") was a hacker collective active between 1992 and 2000 and located in the Boston, Massachusetts area. } hackers themselves \smiley
-\item \url{https://en.wikipedia.org/wiki/L0pht}
+\item Introduces control structures, if/then/else, for loops, while loops
+\item Variables and arithmetics - including comparison
+\item Functions - in deep details with registers and stack pointers
+\item Talks about compilation and assembly - same process is done in interpreted languages before instructions run
+\item Strings are introduced, with types and pointers, hard concepts
+\item Format strings, how to print a string with printf
+\item The stack is described in detail, important for security/exploiting
+\item Above are the most important parts of the chapter, IMHO
 \end{list2}
 
 
 \exercise{ex:c-types}
 
 
-\slide{Real vulns}
 
-\begin{quote}
-Hold tight, this may blow your mind…
-A low-privileged user account on most Linux operating systems with UID value anything greater than 2147483647 can execute any systemctl command unauthorizedly—thanks to a newly discovered vulnerability.
-The reported vulnerability actually resides in PolicyKit (also known as polkit)—an application-level toolkit for Unix-like operating systems that defines policies, handles system-wide privileges and provides a way for non-privileged processes to communicate with privileged ones, such as "sudo," that does not grant root permission to an entire process.
-The issue, tracked as {\bf CVE-2018-19788}, impacts PolicyKit version 0.115 which comes pre-installed on most popular Linux distributions, including Red Hat, Debian, Ubuntu, and CentOS.
-...
-Where, \verb+INT_MAX+ is a constant in computer programming that defines what maximum value an integer variable can store, which equals to 2147483647 (in hexadecimal 0x7FFFFFFF).
-\end{quote}
+
+
+
+\slide{Pointers}
 
 \begin{list2}
-\item Reality bites again:\\
-\link{https://thehackernews.com/2018/12/linux-user-privilege-policykit.html}
-\item \emph{Red Hat has recommended system administrators not to allow any negative UIDs or UIDs greater than 2147483646 in order to mitigate the issue until the patch is released.}
+\item Copy example already used pointers
+\item They point to a location in memory - a variable, a structure, some object of some kind
+\item Pointer arithmectic is dangerous
+\item ... but often used for reading structures, from the network
+\item Mismatched values, wrong asumptions, may result in pointers going wrong
 \end{list2}
 
 
@@ -269,19 +279,8 @@ int DecodeVXLAN(ThreadVars *tv, DecodeThreadVars *dtv, Packet *p,
 Source: excerpt from \url{https://github.com/OISF/suricata/blob/master/src/decode-vxlan.c}\\
 Dont read past end of buffer!
 
-\slide{Pointers}
 
-\begin{list2}
-\item Copy example already used pointers
-\item They point to a location in memory - a variable, a structure, some object of some kind
-\item Pointer arithmectic is dangerous
-\item ... but often used for reading structures, from the network
-\item Mismatched values, wrong asumptions, may result in pointers going wrong
-\end{list2}
-
-
-
-
+\slide{Structures}
 
 \begin{list2}
 \item Pointers and Structure padding
@@ -290,6 +289,58 @@ Dont read past end of buffer!
 \end{list2}
 
 \exercise{ex:structure-padding}
+
+
+\slide{Look at the new Wireshark}
+
+\begin{list2}
+\item New version of Wireshark has a packet diagram, which might be quite handy!
+\item Lets look into it, and if possible run a couple of network dumps\\
+We can read the announcement
+\item Hopefully it will illustrate how network data is transferred
+\item Maybe install the newest version on your laptop
+\end{list2}
+
+
+\exercise{ex:wireshark-install}
+
+
+\slide{Lets browse chapter 3 Exploiting}
+
+Book examples show
+\begin{list2}
+\item Buffer overflow basics, bad comparison in first pages, see real life example later in this slideshow
+\item Shellcode included as a string-buffer, page 121
+\item NOP sled in the same example
+\item Stack based buffer overflow
+\item Using Perl for generating long sequences, \verb+print "A"x20;+
+\item Environment variables and using them for storing data aka shellcode
+\item Heap based buffer overflow
+\item Overwriting function pointers
+\item Format string overflows
+\item Above are the most important parts of the chapter, IMHO
+\end{list2}
+
+\centerline{You dont need to remember it all!}
+
+
+\slide{Real vulns}
+
+\begin{quote}
+Hold tight, this may blow your mind…
+A low-privileged user account on most Linux operating systems with UID value anything greater than 2147483647 can execute any systemctl command unauthorizedly—thanks to a newly discovered vulnerability.
+The reported vulnerability actually resides in PolicyKit (also known as polkit)—an application-level toolkit for Unix-like operating systems that defines policies, handles system-wide privileges and provides a way for non-privileged processes to communicate with privileged ones, such as "sudo," that does not grant root permission to an entire process.
+The issue, tracked as {\bf CVE-2018-19788}, impacts PolicyKit version 0.115 which comes pre-installed on most popular Linux distributions, including Red Hat, Debian, Ubuntu, and CentOS.
+...
+Where, \verb+INT_MAX+ is a constant in computer programming that defines what maximum value an integer variable can store, which equals to 2147483647 (in hexadecimal 0x7FFFFFFF).
+\end{quote}
+
+\begin{list2}
+\item Reality bites again:\\
+\link{https://thehackernews.com/2018/12/linux-user-privilege-policykit.html}
+\item \emph{Red Hat has recommended system administrators not to allow any negative UIDs or UIDs greater than 2147483646 in order to mitigate the issue until the patch is released.}
+\end{list2}
+
 
 
 \slide{Memory Corruption Errors}
@@ -303,7 +354,7 @@ Dont read past end of buffer!
 
 \begin{list2}
 \item Buffer overflows, stack errors
-\item We have already worked through our buffer overflow example, but chapter 5 describes stacks in more detail
+\item We have already worked through our buffer overflow example, but chapter 3 describes stacks in more detail
 \item Chapter also describes how functions are called and data is stored in \emph{stack frames}
 \item Of interest is the off-by-one errors on page 180, how a single byte overwrite can result in exploitation
 \item Heap overflows
@@ -322,9 +373,11 @@ execve("/bin/sh", args, NULL);
 
 
 \begin{list2}
-\item The concept of shell code is explained in detail from page 187 and forward
+\item The concept of shell code is explained in detail
 \item Shell code can be quite small, smallest seems to be 21 bytes for Linux x86
 \end{list2}
+
+
 \slide{Integer overflows}
 
 \begin{alltt}\footnotesize

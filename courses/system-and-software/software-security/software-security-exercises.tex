@@ -1155,7 +1155,77 @@ Similar to what we did previously in this course:
 \inputminted{python}{programs/rest-1.py}
 
 
-\end{document}
+\chapter{Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+
+\chapter{Pointers and Structure padding 30min}
+\label{ex:structure-padding}
+
+{\bf Objective:}\\
+Look at some real code from Suricata and Zeek, note how they prevent structure padding.
+
+{\bf Purpose:}\\
+These software applications usually used for security dissect raw packets, which cannot be trusted.
+
+{\bf Suggested method:}\\
+Download the source for some software - either of :
+\begin{list2}
+\item Zeek from \url{https://zeek.org/get-zeek/}
+\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
+\end{list2}
+
+Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
+
+{\bf Hints:}\\
+DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+suricata/src+ and doing \verb+less *dns*.h+ or use an editor.
+
+
+{\bf Solution:}\\
+When you have seen the code for \verb+struct DNSHeader_+ and noticed the structs with \verb+__attribute__((__packed__))+. This ensures that structure fields align on one-byte boundaries - on all architectures.
+
+Maybe also investigate the rest of the file \verb+decode-vxlan.c+
+
+{\bf Discussion:}\\
+Manual for Gnu C Compiler Collection can be found at:\\
+\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
+
+
+\begin{quote}
+packed\\
+This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
+\end{quote}
+
+Bonus, can we find some structs missing this?
+
+
 
 \chapter{Wireshark 15 min}
 \label{ex:wireshark-install}
@@ -1215,114 +1285,8 @@ Dont forget to logout/login to pick up this new group.
 Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
 
 We can download a lot of packet traces from around the internet, we might use examples from\\
-\link{https://www.bro.org/community/traces.html}
+\link{https://old.zeek.org/community/traces.html}
 
-
-
-
-\chapter{Try American fuzzy lop up to 60min}
-\label{ex:american-fuzzy-lop}
-
-Try American fuzzy lop http://lcamtuf.coredump.cx/afl/
-
-{\bf Objective:}\\
-Try a fuzzer. We will use the popular american fuzzy lop named after a breed of rabits.
-
-
-{\bf Purpose:}
-\begin{quote}
-American fuzzy lop is a security-oriented fuzzer that employs a novel type of compile-time instrumentation and genetic algorithms to automatically discover clean, interesting test cases that trigger new internal states in the targeted binary. This substantially improves the functional coverage for the fuzzed code. The compact synthesized corpora produced by the tool are also useful for seeding other, more labor- or resource-intensive testing regimes down the road.
-\end{quote}
-Source: \url{http://lcamtuf.coredump.cx/afl/}
-
-{\bf Suggested method:}\\
-Open the web page \url{http://lcamtuf.coredump.cx/afl/}
-
-Look at the Quick Start Guide and README:\\
-\url{http://lcamtuf.coredump.cx/afl/QuickStartGuide.txt}\\
-\url{http://lcamtuf.coredump.cx/afl/README.txt}
-
-Lets modify our demo.c test program, and fuzz it. Should find a problem.
-Then later find common Unix/Linux utils and try fuzzing. Remember the old Fuzz articles.
-
-{\bf Hints:}\\
-Look at the many projects which have been tested by AFL, the \emph{bug-o-rama trophy case} on the web page.
-
-{\bf Solution:}\\
-When afl is installed on at least one laptop on the team, and has run a fuzzing session against a program - no matter if it found anything.
-
-{\bf Discussion:}\\
-For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
-
-\chapter{Small programs with data types 15min}
-\label{ex:c-types}
-
-{\bf Objective:}\\
-Try out small programs similar to:
-\inputminted{c}{programs/int1.c}
-
-\begin{alltt}
-user@Projects:programs$ gcc -o int1 int1.c && ./int1
-First debug int is 32767
-Second debug int is now -32768
-\end{alltt}
-
-{\bf Purpose:}\\
-See actual overflows when going above the maximum for the selected types.
-
-
-{\bf Suggested method:}\\
-Compile program as is. Run it. See the problem.
-
-Then try changing the int type, try with signed and unsigned. Note differences
-
-{\bf Hints:}\\
-Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
-
-{\bf Solution:}\\
-When you have tried adding one to a value and seeing it going negative, you are done.
-
-{\bf Discussion:}\\
-
-
-\chapter{Pointers and Structure padding 30min}
-\label{ex:structure-padding}
-
-{\bf Objective:}\\
-Look at some real code from Suricata and Zeek, note how they prevent structure padding.
-
-{\bf Purpose:}\\
-These software applications usually used for security dissect raw packets, which cannot be trusted.
-
-{\bf Suggested method:}\\
-Download the software - either of :
-\begin{list2}
-\item bro-2.6.4.tar.gz from \url{https://www.zeek.org/downloads/bro-2.6.4.tar.gz}
-\item suricata-4.1.4.tar.gz from \url{https://www.openinfosecfoundation.org/download/suricata-4.1.4.tar.gz}
-\end{list2}
-
-Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
-
-{\bf Hints:}\\
-DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+suricata/src+ and doing \verb+less *dns*.h+ or use an editor.
-
-
-{\bf Solution:}\\
-When you have seen the code for \verb+struct DNSHeader_+ and noticed the structs with \verb+__attribute__((__packed__))+. This ensures that structure fields align on one-byte boundaries - on all architectures.
-
-Maybe also investigate the rest of the file \verb+decode-vxlan.c+
-
-{\bf Discussion:}\\
-Manual for Gnu C Compiler Collection can be found at:\\
-\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
-
-
-\begin{quote}
-packed\\
-This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
-\end{quote}
-
-Bonus, can we find some structs missing this?
 
 
 \chapter{Use a XML library in Python up to 60min}
@@ -1464,6 +1428,47 @@ Note the links after where you can see the source implementation, for example:\\
 {\bf Discussion:}\\
 Are strings easy to work with?
 
+
+
+
+\chapter{Try American fuzzy lop up to 60min}
+\label{ex:american-fuzzy-lop}
+
+Try American fuzzy lop http://lcamtuf.coredump.cx/afl/
+
+{\bf Objective:}\\
+Try a fuzzer. We will use the popular american fuzzy lop named after a breed of rabits.
+
+
+{\bf Purpose:}
+\begin{quote}
+American fuzzy lop is a security-oriented fuzzer that employs a novel type of compile-time instrumentation and genetic algorithms to automatically discover clean, interesting test cases that trigger new internal states in the targeted binary. This substantially improves the functional coverage for the fuzzed code. The compact synthesized corpora produced by the tool are also useful for seeding other, more labor- or resource-intensive testing regimes down the road.
+\end{quote}
+Source: \url{http://lcamtuf.coredump.cx/afl/}
+
+{\bf Suggested method:}\\
+Open the web page \url{http://lcamtuf.coredump.cx/afl/}
+
+Look at the Quick Start Guide and README:\\
+\url{http://lcamtuf.coredump.cx/afl/QuickStartGuide.txt}\\
+\url{http://lcamtuf.coredump.cx/afl/README.txt}
+
+Lets modify our demo.c test program, and fuzz it. Should find a problem.
+Then later find common Unix/Linux utils and try fuzzing. Remember the old Fuzz articles.
+
+{\bf Hints:}\\
+Look at the many projects which have been tested by AFL, the \emph{bug-o-rama trophy case} on the web page.
+
+{\bf Solution:}\\
+When afl is installed on at least one laptop on the team, and has run a fuzzing session against a program - no matter if it found anything.
+
+{\bf Discussion:}\\
+For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
+
+
+
+
+\end{document}
 \chapter{Execute nmap TCP and UDP port scan 20 min}
 \label{ex:nmap-synscan}
 

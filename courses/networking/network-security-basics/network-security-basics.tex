@@ -28,12 +28,12 @@ My overall goal
 \slide{Plan for today}
 A blue-team introduction to Communication and Network Security
 \begin{list2}
+\item Network information TCP/IP
 \item Challenges in network security
 \item The basic tools for countering threats
 \item Introduce the encryption protocols in use in networks\\
 Virtual Private Network (VPN) and Transport Layer Services (TLS).
 \item Network segmentation will be discussed
-
 \item How tools like Firewalls, Access Control Lists (ACL) and VLANs can help reduce risk for the network.
 \item Examples from Zeek Security Monitor for getting information about flows
 \end{list2}
@@ -82,19 +82,18 @@ Next Hacker day October 31st, at HK 10:00 - 17:00!
 \begin{list2}
 %\item Introduktionsmateriale med baggrundsinformation
 \item Slide shows - presentation - this file
-\item Exercises - PDF which is updated along the way
+\item Exercises - PDF files in my repository
 \end{list2}
 \item Links
 \begin{list2}
 \item All materials will be released as open source at:\\
-https://github.com/kramse/security-courses/
+\link{https://github.com/kramse/security-courses/}
 \item Additional resources from the internet linked from lecture plans:\\
 \link{https://zencurity.gitbook.io/kea-it-sikkerhed/}
-\item Note: the presentation slides are not a substitute for reading the books, papers and doing exercises, many details are not shown
 \end{list2}
 \end{list1}
 
-Note: slides and materials will be in english, but presentation language will be danish
+Note: slides and materials will mostly be in english, but presentation language will be danish
 
 
 \slide{Hackerlab Setup}
@@ -180,16 +179,17 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 \item  Åbne standarder = åbenhed, ikke garanti for sikkerhed
 \end{list1}
 
-\slide{Hvad er Internet}
+
+\slide{What is the Internet}
 
 \begin{list1}
-\item Kommunikation mellem mennesker!
-\item Baseret på TCP/IP
+\item Communication between humans - currently!
+\item Based on TCP/IP
 \begin{list2}
 \item best effort
-\item packet switching (IPv6 kalder det packets, ikke datagram)
-\item forbindelsesorienteret, \emph{connection-oriented}
-\item forbindelsesløs, \emph{connection-less}
+\item packet switching (IPv6 calls it packets, not datagram)
+\item \emph{connection-oriented} TCP
+\item \emph{connection-less} UDP
 \end{list2}
 \end{list1}
 
@@ -203,45 +203,51 @@ RFC-1958:
  generates a large, varied and evolving space of technology.
 \end{quote}
 
-\slide{Fælles adresserum}
+
+
+\slide{Common Address Space}
 
 \vskip 2 cm
 \hlkimage{13cm}{IP-address.pdf}
 
 \begin{list1}
-\item Hvad kendetegner internet idag
-\item Der er et fælles adresserum baseret på 32-bit adresser, example 10.0.0.1
+\item Internet is defined by the address space, one
+\item Based on 32-bit addresses, example 10.0.0.1
 \end{list1}
+
+
 
 \slide{CIDR Classless Inter-Domain Routing}
 
 \hlkimage{13cm}{CIDR-aggregation.pdf}
 
 \begin{list1}
-\item Fælles adresserum
-\item Best effort - kommer en pakke fra er det fint, hvis ikke må højere lag klare det
-\item Kræver ikke mange services fra underliggende teknologi \emph{dumt netværk}
-\item Idag er subnetmaske en sammenhængende række 1-bit der angiver størrelse på nettet
-\item 10.0.0.0/24 betyder netværket 10.0.0.0 med subnetmaske 255.255.255.0
+\item Subnet mask originally inferred by the class
+\item Started to allocate multiple C-class networks - save remaining B-class\\
+Resulted in routing table explosion
+\item A subnet mask today is a row of 1-bit
+\item 10.0.0.0/24 means the network 10.0.0.0 with subnet mask 255.255.255.0
+\item Supernet, supernetting
 \end{list1}
 
-\slide{OSI og Internet modellerne}
+\slide{OSI and Internet models}
 
 \hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
 
 
-\slide{En switch}
+\slide{A switch}
 
-\hlkimage{12cm}{switch-1.pdf}
+\hlkimage{10cm}{switch-1.pdf}
 
 \begin{list1}
-\item Ved at fortsætte udviklingen kunne man samle broer til en switch
-\item En switch idag kan sende og modtage på flere porte samtidig, og med full-duplex
-\item Bemærk performance begrænses af backplane i switchen
+\item Today we use switches, Don't buy a hub, not even for experimenting or sniffing
+\item A switch can receive and send data on multiple ports at the same time
+\item Performance only limited by the backplane and switching chips
+\item Can also often route with the same speed
 \end{list1}
 
 
-\slide{MAC adresser}
+\slide{MAC address}
 %\hlkimage{10cm}{apple-oui.png}
 
 \begin{alltt}
@@ -252,16 +258,17 @@ RFC-1958:
                         UNITED STATES
 \end{alltt}
 \begin{list1}
-\item Netværksteknologierne benytter adresser på lag 2
-\item Typisk svarende til 48-bit MAC adresser som kendes fra Ethernet MAC-48/EUI-48
-\item Første halvdel af adresserne er Organizationally Unique Identifier (OUI)
-\item Ved hjælp af OUI kan man udlede hvilken producent der har produceret netkortet
+\item Network technologies use a layer 2 hardware address
+\item Typically using 48-bit MAC addresses known from Ethernet MAC-48/EUI-48
+\item First half is assigned to companies -- Organizationally Unique Identifier (OUI)
+\item Using the OUI you can see which producer and roughly when a network chip was produced
 \item \link{http://standards.ieee.org/regauth/oui/index.shtml}
 \end{list1}
 
 
 
-\slide{IPv4 pakken - header - RFC-791}
+
+\slide{IPv4 packets -- header - RFC-791}
 
 \begin{alltt}
 \small
@@ -286,43 +293,63 @@ RFC-1958:
 
 
 
-\slide{Basale testværktøjer TCP - Telnet og OpenSSL}
+
+\slide{Basic test tools TCP - Telnet and OpenSSL}
 
 \begin{list1}
-\item Telnet blev brugt til login (cleartext) over TCP, brug Netcat til test nu
-\item Telnet kan bruges til at teste forbindelsen til mange ældre serverprotokoller som benytter ASCII kommandoer
+\item Telnet used for terminal connections over TCP, but is clear-text
+\item Telnet can be used for testing connections to many older protocols which uses text commands
 \begin{list2}
-\item \verb+telnet mail.kramse.dk 25+ laver en forbindelse til port 25/tcp
-\item \verb+telnet www.kramse.dk 80+ laver en forbindelse til port 80/tcp
+\item \verb+telnet mail.kramse.dk 25+ create connection to port 25/tcp
+\item \verb+telnet www.kramse.dk 80+ create connection to port 80/tcp
 \end{list2}
-\item Til krypterede forbindelser anbefales det at teste med openssl
+\item Encrypted connections often use TLS and can be tested using OpenSSL command line tool \verb+openssl+
 \begin{list2}
 \item \verb+openssl s_client -host www.kramse.dk -port 443+\\
-laver en forbindelse til port 443/tcp med SSL
+create connection to port 443/tcp with TLS
 \item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
- laver en forbindelse til port 993/tcp med SSL
+create connection to port 993/tcp with TLS
 \end{list2}
-\item Med OpenSSL i client-mode kan services tilgås med samme tekstkommandoer som med telnet
+\item Using OpenSSL in client-mode allows the use of the same commands like Telnet after connection
 \end{list1}
 
-\slide{Wireshark - grafisk pakkesniffer}
 
-\hlkimage{17cm}{images/wireshark-website.png}
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{18cm}{images/wireshark-website.png}
 
 \centerline{\link{http://www.wireshark.org}}
-\centerline{både til Windows og UNIX}
 
-\slide{Brug af Wireshark}
+\slide{Using Wireshark}
 
 \hlkimage{13cm}{images/wireshark-http.png}
 
-\centerline{Man starter med Capture - Options}
+\centerline{Capture - Options, select a network interface}
 
-\slide{Brug af Wireshark}
+\slide{Detailed view of network traffic with Wireshark}
 
 \hlkimage{10cm}{images/wireshark-sni-twitter.png}
 
-\centerline{Læg også mærke til filtermulighederne}
+\centerline{Notice also the filtering possibilities, capture and view}
+
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+
 
 \slide{Hardware IPv4 checksum offloading}
 
@@ -341,32 +368,20 @@ laver en forbindelse til port 443/tcp med SSL
 
 
 
-\slide{Vigtigste protokoller}
-
-\begin{list1}
-\item ARP Address Resolution Protocol
-\item IP og ICMP Internet Control Message Protocol
-\item UDP User Datagram Protocol
-\item TCP Transmission Control Protocol
-\item DHCP Dynamic Host Configuration Protocol
-\item DNS Domain Name System
-\end{list1}
-\vskip 1cm
-\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
-
-
 \slide{UDP User Datagram Protocol}
-\hlkimage{16cm}{udp-1.pdf}
+\hlkimage{14cm}{udp-1.pdf}
 \begin{list1}
-\item Forbindelsesløs RFC-768, \emph{connection-less}
+\item Connection-less RFC-768, \emph{connection-less}
+\item Used for Domain Name Service (DNS)
 \end{list1}
 
 \slide{TCP Transmission Control Protocol}
-\hlkimage{14cm}{tcp-1.pdf}
+\hlkimage{12cm}{tcp-1.pdf}
 
 \begin{list1}
-\item Forbindelsesorienteret RFC-791 September 1981, \emph{connection-oriented}
-\item Enten overføres data eller man får fejlmeddelelse
+\item Connection oriented RFC-791 September 1981, \emph{connection-oriented}
+\item Either data delivered in correct order, no data missing, checksum or an error is reported
+\item Used for HTTP and others
 \end{list1}
 
 \slide{TCP three way handshake}
@@ -374,10 +389,8 @@ laver en forbindelse til port 443/tcp med SSL
 \hlkimage{6cm}{images/tcp-three-way.pdf}
 
 \begin{list2}
-\item {\bfseries TCP SYN half-open} scans
-\item Tidligere loggede systemer kun når der var etableret en fuld TCP
-  forbindelse\\
-- dette kan/kunne udnyttes til \emph{stealth}-scans
+\item Session setup is used in some protocols
+\item Other protocols like HTTP/2 can perform request in the first packet
 \end{list2}
 
 
@@ -386,16 +399,16 @@ laver en forbindelse til port 443/tcp med SSL
 \hlkimage{6cm}{iana1.jpg}
 
 \begin{list1}
-\item IANA vedligeholder en liste over magiske konstanter i IP
-\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
-\item En liste af interesse er port numre, hvor et par eksempler er:
+\item IANA maintains a list of magical numbers in TCP/IP
+\item Lists of protocl numbers, port numers etc.
+\item A few notable examples:
 \begin{list2}
-\item Port 25 SMTP Simple Mail Transfer Protocol
-\item Port 53 DNS Domain Name System
-\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
-\item Port 443 HTTP over TLS/SSL
+\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
+\item Port 53/udp and 53/tcp Domain Name System (DNS)
+\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
+\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
 \end{list2}
-\item Se flere på \link{http://www.iana.org}
+\item Source: \link{http://www.iana.org}
 \end{list1}
 
 
@@ -417,8 +430,8 @@ lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
 \item Problems described in the original:
 \begin{list2}
 \item sequence number spoofing
-\item routing attacks,
 \item source address spoofing
+\item routing attacks,
 \item authentication attacks
 \end{list2}
 \end{list1}
@@ -430,32 +443,30 @@ lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
 
 \vskip 5mm
 \begin{quote}
-TCP SEQUENCE NUMBER PREDICTION
+{\bf 2. TCP SEQUENCE NUMBER PREDICTION}\\
 One of the more fascinating security holes was first described by Morris [7] . Briefly, he used TCP
 sequence number prediction to construct a TCP packet sequence without ever receiving any responses
 from the server. This allowed him to spoof a trusted host on a local network.
 \end{quote}
 
 \begin{list1}
-\item tidligere baserede man login/adgange på source IP adresser, address based authentication
-\item Er ikke en pålidelig autentifikationsmekanisme
-\item Mest kendt er nok Shimomura der blev hacket på den måde, \\
-måske af Kevin D Mitnick eller en kompagnon
-\item I praksis vil det være svært at udføre på moderne operativsystemer
-\item Se evt. \link{http://www.takedown.com/} (filmen er ikke så god ;-) )
-\item Det er naturligvis fint med filtre så man kun kan tilgå services FRA bestemte IP
+\item Previously access was granted by the source IP address you connected from, address based authentication. Not a realiable or secure authentication mechanism
+\item May have been used in the Shimomura hack, \\
+maybe Kevin D Mitnick or an accomplice
+\item Difficult on modern operating systems, hmmm Internet of Things?
+\item We still use filter to allow people to access a port/service, but they must provide real authentication -- password, code, certificate
 \end{list1}
 
 \slide{Routing attacks}
 
 \begin{list1}
-\item Problems described in the original from 1989:
+\item Routing problems described in the original from 1989:
 \begin{list2}
-\item IP Source routing attacks - angiv en rute for pakkerne\\
-Knapt så brugbar idag
+\item IP Source routing attacks - provide a route for packets\\
+Not very usable in the original form, see VXLAN and MPLS instead
 \item Routing Information Protocol Attacks\\
-The Routing Information Protocol [15] (RIP) - denne bruges ikke mere, outdated
-\item BGPv4 som bruges idag har kæmpe problemer, kludetæppe af kludges
+The Routing Information Protocol [15] (RIP) - RIP is dead, outdated
+\item BGPv4 used today, and continously have major issues, patches on patches and bad configurations
 \end{list2}
 \item Check other low level attacks from \link{https://github.com/tomac/yersinia}
 \end{list1}
@@ -469,7 +480,7 @@ The Routing Information Protocol [15] (RIP) - denne bruges ikke mere, outdated
 \item Filtrering, ingress / egress:\\
 "reject external packets that claim to be from the local net"
 \item Routers and routing protocols must be more skeptical\\
-Routing filtre everywhere, auth på OSPF/BGP etc.
+Routing filtre everywhere, auth on routing protocols OSPF/BGP etc.
 \end{list2}
 \item Has been recommended for some years, but not done in all organisations
 \item BGP routing Resource Public Key Infrastructure RPKI
@@ -478,9 +489,8 @@ Routing filtre everywhere, auth på OSPF/BGP etc.
 \slide{DNS problems}
 
 \begin{quote}
-The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
-addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
-attacks, including denial of service and password collection. There are a number of vulnerabilities.
+{\bf 5.3 The Domain Name System}\\
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of attacks, including denial of service and password collection. There are a number of vulnerabilities.
 \end{quote}
 
 \begin{list1}
@@ -496,12 +506,8 @@ attacks, including denial of service and password collection. There are a number
 \slide{SNMP problems}
 
 \begin{quote}
-5.5 Simple Network Management Protocol
-The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network
-management. Clearly, access to such a resource must be heavily protected. The RFC states this, but
-also allows for a null authentication service; this is a bad idea. Even a ‘‘read-only’’ mode is dangerous;
-it may expose the target host to netstat-type attacks if the particular Management Information Base
-(MIB) [38] used includes sequence numbers. (T
+{\bf 5.5 Simple Network Management Protocol}\\
+The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network management. Clearly, access to such a resource must be heavily protected. The RFC states this, but also allows for a null authentication service; this is a bad idea. Even a ‘‘read-only’’ mode is dangerous; it may expose the target host to netstat-type attacks if the particular Management Information Base (MIB) [38] used includes sequence numbers. (The current standardized version does not; however, the MIB is explicitly declared to be extensible.)
 \end{quote}
 
 True
@@ -509,7 +515,7 @@ True
 \slide{local networks}
 
 \begin{quote}
-6.1 Vulnerability of the Local Network
+{\bf 6.1 Vulnerability of the Local Network}\\
 Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and
 host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise
 to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel,
@@ -522,9 +528,7 @@ taking over the host’s role or simply spying on all traffic.
 Today we can send VXLAN spoofed packets across the internet layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...
 
 A Look Back at “Security Problems in the TCP/IP Protocol Suite”
-about 1989 + 15 years = 2004
-
-
+about 1989 + 31 years = 2020
 
 
 

@@ -1,0 +1,2638 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Network Security Basics}
+{Learn to defend your organisation}
+
+\hlkprofiluk
+
+
+\slide{Goals: Network Security Basics}
+
+\hlkimage{4cm}{Bartizan.png}
+My overall goal
+
+\begin{list2}
+\item Introduce networking and related security issues
+\item Introduce resources, programs, people, authors, documents, sites\\
+ that further your exploration into network security
+\end{list2}
+
+
+\slide{Plan for today}
+A blue-team introduction to Communication and Network Security
+\begin{list2}
+\item Challenges in network security
+\item The basic tools for countering threats
+\item Introduce the encryption protocols in use in networks\\
+Virtual Private Network (VPN) and Transport Layer Services (TLS).
+\item Network segmentation will be discussed
+
+\item How tools like Firewalls, Access Control Lists (ACL) and VLANs can help reduce risk for the network.
+\item Examples from Zeek Security Monitor for getting information about flows
+\end{list2}
+
+Duration: 4 hours - with breaks
+
+Keywords: Encryption, TLS, VPN, VLAN IEEE 802.1q, Wifi security, IEEE
+802.1x, IKE version 2, IPsec
+
+
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15\\
+Introduction and basics
+\item 30min break\\
+
+\item 18:45 - 19:30 45min\\
+
+\item 15min break\\
+
+\item 19:45 - 21:00\\
+break somewhere
+\end{list2}
+
+
+
+
+
+\slide{About equipment and exercises}
+
+\begin{list2}
+\item Bringing a laptop is not required, but welcome.
+\item Exercises booklet will be referenced, but it is expected that participants will do exercises on their own later or at the scheduled hacker days
+\item The hacker days will be announced in the event calendar and also take
+place during BornHack in the network warrior village
+\end{list2}
+
+Next Hacker day October 31st, at HK 10:00 - 17:00!
+
+\slide{Course Materials}
+
+\begin{list1}
+\item This material is in multiple parts:
+\begin{list2}
+%\item Introduktionsmateriale med baggrundsinformation
+\item Slide shows - presentation - this file
+\item Exercises - PDF which is updated along the way
+\end{list2}
+\item Links
+\begin{list2}
+\item All materials will be released as open source at:\\
+https://github.com/kramse/security-courses/
+\item Additional resources from the internet linked from lecture plans:\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/}
+\item Note: the presentation slides are not a substitute for reading the books, papers and doing exercises, many details are not shown
+\end{list2}
+\end{list1}
+
+Note: slides and materials will be in english, but presentation language will be danish
+
+
+\slide{Hackerlab Setup}
+
+\hlkimage{7cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: modern laptop CPU with virtualisation\\
+Dont forget to enable hardware virtualisation in the BIOS
+\item Software Host OS: Windows, Mac, Linux
+\item Virtualisation software: VMware, Virtual box, HyperV pick your poison
+\item Hackersoftware: Kali Virtual Machine \link{https://www.kali.org/}
+%\item Soft targets: Metasploitable, Windows 2000, Windows XP, ...
+\end{list2}
+
+
+\slide{Networking Hardware}
+
+If you want to do exercises, sniffing data it \\
+will be an advantage to have a wireless USB network card.
+\begin{list2}
+\item The following are two recommended models:
+\item TP-link TL-WN722N hardware version 2.0 cheap
+\item Alfa AWUS036ACH 2.4GHz + 5GHz Dual-Band and high performing
+\item Often you need to compile drivers yourself, and research a bit
+\item Get an USB 3.0 1Gbit Ethernet too
+\end{list2}
+
+Getting an USB card allows you to use the regular one for the main OS, and insert the USB into the virtual machine
+
+\slide{Aftale om test af netværk}
+
+\vskip 1cm
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel
+  indtil 6 måneder
+straffes den, som uberettiget skaffer sig adgang til en andens
+oplysninger eller programmer, der er bestemt til at bruges i et anlæg
+til elektronisk databehandling.}
+
+Hacking kan betyde:
+\begin{list2}
+\item At man skal betale erstatning til personer eller virksomheder
+\item At man får konfiskeret sit udstyr af politiet
+\item At man, hvis man er over 15 år og bliver dømt for hacking, kan
+  få en bøde - eller fængselsstraf i alvorlige tilfælde
+\item At man, hvis man er over 15 år og bliver dømt for hacking, får
+en plettet straffeattest. Det kan give problemer, hvis man skal finde
+et job eller hvis man skal rejse til visse lande, fx USA og
+Australien
+\item Frit efter: \link{http://www.stophacking.dk} lavet af Det
+  Kriminalpræventive Råd
+\item Frygten for terror har forstærket ovenstående - så lad være!
+\end{list2}
+
+
+
+
+\slide{Internet Today}
+
+\hlkimage{10cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers, roots in the academic world
+\item Protocols are old, some more than 20 years
+\item Very little is encrypted, mostly HTTPS
+\end{list1}
+
+\slide{Internet is Open Standards!}
+
+{\hlkbig \color{titlecolor}
+We reject kings, presidents, and voting.\\
+We believe in rough consensus and running code.\\
+-- The IETF credo Dave Clark, 1992.}
+
+\begin{list1}
+\item Request for comments - RFC - er en serie af dokumenter
+\item RFC, BCP, FYI, informational\\
+de første stammer tilbage fra 1969
+\item Ændres ikke, men får status Obsoleted når der udkommer en nyere
+  version af en standard
+\item Standards track:\\
+Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
+\item  Åbne standarder = åbenhed, ikke garanti for sikkerhed
+\end{list1}
+
+\slide{Hvad er Internet}
+
+\begin{list1}
+\item Kommunikation mellem mennesker!
+\item Baseret på TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 kalder det packets, ikke datagram)
+\item forbindelsesorienteret, \emph{connection-oriented}
+\item forbindelsesløs, \emph{connection-less}
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+\slide{Fælles adresserum}
+
+\vskip 2 cm
+\hlkimage{13cm}{IP-address.pdf}
+
+\begin{list1}
+\item Hvad kendetegner internet idag
+\item Der er et fælles adresserum baseret på 32-bit adresser, example 10.0.0.1
+\end{list1}
+
+\slide{CIDR Classless Inter-Domain Routing}
+
+\hlkimage{13cm}{CIDR-aggregation.pdf}
+
+\begin{list1}
+\item Fælles adresserum
+\item Best effort - kommer en pakke fra er det fint, hvis ikke må højere lag klare det
+\item Kræver ikke mange services fra underliggende teknologi \emph{dumt netværk}
+\item Idag er subnetmaske en sammenhængende række 1-bit der angiver størrelse på nettet
+\item 10.0.0.0/24 betyder netværket 10.0.0.0 med subnetmaske 255.255.255.0
+\end{list1}
+
+\slide{OSI og Internet modellerne}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{En switch}
+
+\hlkimage{12cm}{switch-1.pdf}
+
+\begin{list1}
+\item Ved at fortsætte udviklingen kunne man samle broer til en switch
+\item En switch idag kan sende og modtage på flere porte samtidig, og med full-duplex
+\item Bemærk performance begrænses af backplane i switchen
+\end{list1}
+
+
+\slide{MAC adresser}
+%\hlkimage{10cm}{apple-oui.png}
+
+\begin{alltt}
+00-03-93   (hex)        Apple Computer, Inc.
+000393     (base 16)    Apple Computer, Inc.
+                        20650 Valley Green Dr.
+                        Cupertino CA 95014
+                        UNITED STATES
+\end{alltt}
+\begin{list1}
+\item Netværksteknologierne benytter adresser på lag 2
+\item Typisk svarende til 48-bit MAC adresser som kendes fra Ethernet MAC-48/EUI-48
+\item Første halvdel af adresserne er Organizationally Unique Identifier (OUI)
+\item Ved hjælp af OUI kan man udlede hvilken producent der har produceret netkortet
+\item \link{http://standards.ieee.org/regauth/oui/index.shtml}
+\end{list1}
+
+
+
+\slide{IPv4 pakken - header - RFC-791}
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+
+\slide{Basale testværktøjer TCP - Telnet og OpenSSL}
+
+\begin{list1}
+\item Telnet blev brugt til login (cleartext) over TCP, brug Netcat til test nu
+\item Telnet kan bruges til at teste forbindelsen til mange ældre serverprotokoller som benytter ASCII kommandoer
+\begin{list2}
+\item \verb+telnet mail.kramse.dk 25+ laver en forbindelse til port 25/tcp
+\item \verb+telnet www.kramse.dk 80+ laver en forbindelse til port 80/tcp
+\end{list2}
+\item Til krypterede forbindelser anbefales det at teste med openssl
+\begin{list2}
+\item \verb+openssl s_client -host www.kramse.dk -port 443+\\
+laver en forbindelse til port 443/tcp med SSL
+\item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
+ laver en forbindelse til port 993/tcp med SSL
+\end{list2}
+\item Med OpenSSL i client-mode kan services tilgås med samme tekstkommandoer som med telnet
+\end{list1}
+
+\slide{Wireshark - grafisk pakkesniffer}
+
+\hlkimage{17cm}{images/wireshark-website.png}
+
+\centerline{\link{http://www.wireshark.org}}
+\centerline{både til Windows og UNIX}
+
+\slide{Brug af Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Man starter med Capture - Options}
+
+\slide{Brug af Wireshark}
+
+\hlkimage{10cm}{images/wireshark-sni-twitter.png}
+
+\centerline{Læg også mærke til filtermulighederne}
+
+\slide{Hardware IPv4 checksum offloading}
+
+\begin{list1}
+\item IPv4 checksum skal beregnes hvergang man modtager en pakke
+\item IPv4 checksum skal beregnes hvergang man sender en pakke
+\vskip 1cm
+\item Lad en ASIC gøre arbejdet!
+\item De fleste servernetkort tilbyder at foretage denne beregning på IPv4
+\item IPv6 benytter ikke header checksum, det er unødvendigt
+\end{list1}
+\vskip 1cm
+
+\centerline{\hlkbig NB: kan resultere i at værktøjer siger checksum er forkert!}
+
+
+
+
+\slide{Vigtigste protokoller}
+
+\begin{list1}
+\item ARP Address Resolution Protocol
+\item IP og ICMP Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list1}
+\vskip 1cm
+\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{16cm}{udp-1.pdf}
+\begin{list1}
+\item Forbindelsesløs RFC-768, \emph{connection-less}
+\end{list1}
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{14cm}{tcp-1.pdf}
+
+\begin{list1}
+\item Forbindelsesorienteret RFC-791 September 1981, \emph{connection-oriented}
+\item Enten overføres data eller man får fejlmeddelelse
+\end{list1}
+
+\slide{TCP three way handshake}
+
+\hlkimage{6cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item Tidligere loggede systemer kun når der var etableret en fuld TCP
+  forbindelse\\
+- dette kan/kunne udnyttes til \emph{stealth}-scans
+\end{list2}
+
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA vedligeholder en liste over magiske konstanter i IP
+\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
+\item En liste af interesse er port numre, hvor et par eksempler er:
+\begin{list2}
+\item Port 25 SMTP Simple Mail Transfer Protocol
+\item Port 53 DNS Domain Name System
+\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
+\item Port 443 HTTP over TLS/SSL
+\end{list2}
+\item Se flere på \link{http://www.iana.org}
+\end{list1}
+
+
+\slide{Challenges in network security}
+
+\hlkimage{15cm}{dragon-drawing-6.jpg}
+
+\vskip 2cm
+\centerline{\LARGE Internet here be dragons}
+
+\slide{Security problems in the TCP/IP Suite}
+
+\begin{quote}
+The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
+lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
+\end{quote}
+
+\begin{list1}
+\item Problems described in the original:
+\begin{list2}
+\item sequence number spoofing
+\item routing attacks,
+\item source address spoofing
+\item authentication attacks
+\end{list2}
+\end{list1}
+
+\vskip 1cm
+\centerline{\Large Should have been fixed by now!}
+
+\slide{TCP sequence number prediction}
+
+\vskip 5mm
+\begin{quote}
+TCP SEQUENCE NUMBER PREDICTION
+One of the more fascinating security holes was first described by Morris [7] . Briefly, he used TCP
+sequence number prediction to construct a TCP packet sequence without ever receiving any responses
+from the server. This allowed him to spoof a trusted host on a local network.
+\end{quote}
+
+\begin{list1}
+\item tidligere baserede man login/adgange på source IP adresser, address based authentication
+\item Er ikke en pålidelig autentifikationsmekanisme
+\item Mest kendt er nok Shimomura der blev hacket på den måde, \\
+måske af Kevin D Mitnick eller en kompagnon
+\item I praksis vil det være svært at udføre på moderne operativsystemer
+\item Se evt. \link{http://www.takedown.com/} (filmen er ikke så god ;-) )
+\item Det er naturligvis fint med filtre så man kun kan tilgå services FRA bestemte IP
+\end{list1}
+
+\slide{Routing attacks}
+
+\begin{list1}
+\item Problems described in the original from 1989:
+\begin{list2}
+\item IP Source routing attacks - angiv en rute for pakkerne\\
+Knapt så brugbar idag
+\item Routing Information Protocol Attacks\\
+The Routing Information Protocol [15] (RIP) - denne bruges ikke mere, outdated
+\item BGPv4 som bruges idag har kæmpe problemer, kludetæppe af kludges
+\end{list2}
+\item Check other low level attacks from \link{https://github.com/tomac/yersinia}
+\end{list1}
+
+\slide{Solutions to TCP/IP security problems}
+
+\begin{list1}
+\item Solutions:
+\begin{list2}
+\item Use RANDOM TCP sequence numbers, Win/Mac/Linux - DO,but IoT?
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item Routers and routing protocols must be more skeptical\\
+Routing filtre everywhere, auth på OSPF/BGP etc.
+\end{list2}
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\end{list1}
+
+\slide{DNS problems}
+
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, see DNS flag days\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\item Use DNSSEC, DANE etc. Presentation for another day!
+\end{list2}
+\end{list1}
+
+\slide{SNMP problems}
+
+\begin{quote}
+5.5 Simple Network Management Protocol
+The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network
+management. Clearly, access to such a resource must be heavily protected. The RFC states this, but
+also allows for a null authentication service; this is a bad idea. Even a ‘‘read-only’’ mode is dangerous;
+it may expose the target host to netstat-type attacks if the particular Management Information Base
+(MIB) [38] used includes sequence numbers. (T
+\end{quote}
+
+True, and we will talk more about SNMP later in this course.
+
+\slide{local networks}
+
+\begin{quote}
+6.1 Vulnerability of the Local Network
+Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and
+host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise
+to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel,
+unless authentication servers are used.
+If the local network uses the Address Resolution Protocol (ARP) [42] more subtle forms of host-spoofing
+are possible. In particular, it becomes trivial to intercept, modify, and forward packets, rather than just
+taking over the host’s role or simply spying on all traffic.
+\end{quote}
+
+Today we can send VXLAN spoofed packets across the internet layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...
+
+A Look Back at “Security Problems in the TCP/IP Protocol Suite”
+about 1989 + 15 years = 2004
+
+
+
+
+
+\slide{Confidentiality Integrity Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data holdes hemmelige
+\item Integrity - data ændres ikke uautoriseret
+\item Availability - data og systemet er tilgængelige når de skal bruges
+\end{list1}
+
+
+
+
+\slide{The basic tools for countering threats}
+
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Wireshark is advanced, try right-clicking different places
+\item Name resolution includes low level MAC addresses, and IP - names
+\item More than 1000 dissectors, but beware some have security issues!
+\end{list2}
+
+\begin{list2}
+\item TShark and Tcpdump, I often use: \verb+tcpdump –nei eth0+\\
+\verb+tshark -z expert -r download-slow.pcapng+
+
+\item Remote packet dumps, \verb+tcpdump –i eth0 –w packets.pcap+
+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+\centerline{\Large Great network security comes from knowing networks!}
+
+
+
+\slide{Portscan using Zenmap GUI}
+
+\hlkimage{12cm}{nmap-zenmap.png}
+
+\centerline{Zenmap is included in the Nmap binary RPM package \link{https://nmap.org}}
+
+
+\slide{All attacks have signatures, some more noisy than others}
+
+
+\hlkimage{14cm}{ppa-passive-fingerprinting.png}
+
+\begin{list1}
+\item Systems can also be fingerprinted on various levels
+\item Discover, filter, harden, reduce attack surfaces
+\item Know your network!
+\end{list1}
+
+
+
+\slide{FTP File Transfer Protocol}
+
+\begin{list1}
+\item File Transfer Protocol - filoverførsler
+\item Bruges især til:
+  \begin{list2}
+    \item FTP - drivere, dokumenter, rettelser - Windows Update? er
+    enten HTTP eller FTP
+  \end{list2}
+\item FTP sender i klartekst\\
+{\bfseries USER brugernavn} og \\
+{\bfseries PASS hemmeligt-kodeord}
+\item Nogle varianter tillader kryptering, men brug istedet SCP/SFTP over Secure Shell protokollen
+\end{list1}
+
+
+
+\slide{Person in the middle attacks}
+
+\begin{list1}
+\item ARP spoofing, ICMP redirects, the classics
+\item Used to be called Man in The Middle MiTM
+\begin{list2}
+\item ICMP redirect
+\item ARP spoofing
+\item Wireless listening and spoofing higher levels like  airpwn-ng \link{https://github.com/ICSec/airpwn-ng}
+\end{list2}
+\item Usually aimed at unencrypted protocols
+
+\end{list1}
+
+
+\slide{Hvordan virker ARP spoofing?}
+
+\hlkimage{10cm}{images/arp-spoof.pdf}
+
+\begin{list1}
+\item Hackeren sender forfalskede ARP pakker til de to parter
+\item De sender derefter pakkerne ud på Ethernet med hackerens MAC
+  adresse som modtager - som får alle pakkerne
+\end{list1}
+
+
+
+\slide{Network Security Threats}
+
+\begin{list1}
+\item Low level and Network Layer Attacks
+\begin{list2}
+\item "Yersinia is a network tool designed to take advantage of some weakeness in different network protocols. It pretends to be a solid framework for analyzing and testing the deployed networks and systems."\\
+evil l2 tools - STP, CDP, DTP, DHCP, HSRP, IEEE 802.1Q, IEEE 802.1X, ISL, VTP\\
+\link{https://github.com/tomac/yersinia}
+\item IP based creating strange fragments, overlapping, missing, SMALLL with fragroute/fragrouter
+\item LAND - same destination and source address
+\item THC-IPV6 - attacking the IPV6 protocol suite
+\end{list2}
+\item Note: Evil repeats itself, like doing ARP poisoning across MPLS or VXLAN
+\end{list1}
+
+\vskip 1cm
+\centerline{\Large Attackers are very creative!}
+
+\slide{Forsvar mod ARP spoofing}
+
+\begin{list1}
+\item Hvad kan man gøre?
+\item låse MAC adresser til porte på switche
+\item låse MAC adresser til bestemte IP adresser
+\item Efterfølgende administration!
+\vskip 1 cm
+\item Adskilte netværk - brug IEEE 802.1q VLANs
+\item {\bfseries arpwatch er et godt bud} - overvåger ARP
+\item bruge protokoller som ikke er sårbare overfor opsamling
+\end{list1}
+
+
+
+
+\slide{Introduce the encryption protocols in use in networks}
+
+\hlkimage{16cm}{ crypto-rot13.pdf}
+
+
+
+\slide{Cryptography}
+
+
+\begin{list1}
+\item Cryptography or cryptology is the practice and study of techniques for secure communication
+\item Modern cryptography is heavily based on mathematical theory and computer science practice; cryptographic algorithms are designed around computational hardness assumptions, making such algorithms hard to break in practice by any adversary
+\item Symmetric-key cryptography refers to encryption methods in which both the sender and receiver share the same key, to ensure confidentiality, example algorithm AES
+\item Public-key cryptography (like RSA) uses two related keys, a key pair of a public key and a private key. This allows for easier key exchanges, and can provide confidentiality, and methods for signatures and other services
+\end{list1}
+
+Source: \link{https://en.wikipedia.org/wiki/Cryptography}
+
+
+\slide{Serious Cryptography}
+
+\hlkimage{5cm}{serious_crypto_cover-front-final.png}
+
+
+\emph{Serious Cryptography
+A Practical Introduction to Modern Encryption}
+by Jean-Philippe Aumasson
+November 2017, 312 pp.
+ISBN-13:
+978-1-59327-826-7
+\link{https://nostarch.com/seriouscrypto}
+
+
+\slide{Kryptografiske principper}
+
+\begin{list1}
+\item Algoritmerne er kendte
+\item Nøglerne er hemmelige
+\item Nøgler har en vis levetid - de skal skiftes ofte
+\item Et successfuldt angreb på en krypto-algoritme er enhver genvej
+  som kræver mindre arbejde end en gennemgang af alle nøglerne
+\item Nye algoritmer, programmer, protokoller m.v. skal gennemgås nøje!
+\item Se evt. Snake Oil Warning Signs:
+Encryption Software to Avoid\\
+\link{http://www.interhack.net/people/cmcurtin/snake-oil-faq.html}
+\end{list1}
+
+
+
+
+
+\slide{DES, Triple DES og AES}
+
+\hlkimage{15cm}{images/AES_head.png}
+
+\begin{list1}
+\item DES kryptering - gammel og pensioneret!
+\item Der blev i 2001 vedtaget en ny standard algoritme Advanced Encryption
+  Standard (AES) som afløser Data Encryption Standard (DES)
+\item Algoritmen hedder Rijndael og er udviklet
+af Joan Daemen og Vincent Rijmen.
+%\item \emph{Rijndael is available for free. You can use it for
+%whatever purposes  you want, irrespective of whether
+%it is accepted as AES or not.}
+\item Se også \link{https://en.wikipedia.org/wiki/Advanced_Encryption_Standard}
+\item Findes animationer (med fejl) \link{https://www.youtube.com/watch?v=mlzxpkdXP58}
+\end{list1}
+
+\slide{AES Advanced Encryption Standard}
+
+\hlkimage{10cm}{aes-overview.png}
+
+\begin{list2}
+\item The official Rijndael web site displays this image to promote understanding of the Rijndael round transformation [8].
+\item Key sizes 128,192,256 bit typical
+\item Some extensions in cryptosystems exist: XTS-AES-256 really is 2 instances of AES-128 and 384 is two instances of AES-192 and 512 is two instances of AES-256
+\item \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+
+\slide{RSA}
+
+\begin{quote}
+RSA (Rivest–Shamir–Adleman) is one of the first public-key cryptosystems and is widely used for secure data transmission. ...
+In RSA, this asymmetry is based on the practical difficulty of the factorization of the product of two large prime numbers, the "factoring problem". The acronym RSA is made of the initial letters of the surnames of Ron Rivest, Adi Shamir, and Leonard Adleman, who first publicly described the algorithm in 1978.
+\end{quote}
+
+\begin{list2}
+\item Key sizes	1,024 to 4,096 bit typical
+\item  Quote from: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+
+
+\slide{Elliptic Curve }
+
+\begin{quote}
+Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
+\end{quote}
+
+\begin{list2}
+\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\end{list2}
+
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{12cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{12cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter\\ - som så verificeres med den offentlige nøgle
+\item NB: Kryptering alene sikrer ikke anonymitet
+\end{list1}
+
+
+
+\slide{Hashing - MD5 message digest funktion}
+
+\hlkimage{16cm}{images/message-digest-1.pdf}
+
+\begin{list1}
+\item HASH algoritmer giver en næsten unik værdi baseret på input
+
+\item værdien ændres radikalt selv ved små ændringer i input
+\item MD5 er blandt andet beskrevet i RFC-1321: The MD5 Message-Digest
+  Algorithm
+\item Algoritmen MD5 er baseret på MD4, begge udviklet af Ronald
+  L. Rivest
+\item Både MD5 og SHA-1 er idag gamle og skal generelt ikke bruges mere
+\item Idag benyttes eksempelvis \link{https://en.wikipedia.org/wiki/PBKDF2}
+\end{list1}
+
+
+
+\slide{Encryption on the web -- Diffie Helman exchange}
+
+{~}
+\hlkrightpic{7cm}{-15mm}{800px-Diffie-Hellman_Key_Exchange.png}
+
+\begin{quote}
+Diffie–Hellman key exchange (DH)[nb 1] is a method of securely exchanging cryptographic keys over a public channel and was one of the first public-key protocols as originally conceptualized by Ralph Merkle and named after Whitfield Diffie and Martin Hellman.[1][2] DH is one of the earliest practical examples of public key exchange implemented within the field of cryptography.
+... The scheme was first published by Whitfield Diffie and Martin Hellman in 1976
+\end{quote}
+
+\begin{list2}
+\item Quote from: {\small \link{https://en.wikipedia.org/wiki/Diffie-Hellman_key_exchange}}
+\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\end{list2}
+
+
+\slide{Transport Layer Security (TLS)}
+
+\hlkimage{5cm}{crypto-class.png}
+
+\begin{list1}
+\item Oprindeligt udviklet af Netscape Communications Inc.
+\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
+derfor også for Transport Layer Security TLS
+TLS er baseret på SSL Version 3.0
+\item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
+\item RFC-3207 SMTP STARTTLS
+\item Det er svært!
+\item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
+\end{list1}
+
+
+
+
+\slide{SSL/TLS udgaver af protokoller}
+\hlkimage{12cm}{imap-ssl.png}
+
+\begin{list1}
+\item Mange protokoller findes i udgaver hvor der benyttes SSL
+\item HTTPS vs HTTP
+\item IMAPS, POP3S, osv.
+\item Bemærk: nogle protokoller benytter to porte IMAP 143/tcp vs IMAPS 993/tcp
+\item Andre benytter den samme port men en kommando som starter:
+\item SMTP STARTTLS RFC-3207
+\end{list1}
+
+
+\slide{Email er usikkert}
+
+\hlkimage{14cm}{email-uden-kryptering.png}
+
+\centerline{Email uden kryptering - er som et postkort}
+
+
+
+
+\slide{DNSSEC get started now}
+
+\hlkimage{12cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+
+\slide{DNSSEC and DANE}
+
+\begin{quote}
+"Objective:
+
+Specify mechanisms and techniques that allow Internet applications to
+establish cryptographically secured communications by using information
+distributed through DNSSEC for discovering and authenticating public
+keys which are associated with a service located at a domain name."
+\end{quote}
+
+\begin{list1}
+\item DNS-based Authentication of Named Entities (dane)
+\end{list1}
+
+\slide{Email security \the\year\ -- Goals}
+
+\begin{list2}
+\item SPF Sender Policy Framework\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+\item DKIM DomainKeys Identified Mail\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}
+\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
+\item Brug allesammen, check efter ændringer!
+\end{list2}
+
+
+\slide{SMTP TLS}
+
+\begin{quote}
+The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group
+ has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade he
+ader.
+\end{quote}
+
+\begin{list1}
+\item SMTP was extended with support for Transport Layer Security TLS
+\item Also called {\bf Opportunistic TLS}, where the quote is also from:\\ \link{https://en.wikipedia.org/wiki/Opportunistic_TLS}
+\item Now we have MTA Strict Transport Security (MTA-STS) RFC 8461\\
+so we can announce that we only accept encrypted email!
+\end{list1}
+
+
+
+\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
+
+\begin{list2}
+\item Protocols exist that encrypt DNS data
+\item Today we have competing standards:
+\item
+\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC7858 MAY 2016\\
+\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
+
+\item \emph{DNS Queries over HTTPS (DoH)} RFC8484
+
+\item How to cofigure DoT\\ \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
+\end{list2}
+
+
+
+
+\slide{sslscan check your web and mail server settings}
+
+\begin{alltt}\small
+root@kali:~# sslscan --ssl2 web.kramse.dk
+Version: 1.10.5-static OpenSSL 1.0.2e-dev xx XXX xxxx
+
+Testing SSL server web.kramse.dk on port 443
+...
+  SSL Certificate:
+Signature Algorithm: sha256WithRSAEncryption
+RSA Key Strength:    2048
+Subject:  *.kramse.dk
+Altnames: DNS:*.kramse.dk, DNS:kramse.dk
+Issuer:   AlphaSSL CA - SHA256 - G2
+\end{alltt}
+
+Source:
+Originally sslscan from http://www.titania.co.uk
+ but use the version on Kali Linux
+
+SSLscan can check your own sites by IP plus SMTP and some other services!
+
+\vskip 1cm
+PS From now on its TLS! Not SSL anymore, any SSLv2, SSLv3 is old and vulnerable
+
+\slide{Virtual Private Network (VPN)}
+
+
+VPN are everywhere, but could be better!
+
+\begin{quote}
+\link{https://en.wikipedia.org/wiki/Virtual_private_network}\\
+\link{https://kb.juniper.net/InfoCenter/index?page=content&id=KB11104}\\
+IPSec VPN between JUNOS and Cisco IOS
+
+Skim:\\
+\link{https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching}\\
+\link{https://en.wikipedia.org/wiki/OpenVPN}\\
+\link{https://en.wikipedia.org/wiki/IPsec}\\
+\link{https://en.wikipedia.org/wiki/DirectAccess}\\
+\link{https://www.wireguard.com/papers/wireguard.pdf}
+\end{quote}
+
+Example references.
+
+\slide{Fokus \the\year: VPN alle steder}
+
+\hlkimage{12cm}{ks-kyung-784757-unsplash.jpg}
+
+\begin{list2}
+\item VPN er relevant for alle der har data af værdi
+\item Sikrer data der flyttes
+\item Virtual Private Network dækker over klienter der kobler op, og site-2-site
+\end{list2}
+
+\slide{Your Privacy }
+
+\hlkimage{18cm}{images/internet-browsing.pdf}
+
+\begin{list2}
+\item Your data travels far
+\item Often crossing borders, virtually and literally
+\end{list2}
+
+\slide{Data found in Network data }
+
+\begin{list1}
+\item Lets take an example, DNS
+\item Domain Name System DNS breadcrumbs
+\begin{list2}
+\item Your company domain, mailservers, vpn servers
+\item Applications you use, checking for updates, sending back data
+\item Web sites you visit
+\end{list2}
+\vskip 1cm
+\item Advice show your users,ask them to participate in a experiment
+\end{list1}
+
+
+\vskip 2 cm
+\centerline{\bf\Large Maybe use VPN more - or always!}
+
+\slide{VPN}
+
+\hlkimage{9cm}{openvpn-gui-systray.png}
+
+\begin{list1}
+\item Virtual Private Networks are useful - or even required when travelling
+\item VPN \link{http://en.wikipedia.org/wiki/Virtual_private_network}
+\item SSL/TLS VPN - Multiple incompatible vendors: OpenVPN, Cisco, Juniper, F5 Big IP
+\item IETF IPsec does work cross-vendors - sometimes, and is also increasingly becoming blocked or unusable due to NAT :-(
+\item Recommended starting point OpenVPN - free and open, clients for "anything"
+\end{list1}
+
+\slide{VPN without encryption}
+
+\begin{quote}
+Multiprotocol Label Switching (MPLS) is a routing technique in telecommunications networks that directs data from one node to the next based on short path labels rather than long network addresses, thus avoiding complex lookups in a routing table and speeding traffic flows.[
+
+...
+MPLS works by prefixing packets with an MPLS header, containing one or more labels.
+\end{quote}
+
+Source:\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching}}
+
+\begin{list2}
+\item The term VPN is also used in cases without encryption
+\item MPLS allows multiple customers to use the same IP prefixes, like 10/8
+\item MPLS is used in many provider networks
+\item Another example is Generic Routing Encapsulation (GRE), which is often then protected with IPsec
+\item People today also uses Virtual Extensible LAN (VXLAN) for cloud computing
+\end{list2}
+
+
+
+\slide{Linux Wireguard VPN}
+
+\begin{quote}\small
+WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
+\end{quote}
+
+Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
+
+\begin{list2}
+\item Going to be interesting!
+\item single round trip key exchange, based on NoiseIK
+\item Short pre-shared static keys—Curve25519
+\item strong perfect forward secrecy
+\item Transport
+speed is accomplished using ChaCha20Poly1305 authenticated-encryption
+\item encapsulation of packets in UDP
+\item WireGuard can be
+simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
+\end{list2}
+
+
+
+\slide{IPsec}
+
+\begin{itemize}
+\item Sikkerhed i netværket
+\item RFC-2401 Security Architecture for the Internet Protocol
+\item RFC-2402 IP Authentication Header (AH)
+\item RFC-2406 IP Encapsulating Security Payload (ESP)
+\item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
+\item ... IP Security (IPsec) and Internet Key Exchange (IKE) Document Roadmap\\
+\link{https://tools.ietf.org/html/rfc6071}
+\item Både til IPv4 og IPv6
+\item {\bfseries MANDATORY} i IPv6! - et krav hvis man implementerer
+  fuld IPv6 support
+\item Der findes IKEscan til at scanne efter IKE
+  porte/implementationer\\
+\link{http://www.nta-monitor.com/ike-scan/index.htm}
+\end{itemize}
+
+
+
+\slide{IPsec er ikke simpelt!}
+
+\hlkimage{12cm}{images/ipsec-hsc.png}
+\centerline{Kilde: \link{http://www.hsc.fr/presentations/ike/}}
+
+
+\slide{RFC-2402 IP Authentication Header AH}
+
+\begin{alltt}
+\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | Next Header   |  Payload Len  |          RESERVED             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 Security Parameters Index (SPI)               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Sequence Number Field                      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                Authentication Data (variable)                 |
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\slide{RFC-2402 IP Authentication Header AH}
+
+Indpakning - pakkerne før og efter Authentication Header:
+\begin{alltt}
+\small
+                BEFORE APPLYING AH
+            ----------------------------
+      IPv4  |orig IP hdr  |     |      |
+            |(any options)| TCP | Data |
+            ----------------------------
+
+                  AFTER APPLYING AH
+            ---------------------------------
+      IPv4  |orig IP hdr  |    |     |      |
+            |(any options)| AH | TCP | Data |
+            ---------------------------------
+            |<------- authenticated ------->|
+                 except for mutable fields
+\end{alltt}
+
+\slide{RFC-2406 IP Encapsulating Security Payload ESP}
+
+\begin{alltt}\small
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ----
+|               Security Parameters Index (SPI)                 | ^Int.
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |Cov-
+|                      Sequence Number                          | |ered
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | ----
+|                    Payload Data* (variable)                   | |   ^
+|                                                               | |Conf.
++               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |Cov-
+|               |     Padding (0-255 bytes)                     | |ered*
++-+-+-+-+-+-+-+-+               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |   |
+|                               |  Pad Length   | Next Header   | v   v
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ------
+|         Integrity Check Value-ICV   (variable)                |
+~                                                               ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\slide{RFC-2406 IP Encapsulating Security Payload ESP}
+Pakkerne før og efter:
+\begin{alltt}\small
+               BEFORE APPLYING ESP
+         ---------------------------------------
+   IPv6  |             | ext hdrs |     |      |
+         | orig IP hdr |if present| TCP | Data |
+         ---------------------------------------
+
+
+
+               AFTER APPLYING ESP
+         ---------------------------------------------------------
+   IPv6  | orig |hop-by-hop,dest*,|   |dest|   |    | ESP   | ESP|
+         |IP hdr|routing,fragment.|ESP|opt*|TCP|Data|Trailer|Auth|
+         ---------------------------------------------------------
+                                   |<---- encrypted ---->|
+                               |<---- authenticated ---->|
+\end{alltt}
+
+
+
+
+\slide{IPSec VPN between JUNOS and Cisco IOS}
+
+\begin{alltt}\small
+Topology
+  M10
+  R1      lo0 77.77.77.77
+ge-0/0/0
+   |
+   |
+ge-0/2/0
+  M5
+  R2                                         cisco3640  lo0 88.88.88.88
+fe-0/0/0  ===========IPSec==================    fa0/1
+   |                                              |
+   |                                              |
+   +----------- fe-0/0/0  M7i  fe-0/0/1 ----------+
+                        Sydney
+\end{alltt}
+
+Source:
+\link{https://kb.juniper.net/InfoCenter/index?page=content&id=KB11104}
+
+\slide{Cisco IOS crypto setup}
+
+\begin{alltt}\small
+cisco3640#sh run
+crypto isakmp policy 10
+ authentication pre-share
+ group 2
+ lifetime 3600
+crypto isakmp key key123 address 11.0.0.1
+!
+!
+crypto ipsec transform-set ts esp-3des esp-sha-hmac
+crypto ipsec transform-set ts-man esp-des esp-md5-hmac
+!
+crypto map dyn 10 ipsec-isakmp
+ set peer 11.0.0.1
+ set transform-set ts
+ match address 120
+\end{alltt}
+
+\vskip 1cm
+\centerline{\bf Not recommended settings! See later! People still use these examples!}
+
+
+\slide{Layer 2 Tunneling Protocol L2TP}
+
+Description from
+\link{https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol}
+\begin{quote}\small
+The entire L2TP packet, including payload and L2TP header, is sent within a User Datagram Protocol (UDP) datagram. A virtue of transmission over UDP (rather than TCP; c.f. SSTP) is that it avoids the "TCP meltdown problem".[3][4] It is common to carry PPP sessions within an L2TP tunnel. L2TP does not provide confidentiality or strong authentication by itself. IPsec is often used to secure L2TP packets by providing confidentiality, authentication and integrity. The combination of these two protocols is generally known as L2TP/IPsec (discussed below).
+\end{quote}
+
+
+Often used when crossing NAT, which everyone does ...
+
+Configuration example for Cisco:\\
+{\small \link{https://www.cisco.com/c/en/us/support/docs/security-vpn/ipsec-negotiation-ike-protocols/14122-24.html}}\\
+OpenBSD L2TP IPsec\\
+{\small\link{https://www.exoscale.com/syslog/building-an-ipsec-gateway-with-openbsd/}}
+\slide{IPsec IKE-SCAN}
+
+Scan IPs for VPN endpoints with ike-scan:
+\begin{alltt}\small
+root@kali:~# ike-scan 91.102.91.30
+Starting ike-scan 1.9 with 1 hosts
+(http://www.nta-monitor.com/tools/ike-scan/)
+91.102.91.30	Notify message 14 (NO-PROPOSAL-CHOSEN)
+HDR=(CKY-R=f0d6043badb2b7bc, msgid=f97a7508)
+
+Ending ike-scan 1.9: 1 hosts scanned in 1.238 seconds (0.81 hosts/sec).
+0 returned handshake; 1 returned notify
+\end{alltt}
+
+Source:\\
+{\small\link{http://www.nta-monitor.com/tools-resources/security-tools/ike-scan}}
+
+crack IKE psk?\\
+{\small
+\link{http://ikecrack.sourceforge.net/} \\
+\link{https://www.trustwave.com/Resources/SpiderLabs-Blog/Cracking-IKE-Mission-Improbable-(Part-1)/}}
+
+
+\slide{Forward Secrecy}
+
+\begin{quote}
+In cryptography, forward secrecy (FS), also known as perfect forward secrecy (PFS), is a feature of specific key agreement protocols that gives assurances that session keys will not be compromised even if the private key of the server is compromised.[1] Forward secrecy protects past sessions against future compromises of secret keys or passwords.[2] By generating a unique session key for every session a user initiates, the compromise of a single session key will not affect any data other than that exchanged in the specific session protected by that particular key.
+\end{quote}
+
+Source: \link{https://en.wikipedia.org/wiki/Forward_secrecy}
+
+
+
+\slide{Anbefalinger til VPN}
+
+\begin{quote}\small
+  Use the following guidelines when configuring Internet Key Exchange (IKE) in VPN technologies:\\
+* Avoid IKE Groups 1, 2, and 5.\\
+* Use IKE Group 15 or 16 and employ 3072-bit and 4096-bit DH, respectively.\\
+* When possible, use IKE Group 19 or 20. They are the 256-bit and \\
+384-bit ECDH groups, respectively.\\
+* Use AES for encryption.
+\end{quote}
+Paper:
+{\small \link{https://www.cisco.com/c/en/us/about/security-center/next-generation-cryptography.html}}
+
+\begin{list2}
+\item Certifikater/nøgler - ligesom TLS lange og rulles indimellem
+\item Algoritmer DES/3DES bye bye, husk både encryption og auth algoritmer
+\item DH-Group - +15 tak
+\item Check både client VPN og site-2-site
+\item Skift til IKEv2
+\item Selv disse råd er måske ikke tilstrækkelige nu!
+\end{list2}
+
+\slide{Wi-Fi Security}
+
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+
+\item Wifi standarder IEEE 802.11
+\item Authentication Protocols RADIUS, PAP, CHAP, EAP
+\item Port Based Network Access Control IEEE 802.1x
+\item Security problems in wireless protocols
+\item Security problems in wireless encryption
+\item Hacking wireless networks
+\end{list2}
+\item Exercises you can do later:
+\begin{list2}
+\item Wifi scanning, aka wardriving
+\item WPA hacking with a short password\\
+See for examples: \link{http://aircrack-ng.org/doku.php?id=cracking_wpa}
+\end{list2}
+\end{list1}
+
+
+
+\slide{Wifi standarder IEEE 802.11}
+
+\begin{list1}
+\item 802.11 er arbejdsgruppen under IEEE
+\item De mest kendte standarder idag indenfor trådløse teknologier:
+\begin{list2}
+\item 802.11b 11Mbps versionen
+\item 802.11g 54Mbps versionen
+\item 802.11n endnu hurtigere
+\item 802.11i Security enhancements Robust Security Network RSN
+\end{list2}
+\item New names soon:\\
+Wi-Fi 6 to identify devices that support 802.11ax technology\\
+Wi-Fi 5 to identify devices that support 802.11ac technology\\
+Wi-Fi 4 to identify devices that support 802.11n technology
+\end{list1}
+
+Kilde: \link{http://grouper.ieee.org/groups/802/11/index.html}
+
+
+
+\slide{Værktøjer}
+
+\hlkimage{15cm}{kali-linux.png}
+
+
+
+\begin{list2}
+\item Wirelessscanner - Kali og Airodump
+\item Wireless Injection - aireplay-ng
+\item Aircrack-ng pakken generelt
+\item Kali \link{http://www.kali.org/}
+\end{list2}
+
+
+\slide{Wireless networking sikkerhed i 802.11}
+
+\hlkimage{8cm}{images/wlan-accesspoint-1.pdf}
+
+\begin{list1}
+\item Sikkerheden er baseret på nogle få forudsætninger
+  \begin{list2}
+  \item SSID - netnavnet
+  \item WEP \emph{kryptering} - Wired Equivalent Privacy
+  \item WPA kryptering - Wi-Fi Protected Access, SSID indgår i denne!
+  \item måske MAC filtrering, kun bestemte kort må tilgå accesspoint\\
+  Everyone can see the MAC in the air, so no security here
+  \end{list2}
+\end{list1}
+
+
+\slide{IEEE 802.11 Security fast forward }
+
+\begin{quote}
+{\bf In 2001}, a group from the University of California, Berkeley presented a paper describing weaknesses in the 802.11 Wired Equivalent Privacy (WEP) security mechanism defined in the original standard; they were followed by {\bf Fluhrer, Mantin, and Shamir's} paper titled "Weaknesses in the Key Scheduling Algorithm of RC4". Not long after, Adam Stubblefield and AT\&T publicly announced the first {\bf verification of the attack}. In the attack, they were able to intercept transmissions and gain unauthorized access to wireless networks.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
+
+\slide{IEEE 802.11 Security fast forward }
+
+\begin{quote}
+The IEEE set up a dedicated task group to create a replacement security solution, {\bf 802.11i} (previously this work was handled as part of a broader 802.11e effort to enhance the MAC layer). The Wi-Fi Alliance announced an {\bf interim specification called Wi-Fi Protected Access (WPA)} based on a subset of the then current IEEE 802.11i draft. These started to appear in products in {\bf mid-2003}. {\bf IEEE 802.11i (also known as WPA2)} itself was ratified in {\bf June 2004}, and uses government strength encryption in the {\bf Advanced Encryption Standard AES,} instead of RC4, which was used in WEP. The modern recommended encryption for the home/consumer space is {\bf WPA2 (AES Pre-Shared Key) and for the Enterprise space is WPA2 along with a RADIUS authentication server} (or another type of authentication server) and a strong authentication method such as EAP-TLS.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
+
+\slide{IEEE 802.11 Security fast forward }
+
+\begin{quote}
+In January 2005, the IEEE set up yet another task group "w" to protect management and broadcast frames, which previously were sent unsecured. Its standard was published in 2009.[24]
+
+In {\bf December 2011}, a security flaw was revealed that affects wireless routers with the {\bf optional Wi-Fi Protected Setup (WPS)} feature. While WPS is not a part of 802.11, {\bf the flaw allows a remote attacker to recover the WPS PIN and, with it, the router's 802.11i password in a few hours}.
+\end{quote}
+
+\vskip 2cm
+\centerline{WPS WTF?! - det er som om folk bevidst saboterer wireless sikkerhed!}
+\vskip 2cm
+
+Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
+
+
+
+
+
+\slide{airodump opsamling}
+
+
+\begin{alltt}
+\hlktiny
+   BSSID              CH  MB  ENC  PWR  Packets   LAN IP / # IVs   ESSID
+
+   00:03:93:ED:DD:8D   6  11       209   {\bf 801963                  540180}   wanlan
+\end{alltt}
+
+\begin{list1}
+\item Når airodump kører opsamles pakkerne
+\item Lås airodump fast til een kanal, -c eller --channel
+\end{list1}
+
+Startes med airmon og kan skrive til capture filer:
+
+\begin{alltt}
+airmon-ng start wlan0
+airodump-ng --channel 6 --write testfil wlan0mon
+\end{alltt}
+
+
+\slide{WPA cracking med aircrack - start}
+
+\begin{alltt}
+\small
+slax ~ # aircrack-ng -w dict wlan-test.cap
+Opening wlan-test.cap
+Read 1082 packets.
+
+#  BSSID              ESSID           Encryption
+
+1  00:11:24:0C:DF:97  wlan            WPA (1 handshake)
+2  00:13:5F:26:68:D0  Noea            No data - WEP or WPA
+3  00:13:5F:26:64:80  Noea            No data - WEP or WPA
+4  00:00:00:00:00:00                  Unknown
+
+Index number of target network ? {\bf 1}
+\end{alltt}
+
+\slide{WPA cracking med aircrack - start}
+
+\begin{alltt}
+\small
+          [00:00:00] 0 keys tested (0.00 k/s)
+
+                    KEY FOUND! [ Henrik42 ]
+
+Master Key     : 8E 61 AB A2 C5 25 4D 3F 4B 33 E6 AD 2D 55 6F 76
+                 6E 88 AC DA EF A3 DE 30 AF D8 99 DB F5 8F 4D BD
+Transcient Key : C5 BB 27 DE EA 34 8F E4 81 E7 AA 52 C7 B4 F4 56
+                 F2 FC 30 B4 66 99 26 35 08 52 98 26 AE 49 5E D7
+                 9F 28 98 AF 02 CA 29 8A 53 11 EB 24 0C B0 1A 0D
+                 64 75 72 BF 8D AA 17 8B 9D 94 A9 31 DC FB 0C ED
+
+EAPOL HMAC     : 27 4E 6D 90 55 8F 0C EB E1 AE C8 93 E6 AC A5 1F
+
+\end{alltt}
+
+\vskip 1 cm
+
+\centerline{Min Thinkpad X31 med 1.6GHz Pentium M knækker ca. 150 Keys/sekund}
+
+
+\slide{Tired of WoW?}
+
+\hlkimage{17cm}{pyritperfaa3.png}
+
+Kilde: \link{http://code.google.com/p/pyrit/}
+
+
+
+\slide{Encrypt where?}
+
+\begin{quote}
+It is not clear that the link layer is the right one for security. In a coffeeshop, the security association is terminated by the store: is there any reason you should trust the shopkeeper? Perhaps link-layer security makes some sense in a home, where you control both the access point and the wireless machines. However, we prefer end-to-end security at the network layer or in the
+applications.
+\end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin
+
+
+
+\slide{Individual Authentication}
+
+Erstatning for eet kodeord WEP -- WPA
+
+\begin{list1}
+\item Det anbefales at bruge:
+%\begin{list2}
+\item Kendte VPN teknologier eller WPA
+\item baseret på troværdige algoritmer
+\item implementeret i professionelt udstyr
+\item fra troværdige leverandører
+\item udstyr der vedligeholdes og opdateres
+\item Der findes idag andre metoder til sikring af trådløse netværk\\
+IEEE 802.1x Port Based Network Access Control
+\item Lav flere VLANs!
+\end{list1}
+
+\slide{IEEE 802.1x  Port Based Network Access Control}
+
+\hlkimage{9cm}{osx-8021x.png}
+
+\begin{list2}
+\item Access points og switche tillader at man benytter IEEE 802.1x
+\item Denne protokol sikrer at man valideres før der gives adgang til porten
+\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
+\item Denne protokol indgår også i WPA Enterprise
+\item Typisk benyttes RADIUS og IEEE 802.1x integrerer således mod både LDAP og Active Directory
+\item MAC filtrering kan spoofes, hvor IEEE 802.1x kræver det rigtige kodeord
+\end{list2}
+
+
+
+\slide{Authentication Protocols RADIUS, PAP, CHAP, EAP}
+
+\begin{list2}
+\item Used for verifying credentials, typically username and password
+\item
+Extensible Authentication Protocol EAP\\
+\link{https://en.wikipedia.org/wiki/Extensible_Authentication_Protocol}
+ \item Challenge-Handshake Authentication Protocol\\
+\link{https://en.wikipedia.org/wiki/Challenge-Handshake_Authentication_Protocol}
+ \item Password Authentication Protocol\\
+\link{https://en.wikipedia.org/wiki/Password_Authentication_Protocol}
+\end{list2}
+
+
+\slide{Remote Authentication Dial-In User Service RADIUS}
+\begin{list1}
+\item RADIUS er en protokol til autentificering af brugere op mod en
+  fælles server
+\item Remote Authentication Dial In User Service (RADIUS)
+\item RADIUS er beskrevet i RFC-2865
+\item RADIUS kan være en fordel i større netværk med
+\begin{list2}
+\item dial-in
+\item administration af netværksudstyr
+\item trådløse netværk
+\item andre RADIUS kompatible applikationer
+\end{list2}
+\item \link{https://en.wikipedia.org/wiki/RADIUS}
+\end{list1}
+
+Hint: Jeg har publiceret en RADIUS konfiguration der giver WPA Enterprise - med vilkårligt brugernavn og kode!\\
+\link{https://github.com/kramse/conference-open-8021x}
+
+
+\slide{Infrastrukturændringer}
+
+\hlkimage{13cm}{images/wlan-accesspoint-2.pdf}
+
+\centerline{\hlkbig Sådan bør et access point logisk forbindes til netværket med VLAN}
+
+
+
+
+\slide{Network segmentation -- Firewalls}
+
+\begin{quote}
+\link{https://en.wikipedia.org/wiki/Firewall_(computing)}\\
+\link{http://www.wilyhacker.com/} Cheswick chapter 2 og 3 PDF
+\item Skim chapters from 1st edition:\\
+\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
+\end{quote}
+
+\begin{quote}
+The next time you are at your console, review some logs. You might think. . . “I don’t know what to look for". Start with what you know, understand, and don’t care about. Discard those. Everything else is of interest.\\
+Semper Vigilans,
+Mike Poor
+\end{quote}
+
+
+
+\slide{Firewalls Definition}
+
+\begin{quote}
+In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
+\end{quote} Source: Wikipedia \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+
+\begin{list1}
+
+\item Cheswick chapter 2 PDF
+\emph{A Security Review of Protocols:
+Lower Layers}\\
+\link{http://www.wilyhacker.com/}
+\begin{list2}
+\item Network layer, packet filters, application level, stateless, stateful
+\end{list2}
+\end{list1}
+
+Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+
+
+
+\slide{Generic IP Firewalls}
+
+\vskip 4 cm
+\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
+  traffik på Internet}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
+  traffik på Internet}
+
+\slide{Firewall historik}
+
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
+
+\begin{list1}
+\item Firewalls har været kendt siden starten af 90'erne
+\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
+\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
+William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
+Addison-Wesley, 2nd edition
+  %\item Idag findes mange, men findes der en god generel firewall bog?
+\end{list1}
+
+
+
+\slide{Firewallrollen idag}
+
+\begin{list1}
+\item Idag skal en firewall være med til at:
+\begin{list2}
+\item Forhindre angribere i at komme ind
+\item Forhindre angribere i at sende traffik ud
+\item Forhindre virus og orme i at sprede sig i netværk
+\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
+  strukturer,\\
+  intrusion detection systemer samt andre dele af infrastrukturen
+\end{list2}
+\item Det kræver overblik!
+\end{list1}
+
+
+
+\slide{Modern Firewalls}
+
+\begin{list1}
+\item Basalt set et netværksfilter
+\item Indeholder typisk:
+  \begin{list2}
+   \item Grafisk brugergrænseflade til konfiguration - er det en
+   fordel?
+\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
+  ind/ud, porte, protokol, ...
+\item både IPv4 og IPv6
+\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
+  at tilføje/åbne en usikker protokol?
+\item typisk NAT funktionalitet indbygget
+\item typisk mulighed for nogle serverfunktioner: kan agere
+  DHCP-server, DNS caching server og lignende
+  \end{list2}
+\item En router med Access Control Lists - kaldes ofte netværksfilter,\\
+  mens en dedikeret maskine kaldes firewall, ca same -- same
+%  funktionen er reelt den samme - der filtreres traffik
+\end{list1}
+
+
+\slide{Sample rules from OpenBSD PF}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="217.157.20.129"
+webserver="217.157.20.131"
+homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
+wlan="10.0.42.0/24"
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+# default block anything
+block in all }
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+
+
+
+\slide{Packet filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering er firewalls der filtrerer på IP niveau
+\item Idag inkluderer de fleste stateful inspection
+\end{list1}
+
+\slide{Kommercielle firewalls}
+\begin{list2}
+\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
+\item Cisco ASA \link{http://www.cisco.com}
+\item Clavister firewalls \link{http://www.clavister.com}
+\item Juniper SRX \link{http://www.juniper.net}
+\item Palo Alto \link{https://www.paloaltonetworks.com/}
+\item Fortinet \link{https://www.fortinet.com/}
+\end{list2}
+
+Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
+
+\slide{Open source baserede firewalls}
+\begin{list2}
+\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
+\item Firewall GUIs ovenpå Linux - mange!
+nogle er kommercielle produkter
+\item OpenBSD PF
+\link{http://www.openbsd.org}
+\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
+\item Mac OS X benytter OpenBSD PF
+\item FreeBSD inkluderer også OpenBSD PF
+\end{list2}
+
+NB: kun eksempler og dem jeg selv har brugt
+
+
+\slide{Anbefaler UFW Uncomplicated Firewall}
+
+\begin{alltt}\footnotesize
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Langt nemmere at bruge
+
+
+
+\slide{Firewall konfiguration}
+
+\begin{list1}
+\item Den bedste firewall konfiguration starter med:
+\begin{list2}
+\item Papir og blyant
+\item En fornuftig adressestruktur
+\end{list2}
+\item Brug dernæst en firewall med GUI første gang!
+\item Husk dernæst:
+\begin{list2}
+\item En firewall skal passes
+\item En firewall skal opdateres
+\item Systemerne bagved skal hærdes!
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Bloker indefra og ud}
+
+\begin{list1}
+\item Der er porte og services som altid bør blokeres
+\item Det kan være kendte sårbare services
+\begin{list2}
+\item Windows SMB filesharing - ikke til brug på Internet!
+\item UNIX NFS - ikke til brug på Internet!
+\end{list2}
+\item Kendte problemer som minimum
+\end{list1}
+
+
+
+
+
+\slide{Firewall er ikke alene}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{Forsvaret er som altid - flere lag af sikkerhed! }
+
+
+
+\slide{DDoS traffic before filtering}
+\hlkimage{23cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{23cm}{ddos-after-filtering}
+\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
+
+Better to filter stateless before traffic reaches firewall, less work!
+
+
+\slide{Access Control Lists (ACL)}
+
+Stateless firewall filter throw stuff away
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a sample, maybe use BGP flowspec and/or RTBH */
+term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+...
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28; \}
+        protocol [ tcp udp icmp ]; \}
+    then discard;
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers also have extensive Class-of-Service (CoS) tools today
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \} then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx; \}
+        protocol-except icmp;  \}
+    then \{ count some-server-block; discard;
+    \}
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Med IEEE 802.1q tillades VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\end{list1}
+
+
+\slide{Port Security -- Rogue DHCP servers}
+
+\begin{list1}
+\item Common problem in networks is people connecting devices with DHCPD servers
+\item In general make sure to segment networks
+\item Start to use port security on switches, including DHCP snooping\\
+\link{https://en.wikipedia.org/wiki/DHCP_snooping}
+\end{list1}
+
+\slide{Example port security}
+
+\begin{alltt}\small
+[edit ethernet-switching-options secure-access-port]
+set interface ge-0/0/1 mac-limit 4
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:80
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:81
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:83
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:85
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:88
+set interface ge-0/0/2 mac-limit 4
+set interface ge-0/0/1 persistent-learning
+set interface ge-0/0/8 dhcp-trusted
+set vlan employee-vlan arp-inspection
+set vlan employee-vlan examine-dhcp
+set vlan employee-vlan mac-move-limit 5
+\end{alltt}
+
+Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
+
+
+
+
+\slide{Most firewalls include some detection today}
+
+\hlkimage{7cm}{NSM_Phases-300x238.png}
+
+\begin{list1}
+\item ANSM chapter 1: The Practice of Applied
+Network Security Monitoring
+\begin{list2}
+\item Vulnerability-Centric vs. Threat-Centric Defense
+\item The NSM cycle: collection, detection, and analysis
+\item Full Content Data, Session Data, Statistical Data, Packet String Data, and Alert Data
+\item Security Onion is nice, but a bit over the top - quickly gets overloaded
+\end{list2}
+\end{list1}
+
+
+\slide{Intrusion Detection}
+
+\begin{list2}
+\item networkbased intrusion detection systems (NIDS)
+\item host based intrusion detection systems (HIDS)
+\end{list2}
+
+
+\slide{Network Security Monitoring}
+
+\hlkimage{4cm}{network-security-monitoring.png}
+
+\begin{list1}
+\item Network Security Monitoring (NSM) - monitoring networks for intrusions, and reacting to those
+\item Recommend the book \emph{The Practice of Network Security Monitoring
+Understanding Incident Detection and Response}
+by Richard Bejtlich
+July 2013
+\item Example systems are Security Onion \link{https://securityonion.net/} or\\ SELKS \link{https://www.stamus-networks.com/open-source/}
+\end{list1}
+
+
+
+
+\slide{Indicators of Compromise and Signatures}
+
+\begin{quote}
+An IOC is any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner. This could include a simple indicator such as the IP address of a command and control (C2) server or a complex set of behaviors that indicate that a mail server is being used as a malicious SMTP relay.
+
+When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Bro-formatted file, it becomes part of a signature. A signature can contain one or more IOCs.
+\end{quote}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+
+
+\slide{Network Sniffing for Security}
+
+
+\begin{list1}
+\item ANSM chapter 3:The Sensor Platform
+\begin{list2}
+\item Full Packet Capture (FPC) Data
+\item Session Data
+\item Statistical Data
+\item Packet String (PSTR) Data
+\item Log Data
+\item Sensor Placement, designing etc.
+\end{list2}
+\end{list1}
+\emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, 2014 Chris Sanders ISBN: 9780124172081 - shortened ANSM
+
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{slidelist}
+
+\slide{Collect Network Evidence from the network}
+
+\begin{list1}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\item today Netflow version 9 or IPFIX
+\end{list1}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
+
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+- name: Move elasticsearch data into /data
+  command: creates=/data/elasticsearch mv /var/lib/elasticsearch /data/
+- name: Make link to /data/elasticsearch
+  file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
+
+
+\slide{Packet sniffing tools}
+
+\begin{list1}
+\item Tcpdump for capturing packets
+\item Wireshark for dissecting packets manually with GUI
+\item Zeek Network Security Monitor
+\item Snort, old timer Intrusion Detection Engine (IDS)
+\item Suricata, modern robust capable of IDS and IPS (prevention)
+\item ntopng High-speed web-based traffic analysis
+\item Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
+\end{list1}
+
+\vskip 5mm
+\centerline{Often a combination of tools and methods used in practice}
+
+Full packet capture big data tools also exist
+
+
+
+\slide{Exercise at home -- Your lab setup}
+
+\begin{list2}
+\item Go to GitHub, Find user Kramse, click through security-courses, courses, suricatazeek and download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
+\end{list2}
+
+
+
+\slide{Blue Team}
+
+\begin{list1}
+\item Think like a blue team member find hacker traffic
+\item Get basic tools running
+\item Improve situation
+\begin{list2}
+\item See where the data end up
+\item What kind of data and metadata can we extract
+\item How can we collect and make use of it
+\item Databases and web interfaces, examples shown
+\item Consider what your deployment could be
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Experiences gathered}
+
+\begin{list1}
+\item Lots of information
+\item Reveals a lot about the network, operating systems, services etc.
+\item I use a template when getting data
+  \begin{list2}
+    \item Respond to ICMP: $\Box$\  echo, $\Box$\ mask, $\Box$\ time
+\item Respond to traceroute: $\Box$\ ICMP, $\Box$\ UDP
+\item Open ports TCP og UDP:
+\item Operating system:
+\item ... (banner information )
+  \end{list2}
+\item Beware when doing scans it is possible to make routers, firewalls and devices perform badly or even crash!
+\end{list1}
+
+\slide{The Zeek Network Security Monitor}
+
+
+\hlkimage{14cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+
+\slide{Zeek IDS is}
+
+\hlkimage{14cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+
+
+
+
+\slide{Zeek scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_A_reply_count;
+        \}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_AAAA_reply_count;
+        \}
+\end{alltt}
+
+source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}
+\url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
+
+
+
+\slide{Testing Zeek}
+
+We will use a combination of your virtual servers, my switch hardware and my virtual systems.
+
+\vskip 1cm
+{\Large \bf There will be sniffing done on traffic!\\
+Don't abuse information gathered}
+
+We try to mimic what you would do in your own networks during the exercises.
+
+Another way of running exercises might be:\\
+\url{https://github.com/jonschipp/ISLET}
+
+Recommended and used by Zeek and Suricata projects.
+
+\slide{Get Started with Zeek}
+
+\begin{list1}
+\item To run in “base” mode:
+ \verb+bro -r traffic.pcap+
+\item To run in a “near broctl” mode:
+\verb+bro -r traffic.pcap local+
+\item To add extra scripts:
+\verb+bro -r traffic.pcap myscript.bro+
+\end{list1}
+
+\centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
+
+
+\slide{Zeek demo: Run Zeek}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+
+\slide{DNS is important}
+
+Another tool that provides a basic SQL-frontend to PCAP-files\\
+\url{https://www.dns-oarc.net/tools/packetq}\\
+\url{https://github.com/DNS-OARC/PacketQ}
+
+Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
+
+Deciding on which tool to use, Zeek or PacketQ depends on the situation.
+
+\slide{Suricata IDS/IPS/NSM}
+
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+
+
+
+
+
+\myquestionspage
+
+
+\slide{Extras}
+
+\slide{Netværksdesign og sikkerhed}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+\slide{Basic Network Security Pattern Isolate in VLANs}
+
+\hlkimage{10cm}{images/demo-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter traffik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\end{list1}
+
+
+
+\slide{Pattern use IDS to get flow, connections and data}
+
+\begin{list1}
+\item Use Intrusion Detection Systems - IDS
+\item Angrebsværktøjerne efterlader spor
+\item Det anbefales at have IDS og flow opsamling som minimum
+\item Hostbased IDS - kører lokalt på et system og forsøger at
+  detektere om der er en angriber inde
+\item Network based IDS - NIDS - bruger netværket
+\item Automatiserer netværksovervågning:
+  \begin{list2}
+  \item bestemte pakker kan opfattes som en signatur
+\item analyse af netværkstrafik - FØR angreb
+\item analyse af netværk under angreb - sender en alarm
+  \end{list2}
+\end{list1}
+
+
+\slide{Drift og Planlægning af sikre miljøer}
+
+\begin{list1}
+\item Før installationen scope
+\begin{list2}
+\item Hvad er formålet - reaktion eller "statistik"
+\item Hvor skal der måles - hele netværket eller specifikke dele
+\item Hvad skal måles og hvilke operativsystemer og servere/services
+\end{list2}
+\item Implementationen
+\begin{list2}
+\item Er infrastrukturen iorden som den er
+\item Er der gode målepunkter - monitorporte
+\item Et målepunkt eller flere, Hvor meget trafik skal måles
+\end{list2}
+\item Selve idriftsættelsen
+\begin{list2}
+\item Ændringer af infrastrukturen
+\item Installation af udstyret og test af udstyret udenfor drift
+\item Installation i driftsmiljøet
+\item Test af udstyret i driftsmiljøet
+\end{list2}
+\end{list1}
+
+\slide{Eksempel Opsætning og konfiguration af IDS miljøer}
+
+\begin{list1}
+\item Vælg en simpel installation til at starte med!
+\item Undgå for alt i verden for meget information
+\begin{list2}
+\item Start med en enkelt sensor
+\item Byg en server med database og "brugerværktøjer"
+\item Start med at overvåge dele af nettet
+\item Brug et specifikt regelsæt i starten - eksempelvis kun Windows eller kun UNIX
+\item Lav nogle simple rapporter til at starte med
+\end{list2}
+\item Gør netværket mere sikkert før du lytter på hele netværket
+\item Brug tcpdump/Ethereal til at se på trafik, lær IP pakker at
+  kende
+\item Brug Suricata og Zeek til at evaluere
+\begin{list2}
+\item Husk at man kan starte med vilkårligt værktøj og senere skifte til andre
+produkter
+\item Praktisk erfaring med eget netværk er nødvendigt og værdifuldt
+\end{list2}
+\end{list1}
+
+\slide{Honeypots}
+
+\begin{list1}
+\item Man kan udover IDS installere en honeypot
+\item En honeypot består typisk af:
+  \begin{list2}
+    \item Et eller flere sårbare systemer
+\item Et eller flere systemer der logger traffik til og fra honeypot
+  systemerne
+  \end{list2}
+\item Meningen med en honeypot er at den bliver angrebet og brudt ind
+  i
+\end{list1}
+
+\slide{Forslag undgå standard indstillinger}
+
+\begin{list1}
+\item Giv jer selv mere tid til at patche og opdatere
+\item Tiden der går fra en sårbarhed annonceres på internet til den bliver
+       udnyttet er meget kort idag!
+\item Ved at undgå standard indstillinger kan der
+       måske opnås en lidt længere frist
+\item NB: ingen garanti
+\end{list1}
+
+
+
+
+
+
+\slide{Brug krypterede forbindelser}
+
+\hlkimage{12cm}{images/dsniff-comments.pdf}
+
+\begin{list1}
+\item Især på utroværdige netværk kan det give problemer at benytte
+  sårbare protokoller
+\end{list1}
+
+\slide{Mission 1: Kommunikere sikkert}
+
+\begin{list1}
+\item Du må ikke bruge ukrypterede forbindelser til at administrere netværk eller servere
+\item Du må ikke sende kodeord i ukrypterede e-mail beskeder
+\end{list1}
+
+\centerline{\hlkbig Telnet daemonen - telnetd må og skal dø!}
+
+\pause
+\centerline{\hlkbig FTP daemonen - ftpd må og skal dø!}
+
+\pause
+\centerline{\hlkbig POP3 daemonen port 110 må og skal dø!}
+
+\pause
+\centerline{\hlkbig IMAPD daemonen port 143 må og skal dø!}
+
+\pause
+\vskip 1cm
+\centerline{\hlkbig\bf væk med alle de ukrypterede forbindelser!}
+
+\slide{Pattern: erstat Telnet med SSH}
+
+\begin{list1}
+\item Telnet er død!
+\item Brug altid Secure Shell fremfor Telnet
+\item Opgrader firmware til en der kan SSH, eller køb bedre udstyr næste gang
+\item Selv mine små billige Linksys switche forstår SSH!
+\end{list1}
+
+\slide{Pattern: erstat FTP med HTTP}
+
+\begin{list1}
+\item Hvis der kun skal distribueres filer kan man ofte benytte HTTP istedet for FTP
+\item Hvis der skal overføres med password er SCP/SFTP fra Secure Shell at foretrække
+\end{list1}
+
+
+\slide{Anti-pattern WLAN forbundet direkte til LAN}
+
+\hlkimage{10cm}{images/wlan-accesspoint-2.pdf}
+
+\begin{list1}
+\item WLAN AP'er forbundet direkte til LAN giver risiko for at sikkerheden brydes, fordi AP falder tilbage på den usikre standardkonfiguration
+\item Ved at sætte WLAN direkte på LAN risikerer man at eksterne får direkte adgang
+\end{list1}
+
+
+\slide{Pattern individuel autentificering!}
+
+\hlkimage{4cm}{images/ssh-root.pdf}
+
+\begin{list1}
+\item Mange systemer administreres fejlagtigt ved brug af
+  root-login eller andet delt administrator login
+\item Undgå direkte root-login
+\item Insister på \verb+sudo+ eller \verb+su+
+\item Hvorfor?
+\begin{list2}
+\item Sporbarheden mistes hvis brugere logger direkte ind som root
+\item Hvis et kodeord til root gættes er der direkte adgang til alt!
+\end{list2}
+\end{list1}
+
+
+\slide{At være på internet}
+
+\begin{list1}
+\item RFC-2142 Mailbox Names for Common Services, Roles and Functions
+\item Du BØR konfigurere dit domæne til at modtage post for følgende adresser:
+\begin{list2}
+\item postmaster@domæne.dk
+\item abuse@domæne.dk
+\item webmaster@domæne.dk, evt. www@domæne.dk
+\end{list2}
+\item Du gør det nemmere at rapportere problemer med dit netværk og services
+\end{list1}
+
+\slide{E-mail best current practice}
+
+\begin{alltt}\small
+MAILBOX       AREA                USAGE
+-----------   ----------------    ---------------------------
+ABUSE         Customer Relations  Inappropriate public behaviour
+NOC           Network Operations  Network infrastructure
+SECURITY      Network Security    Security bulletins or queries
+...
+MAILBOX       SERVICE             SPECIFICATIONS
+-----------   ----------------    ---------------------------
+POSTMASTER    SMTP                [RFC821], [RFC822]
+HOSTMASTER    DNS                 [RFC1033-RFC1035]
+USENET        NNTP                [RFC977]
+NEWS          NNTP                Synonym for USENET
+WEBMASTER     HTTP                [RFC 2068]
+WWW           HTTP                Synonym for WEBMASTER
+UUCP          UUCP                [RFC976]
+FTP           FTP                 [RFC959]
+\end{alltt}
+
+Kilde:
+RFC-2142 Mailbox Names for Common Services, Roles and Functions. D.
+Crocker. May 1997
+
+
+\slide{RIPE NCC abuse-c}
+
+\hlkimage{18cm}{ripe-abuse-c.png}
+
+{\small\link{
+https://www.ripe.net/manage-ips-and-asns/resource-management/abuse-c-information}}
+
+
+
+\slide{Hardened network device configurations}
+
+\begin{list1}
+\item Alle services skal være konfigureret korrekt:
+\begin{list2}
+\item Administration kun fra jump host og egne administrator netværk, SSH og HTTPS
+\item Alle protokoller med mulighed for \emph{secrets} bør evalueres for om det skal benyttes
+\item Protokoller som BGP skal benytte route import filtre
+\item Protokoller som OSPF bør benytte policies OG secrets
+\item Brug, Router protect filter således at kun relevant adgang tillades til services på udstyret
+\item Brug Reverse Path Forwarding uRPF / RPF
+\end{list2}
+\end{list1}
+
+
+
+\slide{Check you network from outside}
+
+\begin{list1}
+\item How does your network look like from the outside?
+\item Check your network using:
+\item \link{https://stat.ripe.net/}
+\item Consider:
+\begin{list2}
+  \item Join the NLNOG RING \link{https://ring.nlnog.net/}
+\item \link{https://bgpmon.net/} - commercial tool, some alternatives exist
+\item \link{https://shadowserver.org/wiki/} sign up for Shadowserver - ASN \& Netblock Alerting \& Reporting Service
+\end{list2}
+\end{list1}
+
+
+
+
+
+
+
+\end{document}

@@ -36,7 +36,9 @@
 \end{list1}
 
 Also checkout \url{https://en.wikipedia.org/wiki/C_string_handling}
-for use when you dont have the book with you.
+for use when you dont have the books with you.
+
+Wikipedia calls format string vulnerabilities Uncontrolled format string \link{https://en.wikipedia.org/wiki/Uncontrolled_format_string}
 
 \slide{Goals: }
 
@@ -86,6 +88,7 @@ int main(int argc, char **argv)
 
 \begin{list2}
 \item In C there is no native type for strings; strings are formed by constructing arrays of the char data type, with the null character (0x00) marking the end of a string
+\item The string is then represented by the pointer to the beginning, \verb+buf+
 \item C++ standard library has a string class, a little safer
 \item Converting between C++ string class and C strings may result in vulnerabilities
 \item Many systems use C at the bottom, C APIs etc.
@@ -94,8 +97,8 @@ int main(int argc, char **argv)
 
 \slide{Unbounded String Functions}
 
+ Unsafe group of functions:
 \begin{list2}
-\item Unsafe group of functions:
 \item {\bf scanf()} read data from somewhere, multiple variants
 \item {\bf sprintf()} print formatted into string/buffer - overflow\\
 Changing the format string is a whole group in itself
@@ -103,8 +106,9 @@ Changing the format string is a whole group in itself
 \item {\bf strcat()} string concatenation, combining strings can be problemtatic
 \end{list2}
 
+They will continue whatever they do, until they meet a null-terminator or get an error, segmentation faults
 \vskip 1cm
-\centerline{These were the ones people used in the beginning}
+\centerline{These were the ones people used in the beginning, and forever}
 
 \slide{30 Years ago in around 1988 }
 
@@ -133,9 +137,7 @@ Eugene H. Spafford\\ {\footnotesize\url{https://blog.rapid7.com/2019/01/02/the-g
 \slide{Exim CVE-2019-15846 git diff exim-4.92.1 exim-4.92.2}
 
 \begin{minted}[fontsize=\footnotesize]{c}
-
 diff --git a/src/src/string.c b/src/src/string.c
-
 @@ -224,6 +224,8 @@ interpreted in strings.
  Arguments:
    pp       points a pointer to the initiating \ in the string;
@@ -152,19 +154,73 @@ diff --git a/src/src/string.c b/src/src/string.c
 +if (ch == '\0') return **pp;
 \end{minted}
 
-\begin{quote}
 The vulnerability is exploitable by sending a SNI ending in a
 backslash-null sequence during the initial TLS handshake. The exploit
-exists as a POC.
+exists as a POC. More details see doc/doc-txt/cve-2019-15846/ in the source code repository.
 
-For more details see doc/doc-txt/cve-2019-15846/ in the source code
-repository.
+
+Internet worm 1988 -- Exim 2019, about 30 years of \emph{progress}
+
+
+\slide{Printf -- formatted printing}
+
+\begin{quote}
+The printf() function can be used to print more than just fixed strings. This
+function can also use format strings to print variables in many different for-
+mats. A format string is just a character string with special escape sequences
+that tell the function to insert variables printed in a specific format in place
+of the escape sequence. The way the printf() function has been used in the
+previous programs, the \verb+"Hello, world!\n"+ string technically is the format string;
+however, it is devoid of special escape sequences. These escape sequences are
+also called format parameters, and for each one found in the format string, the
+function is expected to take an additional argument. Each format parameter
+begins with a percent sign ( % ) and uses a single-character shorthand very
+similar to formatting characters used by GDB’s e x amine command.
 \end{quote}
+
+Source: \emph{Hacking, 2nd Edition: The Art of Exploitation}, Jon Erickson
+
+\slide{Examples printf}
+
+\begin{minted}{c}
+// Example of printing with different format string
+printf("[A] Dec: %d, Hex: %x, Unsigned: %u\n", A, A, A);
+printf("[B] Dec: %d, Hex: %x, Unsigned: %u\n", B, B, B);
+printf("[field width on B] 3: '%3u', 10: '%10u', '%08u'\n", B, B, B);
+printf("[string] %s Address %08x\n", string, string);
+// Example of unary address operator (dereferencing) and a %x format string
+printf("variable A is at address: %08x\n", &A);
+\end{minted}
+
+Can also print into another string (buffers) with functions like \verb+sprintf()+ -- string printf
+
+Source: \emph{Hacking, 2nd Edition: The Art of Exploitation}, Jon Erickson
+
+\slide{Lets jump to the book 0x350 Format Strings}
+
+\begin{quote}
+{\bf Exploiting format string vulnerabilities}\\
+
+A format string exploit is another technique you can use to gain control of
+a privileged program. Like buffer overflow exploits, format string exploits also
+depend on programming mistakes that may not appear to have an obvious
+impact on security. Luckily for programmers, once the technique is known,
+it’s fairly easy to spot format string vulnerabilities and eliminate them.
+Although format string vulnerabilities aren’t very common anymore, the
+following techniques can also be used in other situations.
+\end{quote}
+
+Summary:
+\begin{list2}
+\item 0x353 Reading from Arbitrary Memory Addresses
+\item 0x354 Writing to Arbitrary Memory Addresses
+\item Plus some tips and hints for making it easier
+\end{list2}
 
 \slide{Bounded String Functions}
 
+Adding a maximum length to the functions should help:
 \begin{list2}
-\item Adding a maximum length to the functions should help:
 \item {\bf snprintf()} copies a maximum number of bytes!
 \item Different semantics on Windows and Unix.
 \item Windows does not guarantee null-termination, returns -1
@@ -173,6 +229,10 @@ repository.
 \item {\bf strncat()} size to provide is the space left in the buffer, not the size of the whole buffer
 \item Easy to result in off-by-one vulnerabilities
 \end{list2}
+
+\vskip 1cm
+
+\centerline{Programming is easy, right \smiley}
 
 \slide{Better Functions from BSD}
 
@@ -189,20 +249,28 @@ repository.
 
 
 \begin{minted}[fontsize=\normalsize]{c}
-while (*t != ':') *tt++ = *t++;
- *tt = 0;
+
+char t[1000];
+char tt[100];
+
+// Get data into t from somewhere
+
+while (*t != ':') {
+  *tt++ = *t++;
+}
+*tt = 0;
 \end{minted}
 
 \begin{list2}
-\item Example from the book, if the input is larger than destination pointed to by \verb+tt+ then problems can arise
+\item Example, if the input is larger than destination pointed to by \verb+tt+ then problems can arise
 \item Character expansion, making output bigger can overflow
-\item Other examples are presented in the book
+\item Other examples can be found across the internet over 30+ years
 \end{list2}
 
 \slide{Metacharacters}
 
 \begin{list2}
-\item Null 0x00, special in C, but just another char in higher level languages
+\item Null 0x00, special in C, but just another char in other languages
 \item Space
 \item / used as filename delimiters, and \textbackslash{} in Windows
 \item . dot used in various ways for domain names, file types etc.
@@ -238,7 +306,7 @@ or
 
 
 \begin{list2}
-\item Misc dangerous shell characters, see book for more:
+\item Misc dangerous shell characters:
 \item \verb+;+ seperator, execute multiple commands, \verb+|+ pipe, execute multiple commands
 \item \verb+` `+ back ticks, or \verb+$( )+ execute a command and insert result
 \item \verb+< > + redirect input, output etc.
@@ -264,7 +332,7 @@ or
 \verb;GET /..%c0%af..%c0%afwinnt/system32/cmd.exe?/c+dir;
 
 \begin{list2}
-\item UTF-8 becoming the standard used, book uses the example from CVE-2000-0884
+\item UTF-8 becoming the standard used, example from CVE-2000-0884
 \item Calls \verb+cmd.exe+ with any command from URL
 \item Example encoding for \verb+/+
 \item 0x2f
@@ -273,9 +341,27 @@ or
 \item 0xF0 0x80 0x80 0xAF
 \end{list2}
 
-\exercise{ex:truncate-encoding}
+
+\slide{Django: Unicode data}
+
+\begin{quote}
+{\bf Django supports Unicode data everywhere.}\\
+
+This document tells you what you need to know if you’re writing applications that use data or templates that are encoded in something other than ASCII.
+...
+{\bf Useful utility functions}\\
+Because some string operations come up again and again, Django ships with a few useful functions that should make working with string and bytestring objects a bit easier.
+\end{quote}
+
+
+Source:\\
+\link{https://docs.djangoproject.com/en/3.1/ref/unicode/}
 
 \exercise{ex:django-string}
+
+\exercise{ex:truncate-encoding}
+
+
 
 
 \slidenext{}

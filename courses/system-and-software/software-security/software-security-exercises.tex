@@ -1908,8 +1908,61 @@ Receiving systems, and those en route to the service, should be checked for reso
 
 
 
+\chapter{Scapy 30 min}
+\label{ex:scapy}
 
-\end{document}
+{\bf Objective:}\\
+Try the library Scapy locally your workstation
+
+
+{\bf Purpose:}\\
+Running Scapy will allow you to produce network packets according to some pattern.
+
+\begin{alltt}\footnotesize
+sudo pip3 install scapy
+git clone https://github.com/kramse/frankenpacket.git
+cd frankenpacket/hlk-mpls-vxlan-datacenter/
+
+python3 mpls-vxlan-datacenter.py
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM.
+
+Research the Scapy documentation.\\
+\link{https://scapy.readthedocs.io/en/latest/}
+
+How to produce fuzz like output?\\
+Hint; \url{https://scapy.readthedocs.io/en/latest/usage.html?highlight=fuzz#fuzzing}
+
+{\bf Hints:}\\
+Scapy requires very little Python knowledge, also the protocols are "stacked" after each others. The example includes multiple layers of encapsulation.
+
+\begin{minted}[fontsize=\footnotesize]{python}
+
+# VLAN
+prepacket=mpls_eth/mpls_lables/Ether(dst="00:00:00:00:00:03")/Dot1Q(vlan=42)
+
+...
+# Create a VXLAN header
+vxlan=prepacket/IP(src=vtepsrc,dst=vtepdst, options=IPOption('\x44\x10\x05\x00\x00\x00\x00\x00'+
+'\x00\x00\x00\x00\x00\x00\x00\x00'+'\x88\x04\x10\x10'+
+'\x83\x03\x10'+'\x07\x04\x00\x00'))
+/UDP(sport=1234,dport=vxlanport)/VXLAN(vni=vni,flags="Instance")
+
+\end{minted}
+
+
+You should use Python3! So maybe use \verb+pip3 install scapy+ and \verb+python3 mpls-vxlan-datacenter.py+
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+Scapy might not be the quickest tool. It can write packets to a binary pcap file though, so you can use tools like \verb+tcpreplay+ for faster transmission.
+
+
 
 \chapter{Try American fuzzy lop up to 60min}
 \label{ex:american-fuzzy-lop}
@@ -1948,7 +2001,7 @@ For how long is it reasonable to fuzz a program? A few days - sure. Maybe run mu
 
 
 
-
+\end{document}
 
 
 

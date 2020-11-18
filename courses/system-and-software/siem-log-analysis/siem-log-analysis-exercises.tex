@@ -1,0 +1,721 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Lund Kramshoej, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-network-exercises}
+
+\begin{document}
+
+\rm
+\selectlanguage{english}
+
+\newcommand{\subject}[1]{SIEM and Log Analysis course}
+
+\mytitle{SIEM and Log Analysis}{exercises}
+
+\pagenumbering{roman}
+
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Preface}
+\markboth{Preface}{}
+
+This material is prepared for use in \emph{\subject} and was prepared by
+Henrik Lund Kramshoej, \link{http://www.zencurity.com} .
+It describes the networking setup and
+applications for trainings and courses where hands-on exercises are needed.
+
+Further a presentation is used which is available as PDF from kramse@Github\\
+Look for \jobname in the repo security-courses.
+
+These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
+
+\link{https://github.com/kramse/kramse-labs}
+
+
+\section*{\color{titlecolor}Prerequisites}
+
+This material expect that participants have a working knowledge of
+TCP/IP from a user perspective. Basic concepts such as web site addresses and email should be known as well as IP-addresses and common protocols like DHCP.
+
+\vskip 1cm
+Have fun and learn
+\eject
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+
+\chapter*{\color{titlecolor}Exercise content}
+\markboth{Exercise content}{}
+
+Most exercises follow the same procedure and has the following content:
+\begin{itemize}
+\item {\bf Objective:} What is the exercise about, the objective
+\item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
+\item {\bf Suggested method:} suggest a way to get started
+\item {\bf Hints:} one or more hints and tips or even description how to
+do the actual exercises
+\item {\bf Solution:} one possible solution is specified
+\item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
+\end{itemize}
+
+Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
+
+
+\chapter{Download Debian Administrator’s Handbook (DEB) Book 10 min}
+\label{ex:sw-downloadDEB}
+
+\hlkimage{3cm}{book-debian-administrators-handbook.jpg}
+
+
+{\bf Objective:}\\
+We need a Linux for running some tools during the course. I have chosen Debian Linux as this is open source, and the developers have released a whole book about running it.
+
+This book is named
+\emph{The Debian Administrator’s Handbook},  - shortened DEB
+
+{\bf Purpose:}\\
+We need to install Debian Linux in a few moments, so better have the instructions ready.
+
+{\bf Suggested method:}\\
+Create folders for educational materials. Go to download from the link \url{https://debian-handbook.info/}
+Read and follow the instructions for downloading the book.
+
+{\bf Solution:}\\
+When you have a directory structure for download for this course, and the book DEB in PDF you are done.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+Debian Linux is a free operating system platform.
+
+The book DEB is free, but you can buy/donate to Debian, and I recommend it.
+
+Not curriculum but explains how to use Debian Linux
+
+
+\chapter{Check your Debian VM 10 min}
+\label{ex:sw-basicDebianVM}
+
+\hlkimage{7cm}{debian-xfce.png}
+
+{\bf Objective:}\\
+Make sure your virtual machine is in working order.
+
+We need a Debian Linux for running tools during the course.
+
+{\bf Purpose:}\\
+If your VM is not installed and updated we will run into trouble later.
+
+{\bf Suggested method:}\\
+Go to \link{https://github.com/kramse/kramse-labs/}
+
+Read the instructions for the setup of a Debian VM.
+
+{\Large \bf This is a bonus exercise - only one Debian is needed per team.}
+
+{\bf Hints:}\\
+If you allocate enough memory and disk you wont have problems.
+
+{\bf I suggest 50G disk, 2CPU cores and 6Gb memory for this course, if you have this.}
+
+{\bf Solution:}\\
+When you have a updated virtualisation software and a running VM, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+Debian Linux allows us to run Ansible and provision a whole SIEM in very few minutes.
+
+
+\chapter{Investigate /etc 10 min}
+\label{ex:sw-basicLinuxetc}
+
+
+{\bf Objective:}\\
+We will investigate the /etc directory on Linux. We need a Debian Linux
+
+{\bf Purpose:}\\
+Start seeing example configuration files, including:
+\begin{itemize}
+  \item User database \verb+/etc/passwd+ and \verb+/etc/group+
+  \item The password database \verb+/etc/shadow+
+\end{itemize}
+
+{\bf Suggested method:}\\
+Boot your Linux VMs, log in
+
+Investigate permissions for the user database files \verb+passwd+ and \verb+shadow+
+
+{\bf Hints:}\\
+Linux has many tools for viewing files, the most efficient would be less.
+
+\begin{alltt}
+user@debian:~$ cd /etc
+user@debian:/etc$ ls -l shadow passwd
+-rw-r--r-- 1 root root   2203 Mar 26 17:27 passwd
+-rw-r----- 1 root shadow 1250 Mar 26 17:27 shadow
+user@debian:/etc$ ls
+... all files and directories shown, investigate more if you like
+\end{alltt}
+
+Showing a single file: \verb+less /etc/passwd+ and press q to quit
+
+Showing multiple files: \verb+less /etc/*+ then :n for next and q for quit
+
+\begin{alltt}
+Trying reading the shadow file as your regular user:
+user@debian:/etc$ cat /etc/shadow
+cat: /etc/shadow: Permission denied
+\end{alltt}
+
+Why is that? Try switching to root, using su or sudo, and redo the command.
+
+{\bf Solution:}\\
+When you have seen the most basic files you are done.
+
+Also note the difference between running as root and normal user. Usually books and instructions will use a prompt of hash mark \verb+#+ when the root user is assumed and dollar sign \verb+$+ when a normal user prompt.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+Sudo is a tool often used for allowing users to perform certain tasks as the super user. The tool is named from superuser do! \link{https://en.wikipedia.org/wiki/Sudo}
+
+
+\chapter{Enable UFW firewall}
+\label{ex:debian-firewall}
+
+{\bf Objective:}\\
+Turn on a firewall and configure a few simple rules.
+
+{\bf Purpose:}\\
+See how easy it is to restrict incoming connections to a server.
+
+
+{\bf Suggested method:}\\
+Install a utility for firewall configuration.
+
+You could also perform Nmap port scan with the firewall enabled and disabled.
+
+{\bf Hints:}\\
+Using the ufw package it is very easy to configure the firewall on Linux.
+
+Install and configuration can be done using these commands.
+\begin{alltt}
+root@debian01:~# apt install ufw
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following NEW packages will be installed:
+  ufw
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 164 kB of archives.
+After this operation, 848 kB of additional disk space will be used.
+Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
+Fetched 164 kB in 2s (60.2 kB/s)
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
+
+{\bf Solution:}\\
+When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
+
+{\bf Discussion:}\\
+Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
+
+Web interfaces also exist, but are more suited for a centralized firewall.
+
+Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
+
+Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
+
+
+
+\chapter{Data types -- IP addresses 15min}
+\label{ex:data-types-ip-address}
+
+{\bf Objective:}\\
+Find out what IP-addresses really are -- just a 32-bit integer for IPv4
+
+
+{\bf Purpose:}\\
+
+
+{\bf Suggested method:}\\
+
+
+{\bf Hints:}\\
+Use CIDR tool online or locally
+
+See that libraries and tools exist for IP addresses
+
+Example, look at PostgreSQL data types
+
+
+{\bf Solution:}\\
+
+
+{\bf Discussion:}\\
+Compare the bytes needed for storing a string 192.0.2.10 versus the bytes needed for a 32-bit integer.
+
+
+\chapter{Postman API Client 20 min}
+\label{ex:postman-api}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Get a program capable of sending REST HTTP calls installed.
+
+
+{\bf Purpose:}\\
+Debugging REST is often needed, and some tools like Elasticsearch is both configured and maintained using REST APIs.
+
+{\bf Suggested method:}\\
+Download the app from
+\link{https://www.postman.com/downloads/}
+
+Available for Windows, Mac and Linux.
+
+{\bf Hints:}\\
+You can run the application without signing in anywhere.
+
+{\bf Solution:}\\
+When you have performed a REST call from within this tool, you are done.
+
+Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
+
+If you have Elasticsearch installed and running try: \link{http://127.0.0.1:9200}
+
+{\bf Discussion:}\\
+Multiple applications and plugins can perform similar functions. This is a standalone app.
+
+Tools like Elasticsearch has plugins allowing decoupling of the API and plugins. Example: \link{https://www.elastic.co/what-is/elasticsearch-monitoring} and \link{https://www.elastic.co/what-is/open-x-pack}
+
+
+
+\chapter{Use Ansible to install Elastic Stack}
+\label{ex:basicansible}
+
+
+{\bf Objective:}\\
+Run Elasticsearch
+
+{\bf Purpose:}\\
+See an example tool used for many integration projects, Elasticsearch from the Elastic Stack
+
+{\bf Suggested method:}\\
+We will run Elasticsearch, either using the method from:\\{\footnotesize
+\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+or by the method described below using Ansible - your choice.
+
+Ansible used below is a configuration management tool \url{https://www.ansible.com/}
+
+I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has ansible and my playbooks: (as root run)
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
+
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
+
+If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+git pull
+\end{minted}
+
+Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
+
+Note: these instructions are originally from the course\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content
+\begin{alltt}
+apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+
+\chapter{Getting started with the Elastic Stack - 60 min}
+\label{ex:dateformats}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Get a working Elasticsearch, so we can do requests.
+
+{\bf Purpose:}\\
+Elasticsearch uses REST extensively in their application.
+
+{\bf Suggested method:}\\
+either use the
+\emph{Getting started with the Elastic Stack}
+\link{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}
+
+OR my Ansible based approach - which some already ran.
+
+The ansible is described in exercise \ref{ex:basicansible} on \pageref{ex:basicansible}
+
+{\bf Hints:}\\
+We dont really need a lot in the Elasticsearch database, and you can run most tasks with zero data. Graphs will not be as pretty though.
+
+{\bf Solution:}\\
+When you have a running Elasticsearch you are done, and ready for next exercise.
+
+The web page for the getting started show multiple sections:
+\begin{itemize}
+\item Elasticsearch - the core engine, this must be done manually or with Ansible
+\item Kibana - the analytics and visualization platform
+\item Beats - data shippers, a way to get some data into ES
+\item Logstash (optional) offers a large selection of plugins to help you parse, enrich, transform, and buffer data from a variety of sources
+\end{itemize}
+
+Each describes a part and are recommended reading.
+
+{\bf Discussion:}\\
+We could have used a lot of other servers and service, which ones would you prefer?
+
+If you have access to Azure, you can try Azure REST API Reference\\ \link{https://docs.microsoft.com/en-us/rest/api/azure/}
+
+\chapter{Making requests to Elasticsearch - 15-75min}
+\label{ex:es-rest-api}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Use APIs for accessing Elasticsearch data, both internal and user data.
+
+{\bf Purpose:}\\
+Learn how to make requests to an API.
+
+{\bf Suggested method:}\\
+Go to the list of exposed Elasticsearch REST APIs:\\
+\link{https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html}
+
+The Elasticsearch REST APIs are exposed using JSON over HTTP.
+
+Select a category example, Cluster APIs, then select Nodes Info APIs. This will show URLs you can use:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+# return just process
+curl -X GET "localhost:9200/\_nodes/process?pretty"
+# same as above
+curl -X GET "localhost:9200/\_nodes/_all/process?pretty"
+
+curl -X GET "localhost:9200/_nodes/plugins?pretty"
+
+# return just jvm and process of only nodeId1 and nodeId2
+curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/jvm,process?pretty"
+# same as above
+curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
+# return all the information of only nodeId1 and nodeId2
+curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/_all?pretty"
+\end{minted}
+
+When you can see this works, then feel free to install X-Pack and monitoring plugins
+
+{\bf Hints:}\\
+Pretty Results can be obtained using the pretty parameter.
+\begin{quote}
+When appending ?pretty=true to any request made, the JSON returned will be pretty formatted (use it for debugging only!). Another option is to set ?format=yaml which will cause the result to be returned in the (sometimes) more readable yaml format.
+\end{quote}
+
+Lots of tutorials exist for accessing Elasticsearch
+
+A couple of examples:
+\begin{itemize}
+\item \link{https://aws.amazon.com/blogs/database/elasticsearch-tutorial-a-quick-start-guide/}
+\item \link{https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04}
+\end{itemize}
+
+{\bf Solution:}\\
+When you have seen examples of the API, understand the references with underscore, like \verb+_nodes+ and pretty printing you are done.
+
+I recommend playing with Elasticsearch plugins and X-pack.\\
+\link{https://www.elastic.co/downloads/x-pack}
+
+Note: In versions 6.3 and later, X-Pack is included with the default distributions of Elastic Stack, with all free features enabled by default.
+
+Also Kibana can be used for creating nice dashboards and become applications more or less.
+
+{\bf Discussion:}\\
+You can also try calling the REST API from Python
+
+Similar to what we did previously in this course:
+\inputminted{python}{programs/rest-1.py}
+
+
+
+\chapter{Use a XML library in Python up to 60min}
+\label{ex-python-library}
+
+{\bf Objective:}\\
+Try using a programing library in the Python programming language.
+
+{\bf Purpose:}\\
+See how easy it is to produce functionality by re-using existing functions and features available in a popular language.
+
+{\bf Suggested method:}\\
+Start by getting an XML file. Suggested method is to boot your Linux and run a command like \verb+nmap -p 80,443 -A -oA testfile www.zencurity.com+. Output should be testfile.xml and two other files, grepable output \verb+testfile.gnmap+ and text output \verb+testfile.nmap+.
+
+Then using Python import a library to parse XML and print a few values from the XML, or all of them.
+
+Recommended values to print from the file:
+\begin{list2}
+\item Nmap version
+\item Date of the Nmap run, note either use start and convert from Unix time or startstr which is a string
+\item Nmaprun args - aka the command line
+\item Host address
+\item Ports like from the <port protocol="tcp" portid="443">
+\item Anything you feel like
+\end{list2}
+
+{\bf Hints:}\\
+One option is to use the Python ElementTree XML API:\\
+\url{https://docs.python.org/2/library/xml.etree.elementtree.html}
+
+Also - use Python3!
+
+{\bf Solution:}\\
+When you can read a file and process it using Python3.
+
+Improvements, you might consider:
+\begin{list2}
+\item Use Python3 to run the Nmap process
+\item Create command line parameters for the program, making it more useful
+\item Pretty print using formatted output
+\end{list2}
+{\bf Discussion:}\\
+Many examples contain code like this:
+
+\begin{quote}
+Getting child tag's attribute value in a XML using ElementTree
+
+Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
+\end{quote}
+\begin{minted}[fontsize=\footnotesize]{python}
+>>> import xml.etree.ElementTree as ET
+>>> xmlstr = '<foo><bar key="value">text</bar></foo>'
+>>> root = ET.fromstring(xmlstr)
+>>> root.tag
+'foo'
+>>> root[0].tag
+'bar'
+>>> root[0].attrib['key']
+'value'
+\end{minted}
+Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
+
+What is the point of referring to a specific numbered child, when we specifically have the tags?!
+
+What happens if the XML output changes a bit, so another tag is before the expected one! Dont trust Stackoverflow, unless you want a stack overflow \smiley.
+
+
+
+\end{document}
+
+
+\chapter{Wireshark 15 min}
+\label{ex:wireshark-install}
+
+\hlkimage{10cm}{wireshark-http.png}
+
+
+{\bf Objective:}\\
+Try the program Wireshark locally your workstation, or tcpdump
+
+You can run Wireshark on your host too, if you want.
+
+{\bf Purpose:}\\
+Installing Wireshark will allow you to analyse packets and protocols
+
+See real network traffic, also know that a lot of information is available and not encrypted.
+
+Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL while capturing
+
+\begin{alltt}
+curl http://www.zencurity.com
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run Wireshark from your Linux
+
+Open Wireshark and start a capture\\
+Then in another window execute the ping program while sniffing
+
+or perform a Telnet connection while capturing data
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+It is already on your Kali Linux, or do: \verb+apt-get install wireshark+
+
+When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some HTTP/TCP sessions you are done.
+
+If you want to capture packets as a non-root user on Debian, then use the command to add a Wireshark group:
+\begin{alltt}
+sudo dpkg-reconfigure wireshark-common
+\end{alltt}
+
+and add your user to this:
+\begin{alltt}
+sudo gpasswd -a $USER wireshark
+\end{alltt}
+Dont forget to logout/login to pick up this new group.
+
+{\bf Discussion:}\\
+Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
+
+We can download a lot of packet traces from around the internet, we might use examples from\\
+\link{https://old.zeek.org/community/traces.html}
+
+
+
+
+\chapter{Sniff Your Browser 15min}
+\label{ex:sniff-captive-portal}
+
+
+{\bf Objective:}\\
+See an example of a simple network application behaviour.
+
+{\bf Purpose:}\\
+Learn how to get started analysing network application traffic.
+
+{\bf Suggested method:}\\
+Modern browser check if they are online by making requests.
+
+Which requests does a browser make by itself, even though you haven't entered URL yet?
+
+Use Wireshark on your Kali or normal operating system. Start your capture, start your browser.
+
+See if you can identify the traffic.
+
+{\bf Hints:}\\
+You should be looking for DNS and HTTP/HTTPS requests.
+
+DNS uses port 53/udp and 53/tcp.
+
+Also googling captive portal and Firefox reveals a setting you can turn of or on.
+
+You might also have observed this when you proxied your browser through Burp suite in an earlier exercise.
+
+{\bf Solution:}\\
+When you have identified the traffic belonging to at least one browser you are done. Firefox should be easy.
+
+{\bf Discussion:}\\
+Does initiating this from a browser have privacy implications?
+
+Your internet provider can see when you are home, when you start your browser etc. Requests made are often with a lot of extra information, like User-Agent and distinguishable.
+
+Example, my son uses an iPhone, but I use an Android. One user might use Windows 7, while another uses Windows 10 - traffic will be different.
+
+
+
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
+
+
+
+\end{document}

@@ -1,0 +1,405 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+
+% ## Git/Github Basics
+
+% En introduktion til Git/Github versionsstyring og workflows
+
+% Kom og vær med når Henrik Kramselund Jereminsen (tidligere Kramshøj) giver introduktion til Git og
+% Github, hvor alle kan være med.
+
+% Der er mange Git tutorials på internet, men hvad er det Git egentlig og hvorfor skal vi bruge det? Dette foredrag er en introduktion med vægt på praktiske eksempler, hvordan og hvor bruger jeg Git. Jeg gemmer alle mine præsentationer i Git, har sendt rettelser til dokumentation via Github, har sendt funktioner og kode til open source projekter via Github - kort sagt indgår git og Github mange steder i min hverdag.
+
+% Indholdet er blandt andet:
+% * Hvad er Git - nogle enkelte termer
+% * Hvad er Github - facebook for kodenørder
+% * Hvordan bruger Kramse git. Eksempler på brug af git til kode, dokumentation og præsentationer
+
+% Målgruppe: alle der er interesserede i versionsstyring og workflows.
+
+% Varighed: ca 2 timer inkl pause
+
+% Nøgleord: git, Github, versionering, patches, kode, dokumentation, slides, workflows
+
+
+% ### Om materialerne
+% Note: slides og andre materialer vil være på engelsk, men præsentationssprog vil være dansk.
+
+% Alle materialer frigives som open source på Github: https://github.com/kramse/security-courses/
+
+
+\begin{document}
+\selectlanguage{danish}
+\mytitlepage{Git/Github Basics}{2020}
+
+
+\vskip 1cm
+\centerline{\footnotesize slides are available on Github}
+
+\slide{Goal for today}
+
+\hlkimage{5cm}{Shaking-hands_web.jpg}
+
+
+
+\begin{list2}
+\item Plan:
+\item Approx 2h including break
+\item Inspiration for using Git in your life
+\item Not an expert in Git
+\end{list2}
+
+
+\slide{My daily job -- Security engineering a job role}
+
+\begin{alltt}\footnotesize
+On any given day, you may be challenged to:
+        Create new ways to solve existing production security issues
+        Configure and install firewalls and intrusion detection systems
+        Perform vulnerability testing, risk analyses and security assessments
+        Develop automation scripts to handle and track incidents
+        Investigate intrusion incidents, conduct forensic investigations and incident responses
+        Collaborate with colleagues on authentication, authorization and encryption solutions
+        Evaluate new technologies and processes that enhance security capabilities
+        Test security solutions using industry standard analysis criteria
+        Deliver technical reports and formal papers on test findings
+        Respond to information security issues during each stage of a project’s lifecycle
+        Supervise changes in software, hardware, facilities, telecommunications and user needs
+        Define, implement and maintain corporate security policies
+        Analyze and advise on new security technologies and program conformance
+        Recommend modifications in legal, technical and regulatory areas that affect IT security
+\end{alltt}
+
+Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
+also
+\url{https://en.wikipedia.org/wiki/Security_engineering}
+
+So I am \emph{not a developer}
+
+
+
+\slide{What is asset management}
+
+\begin{quote}
+CIS Control 1:\\
+Inventory and Control of Hardware Assets
+Actively manage (inventory, track, and correct) all hardware devices on the network so that only
+authorized devices are given access, and unauthorized and unmanaged devices are found and
+prevented from gaining access.
+\end{quote}
+Source: \link{https://www.cisecurity.org/}
+
+\begin{list2}
+\item Hardware - bought, connected, loaners, stolen ...
+\item Software - licenses, procurement, upgrades are cheaper if you have earlier versions
+\item Virtual assets - business critical data
+\item ...
+\end{list2}
+
+
+
+\slide{Configuration: TLS and VPN settings}
+
+\begin{alltt}\footnotesize
+  # Input from https://github.com/tykling/ansible-roles/blob/master/nginx_server/templates/tls.conf.j2#L6
+  ssl_protocols                   TLSv1.2 TLSv1.3;
+  ssl_ciphers                     ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA;
+  ssl_prefer_server_ciphers       on;
+  ssl_session_cache               shared:SSL:10m;     ssl_session_tickets       off;   ssl_session_timeout    4h;
+  ssl_stapling                    on;                 ssl_stapling_verify       on;
+  resolver                        105.238.53.1;
+  ssl_ecdh_curve secp384r1;                           ssl_dhparam /etc/nginx/dh4096.pem;
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header Referrer-Policy "no-referrer";  add_header X-Content-Type-Options "nosniff";
+  add_header X-Frame-Options "DENY";  add_header X-XSS-Protection "1; mode=block";
+  add_header Content-Security-Policy "default-src 'self'; script-src 'self; img-src 'self'; object-src 'none'; font-src 'self'; frame-ancestors 'none' https:";
+\end{alltt}
+
+\begin{list2}
+\item Most have web sites with TLS/HTTPS -- how is it configured
+\item Recommend centralizing and going over settings regularly
+\item Create a policy for your organisation
+\end{list2}
+
+\centerline{Where do we store this information?}
+
+
+
+\slide{Ansible}
+
+\hlkimage{2cm}{Ansible_logo.png}
+
+\begin{quote}
+From my course materials:\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor.
+\end{quote}
+
+\begin{list2}
+\item Easy to read, even if you don't know much about YAML
+\item \link{https://www.ansible.com/} and \link{https://en.wikipedia.org/wiki/Ansible_(software)}
+\item Great documentation \link{https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html}
+\end{list2}
+
+
+\slide{Ansible Dependencies}
+
+\hlkimage{10cm}{python-logo.png}
+
+\begin{list2}
+\item Ansible based on Python, only need Python installed\\
+\link{https://www.python.org/}
+\item Often you use Secure Shell for connecting to servers\\
+\link{https://www.openssh.com/}
+\item Easy to configure SSH keys, for secure connections
+\end{list2}
+
+
+
+
+\slide{Ansible playbooks}
+
+Example playbook content, installing software using APT:
+\begin{alltt}\small
+apt:
+    name: "\{\{ packages \}\}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+Running it:
+\begin{minted}[fontsize=\small]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+"YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."\\
+\link{https://en.wikipedia.org/wiki/YAML}
+
+\slide{Python and YAML -- Git}
+
+\hlkimage{7cm}{git-logo.png}
+
+\begin{list2}
+\item We need to store configurations
+\item Run playbooks
+\item Problem: Remember what we did, when, how
+\item Solution: use git for the playbooks
+\item Not the only version control system, but my preferred one
+\end{list2}
+
+\slide{Alternative}
+
+\hlkimage{10cm}{manual-install-es.png}
+
+My playbooks allow installation of a whole Elastic stack in less then 10 minutes,
+
+compare to:\\
+\emph{Getting started with the Elastic Stack}\\
+{\footnotesize\link{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+
+\slide{Git getting started}
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.github.com/activities/hello-world/}
+
+\begin{list2}
+\item What is git
+\item Terminology
+\end{list2}
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+\slide{Demo: Ansible, Python, Git!}
+
+\begin{quote}
+  Running Git will allow you to clone repositories from others easily. This is a great way to get new software packages, and share your own.
+
+  Git is the name of the tool, and Github is a popular site for hosting git repositories.
+\end{quote}
+
+
+\begin{list2}
+\item Go to \link{https://github.com/kramse/}
+\item Lets explore while we talk
+\item Hint; getting the presentation from today might be a task \smiley
+\end{list2}
+
+
+\slide{Demo: output from running a git clone}
+
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+for reference at home later
+
+\slide{Sample Project: Windsurf Inventory}
+
+\hlkimage{95mm}{github-private.png}
+
+\begin{list2}
+\item Simple example of using Git, saving some files, and update them
+\item Problem: Windsurfing equipment and technical details
+\item Many sources, JP Board, Niel Pryde Sails, Unifiber masts, ...
+\item Solution: Markdown and Git
+\item Sorry this repo is closed, you cannot browse it
+\end{list2}
+
+
+\slide{Sample Project: Presentations}
+
+\hlkimage{10cm}{ latex-project-logo.png}
+\begin{list2}
+\item Problem: Create reusable presentations, allow students to get latest version
+\item Multiple files, many updates over the years
+\item Wants: Get PDF output
+\item Solution: LaTeX and Git
+\item \link{https://en.wikipedia.org/wiki/LaTeX}
+\item Look at the file: \verb+first-presentation.pdf+ from\\
+\link{https://github.com/kramse/security-courses}
+\end{list2}
+
+
+\slide{Git remote }
+
+\begin{list2}
+\item Git repositories are basically files
+\item Git repos allow you to clone, download files -- \verb+git clone+
+\item Work locally, including making brances
+\item Integrate/upload/merge into remote repositories -- \verb+git commit+ and \verb+git push+
+\item Git doesn't care if you are one person with multiple laptops, or multiple persons
+\end{list2}
+
+
+
+\slide{Git configuration: user information}
+
+%\hlkimage{}{}
+
+File: \verb+.gitconfig+
+\begin{alltt}
+  [user]
+  	name = Henrik Kramselund Jereminsen
+  	email = hkj@kramse.org
+
+  [push]
+  	default = simple
+\end{alltt}
+
+\begin{list2}
+\item There is a small amount of configuration, user information
+\item Each repository also has a gitignore
+\end{list2}
+
+\slide{Git configuration: ignore files}
+
+%\hlkimage{}{}
+
+File: \verb+.gitignore+ top of repository
+\begin{alltt}\footnotesize
+  # OS generated files
+  .DS_Store
+  .Spotlight-V100
+  .Trashes
+  # Latex files
+  *.aux
+  *.idx
+  *.log
+  *.toc
+  *.ind
+  *.out
+  *.synctex.gz
+  *.fls
+  *.fdb_latexmk
+
+\end{alltt}
+
+\begin{list2}
+\item Each repository also has a .gitignore, part shown above
+\end{list2}
+
+
+
+
+\slide{Example: Zim Personal Wiki}
+
+\hlkimage{10cm}{zim-normal.png}
+\begin{list2}
+\item My personal ToDo list is using Zim backed by Git repository
+\item \link{https://zim-wiki.org/}
+\end{list2}
+
+\slide{Github bragging}
+
+\begin{quote}\small
+Suricata » Suricata Developers Guide »
+
+Contributing
+This guide describes what steps to take if you want to contribute a patch or patchset to Suricata.
+Before you start, please review and sign our Contribution Agreement
+
+...
+
+Create your own branch
+It's useful to create descriptive branch names. If you're working on ticket 123 to improve GeoIP? Name your branch "geoip-feature-123-v1". The "-v1" addition for feedback. When incorporating feedback you will have to create a new branch for each pull request. So when you address the first feedback, you will work in "geoip-feature-123-v2" and so on.
+
+Github: Creating a branch with Github
+Git: Creating a branch with Git
+\end{quote}
+
+
+Source: \link{https://redmine.openinfosecfoundation.org/projects/suricata/wiki/Contributing}
+
+\begin{list2}
+\item You can contribute to open source!
+\item Pull requests - \link{https://github.com/OISF/suricata/pull/3847}\\
+ and \link{https://github.com/zeek/zeek/pull/193}
+\end{list2}
+
+
+
+\slide{Questions}
+
+\hlkimage{7cm}{idog.jpg}
+
+\begin{center}
+\hlkbig
+
+\myname
+
+\end{center}
+
+
+\end{document}
+
+\slide{}
+
+\begin{quote}
+\end{quote}
+Source:
+
+
+\begin{list2}
+\item
+\item
+\item
+\end{list2}

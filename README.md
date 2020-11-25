@@ -89,5 +89,5 @@ middle, sorry I am lazy ;-) )
 
 Best regards
 
-Henrik Lund Kramshoej
-hlk@kramse.org
+Henrik Kramselund Jereminsen
+hkj@kramse.org

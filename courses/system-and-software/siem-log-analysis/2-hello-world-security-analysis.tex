@@ -1,0 +1,625 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{siem-log-analysis-exercises}
+\selectlanguage{english}
+
+
+
+\begin{document}
+
+\mytitlepage
+{2. Hello world of Security Data Analysis}
+{KEA Kompetence SIEM and Log Analysis}
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item
+\end{list2}
+\item Exercise theme: Low level, high value
+\begin{list2}
+\item Data types: IP addresses and reputation lists
+\item Zeek
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item DDS 3. Learning the "Hello World" of Security Data Analysis
+\item DDS 4. Performing Exploratory Security Data Analysis \\
+Do exercises if you feel like it, notice how small valuable programs can be
+\end{list1}
+
+
+\slide{Reading Summary, continued}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list1}
+\item DDS 3. Learning the "Hello World" of Security Data Analysis
+\begin{list2}
+\item
+\end{list2}
+\end{list1}
+
+
+\slide{Reading Summary, continued}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list1}
+\item DDS 4. Performing Exploratory Security Data Analysis
+\begin{list2}
+  \item
+\end{list2}
+\end{list1}
+
+
+
+\slide{Subjects: }
+
+\hlkimage{8cm}{homer-end-is-near.jpg}
+
+\begin{list1}
+\item
+\end{list1}
+
+
+\slide{What happens today?}
+
+\begin{list1}
+\item Think like a blue team member find hacker traffic
+\item Get basic tools running
+\item Improve situation
+\begin{list2}
+\item See where the data end up
+\item What kind of data and metadata can we extract
+\item How can we collect and make use of it
+\item Databases and web interfaces, examples shown
+\item Consider what your deployment could be
+\end{list2}
+\end{list1}
+
+\centerline{Today focus on the lower parts, but user interfaces are important too}
+
+
+
+\slide{DDS: Chapter 3 exercises }
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item Lets try some of the scripts from this chapter
+\end{list2}
+
+
+
+
+
+Data types and sources
+
+
+IP
+
+
+\slide{IP: Internet historically}
+
+\begin{list2}
+\item[1961]  L. Kleinrock, MIT packet-switching teori
+\item[1962]  J. C. R. Licklider, MIT - notes
+\item[1964]  Paul Baran: On Distributed Communications
+\item[1969]  ARPANET start 4 nodes
+\item[1971]  14 nodes
+\item[1973]  Work on Internet Protocols IP started
+\item[1973]  Email is about 75\% af ARPANET traffik
+\item[1974]  TCP/IP: Cerf/Kahn: A protocol for Packet
+        Network Interconnection
+\item[1983]  EUUG $\rightarrow$ DKUUG/DIKU connection
+\item[1988]  ca. 60.000 systemer på Internet
+        The Morris Worm rammer ca. 10\%
+\item[2002]  Ialt ca. 130 millioner på Internet
+\end{list2}
+
+\slide{Internet historically set -  anno 1969}
+\hlkimage{6cm}{1969_4-node_map.png}
+%size 2
+
+\begin{list2}
+\item Node 1: University of California Los Angeles
+\item Node 2: Stanford Research Institute
+\item Node 3: University of California Santa Barbara
+\item Node 4: University of Utah
+%\item Kilde: \link{http://www.zakon.org/robert/internet/timeline/}
+\end{list2}
+
+
+
+\slide{What are Internet hosts }
+
+\hlkimage{15cm}{potaroo-ipv4-address-report.png}
+\centerline{Cumulative RIR address assignments, per RIR}
+
+\begin{list1}
+\item Source:
+IPv4 Address Report - 28-Jan-2019
+\link{http://www.potaroo.net/tools/ipv4/}
+\end{list1}
+
+
+\slide{Packets across the wire or wireless}
+
+\hlkimage{20cm}{ethernet-frame-1.pdf}
+\begin{list1}
+\item Looking at data as a stream the packets are a pattern laid on top
+\item Network technology defines the start and end of a frame, example Ethernet
+\item From a lower level we receive a packet, example 1500-bytes from Ethernet driver
+\item Operating system masks a lot of complexity
+\end{list1}
+
+
+\slide{IPv4 packets - header - RFC-791}
+
+\begin{alltt}\small
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+
+
+\slide{Common Address Space}
+
+\vskip 2 cm
+\hlkimage{13cm}{IP-address.pdf}
+
+\begin{list1}
+\item Internet is defined by the address space, one
+\item Based on 32-bit addresses, example 10.0.0.1
+\end{list1}
+
+\slide{IPv4 address}
+
+\begin{alltt}
+hlk@bigfoot:hlk$ ipconvert.pl 127.0.0.1
+Adressen er: 127.0.0.1
+Adressen er: 2130706433
+hlk@bigfoot:hlk$ ping 2130706433
+PING 2130706433 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.135 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.144 ms
+\end{alltt}
+
+\begin{list1}
+\item IP-adresser typically written as decimal numbers with dots
+\item {\bf dot notation}: 10.1.2.3
+\end{list1}
+
+\slide{IP-adresser as bits}
+
+\begin{alltt}
+IP-adresse: 127.0.0.1
+Heltal:	2130706433
+Binary:	1111111000000000000000000000001
+\end{alltt}
+
+\begin{list1}
+\item IP-address converted to bits
+\item Computers use bits
+\end{list1}
+
+\slide{Internet ABC}
+
+\begin{list1}
+\item Previously we used classes: A, B, C, D og E
+\item This proved to be a bit inflexible:
+\begin{list2}
+\item A-klasse has 16 million hosts
+\item B-klasse about 65.000 hosts
+\item C-klasse only 250 hosts
+\end{list2}
+\item Most people asked for B-klasser - starting to run out!
+\item D-klasse used for multicast
+\item E-klasse reserved
+\item See \link{http://en.wikipedia.org/wiki/Classful\_network}
+\end{list1}
+
+\vskip 5mm
+\centerline{\bf Stop saying C, say /24}
+
+\slide{CIDR Classless Inter-Domain Routing}
+
+\hlkimage{13cm}{CIDR-aggregation.pdf}
+
+\begin{list1}
+\item Subnet mask originally inferred by the class
+\item Started to allocate multiple C-class networks - save remaining B-class\\
+Resulted in routing table explosion
+\item A subnet mask today is a row of 1-bit
+\item 10.0.0.0/24 means the network 10.0.0.0 with subnet mask 255.255.255.0
+\item Supernet, supernetting
+\end{list1}
+
+
+\slide{RFC-1918 Private Networks}
+
+\begin{list1}
+\item Der findes et antal adresserum som alle må benytte frit:
+\begin{list2}
+\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
+\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
+\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
+\end{list2}
+\item Address Allocation for Private Internets RFC-1918 adresserne!
+\item NB: man må ikke sende pakker ud på internet med disse som afsender, giver ikke mening
+\end{list1}
+
+\begin{alltt}
+The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
+and 203.0.113.0/24 (TEST-NET-3) are provided for use in
+documentation.
+
+169.254.0.0/16 has been ear-marked as the IP range to use for end node
+auto-configuration when a DHCP server may not be found
+\end{alltt}
+
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{14cm}{udp-1.pdf}
+\begin{list1}
+\item Connection-less RFC-768, \emph{connection-less}
+\item Used for Domain Name Service (DNS)
+\end{list1}
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{12cm}{tcp-1.pdf}
+
+\begin{list1}
+\item Connection oriented RFC-791 September 1981, \emph{connection-oriented}
+\item Either data delivered in correct order, no data missing, checksum or an error is reported
+\item Used for HTTP and others
+\end{list1}
+
+\slide{TCP three way handshake}
+
+\hlkimage{6cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item Session setup is used in some protocols
+\item Other protocols like HTTP/2 can perform request in the first packet
+\end{list2}
+
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA maintains a list of magical numbers in TCP/IP
+\item Lists of protocl numbers, port numers etc.
+\item A few notable examples:
+\begin{list2}
+\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
+\item Port 53/udp and 53/tcp Domain Name System (DNS)
+\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
+\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
+\end{list2}
+\item Source: \link{http://www.iana.org}
+\end{list1}
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+RIPE NCC allocated
+
+\slide{Investigate examples from the internet}
+
+\hlkimage{9cm}{ripe-ncc-atlas-json.png}
+
+\begin{list2}
+\item Which web services do you use? Can we find examples of XML and JSON web services
+%\item Can we run SOAP, perhaps the SOAPpy example
+\item Look into the services provided by DBC, what languages, formats, services - look at their Github account DBCDK
+\item We will use internet data from RIPE NCC Atlas service, if nothing else:\\
+{\footnotesize\url{https://ripe-atlas-tools.readthedocs.io/en/latest/}\\
+\url{https://atlas.ripe.net/docs/api/v2/manual/pdf/ripe_atlas_api_V2_manual.pdf}}
+\item If using the command line to set the API key:\
+\verb+ripe-atlas configure --set authorisation.create=e7fd3981-9592-481e-8bcd-f50d17e65de8+
+
+\end{list2}
+
+
+
+\slide{DNS root servers}
+
+\hlkimage{20cm}{root-servers.png}
+
+\link{http://root-servers.org/}
+
+
+DNS and passive DNS
+OSINT sources? spiderfoot
+
+
+\slide{DNS is important}
+
+Another tool that provides a basic SQL-frontend to PCAP-files\\
+\url{https://www.dns-oarc.net/tools/packetq}\\
+\url{https://github.com/DNS-OARC/PacketQ}
+
+Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
+
+Deciding on which tool to use, Zeek or PacketQ depends on the situation.
+
+
+
+
+
+IOC Indicators of Compromise
+ Intrusion Detection Message Exchange Format (IDMEF) perhaps
+
+Maltrail sources
+
+
+Grep
+Zeek, Logstash and Suricata
+
+
+
+Exercises
+https://github.com/crits/crits/wiki
+has a large list of CRITs objects
+
+IOC
+Reputation lists
+Maltrail sources
+
+\exercise{ex:data-types-ip-address}
+
+\exercise{siem:ip-reputation}
+
+
+\slide{Low level, high value}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+
+nfdump
+Zeek, Logstash and Suricata
+SELKS
+
+
+\slide{NetFlow}
+
+\begin{slidelist}
+\item NetFlow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item NetFlow sampling is vital information - 123Mbit, but what kind of traffic
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+\centerline{Netflow is often from routers, we dont have any here}
+
+Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
+
+\slide{Packet sniffing tools}
+
+\begin{list1}
+\item Tcpdump for capturing packets
+\item Wireshark for dissecting packets manually with GUI
+\item Zeek Network Security Monitor
+\item Snort, old timer Intrusion Detection Engine (IDS)
+\item Suricata, modern robust capable of IDS and IPS (prevention)
+\item ntopng High-speed web-based traffic analysis
+\item Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
+\end{list1}
+
+\vskip 5mm
+\centerline{Often a combination of tools and methods used in practice}
+
+Full packet capture big data tools also exist
+
+
+
+
+\slide{Using Wireshark}
+
+\hlkimage{14cm}{images/wireshark-http.png}
+
+\centerline{\link{https://www.wireshark.org}}
+
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{13cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework (former name Bro)
+
+{\small Source \url{https://www.zeek.org/}}
+
+\slide{Zeek scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_A_reply_count;
+        \}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_AAAA_reply_count;
+        \}
+\end{alltt}
+
+source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}
+\url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
+
+
+\exercise{ex:zeekweb}
+
+\slide{Exercise setup}
+
+We will use a combination of your virtual servers, my switch hardware and my virtual systems.
+
+\vskip 1cm
+{\Large \bf There will be sniffing done on traffic!\\
+Don't abuse information gathered}
+
+We try to mimic what you would do in your own networks during the exercises.
+
+Another way of running exercises might be:\\
+\url{https://github.com/jonschipp/ISLET}
+
+Recommended and used by Zeek and Suricata projects.
+
+\slide{Get Started with Zeek}
+
+\begin{list1}
+\item To run in “base” mode:
+ \verb+bro -r traffic.pcap+
+\item To run in a “near broctl” mode:
+\verb+bro -r traffic.pcap local+
+\item To add extra scripts:
+\verb+bro -r traffic.pcap myscript.bro+
+\end{list1}
+
+\centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
+\slide{Bro demo: Run}
+
+\begin{alltt}\small
+// install zeek first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+kunoichi:etc root# grep eth0 node.cfg
+interface=eth0
+\end{alltt}
+
+\slide{Zeek demo: Run Zeek}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+
+\slide{Suricata IDS/IPS/NSM}
+
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+\centerline{I often use Suricata and Zeek together}
+
+
+\slide{Commercial Support}
+
+You can and should use updated rulesets for Suricata.
+
+I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year per sensor. So two sites with Suricata running in both, 2x USD 900
+
+
+\exercise{ex:zeekweb}
+
+\exercise{ex:zeekdnsbasic}
+\exercise{ex:zeektlsbasic}
+
+\exercise{ex:zeek-pkg}
+
+
+
+\slidenext{}
+
+
+\end{document}

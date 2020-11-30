@@ -17,7 +17,9 @@
 
 Todays goals:
 \begin{list2}
-\item
+\item A Hello World example
+\item Try to go from raw data into Zeek, into Elasticsearch
+\item Investigating a few data types along the way
 \end{list2}
 
 Photo by Thomas Galler on Unsplash
@@ -30,14 +32,32 @@ Photo by Thomas Galler on Unsplash
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item Data types: IP addresses, DNS, Netflow
+\item Note: not all details about these types are explained today!
 \end{list2}
 \item Exercise theme: Low level, high value
 \begin{list2}
 \item Data types: IP addresses and reputation lists
-\item Zeek
+\item Zeek as an example of a powerful multi-tool
 \end{list2}
 \end{list1}
+
+
+\slide{Exercise setup}
+
+We will use a combination of your virtual servers, my switch hardware and my virtual systems.
+
+\vskip 1cm
+{\Large \bf There will be sniffing done on traffic!\\
+Don't abuse information gathered}
+
+We try to mimic what you would do in your own networks during the exercises.
+
+Another way of running exercises might be:\\
+\url{https://github.com/jonschipp/ISLET}
+
+Recommended and used by Zeek and Suricata projects.
+
 
 \slide{Reading Summary}
 
@@ -53,15 +73,18 @@ Do exercises if you feel like it, notice how small valuable programs can be
 %\hlkimage{}{}
 
 \begin{quote}
-
+This chapter takes the “Hello World” concept and expands it to a walk-through of a self-contained, introductory security data analysis use case that you will be able to follow along with, execute, and take concepts from as you start to perform your own analyses. There are parallel examples in Python and R to provide a somewhat agnostic view of the similarities, strengths, and differences between both languages in a real-life data analysis context. If you’re not familiar with one or both of those languages, you should read Chapter 2 and at least skim some of the external resources referenced there.
 \end{quote}
+Source: DDS 3. Learning the "Hello World" of Security Data Analysis
 
-\begin{list1}
-\item DDS 3. Learning the "Hello World" of Security Data Analysis
+
 \begin{list2}
-\item
+\item Get data from HTTP -- can be scheduled
+\item Process
+\item Present it - graphs and later dashboards
+\item We dont need to run all examples to see the benefit
+\item Lets try some of the scripts from this chapter
 \end{list2}
-\end{list1}
 
 
 \slide{Reading Summary, continued}
@@ -69,26 +92,25 @@ Do exercises if you feel like it, notice how small valuable programs can be
 %\hlkimage{}{}
 
 \begin{quote}
+This chapter focuses on exploring IP addresses by starting with further analyses on the AlienVault IP Reputation database first seen in Chapter 3.
+
+IP addresses—along with domain names and routing concepts—are the building blocks of the Internet. They are defined in RFC 791, the “Internet Protocol / DARPA Internet Program / Protocol Specification” (http://tools.ietf.org/html/rfc791), which has an elegant and succinct way of describing them:
+
+\hskip 1cm A name \emph{indicates what we seek}. An address \emph{indicates where it is}. A route \emph{indicates how to get there}.
 
 \end{quote}
+Source DDS 4. Performing Exploratory Security Data Analysis
 
-\begin{list1}
-\item DDS 4. Performing Exploratory Security Data Analysis
-\begin{list2}
-  \item
-\end{list2}
-\end{list1}
-
-
-
-\slide{Subjects: }
-
-\hlkimage{8cm}{homer-end-is-near.jpg}
-
-\begin{list1}
-\item
-\end{list1}
-
+{\small
+\begin{enumerate}
+\item Downloading (if necessary) new data
+\item  Parsing/munging and converting the new data into a data frame
+\item  Validating the contents and structure of the new data
+\item  Extracting or computing relevant information from the new data source
+\item  Creating one or more new columns in the existing data frame
+\item  Running new analyses
+\end{enumerate}
+}
 
 \slide{What happens today?}
 
@@ -106,30 +128,6 @@ Do exercises if you feel like it, notice how small valuable programs can be
 \end{list1}
 
 \centerline{Today focus on the lower parts, but user interfaces are important too}
-
-
-
-\slide{DDS: Chapter 3 exercises }
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
-\begin{list2}
-  \item Lets try some of the scripts from this chapter
-\end{list2}
-
-
-
-
-
-Data types and sources
-
-
-IP
-
 
 \slide{IP: Internet historically}
 
@@ -364,8 +362,6 @@ ISBN-13:
 \link{https://nostarch.com/packetanalysis3}
 
 
-RIPE NCC allocated
-
 \slide{Investigate examples from the internet}
 
 \hlkimage{9cm}{ripe-ncc-atlas-json.png}
@@ -391,11 +387,9 @@ RIPE NCC allocated
 \link{http://root-servers.org/}
 
 
-DNS and passive DNS
-OSINT sources? spiderfoot
-
-
 \slide{DNS is important}
+
+\hlkimage{12cm}{using-packetq.png}
 
 Another tool that provides a basic SQL-frontend to PCAP-files\\
 \url{https://www.dns-oarc.net/tools/packetq}\\
@@ -403,30 +397,68 @@ Another tool that provides a basic SQL-frontend to PCAP-files\\
 
 Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
 
+\slide{Other tools and references}
+
 Deciding on which tool to use, Zeek or PacketQ depends on the situation.
 
+Other tools and references:
+\begin{list2}
+\item Packetbeat \link{https://www.elastic.co/products/beats/packetbeat}
+\item \link{http://securityblog.switch.ch/2013/01/22/using-packetq/}
+\item \link{http://jpmens.net/2013/05/27/server-agnostic-logging-of-dns-queries-responses/}
+\end{list2}
 
 
+\slide{Indicators of Compromise and Signatures}
+
+\begin{quote}
+An IOC is any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner. This could include a simple indicator such as the IP address of a command and control (C2) ser
+ver or a complex set of behaviors that indicate that a mail server is being used as a malicious SMTP relay.
+
+When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Zeek-formatted file, it becomes part of a signature. A sign
+ature can contain one or more IOCs.
+\end{quote}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+\slide{Reading Summary, False Positives}
+
+\begin{list2}
+\item True Positive (TP). An alert that has correctly identified a specific activity. If a signature was designed to detect a certain type of malware, and an alert is generated when that malware is launched on a system, this would be a true positive, which is what we strive for with every deployed signature.Indicators of Compromise and Signatures
+\item False Positive (FP). An alert has incorrectly identified a specific activity. If a signature was designed to detect a specific type of malware, and an alert is generated for an instance in which that malware was not present, this would be a false positive.
+\item True Negative (TN). An alert has correctly not been generated when a specific activity has not occurred. If a signature was designed to detect a certain type of malware, and no alert is generated without that malware being launched, then this is a true negative, which is also desirable. This is difficult, if not impossible, to quantify in terms of NSM detection.
+\item False Negative (FN). An alert has incorrectly not been generated when a specific activity has occurred.
+\end{list2}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+\slide{Reputation-Based Detection}
+
+\hlkimage{4cm}{switch-1.pdf}
+
+\begin{list2}
+\item The most basic form of intrusion detection is reputation-based detection
+\item Similar concept to block lists for SMTP spam relays
+\item I often recommend \link{https://github.com/stamparm/maltrail} as a source of lists
+\item Other sources are lists like RIPE NCC delegated, which IP prefixes are handed out in different countries\\
+\link{https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest}\\
+\verb+ripencc|DK|ipv4|185.129.60.0|1024|20151130|allocated|+
+\item Tool often mentioned are Argus and SiLK \link{https://tools.netsa.cert.org/silk/}\\
+If we end up having time today, or another day, we should look into this tool chain also!
+\item Old and mature tools have been proven to work
+\end{list2}
 
 
-IOC Indicators of Compromise
- Intrusion Detection Message Exchange Format (IDMEF) perhaps
+\slide{IP reputation}
 
-Maltrail sources
+\begin{list1}
+\item Zeek documentation Intel framework\\
+\link{https://docs.zeek.org/en/stable/frameworks/intel.html}\\
+\item Suricata reputation support\\
+\link{https://suricata.readthedocs.io/en/suricata-4.0.5/reputation/index.html}
+\end{list1}
 
-
-Grep
-Zeek, Logstash and Suricata
-
-
-
-Exercises
-https://github.com/crits/crits/wiki
-has a large list of CRITs objects
-
-IOC
-Reputation lists
-Maltrail sources
 
 \exercise{ex:data-types-ip-address}
 
@@ -435,60 +467,63 @@ Maltrail sources
 
 \slide{Low level, high value}
 
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
 
 \begin{list2}
-  \item
+\item I will introduce some of my favourite tools, and they are low-level
+
 \end{list2}
 
-nfdump
-Zeek, Logstash and Suricata
-SELKS
 
+\slide{Netflow}
 
-\slide{NetFlow}
-
-\begin{slidelist}
-\item NetFlow is getting more important, more data share the same links
+\begin{list2}
+\item Netflow is getting more important, more data share the same links
 \item Accounting is important
 \item Detecting DoS/DDoS and problems is essential
-\item NetFlow sampling is vital information - 123Mbit, but what kind of traffic
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
 \item Currently also investigating sFlow - hopefully more fine grained
-\end{slidelist}
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{list2}
 
 \centerline{Netflow is often from routers, we dont have any here}
 
 Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
 
-\slide{Packet sniffing tools}
+
+
+\slide{Collect Network Evidence from the network}
 
 \begin{list1}
-\item Tcpdump for capturing packets
-\item Wireshark for dissecting packets manually with GUI
-\item Zeek Network Security Monitor
-\item Snort, old timer Intrusion Detection Engine (IDS)
-\item Suricata, modern robust capable of IDS and IPS (prevention)
-\item ntopng High-speed web-based traffic analysis
-\item Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\item today Netflow version 9 or IPFIX
 \end{list1}
 
-\vskip 5mm
-\centerline{Often a combination of tools and methods used in practice}
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
 
-Full packet capture big data tools also exist
+\slide{ Netflow NFSen}
 
+\hlkimage{17cm}{nfsen-udp-flood.png}
 
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
 
+\slide{Netflow processing from the web interface}
 
-\slide{Using Wireshark}
+\hlkimage{12cm}{images/nfsen-processing-1.png}
 
-\hlkimage{14cm}{images/wireshark-http.png}
-
-\centerline{\link{https://www.wireshark.org}}
+\centerline{Bringing the power of the command line forward}
 
 
 \slide{The Zeek Network Security Monitor}
@@ -524,21 +559,6 @@ source: dns-fire-count.bro from\\
 
 \exercise{ex:zeekweb}
 
-\slide{Exercise setup}
-
-We will use a combination of your virtual servers, my switch hardware and my virtual systems.
-
-\vskip 1cm
-{\Large \bf There will be sniffing done on traffic!\\
-Don't abuse information gathered}
-
-We try to mimic what you would do in your own networks during the exercises.
-
-Another way of running exercises might be:\\
-\url{https://github.com/jonschipp/ISLET}
-
-Recommended and used by Zeek and Suricata projects.
-
 \slide{Get Started with Zeek}
 
 \begin{list1}
@@ -551,7 +571,7 @@ Recommended and used by Zeek and Suricata projects.
 \end{list1}
 
 \centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
-\slide{Bro demo: Run}
+\slide{Zeek demo: Run}
 
 \begin{alltt}\small
 // install zeek first
@@ -615,7 +635,54 @@ I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year
 \exercise{ex:zeekdnsbasic}
 \exercise{ex:zeektlsbasic}
 
-\exercise{ex:zeek-pkg}
+\slide{Zeek and Elasticsearch, Filebeat to the rescue}
+
+\begin{list2}
+\item Lets try to get data from Zeek into Elasticsearch
+\item Can Zeek produce something nice
+\item Can Elasticsearch parse something nice
+\item I think JSON is nice.
+\item Lucky us:
+06 AUGUST 2020ENGINEERING
+\emph{Collecting and analyzing Zeek data with Elastic Security}
+by Michael Young\\
+\link{https://www.elastic.co/blog/collecting-and-analyzing-zeek-data-with-elastic-security}
+\item PS it talks about GeoIP enrichment too!
+\end{list2}
+
+
+
+\slide{Zeek packages}
+
+%\hlkimage{}{}
+
+\begin{quote}
+\verb+zkg install +
+\end{quote}
+
+\begin{list2}
+\item Zeek can be expanded and a lot of packages exist
+\item \link{https://packages.zeek.org/} 153 packages!
+\item Lets look at some example scripts like some from CVEs
+\end{list2}
+
+
+\slide{More Exercises?}
+
+We probably ran out of time, but I wanted to show\\
+\link{https://github.com/crits/crits/wiki}
+which has a large list of CRITs objects
+
+
+\slide{Security Onion}
+
+\hlkimage{10cm}{security-onion.png}
+
+Security Onion is a Linux distro for IDS (Intrusion Detection) and NSM (Network Security Monitoring).\\
+\link{http://securityonion.net}
+
+\centerline{Nice starting point for researching dashboards/network packets}
+
 
 
 

@@ -17,7 +17,10 @@
 
 Todays goals:
 \begin{list2}
-\item
+\item Introduce some terms and technologies
+\item Make it possible to run Python -- easy on Debian
+\item Learn to find resources, data files and programs/libraries
+\item Put SIEM into context of the information security picture
 \end{list2}
 
   Photo by Thomas Galler on Unsplash
@@ -28,10 +31,9 @@ Todays goals:
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item Introduction to
-, R, Python,
-Github/Git
-SIEM, SOC
+\item Introduction to R, Python, using the book
+\item Github/Git
+\item SIEM and SOC
 \item Context, what are the threats, what are the answers we want from the SIEM and Logs
 \end{list2}
 \item Exercise theme: Building a house requires materials
@@ -39,6 +41,7 @@ SIEM, SOC
 \item Python Libraries - git clone
 \item Date formats ISO 8601
 \item Grok patterns, regular expressions
+\item Fetching resources from the internet -- http-resources
 \end{list2}
 \end{list1}
 
@@ -47,7 +50,7 @@ SIEM, SOC
 
 \begin{list2}
 \item 17:00 - 18:15\\
-Introduction and basics
+
 \item 30min break\\
 
 \item 18:45 - 19:30\\
@@ -67,7 +70,7 @@ Introduction and basics
 \item CIP 1 Incident Response Fundamentals
 \item CIP 2 What Are You Trying to Protect?
 \vskip 1cm
-\item Skim CIP 3 What Are the Threats? 14
+\item Skim CIP 3 What Are the Threats?
 
 \end{list1}
 
@@ -165,25 +168,6 @@ Source: CIP 2 What Are You Trying to Protect?
 
 \end{quote}
 Source: CIP 3 What Are the Threats?
-
-
-
-
-\slide{Subjects: }
-
-\hlkimage{8cm}{homer-end-is-near.jpg}
-
-\begin{list1}
-\item
-Introduction to
-
-
-Context, what are the threats, what are the answers we want from the SIEM and Logs
-
-\end{list1}
-
-
-
 
 
 
@@ -314,7 +298,125 @@ Source: \link{https://en.wikipedia.org/wiki/Information_security_operations_cent
 
 
 
+\slide{Subjects: }
 
+\hlkimage{5cm}{homer-end-is-near.jpg}
+
+\begin{list1}
+\item Context, what are the threats, what are the answers we want from the SIEM and Logs
+
+\item What are the common cases, where we use the data?
+
+\begin{list2}
+\item Incident Response
+\item Computer Emergency Response Team (CERT) and Computer Security Incident Response Teams (CSIRT)
+\item Security Departments
+\item GDPR Data protection
+\item Computer Forensics
+\end{list2}
+
+\end{list1}
+
+
+\slide{Incident Handling, phases}
+
+The procedures developed for incident response must cover the complete life-cycle
+
+\begin{list2}
+\item  Preparation for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\item  Identification of an attack, notice the attack is ongoing
+\item  Containment (confinement) of the attack, limit effects of the attack as much as possible
+\item  Eradication of the attack, stop attacker, block further similar attacks
+\item  Recovery from the attack, restore system to a secure state
+\item  Follow-up to the attack, include lessons learned  improve environment
+\end{list2}
+
+
+\slide{Crafting the InfoSec Playbook}
+
+
+This book will help you to answer common questions:
+\begin{list2}
+\item How do I find bad actors on my network?
+\item How do I find persistent attackers?
+\item How can I deal with the pervasive malware threat?
+\item How do I detect system compromises?
+\item How do I find an owner or responsible parties for systems under my protection?
+\item How can I practically use and develop threat intelligence?
+\item How can I possibly manage all my log data from all my systems?
+\item How will I benefit from increased logging—and not drown in all the noise?
+\item How can I use metadata for detection?
+\end{list2}
+Source: \emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405
+
+
+\slide{MITRE ATT\&CK framework}
+
+\hlkimage{14cm}{mitre-attack.png}
+
+Source: \link{https://attack.mitre.org/} Great resource for attack categorization
+
+\slide{Incident Response Cehcklists}
+\hlkimage{9cm}{incident-handling-checklist.png}
+
+This checklist is from the NIST document
+\emph{Computer Security Incident Handling Guide: Recommendations of the National Institute
+of Standards and Technology}, NIST Special Publication 800-61
+Revision 2, August 2012.
+
+\slide{CIS Controls also recommend Incident Response}
+
+\begin{quote}{\bf
+CIS Control 19:}\\
+Incident Response and Management Protect the organization’s information, as well as its reputation, by developing and implementing an incident response infrastructure (e.g., plans, defined roles, training, communications, management oversight) for quickly discovering an attack and then effectively containing the damage, eradicating the attacker’s presence, and restoring the integrity of the network and systems.
+\end{quote}
+
+Source:
+Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+from \link{https://www.cisecurity.org/controls/}
+
+
+
+\slide{Anatomy of an Auditing System}
+
+
+Sample logs from login with Secure Shell (SSH) and performing \verb+sudo su -+
+\begin{alltt}\footnotesize
+Jun  5 11:53:15 pumba sshd[64505]: Accepted publickey for hlk from 79.142.233.18 port 43902
+ ssh2: ED25519 SHA256:l8OJMcywyBcraJiCWJ06uZ2yzHfu0VuiArqVvlVyfEI
+
+Jun  5 11:53:19 pumba sudo:      hlk : TTY=ttyp2 ; PWD=/home/hlk ; USER=root ; COMMAND=/usr/bin/su -
+\end{alltt}
+
+\begin{list1}
+\item Example systems: Unix syslog, IBM main frame RACF and Windows Event Logs service
+\item \emph{swatchdog} is an old skool, but simple tool that works
+\item Logs should be protected and considered confidential information
+\end{list1}
+
+
+
+\slide{Anatomy of an Auditing System}
+
+When data has been gathered it should be analyzed.
+
+\begin{itemize}
+\item {\bf Logger functions} - collect
+\item {\bf Analyzer} - analyze it, creating dashboard can provide some insights
+\item {\bf Notifier} - report results by email or other means
+\item Example systems Windows Event Logs service can inform of successful and failed logins, both should be collected
+\item Logs should be protected and considered confidential information, by sending it to a centralized system with a high security level protects it
+\end{itemize}
+
+Modern systems exist to take all data from logging and provide high capacity storage, searching and sorting.
+
+\slide{Why Elasticsearch}
+
+\hlkimage{8cm}{illustrated-screenshot-hero-siem-500x730.png}
+Screenshot from \url{https://www.elastic.co/siem}
+
+Recommend building a proof-of-concept infrastructure using the Elastic stack and gather experience with logging. This can be done without a license fee and the organization can then see what works and doesn't. Then using the experiences as input an informed decision can be made, to continue with this as a home grown logging and auditing solution, or buy a premade one.
 
 
 \slide{Technologies used in this course}
@@ -322,20 +424,51 @@ Source: \link{https://en.wikipedia.org/wiki/Information_security_operations_cent
 The following tools and environments are examples that may be introduced in this course:
 
 \begin{list2}
-\item Programming languages and frameworks Java, Python
-\item Development environments -- choose your own IDE NetBeans / Eclipse / IntelliJ, Atom
-\item Systems running Java Elastic stack elements Logstash, Elasticsearch
-\item Networking and network protocols: TCP/IP, HTTP, DNS
-\item Formats XML, JSON, WSDL, GRPC, msgpack, protobuf, apache thrift
-\item Web technologies and services: REST, API, HTML5, CSS
-\item Tools like cURL, Git and Github
+\item Programming languages and frameworks Java, Python, regular expressions
+\item Development environments -- choose your own IDE / Editor -- I use {\bf Atom}
+\item Networking and network protocols: TCP/IP, HTTP, DNS, Netflow
+\item Formats XML, JSON, CSV, raw text, web scraping
+\item Web technologies and services: REST, API, HTML5, CSS, JavaScript
+\item Tools like cURL, Zeek, Git and Github
 \item Message queueing systems: MQ and Redis could be added
-\item Aggregated example platforms: Elastic stack, logstash, elasticsearch, kibana, grafana
+\item Aggregated example platforms: Elastic stack, logstash, elasticsearch, kibana, grafana, Filebeat
 \item Cloud and virtualisation Docker, Kubernetes, Azure, AWS, microservices -- can be added
 \end{list2}
 
 \centerline{This list is not complete or a promise }
 
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{4cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+{\footnotesize\link{https://www.elsevier.com/books/applied-network-security-monitoring/unknown/978-0-12-417208-1}}
+
+We use this in the course Network and Communication Security at KEA
+
+\slide{Baseline Skills}
+
+\begin{list2}\small
+\item Threat-Centric Security, NSM, and the NSM Cycle
+\item TCP/IP Protocols
+\item Common Application Layer Protocols
+\item Packet Analysis
+\item Windows Architecture
+\item Linux Architecture
+\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item IDS Usage (Snort, Suricata, etc.)
+\item Indicators of Compromise and IDS Signature Tuning
+\item Open Source Intelligence Gathering
+\item Basic Analytic Diagnostic Methods
+\item Basic Malware Analysis
+\end{list2}
+
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, Chris Sanders and Jason Smith
 
 
 \slide{OSI and Internet}
@@ -354,8 +487,41 @@ The following tools and environments are examples that may be introduced in this
 \item HyperText Transfer Protocol (HTTP) is an example
 \end{list2}
 
+\slide{Detection Capabilities}
 
 
+Security incidents happen, but what happens. One of the actions to reduce impact of incidents are done in preparing for incidents.
+
+\begin{itemize}
+\item \emph{Preparation} for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\end{itemize}
+
+Preparation will enable easy {\bf identification} of affected systems, better {\bf containment} which systems are likely to be infected, {\bf eradication} what happened -- how to do the {\bf eradication} and {\bf recovery}.
+
+\slide{Strategy for implementing identification and detection}
+
+We recommend that the following strategy is used for implementing identification and detection.
+
+We have the following recommendations and actions points for logging:
+\begin{enumerate}
+\item[\faSquareO] Enable system logging from servers
+\item[\faSquareO] Enable system logging from network devices
+\item[\faSquareO] Centralize logging
+\item[\faSquareO] Add search facilities and dashboards
+\item[\faSquareO] Perform system audits manually or automatically
+\item[\faSquareO] Setup notification and notification procedures
+\end{enumerate}
+
+\slide{Extended Sources}
+When a basic logging infrastructure is setup, it can be expanded to increase coverage, by
+adding more sources:
+
+\begin{list2}
+\item DNS query logging -- will enable multiple cases to be resolved, example malware identification and tracing, when was a malware domain queried, when was the first infection
+\item Session data from Firewalls, Netflow -- traffic patterns can be investigated and both attacks and cases like exfiltration can likely be seen
+\end{list2}
+
+Hint: Take the sources available first, make a proof-of-concept, expand coverage
 
 \slide{Data Analysis Skills}
 
@@ -762,6 +928,65 @@ also
 
 
 \exercise{ex:dateformats}
+
+\slide{Grok expresssions}
+
+{\footnotesize
+\begin{verbatim}
+  filter {
+    if [type] == "syslog" {
+      grok {
+        match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp}
+        %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}
+        (?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+Source:
+Config snippet from recommended link\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+\slide{Grok expresssions, sample from my archive}
+
+{\footnotesize
+\begin{verbatim}
+filter {
+# decode some SSHD
+if [syslog_program] == "sshd" {
+  grok {
+# May 20 10:27:08 odn1-nsm-01 sshd[4554]: Accepted publickey for hlk from
+10.50.11.17 port 50365 ssh2: DSA 9e:fd:3b:3d:fc:11:0e:b9:bd:22:71:a9:36:d8:06:c7
+
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: Accepted publickey for %{USERNAME:username} from
+  %{IP:src_ip} port %{BASE10NUM:port} ssh2" }
+
+# "May 20 10:27:08 odn1-nsm-01 sshd[4554]: pam_unix(sshd:session):
+session opened for user hlk by (uid=0)"
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: pam_unix\(sshd:session\): session opened for user
+%{USERNAME:username}" }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
 
 \exercise{ex:grokdebugger1}
 

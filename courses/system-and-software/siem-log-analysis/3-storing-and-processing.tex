@@ -18,22 +18,36 @@
 
 Todays goals:
 \begin{list2}
-  \item\end{list2}
+\item Talk about example SIEM components
+\item Realize Elasticsearch is a very common \emph{storage system} for infosec products
+\item Play with Elasticsearch, also share experiences with running it in production
+\end{list2}
 
-  Photo by Thomas Galler on unsplash
+Photo by Thomas Galler on unsplash
 
 \slide{Plan for today}
 
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item Elasticsearch -- a highly efficient data store
+\item Elasticsearch SIEM
 \end{list2}
-\item Exercise theme: What is normal
+\item Exercise theme: Storing and processing
 \begin{list2}
-\item
+\item Running Elasticsearch
+\item What can you put into Elasticsearch
+
 \end{list2}
 \end{list1}
+
+
+\slide{Now we need Elastic stack running!}
+
+\hlkimage{16cm}{elastic-logstash-queue-publish.png}
+
+Note: Kibana makes it easy to use sample data, feel free to experiment!
+
 
 \slide{Reading Summary}
 
@@ -47,31 +61,52 @@ Todays goals:
 
 %\hlkimage{}{}
 
-\begin{quote}
-
+\begin{quote}\small
+You could {\bf buy a bunch of expensive gear}, point it all to a {\bf log management} or a {\bf security incident and event management (SIEM)} system, and let it automatically tell you what it knows. Some incident response teams may start this way, but unfortunately, many never evolve. {\bf Working only with what the SIEM tells you}, versus what you have configured it to tell you {\bf based on your contextual data}, will invariably fail. Truly demonstrating {\bf value} from security monitoring and incident response {\bf requires a major effort}. As with all projects, {\bf planning} is the most important phase. {\bf Designing} an approach that works best for you requires significant effort up front, but offers a great payout later in the form of {\bf meaningful incident response and overall improved security}.
 \end{quote}
+Source: CIP 4 A Data-Centric Approach to Security Monitoring (bold by me)
 
-\begin{list1}
-\item CIP 4 A Data-Centric Approach to Security Monitoring
+
 \begin{list2}
-\item
+\item I recommend pre-filtering, see what noise your devices \emph{would send}\\
+"Collecting only relevant data can have a direct impact on reducing costs as well."
+\item Normalization -- "Data normalization for
+the purposes of log mining is the process by which a portion, or field, of a log event is
+transformed into its canonical form."
 \end{list2}
-\end{list1}
+
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
 
 \slide{Reading Summary, continued}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
 
 \begin{list1}
 \item Skim read: CIP 7 Tools of the Trade, need to know NetFlow, DNS, and HTTP proxy logs in the real-world
 \begin{list2}
-\item
+\item Defense in Depth -- we will never catch everything
+\item Log Management: The Security Event Data Warehouse
+\item Intrusion Detection Isn’t Dead
+\item DNS, the One True King -- Logging and analyzing DNS transactions, Blocking DNS requests or responses
+\item HTTP Is the Platform: Web Proxies -- Web proxies allow you to solve additional security problems
+\item [rolling] Packet Capture -- In a perfect world, we would have full packet capture everywhere
 \end{list2}
 \end{list1}
+
+
+\slide{Reading Summary, Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
 
 \slide{Reading Summary, continued}
 
@@ -87,6 +122,216 @@ Todays goals:
 \item
 \end{list2}
 \end{list1}
+
+
+\slide{Elasticsearch example systems}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Elasticsearch SIEM -- from Elastic
+\item Wazuh -- agent for clients, log events, integrity protection etc.
+\item HELK -- all-in one hunting system
+\item ElastiFlow -- netflow system
+\item Arkime (renamed recently from Moloch) -- packet capture
+\end{list2}
+
+Lots of commercial systems, and lots of companies providing cloud logging platform
+
+Microsoft Azure promots Sentinel -- cloud based SIEM\\ {\footnotesize
+\link{https://azure.microsoft.com/da-dk/services/azure-sentinel/}}
+
+\slide{Arkime}
+
+\hlkimage{6cm}{Arkime_Logo_FullGradientBlack.png}
+
+\begin{quote}\small
+{\bf Full Packet Capture}\\
+Arkime (formerly Moloch) is a large scale, open source, indexed packet capture and search tool.
+
+This project has experienced significant growth, adoption, and change over the last eight years. We are now at a new milestone and believe it’s the right time to rename our project to Arkime!
+
+...
+On basic commodity hardware, it is easy to get 3Gbps or more, depending on the number of CPUs available to Arkime and what else the machine is doing.
+\end{quote}
+Source: Picture and text from \link{https://arkime.com/}
+
+\begin{list2}
+\item I havent tried it in real life
+\item Note also recommendation for Network Packet Broker, example\\
+Arista - \link{https://www.arista.com/en/solutions/tap-aggregation}
+\end{list2}
+
+
+
+
+\slide{Architecture for packet capture}
+
+\hlkimage{5cm}{network-horiz-onion.png}
+Source: picture from \link{https://docs.securityonion.net/en/2.3/introduction.html}
+
+\begin{list2}
+\item Note the terminology North-South -- from the internet into the systems
+\item East-West -- horizontal traffic inside the data center
+\end{list2}
+
+
+
+\slide{ElastiFlow}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow}
+
+\begin{list2}
+\item I havent tried it in real life
+\end{list2}
+
+\slide{The Hunting ELK}
+
+\hlkimage{15cm}{HELK-Design.png}
+
+\begin{quote}\small
+The Hunting ELK or simply the HELK is one of the first open source hunt platforms with advanced analytics capabilities such as SQL declarative language, graphing, structured streaming, and even machine learning via Jupyter notebooks and Apache Spark over an ELK stack. This project was developed primarily for research, but due to its flexible design and core components, it can be deployed in larger environments with the right configurations and scalable infrastructure.
+\end{quote}
+Source: text and picture from \link{https://thehelk.com/intro.html}
+
+\begin{list2}
+\item You might consider this an example architecture for a SIEM, lot of components
+\end{list2}
+
+
+\slide{Wazuh}
+
+~
+\hlkrightpic{8cm}{0cm}{01-Wazuh-Security-Analytics-op.png}
+
+\begin{quote}\small
+Wazuh agents scan the monitored systems looking for malware, rootkits and suspicious anomalies. They can detect hidden files, cloaked processes or unregistered network listeners, as well as inconsistencies in system call responses.
+\end{quote}
+Source: Picture and text from \link{https://wazuh.com/}
+
+\begin{list2}
+\item Integration with Elastic Stack
+\item Wazuh initially a fork of the OSSEC project
+\item I havent tried Wazuh in real life, have used OSSEC
+\item We also considered and experimented with osquery \link{https://osquery.io/}
+\end{list2}
+
+
+\slide{Wazuh agent}
+
+\begin{quote}
+The Wazuh lightweight agent is designed to perform a number of tasks with the objective of detecting threats and, when necessary, trigger automatic responses. The agent core capabilities are:
+
+The Wazuh agents run on many different platforms, including Windows, Linux, Mac OS X, AIX, Solaris and HP-UX. They can be configured and managed from the Wazuh server.
+\end{quote}
+
+\begin{list2}
+\item Log and events data collection
+\item File and registry keys integrity monitoring
+\item Inventory of running processes and installed applications
+\item Monitoring of open ports and network configuration
+\item Detection of rootkits or malware artifacts
+\item Configuration assessment and policy monitoring
+\item Execution of active responses
+\end{list2}
+
+
+\slide{Buy or DIY?}
+
+%\hlkimage{}{}
+
+\begin{quote}
+DNSDB is a database that stores and indexes both the passive DNS data available via Farsight Security’s Security Information Exchange as well as the authoritative DNS data that various zone operators make available.
+\end{quote}
+Source: from \link{https://docs.dnsdb.info/}
+\begin{list2}
+  \item Excellent services can be bought, have used \link{https://team-cymru.com/}
+\item Compare using \link{https://docs.dnsdb.info/}
+  Farsight DNSDB API documentation
+\item \link{https://nullsecure.org/building-your-own-passivedns-feed/}
+
+\end{list2}
+
+\slide{Team Cymru}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  We operate as our own ISP and are part of the fabric of the internet. We’ve amassed an unmatched number of data sharing partnerships with operators worldwide, in addition to gathering threat intelligence from a global grid of sensors, honeypots, darknets and crawlers. We give you our visibility via our Pure Signal™ platform, Augury™.
+
+\begin{list2}
+\item Trace threat actors through dozens of proxies and VPNs.
+\item Map the extended infrastructure.
+\item Preemptively block associated IPs.
+\item Then monitor these threats to defend against them indefinitely.
+\end{list2}
+\end{quote}
+Source: from \link{https://team-cymru.com/}
+
+\begin{list2}
+\item Often you need sources that are hard to get
+\item Many vendors integrate sources into other products too
+\item Firewalls and Load balancing products that include reputation lists
+\end{list2}
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
+
+
+\begin{list2}
+\item When your SIEM alerts you, you need tools to block and restrict
+\item Recommend adding emptry blocking access control lists etc. to your network infrastructure
+\item Add premade blocking to your name servers, proxy servers, recursive servers
+\item Recommend implementing country lists
+\end{list2}
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+  \item
+  \item
+  \item
+\end{list2}
+
+
+
+
+\slide{Elastic SIEM}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+Source: Picture and text from \link{}
+
+\begin{list2}
+\item I would use their schemas for a green field deployment,\\
+as they have been expanded and developed over some time
+\end{list2}
 
 
 \slide{Subjects: }
@@ -241,41 +486,31 @@ Source: \url{https://en.wikipedia.org/wiki/Elasticsearch}
 \item It supports advanced querying through the API and parallel execution of searches across a cluster of nodes
 \end{list2}
 
+\slide{Common Event Format (CEF)}
 
-\exercise{ex:postman-api}
+%\hlkimage{}{}
 
-\exercise{ex:es-rest-api}
+\begin{quote}
 
+\end{quote}
 
+\begin{list2}
+  \item Common Event Format (CEF)
 
+\end{list2}
 
+https://www.elastic.co/guide/en/beats/filebeat/7.10/filebeat-module-cef.html
 
-Exercises
-Theme: What is normal
-
-Logstash JSON etc.
-
-\slide{Now we need Elastic stack running!}
-
-Note: Kibana makes it easy to use sample data, feel free to experiment!
-
-\exercise{ex:postman-api}
 
 \exercise{gettingstartedelastic}
 
 \exercise{ex:basicansible}
 
+
+\exercise{ex:postman-api}
+
 \exercise{ex:es-rest-api}
 
-NetFlow Nfdump, DNS, web server logs
-
-Wireshark here? Demonstrate DNS and HTTPS SNI again?
-
-Mention Moloch, which is renamed Arkime
-
-
-CEF formatet
-Common Event Format ?
 
 
 

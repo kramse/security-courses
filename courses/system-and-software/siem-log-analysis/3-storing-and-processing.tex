@@ -21,6 +21,7 @@ Todays goals:
 \item Talk about example SIEM components
 \item Realize Elasticsearch is a very common \emph{storage system} for infosec products
 \item Play with Elasticsearch, also share experiences with running it in production
+\item Get your data into Elasticsearch! Your Zeek data!
 \end{list2}
 
 Photo by Thomas Galler on unsplash
@@ -71,6 +72,7 @@ Source: CIP 4 A Data-Centric Approach to Security Monitoring (bold by me)
 \begin{list2}
 \item I recommend pre-filtering, see what noise your devices \emph{would send}\\
 "Collecting only relevant data can have a direct impact on reducing costs as well."
+\item Same is recommended in CIP page 50: Just the Facts
 \item Normalization -- "Data normalization for
 the purposes of log mining is the process by which a portion, or field, of a log event is
 transformed into its canonical form."
@@ -406,7 +408,8 @@ Source: \link{https://www.elastic.co/guide/en/elasticsearch/reference/current/se
 
 
 \begin{list2}
-  \item Can use cURL, Python, Postman or any other REST client
+\item Can use cURL, Python, Postman or any other REST client
+\item Indices are one of the main terms
 \end{list2}
 
 
@@ -462,6 +465,33 @@ Source: \link{https://www.elastic.co/guide/en/elasticsearch/reference/current/se
 
 
 
+\slide{ElasticSearch Index}
+
+\begin{quote}
+Basic Definition\\
+An index is defined as:
+
+An index is like a ‘database’ in a relational database. It has a mapping which defines multiple types.
+An index is a logical namespace which maps to one or more primary shards and can have zero or more replica shards.
+
+\vskip 5mm
+
+The easiest and most familiar layout clones what you would expect from a relational database. You can (very roughly) think of an index like a database.
+
+\verb+MySQL => Databases => Tables => Columns/Rows+
+
+\verb+Elasticsearch => Indices => Types => Documents with Properties+
+\end{quote}
+Source: \link{https://www.elastic.co/blog/what-is-an-elasticsearch-index}
+
+\slide{Indices for logging}
+
+\hlkimage{16cm}{elasticsearch-indices-for-logging.png}
+Source: \link{https://www.elastic.co/blog/what-is-an-elasticsearch-index}
+
+
+
+
 \slide{Elasticsearch SIEM}
 
 %\hlkimage{}{}
@@ -471,10 +501,13 @@ Source: \link{https://www.elastic.co/guide/en/elasticsearch/reference/current/se
 \end{quote}
 
 \begin{list2}
-  \item
-  \item Some structure is useful
-  \item I would use their schemas for a green field deployment,\\
+
+\item Some structure is useful, Elastic Common Schema (ECS)\\
+  \link{https://github.com/elastic/ecs}
+\item I would use their schemas for a green field deployment,\\
   as they have been expanded and developed over some time
+\item Correlation becomes implicit in every search!\\
+-- hint/fact from {\small\link{https://www.elastic.co/webinars/introducing-the-elastic-common-schema}}
 \end{list2}
 
 
@@ -498,8 +531,13 @@ Source: \link{https://www.elastic.co/guide/en/elasticsearch/reference/current/se
 \item \link{https://www.elastic.co/guide/en/beats/filebeat/7.10/filebeat-module-cef.html}
 \end{list2}
 
+\slide{Architecture}
 
-
+\hlkimage{17cm}{elastic-stack-buffered.png}
+\begin{list2}
+\item Real production environments often add some buffering in between
+\item Allows the ingestion to become more smooth, no lost messages
+\end{list2}
 
 
 \slide{Buy or DIY?}
@@ -559,24 +597,6 @@ DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, cons
 \end{list2}
 
 
-
-
-\slide{}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
-\begin{list2}
-\item
-\end{list2}
-
-
-
-
-
 \exercise{gettingstartedelastic}
 
 \exercise{ex:basicansible}
@@ -587,7 +607,9 @@ DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, cons
 \exercise{ex:es-rest-api}
 
 
+\exercise{ex:es-find-indices}
 
+\exercise{ex:zeek-json-es}
 
 
 \slide{Alerting }

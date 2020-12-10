@@ -494,18 +494,18 @@ Select a category example, Cluster APIs, then select Nodes Info APIs. This will 
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 # return just process
-curl -X GET "localhost:9200/\_nodes/process?pretty"
+curl -X GET "localhost:9200/_nodes/process?pretty"
 # same as above
-curl -X GET "localhost:9200/\_nodes/_all/process?pretty"
+curl -X GET "localhost:9200/_nodes/_all/process?pretty"
 
 curl -X GET "localhost:9200/_nodes/plugins?pretty"
 
 # return just jvm and process of only nodeId1 and nodeId2
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/jvm,process?pretty"
+curl -X GET "localhost:9200/_nodes/nodeId1,nodeId2/jvm,process?pretty"
 # same as above
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
+curl -X GET "localhost:9200/_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
 # return all the information of only nodeId1 and nodeId2
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/_all?pretty"
+curl -X GET "localhost:9200/_nodes/nodeId1,nodeId2/_all?pretty"
 \end{minted}
 
 When you can see this works, then feel free to install X-Pack and monitoring plugins
@@ -1171,11 +1171,89 @@ Another hint, for lab systems that are turned off and on, use the time selector 
 
 \hlkimage{7cm}{kibana-90-day-lab.png}
 
+Filebeat comes with predefined assets for parsing, indexing, and visualizing your data. To load these assets run the filebeat setup command:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+filebeat setup -e
+\end{minted}
+
+
 {\bf Solution:}\\
 When you have tried the filebeat tool and seen some data you are done.
 
 {\bf Discussion:}\\
 
+
+
+\chapter{Importing dashboards - 30 min}
+\label{ex:}
+
+{\bf Objective:}\\
+Get a few dashboard up and running quickly.
+
+Try the dashboard package KTS7 locally your workstation.
+
+
+{\bf Purpose:}\\
+There are a lot of Dashboards available, such as:\\
+\link{https://github.com/StamusNetworks/KTS7}
+
+When learning to create something, a program, document or dashboard -- seeing examples help.
+
+Note: these instructions are very dependent on the version of Elasticsearch and Kibana, so check you version first!
+\begin{minted}[fontsize=\footnotesize]{shell}
+hkj@debian-siem:~$ dpkg -l | egrep "elasticsearch|kibana"
+ii  elasticsearch    7.10.0       amd64    Distributed RESTful search engine built for the cloud
+ii  kibana           7.10.0       amd64    Explore and visualize your Elasticsearch data
+\end{minted}
+
+Good news are that the developers of the KTS package has done them for various versions over the years. So look for KTS6 if you are running ES 6.
+
+{\bf Suggested method:}\\
+Read instructions for installing the dashboards.
+
+\link{https://github.com/StamusNetworks/KTS7}
+
+\begin{quote}
+Kibana 7 Templates for Suricata
+Templates/Dashboards for Kibana 7 to use with Suricata. Suricata IDPS/NSM threat hunting and the ELK 7 stack
+
+This repository provides 28 dashboards for the Kibana 7.x and Elasticsearch 7.x for use with Suricata IDS/IPS/NSM - Intrusion Detection, Intrusion Prevention and Network Security Monitoring system
+
+These dashboards are for use with Suricata 6+ and enabled Rust build, Elasticsearch, Logstash, Kibana 7 and comprise of more than 400 visualizations and 24 predefined searches.
+\end{quote}
+
+The commands are similar to, first clone:
+\begin{minted}[fontsize=\footnotesize]{shell}
+git clone https://github.com/StamusNetworks/KTS6.git
+cd KTS6
+\end{minted}
+
+then load the dashboards -- JSON files:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd API-KIBANA7
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@index-pattern.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@search.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@visualization.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@dashboard.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@query.ndjson
+\end{minted}
+
+Dont forget to restart Kibana
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo service kibana restart
+\end{minted}
+
+
+{\bf Hints:}\\
+Kibana and ES are controlled with web requests, so if you look into the commands, they do HTTP POST requests with JSON files. This allow development of dashboards on one system, and then deploying them easily on others.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some dashboards you are done.
+
+Note: we might not have any data.
+
+{\bf Discussion:}\\
 
 
 

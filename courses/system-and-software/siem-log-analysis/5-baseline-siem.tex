@@ -16,7 +16,9 @@
 
 Todays goals:
 \begin{list2}
-  \item\end{list2}
+\item How would you design a minimal production setup
+\item Alerting and reporting
+\end{list2}
 
   Photo by Thomas Galler on unsplash
 
@@ -32,6 +34,8 @@ Todays goals:
 \item
 \end{list2}
 \end{list1}
+
+Follow up from last, \link{https://github.com/devdjdjdj/kibana-presenter}
 
 \slide{Reading Summary}
 
@@ -51,28 +55,56 @@ Todays goals:
 
 \end{quote}
 
-\begin{list1}
-\item DDS 7. Learning from Security Breaches VERIS
+Source: DDS 7. Learning from Security Breaches VERIS
 \begin{list2}
-\item
+\item We all see the same attacks, make it easier to communicate between applications and organizations
+\item Learn from others
+\item Another example MITRE ATT\&CK® \link{https://attack.mitre.org/}
 \end{list2}
-\end{list1}
+
+
+\slide{Reading Summary, continued}
+
+\hlkimage{8cm}{jay-data-science-workflow.png}
+
+\begin{quote}
+\begin{list2}
+\item Find and Collect Relevant Data
+\item Learn through Iteration
+\item Find Statistics
+\end{list2}
+
+\end{quote}
+Source: DDS 12. Moving Toward Data-Driven Security
 
 
 \slide{Reading Summary, continued}
 
 %\hlkimage{}{}
 
-\begin{quote}
+\begin{quote}{\bf
+Building a Real-Life Security Data Science Team}\\
 
+... a clear goal: Given an IP address (or IP/Port combination), {\bf search across all our perimeter devices in less than five minutes.}
+
+Three core principles focused the team.
+\begin{list2}
+\item First, explore the open source versions of tools before engaging vendors. If you don’t
+know how the sausage is being made, you really have no idea what’s being done, and
+this is vital when working with real data.
+\item Second, follow the mantra of “no single tool; no single database; and, no single approach
+to solving a problem.” Do not put blinders on because you are either comfortable with
+certain technologies or have an affinity for a certain tool.
+\item Third, failure is expected, but you must learn from each journey down the wrong path.
+Continuous adaptation and adjustment is the name of the game.
+\end{list2}
 \end{quote}
 
-\begin{list1}
-\item DDS 12. Moving Toward Data-Driven Security
-\begin{list2}
-\item
-\end{list2}
-\end{list1}
+Source: DDS 12. Moving Toward Data-Driven Security
+
+
+
+
 
 \slide{Reading Summary, continued}
 
@@ -108,14 +140,381 @@ Todays goals:
 
 \slide{Subjects: }
 
-\hlkimage{8cm}{homer-end-is-near.jpg}
+%\hlkimage{8cm}{homer-end-is-near.jpg}
 
 \begin{list1}
 \item
 \end{list1}
 
 
-VERIS
+
+
+\slide{Side note: redundancy}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Redundancy can often be achieved in multiple ways
+\item Two servers - physical servers
+\item Two disks - RAID1 mirrors
+\item OR using virtualisation
+\item Redundancy is not an alternative to backup!
+\item Make sure you plan for upgrades too! Upgrading one server while the other handle messages
+\end{list2}
+
+
+
+\slide{Drill down process}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+We have seen Kibana multiple times, but how do you use it? I recommend the following iterative process
+\begin{enumerate}
+\item Get an overview
+\item Research top talkers,
+\item When identified and handled, remove with filter \verb+not host 10.1.2.3+
+\item Look at the next ones
+\end{enumerate}
+
+Look into details, lookup hostnames -- hopefully your tool allows some help
+
+
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+
+
+\slide{Logstash pipeline }
+
+\begin{quote}
+  Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite “stash.” (Ours is Elasticsearch, naturally.)\\
+  \link{https://www.elastic.co/products/logstash}
+\end{quote}
+
+\begin{verbatim}
+input { stdin { } }
+output {
+  elasticsearch { host => localhost }
+  stdout { codec => rubydebug }
+}
+\end{verbatim}
+
+
+
+\begin{list2}
+\item Logstash receives via {\bf input}
+\item Processes with {\bf filters} - grok
+\item Forward events with {\bf output}
+\end{list2}
+
+
+\slide{Logstash as SNMPtrap and syslog server}
+
+{\footnotesize
+\begin{verbatim}
+input {
+  snmptrap {
+    host => "0.0.0.0"
+    type => "snmptrap"
+    port => 1062
+    community => "xxxxx"   }
+  tcp {
+    port => 5000
+    type => syslog  }
+  udp {
+    port => 5000
+    type => syslog  }
+}
+\end{verbatim}
+}
+
+\begin{list2}
+\item We run logstash on port 5000 - but use IPtables port forwarding
+\item Have you even configured SNMP traps?
+\item Maybe you have a device sending SNMP traps right now ...
+\end{list2}
+
+\slide{IPtables forwarding}
+
+{\footnotesize
+\begin{verbatim}
+*nat
+:PREROUTING ACCEPT [0:0]
+# redirect all incoming requests on port 514 to port 5000
+-A PREROUTING -p tcp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 514 -j REDIRECT --to-port 5000
+-A PREROUTING -p udp --dport 162 -j REDIRECT --to-port 1062
+COMMIT
+\end{verbatim}
+}
+
+\centerline{Inserted near beginning of /etc/ufw/before.rules on Ubuntu}
+
+Remember defense in depth, dont run a privileged Java VM process as root \smiley
+
+\slide{Grok expresssions}
+
+{\footnotesize
+\begin{verbatim}
+  filter {
+    if [type] == "syslog" {
+      grok {
+        match => { "message" => "%{SYSLOGTIMESTAMP:syslog_timestamp}
+        %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}
+        (?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:syslog_message}" }
+        add_field => [ "received_at", "%{@timestamp}" ]
+        add_field => [ "received_from", "%{host}" ]
+      }
+      syslog_pri { }
+      date {
+        match => [ "syslog_timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\end{list2}
+
+Source:
+Config snippet from\\
+{\small\link{http://logstash.net/docs/1.4.1/tutorials/getting-started-with-logstash}}
+
+
+
+\slide{Lets design a SIEM Infrastructure Proof of Concept}
+
+\hlkimage{13cm}{demo-siem-setup.pdf}
+
+\begin{list2}
+\item People -- make sure management is on board, Sources -- which data to gather, Archicture -- select SIEM, tools and products
+\item Dashboard and Procedures -- left as a home exercise today
+\end{list2}
+
+
+
+\slide{People: Data Analysis Skills}
+
+\begin{quote}
+Although we could spend an entire book creating an exhaustive list of skills needed to be a good security data scientist, this chapter covers the following skills/domains that a data scientist will benefit from
+knowing within information security:
+\begin{list2}
+\item Domain expertise—Setting and maintaining a purpose to the analysis
+\item Data management—Being able to prepare, store, and maintain data
+\item Programming—The glue that connects data to analysis
+\item Statistics—To learn from the data
+\item Visualization—Communicating the results effectively
+\end{list2}
+It might be easy to label any one of these skills as the most important, but in reality, the whole is greater than the sum of its parts. Each of these contributes a significant and important piece to the workings of
+security data science.
+\end{quote}
+
+Source: \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+
+
+\slide{People: Get management buy-in}
+
+\hlkimage{6cm}{margarida-csilva-121801-unsplash.jpg}
+
+You will probably need help from:
+
+\begin{list2}
+\item Buy-in from management, for requesting resources
+\item Network and security departments -- getting data, opening ports
+\item Application developers, web site programmers
+\end{list2}
+Lifeguard training photo by Margarida CSilva on Unsplash
+
+
+\slide{Sources: Network overview without SIEM}
+
+\hlkimage{15cm}{sample-ip-network.pdf}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Internet, routers, firewalls, switches, clients and servers (Wi-Fi not shown)
+\end{list2}
+
+
+\slide{Sources: Strategy for implementing identification and detection}
+
+We recommend that the following strategy is used for implementing identification and detection -- logging:
+\begin{enumerate}
+\item[\faSquareO] Enable system logging from servers
+\item[\faSquareO] Enable system logging from network devices
+\item[\faSquareO] Enable logging from client devices
+\item[\faSquareO] Centralize logging
+\item[\faSquareO] Add search facilities and dashboards
+\item[\faSquareO] Perform system audits manually or automatically
+\item[\faSquareO] Setup alerting and notification with procedures
+\end{enumerate}
+
+\slide{Extended Sources}
+When a basic logging infrastructure is setup, it can be expanded to increase coverage, by
+adding more sources:
+
+\begin{list2}
+\item DNS query logging -- will enable multiple cases to be resolved, example malware identification and tracing, when was a malware domain queried, when was the first infection
+\item Web proxy logging -- which web pages did which client access
+\item Session data from Firewalls, Netflow -- traffic patterns can be investigated and both attacks and cases like exfiltration can likely be seen
+\end{list2}
+
+Hint: Take the sources available first, make a proof-of-concept, expand coverage
+
+
+
+
+
+\slide{Architecture: Tools}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+We will use the tools presented during the course:
+\begin{list2}
+\item Elastic stack: Elasticsearch, Logstash, Kibana, Filebeat, Packetbeat
+\item Zeek and Suricata
+\end{list2}
+
+\slide{Elasticsearch}
+
+\hlkimage{6cm}{demo-siem-setup-elasticsearch.pdf}
+
+
+\begin{list2}
+\item We plan to build a basic cluster with Elasticsearch, latest stable
+\item Multiple ES nodes for easier upgrade, redundancy and performance
+\end{list2}
+
+
+
+
+\slide{Logstash -- syslog and SNMP trap receiver}
+
+\hlkimage{8cm}{demo-siem-setup-logstash.pdf}
+
+\begin{list2}
+\item We have network devices which can only send syslog
+\item We would like to collect SNMP trap -- \emph{push events from the network}
+\end{list2}
+
+
+
+\slide{Alerting}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+We’re excited to announce a new alerting framework that delivers a first-class alerting experience natively within the SIEM, Uptime, APM, and Metrics applications as part of the Kibana 7.7 release.
+
+Alerting is a fundamental use case across the Elastic Stack, which is why we’re making it part of the core experience within Kibana. Whether you are monitoring application transactions or tracking brute force login attempts, our goal is to provide a tailored experience that allows you to build powerful alerts in the normal flow of your task. The new alerting framework is built from the ground up and designed to offer more than just convenient interfaces. We understand the need to go beyond just notifying people which is why we’ve also incorporated the ability to trigger predefined actions that can do anything from sending an email to using brand new third-party integrations with platforms like Slack and PagerDuty.
+
+The new alerting framework is being introduced as a beta in the 7.7 release of Kibana and is available immediately on the Elasticsearch Service on Elastic Cloud, or for download.
+\end{quote}
+
+\begin{list2}
+\item {\footnotesize\link{https://www.elastic.co/blog/introducing-the-new-alerting-framework-for-observability-security-and-the-elastic-stack}}
+\item {\footnotesize\link{https://www.elastic.co/what-is/kibana-alerting}}
+\item {\footnotesize\link{https://www.elastic.co/blog/alerting-in-the-elastic-stack}}
+\end{list2}
+
+
+\slide{Alerting everywhere}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Alerting everywhere: Kibana 7.7 introduces ubiquitous alerting for Elastic Observability, Elastic Security, and the Elastic Stack. Users can now create alerts directly from within the SIEM, APM, Metrics, and Uptime applications as well as for any index.
+\end{quote}
+
+\begin{list2}
+\item Seems a lot has happened with alerting in the new version!
+\item Lets try to work with the alerting framework, note: sending email can sometimes be tricky without some configuration.
+\end{list2}
+
+
+\slide{Reporting}
+
+
+
+Discussion! Writing and presenting are two very different things, so are dashboards and reports!
+
+
+
+\slide{Automatic reporting: tcpflow}
+
+\hlkimage{8cm}{simpsong-tcpflow.png}
+
+\begin{list2}
+  \item \link{https://github.com/simsong/tcpflow}
+  \item \emph{Passive TCP Reconstruction and Forensic Analysis with tcpflow}, Simson Garfinkel and Michael Shick, Naval Postgraduate School Technical Report NPS-CS-13-003, September 2013.
+  \link{https://calhoun.nps.edu/handle/10945/36026}
+\end{list2}
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+
+
+
+\slide{VERIS}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+
 Verizon RISK Team. “2013 data breach investigations report.” Available at http://www
 .verizonenterprise.com/DBIR—This report is based on data collected using the VERIS
 framework. You might find it handy to look at some of the graphics in the report and then attempt
@@ -123,12 +522,168 @@ to repeat them using the verisr package, discussed in this chapter, and the VCDB
 page 189 in DDS
 
 
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
 Automated IOC Formats
 Fully automated and comprehensive formats such as OpenIOC and STIX are useful
 only for teams that use tools built for them (or are capable of of building tools to use
 these standards).
 IDIR s197 STIX
 
+
+
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+Correlation
+https://www.elastic.co/blog/whats-new-elastic-security-7-10-0-correlation-cloud-visibility-detection
+
+
+
+
+
+
+\slide{Network Forensics ENISA}
+
+\begin{quote}
+  The European Union Agency for Network and Information Security (ENISA) is a centre of expertise for cyber security in Europe.
+
+ENISA is contributing to a high level of network and information security (NIS) within the European Union, by developing and promoting a culture of NIS in society to assist in the proper functioning of the internal market.
+\end{quote}
+
+\link{https://www.enisa.europa.eu/}
+
+ENISA has published a number of network forensics documents which are free to use, so these are our basics.
+
+
+\slide{Forensic analysis}
+
+\begin{quote}
+Network forensics is a sub-branch of digital forensics relating to the monitoring and analysis of computer
+network traffic for the purposes of information gathering, legal evidence, or intrusion detection 5 .
+\end{quote}
+
+\begin{list1}
+\item Systems used to collect network data for forensics use usually come in three forms:
+\begin{list2}
+\item Packet capture: All packets passing through a certain traffic point are captured and written to storage
+\item Intrusion detection systems
+\item Network flow sensors
+\end{list2}
+\end{list1}
+
+The acronym OSCAR 8 stands for: Obtain information,
+Strategize,
+Collect evidence,
+Analyse,
+Report
+
+Source: Forensic analysis Network Incident Response Handbook, Document for teachers 1.0 DECEMBER 2016, ENISA\\
+\verb+EXE2_Forensic_analysis_II-Handbook.pdf+
+
+
+\slide{ENISA papers}
+
+\begin{list2}
+\item I recommend these as examples:
+\item ENISA Presenting, correlating and filtering various feeds Handbook, Document for teachers\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/presenting-correlating-and-filtering-various-feeds-handbook}
+\item ENISA Forensic analysis, Network Incident Response\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/2016-resources/exe2_forensic_analysis_ii-handbook}
+\item ENISA Network Forensics, Handbook, Document for teachers\\ \link{https://www.enisa.europa.eu/topics/trainings-for-cybersecurity-specialists/online-training-material/documents/network-forensics-handbook}
+\end{list2}
+
+They are focussed on network forensics, which is required to do network-wide investigations. '
+
+{\bf You also need application and client logs}
+
+
+\slide{Chain of custody}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Chain of custody (CoC), in legal contexts, is the chronological documentation or paper trail that records the sequence of custody, control, transfer, analysis, and disposition of materials, including physical or electronic evidence.
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Chain_of_custody}
+
+\begin{list2}
+\item Put things in a bag, tape it closed, write what is inside, date, who collected etc.
+\end{list2}
+
+
+\slide{GDPR, logging and legality}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  10.Stiller GDPR krav om logning af alt, herunder hvad den enkelte bruger laver på
+  systemet, hvad han ser mv.?
+
+  SikkerhedsBranchens opfattelse er at det er nok at logge hvem der er logget ind i
+  systemet i hvilket tidsrum. Princippet i den gamle persondatalovs § 41 stk. 3 er
+  ført videre i GDPR, og praksis derfra understøtter vores opfattelse.
+\end{quote}
+Source: \link{https://www.sikkerhedsbranchen.dk/wp-content/uploads/2018/12/GDPR-Databeskyttelse-FAQ.pdf}
+
+\begin{list2}
+\item Most references are about GDPR and logging
+\item Keywords gdpr siem site:dk
+  \item \link{https://digst.dk/styring/standardkontrakter/klausuler-til-informationssikkerhed/logning/}
+\end{list2}
+
+
+\slide{Monitoring of employees}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+  Overvågning på arbejdspladsen}
+
+  På en tredjedel af IT-arbejdspladserne overvåges IT-medarbejdernes brug af e-mails og Internet. Det viser en lille stikprøveundersøgelse, som PROSA har foretaget. PROSA ønsker klare regler på området og vil derfor på en række møder være med til at sætte gang i overvågningsdebatten
+\end{quote}
+Source: 2001 PROSA {\footnotesize\link{https://www.prosa.dk/artikel/overvaagning-paa-arbejdspladsen-1/}}
+
+\begin{list2}
+  \item Also {\footnotesize\link{https://www.prosa.dk/artikel/regler-for-it-overvaagning-paa-arbejdspladsen/}}
+\item If your IT-security policies allow private use of devices and systems, be careful
+\item Even if your IT-security policies do not allow, people might store private data
+\item If you need to access data, {\bf for operational purposes}, you ARE allowed in DK
+\item Recommend informing employees and others specifically
+\end{list2}
+
+\slide{Danish Data Protection Agency: Employee data}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Databeskyttelse i forbindelse med ansættelsesforhold er et komplekst område, hvor bl.a. de overordnede databeskyttelsesretlige regler, ansættelsesretlige regler samt kollektive overenskomster og aftaler har betydning for de behandlinger af personoplysninger, der sker på arbejdspladser og i fagforeninger, mv.
+
+Såvel offentlige som private arbejdsgivere behandler en stor mængde personoplysninger om ansøgere i forbindelse med rekruttering og om medarbejdere, både under ansættelsen og efter ansættelsens ophør. Tilsvarende behandler faglige organisationer og tillidsrepræsentanter personoplysninger om både deres medlemmer og andre medarbejdere på arbejdspladsen. Hertil kommer, at der i vidt omfang udveksles oplysninger mellem de enkelte aktører.
+\end{quote}
+Source: {\footnotesize\link{https://www.datatilsynet.dk/media/7597/databeskyttelse-i-forbindelse-med-ansaettelsesforhold.pdf}}
+
+\begin{list2}
+\item Probably one of the best sources to use, as they process complaints about data processing
+\item 43 pages
+\end{list2}
 
 
 

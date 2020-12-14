@@ -314,10 +314,11 @@ Config snippet from\\
 
 \slide{Lets design a SIEM Infrastructure Proof of Concept}
 
-\hlkimage{13cm}{demo-siem-setup.pdf}
+\hlkimage{12cm}{demo-siem-setup.pdf}
 
 \begin{list2}
-\item People -- make sure management is on board, Sources -- which data to gather, Archicture -- select SIEM, tools and products
+\item People -- make sure management is on board, Sources -- which data to gather,
+\item Architecture -- select SIEM, tools and products
 \item Dashboard and Procedures -- left as a home exercise today
 \end{list2}
 
@@ -392,6 +393,7 @@ adding more sources:
 \item DNS query logging -- will enable multiple cases to be resolved, example malware identification and tracing, when was a malware domain queried, when was the first infection
 \item Web proxy logging -- which web pages did which client access
 \item Session data from Firewalls, Netflow -- traffic patterns can be investigated and both attacks and cases like exfiltration can likely be seen
+
 \end{list2}
 
 Hint: Take the sources available first, make a proof-of-concept, expand coverage
@@ -411,8 +413,13 @@ Hint: Take the sources available first, make a proof-of-concept, expand coverage
 We will use the tools presented during the course:
 \begin{list2}
 \item Elastic stack: Elasticsearch, Logstash, Kibana, Filebeat, Packetbeat
-\item Zeek and Suricata
+\item Zeek and Suricata can easily be added at a later stage
+\item Likewise DNS and web proxy logging could be added
 \end{list2}
+
+\vskip 1cm
+
+The setup discussed here would be a good proof of conccept, and be valuable almost immediately
 
 \slide{Elasticsearch}
 
@@ -422,6 +429,7 @@ We will use the tools presented during the course:
 \begin{list2}
 \item We plan to build a basic cluster with Elasticsearch, latest stable
 \item Multiple ES nodes for easier upgrade, redundancy and performance
+\item Each have 200Gb disk and 16Gb memory allocated
 \end{list2}
 
 
@@ -429,14 +437,63 @@ We will use the tools presented during the course:
 
 \slide{Logstash -- syslog and SNMP trap receiver}
 
-\hlkimage{8cm}{demo-siem-setup-logstash.pdf}
+\hlkimage{6cm}{demo-siem-setup-logstash.pdf}
 
 \begin{list2}
-\item We have network devices which can only send syslog
-\item We would like to collect SNMP trap -- \emph{push events from the network}
+\item We have network devices which can only send syslog and SNMP trap -- \emph{push events from the network}
+\item So enable inputs: snmptrap, tcp, udp and use UFW to redirect ports
+\item We have made two servers, which use VRRP to have a common address
+\end{list2}
+
+\slide{Packetbeat}
+
+\hlkimage{10cm}{demo-siem-setup-packetbeat.pdf}
+
+
+\begin{list2}
+\item By installing packetbeat and doing network mirroring from the network switch, we can gather a lot of information
+\item Packetbeat supports Elastic Common Schema (ECS) \link{https://www.elastic.co/beats/packetbeat}
+\item ICMP (v4 and v6)
+DHCP (v4)
+DNS
+HTTP
+AMQP 0.9.1
+Cassandra
+Mysql
+PostgreSQL
+Redis
+Thrift-RPC
+MongoDB
+Memcache
+NFS
+TLS
+SIP/SDP (beta)
 \end{list2}
 
 
+\slide{Application servers}
+
+\hlkimage{3cm}{demo-siem-setup-servers.pdf}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item We told the server and application people to use Filebeat and Syslog
+\item The Linux people decided to use syslog
+\item Windows servers use Filebeat \link{}https://www.elastic.co/beats/filebeat
+\item All of them send to the Logstash instances
+\end{list2}
+
+\slide{Baseline}
+
+%\hlkimage{}{}
+
+
+\begin{list2}
+\item The best baseline is from running the actual systems and services for an extended \emph{learning} period
+\end{list2}
 
 \slide{Alerting}
 

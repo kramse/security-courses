@@ -1,31 +1,30 @@
 
 
-# Network Security Threats
+# 1. Network Security Threats
 
 
-# Traffic inspection and firewalls
+# 2. Traffic inspection and firewalls
 
 
-# Encrypting the network
+# 3. Encrypting the network
 
 
-# Virtual Private Networks
+# 4. Virtual Private Networks
 
 
-# Wifi Security
+# 5. Wifi Security
 
 
-# Network Management
+# 6. Network Management
 
 
-# Network Intrusion Detection
+# 7. Network Intrusion Detection
 
 
-# Network Forensics
+# 8. Network Forensics
 
 
-# DNS and Email Security
+# 9. DNS and Email Security
 
 
-# Honeypots, Anomaly detection og visualisering
-
+# 10. Honeypots, Anomaly detection og visualisering

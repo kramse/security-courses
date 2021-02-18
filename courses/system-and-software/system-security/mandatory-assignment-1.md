@@ -3,7 +3,7 @@
 This is a description for the mandatory assignment 1 in
 KEA Kompetence System Security 2021
 
-To be handed in at latest March 21.
+To be handed in at latest March 21, 2021 by email to xhek@kea.dk or hlk@zencurity.com
 
 Note: this will be the only mandatory assignment, not two for this course.
 

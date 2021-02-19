@@ -13,7 +13,7 @@ Demonstrate knowledge about forensics and system security. Focus is on disk imag
 
 Teacher will provide image made in this way:
 * Install a Debian using a small disk size ~10G
-* Install a "root-kit" using the chmod +s on a copy of dash as described in Bishop book
+* Install a "root-kit" using the chmod +s on a copy of dash as described in Bishop book page 775. Using dash since sh is bash which prevents this!
 * Create extra users not usually found on Debian, copies of root with uid 0 or new users with sudo rights
 
 Students use forensics tools for analyzing this:

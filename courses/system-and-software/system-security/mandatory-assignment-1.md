@@ -19,8 +19,10 @@ Teacher will provide image made in this way:
 Students use forensics tools for analyzing this:
 * Suggest using Sleuthkit and Autopsy browser based tool, simple and free
 * Search for your evidence, MAKE SURE to demonstrate how a user would find these - searching for SUID files is one method to document, looking into sudo config and user database is another
+* Present a timeline of when the "hack" occurred, perhaps relate to when system was installed
+* Present as much information as possible about the "malware" (the file found with SUID bit)
 
-The process should less than 10 hours, but you are welcome to do more.
+The process should be possible to complete in less than 10 hours, but you are welcome to do more.
 
 
 # Deliverables

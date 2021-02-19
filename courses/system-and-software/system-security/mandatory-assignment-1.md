@@ -63,8 +63,8 @@ Same content as found in 2), but already extracted
 2) Multiple files - in a Tar Gzip'ed archive
 debian-hacked.tgz              
 
-3) Another version, recreated in 2021
-
+3) Another version, recreated in 2021 but essentially the same
+debian-hacked-2021.img.gz
 
 
 # hints for analyzing RAW Partition with LVM

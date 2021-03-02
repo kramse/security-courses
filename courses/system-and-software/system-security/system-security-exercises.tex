@@ -1508,10 +1508,87 @@ uid=1000(pi) gid=1000(pi) euid=0(root) egid=0(root) grupper=0(root),4(adm),20(di
 
 
 
-\end{document}
+\chapter{Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt} \footnotesize
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
 
 
-\chapter{Email Security 2020 up to 45min}
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem. Then try changing the int type, try without short, and with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+Computers are not always correct when doing calculations. Above was shown with integers, and it is even worse for floating point.
+
+\begin{quote}\footnotesize
+The IEEE Standard for Floating-Point Arithmetic (IEEE 754) is a technical standard for floating-point arithmetic established in 1985 by the Institute of Electrical and Electronics Engineers (IEEE). The standard addressed many problems found in the diverse floating-point implementations that made them difficult to use reliably and portably. Many hardware floating-point units use the IEEE 754 standard.
+\end{quote}
+
+Source: \url{https://en.wikipedia.org/wiki/IEEE_754}
+
+
+\chapter{Real Vulnerabilities up to 30min}
+\label{ex:real-vulns-exim}
+
+
+
+{\bf Objective:}\\
+Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
+
+{\bf Purpose:}\\
+See that the error types described in the books - are still causing problems.
+
+
+
+{\bf Suggested method:}\\
+We will use the 2019 Exim errors as examples. Download the descriptions from:
+\begin{list2}
+\item Exim RCE CVE-2019-10149 June\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\item Exim RCE CVE-2019-15846 September\\
+\url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
+\end{list2}
+
+When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that?
+
+I depend on the OpenBSD operating system, and it has flaws too:\\
+\url{https://www.openbsd.org/errata65.html}
+
+You may depend on OpenSSH from the OpenBSD project, which has had a few problems too:\\
+\url{https://www.openssh.com/security.html}
+
+{\bf Hints:}\\
+Remote Code Execution can be caused by various things, but most often some kind of input validation failure.
+
+{\bf Solution:}\\
+When you have identified the specific error type, is it buffer overflows? Then you are done.
+
+{\bf Discussion:}\\
+How do you feel about running internet services. Lets discuss how we can handle running insecure code.
+
+What other methods can we use to restrict problems caused by similar vulnerabilities.
+
+A new product will often use a generic small computer and framework with security problems.
+
+
+\chapter{Email Security -- up to 45min}
 \label{ex:email-security}
 
 {\bf Objective:}\\
@@ -1534,7 +1611,7 @@ Make sure everyone attending know about methods to restrict sending of false ema
 \end{itemize}
 
 DNS-based Authentication of Named Entities (dane)
-\begin{quote}
+\begin{quote}\footnotesize
 "TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
 \end{quote}
 
@@ -1545,7 +1622,7 @@ Use services on the internet, such as \link{https://internet.nl/} and \link{http
 {\bf Hints:}\\
 I suggest the following strategy when you implement these methods, if you dare do it right now. If you make a plan.
 
-{\bf Basic mail security 2019}
+{\bf Basic mail security}
 \begin{enumerate}
 \item Implement DNSSEC - turn it on, most likely easy
 \item Configure Sender Policy Framework, perhaps only \verb+~all+ tilde means soft fail
@@ -1562,7 +1639,7 @@ Then after some time has passed, and you have reviewed reporting from DMARC, tur
 \item Configure DMARC with reject - reject emails not following policy
 \end{enumerate}
 
-{\bf Advanced mail security 2019}
+{\bf Advanced mail security}
 \begin{enumerate}
 \item Create real certificates for DANE
 \item Publish them \smiley
@@ -1586,10 +1663,9 @@ zencurity.com & \faCheck & \faCheck & \faCheck &  & \faCheck & \\ \hline
 
 {\bf Discussion:}\\
 You need to research before making changes to important domains.
-
 If you have domains that \emph{never send email} then add the following SPF and DMARC to avoid misuse.
 
-from my own DSN template for \emph{parked domains}:
+My own DNS template for \emph{parked domains}:
 \begin{alltt}
 gdns.template	v=spf1 -all	43200
 _dmarc.gdns.template	v=DMARC1; p=reject;	43200
@@ -1635,6 +1711,8 @@ Is it possible to create multiple virtualisation cluster? - yes, some organisati
 
 Also be aware that a lot of malware has checks trying to find out if it is running in a virtual machine, or isolated in a lab.
 
+
+\end{document}
 
 
 \chapter{Centralized syslog 15min}

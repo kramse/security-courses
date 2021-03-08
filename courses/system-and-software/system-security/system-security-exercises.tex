@@ -111,6 +111,42 @@ Kali Linux is a free pentesting platform, and probably worth more than \$10.000
 
 The book KLR is free, but you can buy/donate, and I recommend it.
 
+
+
+\chapter{Download Debian Administrator’s Handbook (DEB) Book 10 min}
+\label{ex:sw-downloadDEB}
+
+\hlkimage{3cm}{book-debian-administrators-handbook.jpg}
+
+
+{\bf Objective:}\\
+We need a Linux for running some tools during the course. I have chosen Debian Linux as this is open source, and the developers have released a whole book about running it.
+
+This book is named
+\emph{The Debian Administrator’s Handbook},  - shortened DEB
+
+{\bf Purpose:}\\
+We need to install Debian Linux in a few moments, so better have the instructions ready.
+
+{\bf Suggested method:}\\
+Create folders for educational materials. Go to download from the link \url{https://debian-handbook.info/}
+Read and follow the instructions for downloading the book.
+
+{\bf Solution:}\\
+When you have a directory structure for download for this course, and the book DEB in PDF you are done.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+Debian Linux is a free operating system platform.
+
+The book DEB is free, but you can buy/donate to Debian, and I recommend it.
+
+Not curriculum but explains how to use Debian Linux
+
+
+
+
 \chapter{Check your Kali VM, run Kali Linux 30 min}
 \label{ex:basicVM}
 
@@ -224,6 +260,225 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 
 
 
+
+\chapter{Enable UFW firewall - 10 min}
+\label{ex:debian-firewall}
+
+{\bf Objective:}\\
+Turn on a firewall and configure a few simple rules.
+
+{\bf Purpose:}\\
+See how easy it is to restrict incoming connections to a server.
+
+
+{\bf Suggested method:}\\
+Install a utility for firewall configuration.
+
+You could also perform Nmap port scan with the firewall enabled and disabled.
+
+{\bf Hints:}\\
+Using the ufw package it is very easy to configure the firewall on Linux.
+
+Install and configuration can be done using these commands.
+\begin{alltt}
+root@debian01:~# apt install ufw
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following NEW packages will be installed:
+  ufw
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 164 kB of archives.
+After this operation, 848 kB of additional disk space will be used.
+Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
+Fetched 164 kB in 2s (60.2 kB/s)
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
+
+{\bf Solution:}\\
+When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
+
+{\bf Discussion:}\\
+Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
+
+Web interfaces also exist, but are more suited for a centralized firewall.
+
+Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
+
+Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
+
+
+\chapter{Git tutorials - 15min}
+\label{ex:git-tutorial}
+
+
+\hlkimage{3cm}{git-logo.png}
+
+{\bf Objective:}\\
+Try the program Git locally on your workstation
+
+{\bf Purpose:}\\
+Running Git will allow you to clone repositories from others easily. This is a great way to get new software packages, and share your own.
+
+Git is the name of the tool, and Github is a popular site for hosting git repositories.
+
+{\bf Suggested method:}\\
+Run the program from your Linux VM. You can also clone from your Windows or Mac OS X computer. Multiple graphical front-end programs exist too.
+
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has Git, ansible and my playbooks: (as root run, or with sudo as shown)
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt -y install ansible git
+\end{minted}
+
+
+Most important are Git clone and pull:
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+If you want to install the Atom editor, you can run the Ansible playbook from the workstation directory.
+
+Then run it with:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd ~/kramse-labs/workstation
+ansible-playbook -v 1-dependencies
+\end{minted}
+
+
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.github.com/activities/hello-world/}
+
+We will not do the whole tutorials within 15 minutes, but get an idea of the command line, and see examples. Refer back to these tutorials when needed or do them at home.
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+{\bf Solution:}\\
+When you have tried the tool and seen the tutorials you are done.
+
+{\bf Discussion:}\\
+Before Git there has been a range of version control systems,\\
+see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
+
+
+
+
+\chapter{Bonus: Use Ansible to install Elastic Stack}
+\label{ex:basicansible}
+
+
+{\bf Objective:}\\
+Run Elasticsearch
+
+{\bf Purpose:}\\
+See an example tool used for many projects, Elasticsearch from the Elastic Stack
+
+{\bf Suggested method:}\\
+We will run Elasticsearch, either using the method from:\\{\footnotesize
+\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+or by the method described below using Ansible - your choice.
+
+Ansible used below is a configuration management tool \url{https://www.ansible.com/} and you can adjust them for production use!
+
+I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has ansible and my playbooks: (as root run)
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
+
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
+
+If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+git pull
+\end{minted}
+
+Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
+
+Note: these instructions are originally from the course\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content, installing software using APT:
+\begin{minted}[fontsize=\footnotesize]{yaml}
+apt:
+    name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{minted}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+
+
 \chapter{Discover active systems ping sweep 10 min}
 \label{ex:nmap-pingsweep}
 \hlkimage{5cm}{nmap-zenmap.png}
@@ -334,14 +589,14 @@ nmap OS detection is not a full proof way of knowing the actual operating system
 
 
 
-\chapter{Run Armitage - Hail Mary 30min}
-\label{ex:hail-mary}
+\chapter{Run Armitage 30min}
+\label{ex:armitage-basic}
 
 {\bf Objective:}\\
 Try hacking using a graphical program, see how quick and easy it can be.
 
 {\bf Purpose:}\\
-Show that when a vulnerability exist attacks can be quick and easy.
+Show that when a vulnerability exist attacks can be executed quickly and easy.
 
 {\bf Suggested method:}\\
 
@@ -349,9 +604,10 @@ Running Armitage as a gui on top of Metasploit is the easiest way to do this.
 
 \begin{enumerate}
 \item Boot up Kali Linux
-\item Boot up Metasploitable - from ISO\\
-There may be a couple of systems already running this.
-\item Run Armitage Hail-Mary against Metasploitable
+\item Boot up Metasploitable, available in multiple versions
+\item Run Armitage
+\item Run \verb+db_nmap+ to scan, or select from menus
+\item Use menus to execute attacks
 \item Note which succeeded, describe those attacks that succeeded in relation to MITRE ATT\&CK framework
 \end{enumerate}
 
@@ -373,6 +629,7 @@ When you have exploited and mapped at least one vulnerability you are done, but 
 
 {\bf Discussion:}\\
 Do we need these frameworks? What are the benefits? - can we become product blind - so we only see what these framework cover.
+
 
 
 \chapter{SELinux Introduction up to 60min}
@@ -586,7 +843,9 @@ When you have seen at least two different policies you are done.
 {\bf Discussion:}\\
 How do you both write AND create awareness about a policy?
 
-\chapter{SYN flooding 101}
+
+
+\chapter{SYN flooding 101 - 60min}
 \label{ex:syn-flood-101}
 
 {\bf Objective:}\\
@@ -966,10 +1225,10 @@ Try and test a back door script.
 {\bf Suggested method:}\\
 
 \begin{enumerate}
-\item Make a non-privileged user
-\item make a system directory writable
-\item create root cronjob without path
-\item Insert a malicious script as one of the commands from the root cron job
+\item Create a shell copy with SUID bit set as privileged user
+\item Run the command as non-privileged user to see it works
+%\item Create root cronjob without path
+%\item Insert a malicious script as one of the commands from the root cron job
 \end{enumerate}
 
 {\bf Hints:}\\
@@ -979,7 +1238,7 @@ In this exercise first try out the malicious commands for creating a back door s
 
 \begin{alltt}
 root@debian:~# rm /tmp/.xxsh
-root@debian:~# cp /bin/dash /tmp/.xxsh
+root@debian:~# cp /bin/zsh /tmp/.xxsh
 root@debian:~# chmod +sw /tmp/.xxsh
 \end{alltt}
 
@@ -1249,7 +1508,87 @@ uid=1000(pi) gid=1000(pi) euid=0(root) egid=0(root) grupper=0(root),4(adm),20(di
 
 
 
-\chapter{Email Security 2020 up to 45min}
+\chapter{Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt} \footnotesize
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem. Then try changing the int type, try without short, and with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+Computers are not always correct when doing calculations. Above was shown with integers, and it is even worse for floating point.
+
+\begin{quote}\footnotesize
+The IEEE Standard for Floating-Point Arithmetic (IEEE 754) is a technical standard for floating-point arithmetic established in 1985 by the Institute of Electrical and Electronics Engineers (IEEE). The standard addressed many problems found in the diverse floating-point implementations that made them difficult to use reliably and portably. Many hardware floating-point units use the IEEE 754 standard.
+\end{quote}
+
+Source: \url{https://en.wikipedia.org/wiki/IEEE_754}
+
+
+\chapter{Real Vulnerabilities up to 30min}
+\label{ex:real-vulns-exim}
+
+
+
+{\bf Objective:}\\
+Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
+
+{\bf Purpose:}\\
+See that the error types described in the books - are still causing problems.
+
+
+
+{\bf Suggested method:}\\
+We will use the 2019 Exim errors as examples. Download the descriptions from:
+\begin{list2}
+\item Exim RCE CVE-2019-10149 June\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\item Exim RCE CVE-2019-15846 September\\
+\url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
+\end{list2}
+
+When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that?
+
+I depend on the OpenBSD operating system, and it has flaws too:\\
+\url{https://www.openbsd.org/errata65.html}
+
+You may depend on OpenSSH from the OpenBSD project, which has had a few problems too:\\
+\url{https://www.openssh.com/security.html}
+
+{\bf Hints:}\\
+Remote Code Execution can be caused by various things, but most often some kind of input validation failure.
+
+{\bf Solution:}\\
+When you have identified the specific error type, is it buffer overflows? Then you are done.
+
+{\bf Discussion:}\\
+How do you feel about running internet services. Lets discuss how we can handle running insecure code.
+
+What other methods can we use to restrict problems caused by similar vulnerabilities.
+
+A new product will often use a generic small computer and framework with security problems.
+
+
+\chapter{Email Security -- up to 45min}
 \label{ex:email-security}
 
 {\bf Objective:}\\
@@ -1272,7 +1611,7 @@ Make sure everyone attending know about methods to restrict sending of false ema
 \end{itemize}
 
 DNS-based Authentication of Named Entities (dane)
-\begin{quote}
+\begin{quote}\footnotesize
 "TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
 \end{quote}
 
@@ -1283,7 +1622,7 @@ Use services on the internet, such as \link{https://internet.nl/} and \link{http
 {\bf Hints:}\\
 I suggest the following strategy when you implement these methods, if you dare do it right now. If you make a plan.
 
-{\bf Basic mail security 2019}
+{\bf Basic mail security}
 \begin{enumerate}
 \item Implement DNSSEC - turn it on, most likely easy
 \item Configure Sender Policy Framework, perhaps only \verb+~all+ tilde means soft fail
@@ -1300,7 +1639,7 @@ Then after some time has passed, and you have reviewed reporting from DMARC, tur
 \item Configure DMARC with reject - reject emails not following policy
 \end{enumerate}
 
-{\bf Advanced mail security 2019}
+{\bf Advanced mail security}
 \begin{enumerate}
 \item Create real certificates for DANE
 \item Publish them \smiley
@@ -1324,10 +1663,9 @@ zencurity.com & \faCheck & \faCheck & \faCheck &  & \faCheck & \\ \hline
 
 {\bf Discussion:}\\
 You need to research before making changes to important domains.
-
 If you have domains that \emph{never send email} then add the following SPF and DMARC to avoid misuse.
 
-from my own DSN template for \emph{parked domains}:
+My own DNS template for \emph{parked domains}:
 \begin{alltt}
 gdns.template	v=spf1 -all	43200
 _dmarc.gdns.template	v=DMARC1; p=reject;	43200
@@ -1373,6 +1711,68 @@ Is it possible to create multiple virtualisation cluster? - yes, some organisati
 
 Also be aware that a lot of malware has checks trying to find out if it is running in a virtual machine, or isolated in a lab.
 
+
+
+
+\chapter{Try running a Docker container 20min}
+\label{ex:docker-run}
+
+
+{\bf Objective:}\\
+Research how Docker containers work.
+
+{\bf Purpose:}\\
+Docker containers are used all around the world, often together with private cloud systems.
+
+They run in the host OS kernel, and thus requires fewer resources, and provides less isolation.
+
+\begin{quote}
+The underlying technology\\
+Docker is written in the Go programming language and takes advantage of several features of the Linux kernel to deliver its functionality. Docker uses a technology called namespaces to provide the isolated workspace called the container. When you run a container, Docker creates a set of namespaces for that container.
+
+These namespaces provide a layer of isolation. Each aspect of a container runs in a separate namespace and its access is limited to that namespace.
+\end{quote}
+Source: \url{https://docs.docker.com/get-started/overview/}
+
+{\bf Suggested method:}\\
+Find the main web page of Docker, \url{https://www.docker.com}
+
+Look at the architecture of Docker, they currently have an article:\\
+\url{https://www.docker.com/resources/what-container}
+
+What is a Container?\\
+A standardized unit of software
+
+Browse the architecture for a bit, and then run docker on your Debian.
+
+The instruction are on the page:\\
+\url{https://docs.docker.com/engine/install/debian/}
+
+{\bf Hints:}\\
+I recommend using the repositories, as future updates will become available there. This make future apt update/upgrade more simple.
+
+{\bf Solution:}\\
+When you understand the basic architecture of Docker containers, you are done.
+
+or
+
+When you can run a small docker container, you are done.
+
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+docker run hello-world
+\end{minted}
+
+
+{\bf Discussion:}\\
+Many software packages can be used via Docker containers. This allows the programmer to prepare a small image, and the user to run this directly.
+
+Are there any security issues, many, so be careful.
+
+See for example: \\
+\url{https://docs.docker.com/engine/security/}
+
+\end{document}
 
 
 \chapter{Centralized syslog 15min}

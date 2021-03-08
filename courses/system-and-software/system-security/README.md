@@ -5,7 +5,7 @@ English: Computer Systems Security
 
 Part of the Diploma in IT-security at KEA Kompetence.
 
-Teacher: Henrik Lund Kramshøj hlk@zencurity.com +45 2026 6000
+Teacher: Henrik Kramselund Jereminsen hkj@zencurity.com +45 2026 6000
 
 During development I found materials for the course CS f361: Summer 2017
 Introduction to Computer Security and materials at
@@ -15,7 +15,3 @@ The University of Texas at Austin
 
 When asked if I could borrow parts he graciously wrote:
 "You are welcome to use them freely.  You can credit me at the beginning." 
-
-
-loook at 
-https://www.amazon.de/GL-iNet-GL-AR300M16-Pre-Installed-Performance-Programmable/dp/B0777L5YN6/ref=sr_1_5?keywords=gl-ar150&qid=1557413647&s=gateway&sr=8-5

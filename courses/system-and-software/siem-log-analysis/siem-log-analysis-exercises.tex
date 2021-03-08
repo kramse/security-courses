@@ -455,16 +455,16 @@ Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
 Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
 
 Example playbook content, installing software using APT:
-\begin{alltt}
+\begin{minted}[fontsize=\footnotesize]{yaml}
 apt:
-    name: "\{\{ packages \}\}"
+    name: "{{ packages }}"
     vars:
       packages:
         - nmap
         - curl
         - iperf
         ...
-\end{alltt}
+\end{minted}
 
 {\bf Solution:}\\
 When you have a updated VM and Ansible running, then we are good.
@@ -494,18 +494,18 @@ Select a category example, Cluster APIs, then select Nodes Info APIs. This will 
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 # return just process
-curl -X GET "localhost:9200/\_nodes/process?pretty"
+curl -X GET "localhost:9200/_nodes/process?pretty"
 # same as above
-curl -X GET "localhost:9200/\_nodes/_all/process?pretty"
+curl -X GET "localhost:9200/_nodes/_all/process?pretty"
 
 curl -X GET "localhost:9200/_nodes/plugins?pretty"
 
 # return just jvm and process of only nodeId1 and nodeId2
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/jvm,process?pretty"
+curl -X GET "localhost:9200/_nodes/nodeId1,nodeId2/jvm,process?pretty"
 # same as above
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
+curl -X GET "localhost:9200/_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
 # return all the information of only nodeId1 and nodeId2
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/_all?pretty"
+curl -X GET "localhost:9200/_nodes/nodeId1,nodeId2/_all?pretty"
 \end{minted}
 
 When you can see this works, then feel free to install X-Pack and monitoring plugins
@@ -574,7 +574,7 @@ Recommended values to print from the file:
 
 {\bf Hints:}\\
 One option is to use the Python ElementTree XML API:\\
-\url{https://docs.python.org/2/library/xml.etree.elementtree.html}
+\url{https://docs.python.org/3/library/xml.etree.elementtree.html}
 
 Also - use Python3!
 
@@ -632,9 +632,9 @@ Python package manager \verb+pip+ makes it easy to install dependencies for a pr
 
 Install the dependencies with:
 
-\begin{alltt}
+\begin{minted}[fontsize=\footnotesize]{shell}
 pip3 install --user -r requirements.txt
-\end{alltt}
+\end{minted}
 
 
 {\bf Solution:}\\
@@ -852,7 +852,7 @@ They work, and will give a first impression of Zeek. If you later want specific 
 
 Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
 
-\begin{alltt}
+\begin{minted}[fontsize=\footnotesize]{shell}
 root@NMS-VM:/etc/bro# ls -la
 drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
 drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
@@ -860,7 +860,7 @@ drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
 -rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
 -rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
 drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
-\end{alltt}
+\end{minted}
 
 \chapter{Zeek DNS capturing domain names 15min}
 \label{ex:zeekdnsbasic}
@@ -875,24 +875,25 @@ Try Zeek with example traffic, and see what happens.
 
 
 {\bf Suggested method packet capture file:}\\
-Note: a dollar sign is the Linux prompt, showing the command after
-\begin{alltt}\small
+Use Nitroba.pcap can be found in various places around the internet
+
+\begin{minted}[fontsize=\footnotesize]{shell}
 $ cd
-$ wget http://downloads.digitalcorpora.org/corpora/network-packet-dumps/2008-nitroba/nitroba.pcap
+$ wget http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap
 $ mkdir $HOME/bro;cd $HOME/bro; bro -r ../nitroba.pcap
 ... bro reads the packets
 ~/bro$ ls
 conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
 sip.log  ssl.log  weird.log  x509.log
 $ less *
-\end{alltt}
+\end{minted}
 
 Use :n to jump to the next file in less, go through all of them.
 
 {\bf Suggested method Live traffic:}\\
 Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
 
-\begin{alltt}
+\begin{minted}[fontsize=\footnotesize]{shell}
 root@NMS-VM:/etc/bro# cat node.cfg
 # Example BroControl node configuration.
 #
@@ -906,7 +907,7 @@ type=standalone
 host=localhost
 interface=eth0
 ...
-\end{alltt}
+\end{minted}
 
 
 {\bf Hints:}\\
@@ -920,7 +921,7 @@ Running with a capture can be done using a command line such as:
 \verb+bro -r traffic.pcap+
 
 Using broctl to start it would be like this:
-\begin{alltt}\small
+\begin{minted}[fontsize=\footnotesize]{shell}
 // install bro first
 kunoichi:~ root# broctl
 Hint: Run the broctl "deploy" command to get started.
@@ -932,35 +933,36 @@ Type "help" for help.
 creating policy directories ...
 installing site policies ...
 generating standalone-layout.bro ...
-generating local-networks.bro ...
-generating broctl-config.bro ...
-generating broctl-config.sh ...
 ...
-\end{alltt}
+\end{minted}
 
-\begin{alltt}\small
+Afterwards you can stop and start as you wish:
+\begin{minted}[fontsize=\footnotesize]{shell}
 // back to Broctl and start it
 [BroControl] > start
 starting bro
 [BroControl] > exit
 // and then
-kunoichi:bro root# cd /var/spool/bro/bro
+kunoichi:bro root# cd /var/log/bro/current
 kunoichi:bro root# tail -f dns.log
-\end{alltt}
+\end{minted}
 
 You should be able to spot entries like this:
-\begin{alltt}\small
-#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
-     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
-1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
-\end{alltt}
+\begin{minted}[fontsize=\footnotesize]{shell}
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto
+trans_id        rtt query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name
+AA      TC      RD      RA      Z       answers TTLs    rejected
+1538982372.416180 CD12Dc1SpQm42QW4G3 10.xxx.0.145 57476 10.x.y.141 53	udp
+20383	0.045021	www.dr.dk	1	C_INTERNET	1 A 0 NOERROR
+F F T T 0 www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93 60.000000,20409.000000,20.000000 F
+\end{minted}
 
 Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
 
-\begin{alltt}\small
+\begin{minted}[fontsize=\footnotesize]{shell}
 root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
-2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
-\end{alltt}
+2018-10-08T09:06:12+0200 www.dr.dk www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{minted}
 
 {\bf Discussion:}\\
 Why is DNS interesting?
@@ -1002,6 +1004,305 @@ When you have multiple log files with data from Zeek, and have looked into some 
 How can you hide that you are going to HTTPS sites?
 
 Hint: VPN
+
+
+
+
+\chapter{Find Indices in Elasticsearch 15 min}
+\label{ex:es-find-indices}
+
+{\bf Objective:}\\
+Find the indices in your Elasticsearch
+
+Note: you might not have any.
+
+{\bf Purpose:}\\
+We need to locate our data. Data in Elasticsearch is saved in {\bf indices}.
+
+
+{\bf Suggested method:}\\
+Make sure Elasticsearch is running, with Kibana.
+
+If you have Elasticsearch installed and running try: \link{http://127.0.0.1:9200}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ curl 127.0.0.1:9200
+\end{minted}
+should output:
+\begin{minted}[fontsize=\footnotesize]{json}
+{
+  "name" : "debian-siem",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "Kyi6e2WuSGq2TcFzOaPnsQ",
+  "version" : {
+    "number" : "7.10.0",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+    "build_hash" : "51e9d6f22758d0374a0f3f5c6e8f3a7997850f96",
+    "build_date" : "2020-11-09T21:30:33.964949Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.7.0",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+}
+\end{minted}
+
+
+If you have Elasticsearch installed and running try: \link{http://127.0.0.1:5601}
+
+Should show a basic Kibana window.
+\hlkimage{7cm}{kibana-es-default.png}
+
+
+If this is your first time in kibana, then you will probably see it asking for an index pattern:
+\hlkimage{7cm}{kibana-default-index-pattern.png}
+
+This is a short two-step process, and I choose \verb+filebeat-*+ as I wanted to play with filebeat data, and already had some available.
+
+\hlkimage{10cm}{kibana-filebeat-pattern-1.png}
+
+Make sure to select a time field:
+
+\hlkimage{10cm}{kibana-filebeat-pattern-2.png}
+
+When you have done your first index pattern, note the menu on the left, hamburger icon menu.
+
+From there you can choose: \verb+Stack Management > Index Management+.
+
+\hlkimage{10cm}{kibana-index-mgmt.png}
+
+Feel free to delete data, or otherwise change data in your own installation.
+
+
+
+{\bf Hints:}\\
+Documentation is available at:\\
+\link{https://www.elastic.co/guide/en/elasticsearch/reference/7.10/index-mgmt.html}
+
+{\bf Solution:}\\
+When you have ES and Kibana running, and can access the interfaces, you are done.
+
+Before you leave, make note of the menu: Kibana Index Patterns. These are used for presenting data in Kibana, and you want them to show your data!
+
+\begin{quote}
+Kibana requires an index pattern to access the Elasticsearch data that you want to explore. An index pattern selects the data to use and allows you to define properties of the fields.
+\end{quote}
+Source: \link{https://www.elastic.co/guide/en/kibana/current/index-patterns.html}
+
+So if you are running filebeat, and data from filebeat, then it is advised to use an index pattern of \verb+filebeat-*+
+
+\hlkimage{10cm}{kibana-index-pattern.png}
+
+You can create more of these, and common ones would be:
+\begin{itemize}
+\item \verb+filebeat-*+ -- all sorts of data ingested by filebeat
+\item \verb+logstash-*+ -- all sorts of data ingested by logstash
+
+\end{itemize}
+
+{\bf Discussion:}\\
+Elasticsearch is a huge system, watching tutorials and playing with the tools are the recommended way to learn.
+
+
+
+\chapter{Zeek Data in Elasticsearch 30 min}
+\label{ex:zeek-json-es}
+
+{\bf Objective:}\\
+Get data from Zeek files into Elasticsearch.
+
+
+{\bf Purpose:}\\
+Having the files with data is great, but to make it more accessible we will load it into ES.
+
+
+{\bf Suggested method:}\\
+Git pull the kramse-labs repository and do this automatically.
+
+You can also do the steps manually, following a guide like:\\
+\link{https://www.elastic.co/blog/collecting-and-analyzing-zeek-data-with-elastic-security}
+
+\link{https://github.com/kramse/kramse-labs}
+
+If you haven't clone, do this first in your Linux VM:
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git python
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+Output should be similar to this:
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:t$ git clone https://github.com/kramse/kramse-labs
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 906.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+user@Projects:t$
+\end{minted}
+
+If you already cloned, get the latest updates:
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:kramse-labs$ git pull
+Already up to date.
+user@Projects:kramse-labs$
+\end{minted}
+
+Run the playbooks for setting up the system {\bf as root}:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+sudo ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+After this, you should have some data in ES/Kibana
+
+Use the discover data menu:
+\hlkimage{3cm}{kibana-discover.png}
+
+
+{\bf Hints:}\\
+Make sure you use the right index pattern. Within discover you can change between them with the menu:
+
+\hlkimage{3cm}{kibana-change-index-pattern.png}
+
+Another hint, for lab systems that are turned off and on, use the time selector at the top and select "Last 90 days". This way you can see older data you imported last time. Production systems continually produce data, but your lab server probably has very little.
+
+\hlkimage{7cm}{kibana-90-day-lab.png}
+
+Filebeat comes with predefined assets for parsing, indexing, and visualizing your data. To load these assets run the filebeat setup command:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+filebeat setup -e
+\end{minted}
+
+Output should be similar to this:
+\begin{minted}[fontsize=\footnotesize]{shell}
+Overwriting ILM policy is disabled. Set `setup.ilm.overwrite: true` for enabling.
+
+Index setup finished.
+Loading dashboards (Kibana must be running and reachable)
+Loaded dashboards
+Setting up ML using setup --machine-learning is going to be removed in 8.0.0. Please use the ML app instead.
+See more: https://www.elastic.co/guide/en/machine-learning/current/index.html
+Loaded machine learning job configurations
+Loaded Ingest pipelines
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have tried the filebeat tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
+
+
+\chapter{Working with dashboards - xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Get a few dashboard up and running quickly.
+
+Try the dashboard package KTS7 locally your workstation.
+
+
+{\bf Purpose:}\\
+There are a lot of Dashboards available, such as:\\
+\link{https://github.com/StamusNetworks/KTS7}
+
+When learning to create something, a program, document or dashboard -- seeing examples help.
+
+Note: these instructions are very dependent on the version of Elasticsearch and Kibana, so check you version first!
+\begin{minted}[fontsize=\footnotesize]{shell}
+hkj@debian-siem:~$ dpkg -l | egrep "elasticsearch|kibana"
+ii  elasticsearch    7.10.0       amd64    Distributed RESTful search engine built for the cloud
+ii  kibana           7.10.0       amd64    Explore and visualize your Elasticsearch data
+\end{minted}
+
+Good news are that the developers of the KTS package has done them for various versions over the years. So look for KTS6 if you are running ES 6.
+
+{\bf Suggested method:}\\
+Read instructions for installing the dashboards.
+
+\link{https://github.com/StamusNetworks/KTS7}
+
+\begin{quote}
+Kibana 7 Templates for Suricata
+Templates/Dashboards for Kibana 7 to use with Suricata. Suricata IDPS/NSM threat hunting and the ELK 7 stack
+
+This repository provides 28 dashboards for the Kibana 7.x and Elasticsearch 7.x for use with Suricata IDS/IPS/NSM - Intrusion Detection, Intrusion Prevention and Network Security Monitoring system
+
+These dashboards are for use with Suricata 6+ and enabled Rust build, Elasticsearch, Logstash, Kibana 7 and comprise of more than 400 visualizations and 24 predefined searches.
+\end{quote}
+
+The commands are similar to, first clone:
+\begin{minted}[fontsize=\footnotesize]{shell}
+git clone https://github.com/StamusNetworks/KTS7.git
+cd KTS7
+\end{minted}
+
+then load the dashboards -- JSON files:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd API-KIBANA7
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@index-pattern.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@search.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@visualization.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@dashboard.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@query.ndjson
+\end{minted}
+
+Dont forget to restart Kibana
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo service kibana restart
+\end{minted}
+
+
+{\bf Hints:}\\
+Kibana and ES are controlled with web requests, so if you look into the commands, they do HTTP POST requests with JSON files. This allow development of dashboards on one system, and then deploying them easily on others.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some dashboards you are done.
+
+Note: we might not have any data.
+
+{\bf Discussion:}\\
+
+
+
+
+\chapter{Alerting in ES 7 - 30 min}
+\label{ex:es7-alerting}
+
+\hlkimage{10cm}{alerting-overview.png}
+
+{\bf Objective:}\\
+Go through the Elasticsearch alerting article
+
+{\bf Purpose:}\\
+Alerting in ES 7 will allow you to automatically be alerted and initiate actions depending on your data
+
+
+{\bf Suggested method:}\\
+Look at the guide
+\link{https://www.elastic.co/guide/en/kibana/7.x/alerting-getting-started.html}
+
+
+
+{\bf Hints:}\\
+A sending host must be alloweded to connect to some SMTP endpoint, sending email.
+
+Might need a real address to send from, may need some changes to email infrastructure to NOT become tagged as spam!
+
+
+
+{\bf Solution:}\\
+When you have an idea of the possibilities you are done. Bonus if you actually try making an alert.
+
+{\bf Discussion:}\\
+Note the alerting runs on Kibana not Elasticsearch!
+
+
 
 
 \end{document}

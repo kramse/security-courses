@@ -18,22 +18,38 @@
 
 Todays goals:
 \begin{list2}
-  \item\end{list2}
+\item Talk about example SIEM components
+\item Realize Elasticsearch is a very common \emph{storage system} for infosec products
+\item Play with Elasticsearch, also share experiences with running it in production
+\item Get your data into Elasticsearch! Your Zeek data!
+\end{list2}
 
-  Photo by Thomas Galler on unsplash
+Photo by Thomas Galler on unsplash
 
 \slide{Plan for today}
 
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item Elasticsearch -- a highly efficient data store
+\item Elasticsearch SIEM
+\item Along the way, operations for Elasticsearch and SIEM architectures
 \end{list2}
-\item Exercise theme: What is normal
+\item Exercise theme: Storing and processing
 \begin{list2}
-\item
+\item Running Elasticsearch
+\item What can you put into Elasticsearch
+
 \end{list2}
 \end{list1}
+
+
+\slide{Now we need Elastic stack running!}
+
+\hlkimage{16cm}{elastic-logstash-queue-publish.png}
+
+Note: Kibana makes it easy to use sample data, feel free to experiment!
+
 
 \slide{Reading Summary}
 
@@ -47,90 +63,209 @@ Todays goals:
 
 %\hlkimage{}{}
 
-\begin{quote}
-
+\begin{quote}\small
+You could {\bf buy a bunch of expensive gear}, point it all to a {\bf log management} or a {\bf security incident and event management (SIEM)} system, and let it automatically tell you what it knows. Some incident response teams may start this way, but unfortunately, many never evolve. {\bf Working only with what the SIEM tells you}, versus what you have configured it to tell you {\bf based on your contextual data}, will invariably fail. Truly demonstrating {\bf value} from security monitoring and incident response {\bf requires a major effort}. As with all projects, {\bf planning} is the most important phase. {\bf Designing} an approach that works best for you requires significant effort up front, but offers a great payout later in the form of {\bf meaningful incident response and overall improved security}.
 \end{quote}
+Source: CIP 4 A Data-Centric Approach to Security Monitoring (bold by me)
 
-\begin{list1}
-\item CIP 4 A Data-Centric Approach to Security Monitoring
+
 \begin{list2}
-\item
+\item I recommend pre-filtering, see what noise your devices \emph{would send}\\
+"Collecting only relevant data can have a direct impact on reducing costs as well."
+\item Same is recommended in CIP page 50: Just the Facts
+\item Normalization -- "Data normalization for
+the purposes of log mining is the process by which a portion, or field, of a log event is
+transformed into its canonical form."
 \end{list2}
-\end{list1}
+
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
 
 \slide{Reading Summary, continued}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
 
 \begin{list1}
 \item Skim read: CIP 7 Tools of the Trade, need to know NetFlow, DNS, and HTTP proxy logs in the real-world
 \begin{list2}
-\item
+\item Defense in Depth -- we will never catch everything
+\item Log Management: The Security Event Data Warehouse
+\item Intrusion Detection Isn’t Dead
+\item DNS, the One True King -- Logging and analyzing DNS transactions, Blocking DNS requests or responses
+\item HTTP Is the Platform: Web Proxies -- Web proxies allow you to solve additional security problems
+\item Rolling Packet Capture -- In a perfect world, we would have full packet capture everywhere
 \end{list2}
 \end{list1}
+
+
+\slide{Reading Summary, Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
 
 \slide{Reading Summary, continued}
 
 %\hlkimage{}{}
 
 \begin{quote}
-
+Relational databases (RDBMS) have been around since the 1970s when Edgar Codd proposed “a relational model of data for large shared data banks” as an alternative to the network models—heavily inter-linked, on-disk structures—prevalent at that time.
 \end{quote}
+Source: DDS 8. Breaking Up with Your Relational Database
 
-\begin{list1}
-\item Skim read: DDS 8. Breaking Up with Your Relational Database
 \begin{list2}
-\item
+\item A Primer on SQL/RDMBS Databases -- read if you don't know about relational databases
+\item Constrained by Schema
+\item Exploring Alternative Data Stores -- BerkeleyDB, MongoDB
+\item Redis is an open source, BSD licensed, advanced key-value store (http://redis.io/) --great buffer between systems
+\item Apache Hadoop \link{https://hadoop.apache.org/} map and reduce, big data tools
+\item Perhaps checkout SQLite  \link{https://www.sqlite.org/}
 \end{list2}
-\end{list1}
 
 
-\slide{Subjects: }
-
-\hlkimage{8cm}{homer-end-is-near.jpg}
-
-\begin{list1}
-\item
-\end{list1}
-
-
-
-
-
-\slide{Security devops}
-
-\begin{list1}
-\item We need devops skillz in security
-\item automate, security is also big data
-\item integrate tools, transfer, sort, search, pattern matching, statistics, ...
-\item tools, languages, databases, protocols, data formats
-\item Use GitHub! So many libraries and programs that can help, maybe solve  90\% of your problem, and you can glue the rest together
-\item Example introductions:
-\begin{list2}
-\item Seven languages/database/web frameworks in Seven Weeks
-\item Elasticsearch the definitive guide
-\end{list2}
-\end{list1}
-
-\centerline{We are all Devops now, even security people!}
-
-\slide{}
+\slide{Elasticsearch example systems}
 
 %\hlkimage{}{}
 
-\begin{quote}
-
+\begin{quote}\small
+ElasticSearch consumes practically anything you give it and provides straightforward ways to ask it questions and get data out of it. You just need to feed it semi- or unstructured data and fold in some domain intelligence to enable smart indexing. It works its multi-node NoSQL magic in conjunction with a layer of full-text searching to give you almost instantaneous query results even for large amounts of data.\\
+Source: DDS 8. Breaking Up with Your Relational Database
 \end{quote}
 
 \begin{list2}
-  \item R and Python from DDS book
-  - plus libraries and Github
-
+\item Elasticsearch SIEM -- from Elastic
+\item Wazuh -- agent for clients, log events, integrity protection etc.
+\item HELK -- all-in one hunting system
+\item ElastiFlow -- netflow system
+\item Arkime (renamed recently from Moloch) -- packet capture
 \end{list2}
+
+Lots of commercial systems, and lots of companies providing cloud logging platform
+
+Microsoft Azure promots Sentinel -- cloud based SIEM\\ {\footnotesize
+\link{https://azure.microsoft.com/da-dk/services/azure-sentinel/}}
+
+\slide{Arkime}
+
+\hlkimage{6cm}{Arkime_Logo_FullGradientBlack.png}
+
+\begin{quote}\small
+{\bf Full Packet Capture}\\
+Arkime (formerly Moloch) is a large scale, open source, indexed packet capture and search tool.
+
+This project has experienced significant growth, adoption, and change over the last eight years. We are now at a new milestone and believe it’s the right time to rename our project to Arkime!
+
+...
+On basic commodity hardware, it is easy to get 3Gbps or more, depending on the number of CPUs available to Arkime and what else the machine is doing.
+\end{quote}
+Source: Picture and text from \link{https://arkime.com/}
+
+\begin{list2}
+\item I havent tried it in real life
+\item Note also recommendation for Network Packet Broker, example\\
+Arista - \link{https://www.arista.com/en/solutions/tap-aggregation}
+\end{list2}
+
+
+
+
+\slide{Architecture for packet capture}
+
+\hlkimage{4cm}{network-horiz-onion.png}
+Source: picture from \link{https://docs.securityonion.net/en/2.3/introduction.html}
+
+\begin{list2}
+\item Note the terminology North-South -- from the internet into the systems
+\item East-West -- horizontal traffic inside the data center
+\item See also from Security Onion \url{https://docs.securityonion.net/en/2.3/architecture.html#architecture}
+\end{list2}
+
+
+
+\slide{ElastiFlow}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+PS I havent tried it in real life, yet
+
+\slide{The Hunting ELK}
+
+\hlkimage{15cm}{HELK-Design.png}
+
+\begin{quote}\small
+The Hunting ELK or simply the HELK is one of the first open source hunt platforms with advanced analytics capabilities such as SQL declarative language, graphing, structured streaming, and even machine learning via Jupyter notebooks and Apache Spark over an ELK stack. This project was developed primarily for research, but due to its flexible design and core components, it can be deployed in larger environments with the right configurations and scalable infrastructure.
+\end{quote}
+Source: text and picture from \link{https://thehelk.com/intro.html}
+
+\begin{list2}
+\item You might consider this an example architecture for a SIEM, lot of components
+\end{list2}
+
+
+\slide{Wazuh}
+
+~
+\hlkrightpic{8cm}{0cm}{01-Wazuh-Security-Analytics-op.png}
+
+\begin{quote}\small
+Wazuh agents scan the monitored systems looking for malware, rootkits and suspicious anomalies. They can detect hidden files, cloaked processes or unregistered network listeners, as well as inconsistencies in system call responses.
+\end{quote}
+Source: Picture and text from \link{https://wazuh.com/}
+
+\begin{list2}
+\item Integration with Elastic Stack
+\item Wazuh initially a fork of the OSSEC project
+\item I havent tried Wazuh in real life, have used OSSEC
+\item We also considered and experimented with osquery \link{https://osquery.io/}
+\end{list2}
+
+
+\slide{Wazuh agent}
+
+\begin{quote}
+The Wazuh lightweight agent is designed to perform a number of tasks with the objective of detecting threats and, when necessary, trigger automatic responses. The agent core capabilities are:
+
+The Wazuh agents run on many different platforms, including Windows, Linux, Mac OS X, AIX, Solaris and HP-UX. They can be configured and managed from the Wazuh server.
+\end{quote}
+
+\begin{list2}
+\item Log and events data collection
+\item File and registry keys integrity monitoring
+\item Inventory of running processes and installed applications
+\item Monitoring of open ports and network configuration
+\item Detection of rootkits or malware artifacts
+\item Configuration assessment and policy monitoring
+\item Execution of active responses
+\end{list2}
+
+
+\slide{Elasticsearch}
+
+\begin{quote}
+Elasticsearch is a search engine based on the Lucene library. It provides a distributed, multitenant-capable full-text search engine with an HTTP web interface and schema-free JSON documents. Elasticsearch is developed in Java.
+\end{quote}
+
+Source: Wikipedia \link{https://en.wikipedia.org/wiki/Elasticsearch}
+
+\begin{list2}
+\item Initial release	8 February 2010
+\item Open core means parts of the software are licensed under various open-source licenses (mostly the Apache License)
+\item Various browser tools and plugins for ES exist, to make life easier
+\item I often use ES for storing Log Messages and Events from multiple systems, a SIEM Security information and event management.
+\end{list2}
+
+
 
 
 
@@ -199,32 +334,8 @@ Source: {\footnotesize\\
 
 
 
-\slide{Elasticsearch}
-
-\begin{quote}
-Elasticsearch is a search engine based on the Lucene library. It provides a distributed, multitenant-capable full-text search engine with an HTTP web interface and schema-free JSON documents. Elasticsearch is developed in Java.
-\end{quote}
-
-Source: \url{https://en.wikipedia.org/wiki/Elasticsearch}
-
-\begin{list2}
-\item Open core means parts of the software are licensed under various open-source licenses (mostly the Apache License)
-\item Various browser tools and plugins for ES exist, to make life easier
-\item I often use ES for storing Log Messages and Events from multiple systems, a SIEM Security information and event management.
-\end{list2}
 
 
-\slide{Elasticsearch SIEM}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
-\begin{list2}
-  \item
-\end{list2}
 
 
 \slide{Elasticsearch REST}
@@ -242,40 +353,272 @@ Source: \url{https://en.wikipedia.org/wiki/Elasticsearch}
 \end{list2}
 
 
-\exercise{ex:postman-api}
 
-\exercise{ex:es-rest-api}
+\slide{Elasticsearch tutorials}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Elasticsearch is a distributed document store. Instead of storing information as rows of columnar data, Elasticsearch stores complex data structures that have been serialized as JSON documents. When you have multiple Elasticsearch nodes in a cluster, stored documents are distributed across the cluster and can be accessed immediately from any node.
+
+When a document is stored, it is indexed and fully searchable in near real-time--within 1 second. Elasticsearch uses a data structure called an inverted index that supports very fast full-text searches. An inverted index lists every unique word that appears in any document and identifies all of the documents each word occurs in.
+
+...
+
+The Elasticsearch REST APIs support structured queries, full text queries, and complex queries that combine the two. Structured queries are similar to the types of queries you can construct in SQL. \end{quote}
+
+\begin{list2}
+\item \link{https://www.elastic.co/guide/en/elasticsearch/reference/current/elasticsearch-intro.html}
+\item Elasticsearch Tutorials - Officlal Guide \link{https://www.elastic.co/elasticsearch/tutorials}
+\end{list2}
+
+
+\slide{Elasticsearch --  Analyzing your data}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Elasticsearch aggregations enable you to build complex summaries of your data and gain insight into key metrics, patterns, and trends. Instead of just finding the proverbial “needle in a haystack”, aggregations enable you to answer questions like:
+
+\begin{list2}
+\item How many needles are in the haystack?
+\item What is the average length of the needles?
+\item What is the median length of the needles, broken down by manufacturer?
+\item How many needles were added to the haystack in each of the last six months?
+\end{list2}
+\end{quote}
+Source: \link{https://www.elastic.co/guide/en/elasticsearch/reference/current/search-analyze.html}
+
+
+
+\slide{Searching in Elasticsearch}
+
+%\hlkimage{}{}
+
+\verb+GET /my-index-000001/_search+
+\begin{minted}[fontsize=\footnotesize]{json}
+  {
+    "query": {
+      "match": {
+        "user.id": "kimchy"
+      }
+    }
+  }
+\end{minted}
+
+
+\begin{list2}
+\item Can use cURL, Python, Postman or any other REST client
+\item Indices are one of the main terms
+\end{list2}
+
+
+\slide{Response}
+
+\begin{minted}[fontsize=\footnotesize]{json}
+{
+  "took": 5,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 1,
+      "relation": "eq"
+    },
+    "max_score": 1.3862942,
+    "hits": [
+          {
+            "_index": "my-index-000001",
+            "_type": "_doc",
+            "_id": "kxWFcnMByiguvud1Z8vC",
+            "_score": 1.3862942,
+            "_source": {
+              "@timestamp": "2099-11-15T14:12:12",
+              "http": {
+                "request": {
+                  "method": "get"
+                },
+                "response": {
+                  "bytes": 1070000,
+                  "status_code": 200
+                },
+                "version": "1.1"
+              },
+              "message": "GET /search HTTP/1.1 200 1070000",
+              "source": {
+                "ip": "127.0.0.1"
+              },
+              "user": {
+                "id": "kimchy"
+              }
+            }
+          }
+        ]
+      }
+    }
+\end{minted}
+
+
+
+\slide{ElasticSearch Index}
+
+\begin{quote}
+Basic Definition\\
+An index is defined as:
+
+An index is like a ‘database’ in a relational database. It has a mapping which defines multiple types.
+An index is a logical namespace which maps to one or more primary shards and can have zero or more replica shards.
+
+\vskip 5mm
+
+The easiest and most familiar layout clones what you would expect from a relational database. You can (very roughly) think of an index like a database.
+
+\verb+MySQL => Databases => Tables => Columns/Rows+
+
+\verb+Elasticsearch => Indices => Types => Documents with Properties+
+\end{quote}
+Source: \link{https://www.elastic.co/blog/what-is-an-elasticsearch-index}
+
+\slide{Indices for logging}
+
+\hlkimage{16cm}{elasticsearch-indices-for-logging.png}
+Source: \link{https://www.elastic.co/blog/what-is-an-elasticsearch-index}
 
 
 
 
+\slide{Elasticsearch SIEM}
 
-Exercises
-Theme: What is normal
+%\hlkimage{}{}
 
-Logstash JSON etc.
+\begin{quote}
 
-\slide{Now we need Elastic stack running!}
+\end{quote}
 
-Note: Kibana makes it easy to use sample data, feel free to experiment!
+\begin{list2}
 
-\exercise{ex:postman-api}
+\item Some structure is useful, Elastic Common Schema (ECS)\\
+  \link{https://github.com/elastic/ecs}
+\item I would use their schemas for a green field deployment,\\
+  as they have been expanded and developed over some time
+\item Correlation becomes implicit in every search!\\
+-- hint/fact from {\small\link{https://www.elastic.co/webinars/introducing-the-elastic-common-schema}}
+\end{list2}
+
+
+\slide{Common Event Format (CEF)}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  The format called Common Event Format (CEF) can be readily adopted by
+  vendors of both security and non-security devices. This format contains the
+  most relevant event information, making it easy for event consumers to parse
+  and use them.
+  To simplify integration, the syslog message format is used as a transport
+  mechanism. This applies a common prefix to each message, containing the
+  date and hostname, as shown below.
+\end{quote}
+
+\begin{list2}
+\item Common Event Format (CEF) originally from ArcSight
+\item Trying to move vendors from unstructure syslog messages
+\item \link{https://www.elastic.co/guide/en/beats/filebeat/7.10/filebeat-module-cef.html}
+\end{list2}
+
+\slide{Architecture}
+
+\hlkimage{17cm}{elastic-stack-buffered.png}
+\begin{list2}
+\item Real production environments often add some buffering in between
+\item Allows the ingestion to become more smooth, no lost messages
+\end{list2}
+
+
+\slide{Buy or DIY?}
+
+%\hlkimage{}{}
+
+\begin{quote}
+DNSDB is a database that stores and indexes both the passive DNS data available via Farsight Security’s Security Information Exchange as well as the authoritative DNS data that various zone operators make available.
+\end{quote}
+Source: from \link{https://docs.dnsdb.info/}
+\begin{list2}
+  \item Excellent services can be bought, have used \link{https://team-cymru.com/}
+\item Compare using \link{https://docs.dnsdb.info/}
+  Farsight DNSDB API documentation
+\item \link{https://nullsecure.org/building-your-own-passivedns-feed/}
+
+\end{list2}
+
+\slide{Team Cymru}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  We operate as our own ISP and are part of the fabric of the internet. We’ve amassed an unmatched number of data sharing partnerships with operators worldwide, in addition to gathering threat intelligence from a global grid of sensors, honeypots, darknets and crawlers. We give you our visibility via our Pure Signal™ platform, Augury™.
+
+\begin{list2}
+\item Trace threat actors through dozens of proxies and VPNs.
+\item Map the extended infrastructure.
+\item Preemptively block associated IPs.
+\item Then monitor these threats to defend against them indefinitely.
+\end{list2}
+\end{quote}
+Source: from \link{https://team-cymru.com/}
+
+\begin{list2}
+\item Often you need sources that are hard to get
+\item Many vendors integrate sources into other products too
+\item Firewalls and Load balancing products that include reputation lists
+\end{list2}
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
+
+
+\begin{list2}
+\item When your SIEM alerts you, you need tools to block and restrict
+\item Recommend adding empty blocking access control lists etc. to your network infrastructure
+\item Add premade blocking to your name servers, proxy servers, recursive servers
+\item Recommend implementing country lists
+\end{list2}
+
 
 \exercise{gettingstartedelastic}
 
 \exercise{ex:basicansible}
 
+
+\exercise{ex:postman-api}
+
 \exercise{ex:es-rest-api}
 
-NetFlow Nfdump, DNS, web server logs
 
-Wireshark here? Demonstrate DNS and HTTPS SNI again?
+\exercise{ex:es-find-indices}
 
-Mention Moloch, which is renamed Arkime
+\exercise{ex:zeek-json-es}
 
 
-CEF formatet
-Common Event Format ?
+\slide{Alerting }
+
+\hlkimage{8cm}{homer-end-is-near.jpg}
+
+\begin{list1}
+\item
+\end{list1}
 
 
 

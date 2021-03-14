@@ -1079,41 +1079,24 @@ Source:{\footnotesize
 How cool is that, centralized configuration management with source code!
 
 
-\slide{Netflow}
-
-\emph{Lets move to detailed monitoring and logging}
+\slide{Netflow -- Lets move to detailed monitoring and logging}
 
 \begin{slidelist}
-\item Netflow is getting more important, more data share the same links
-\item Accounting is important
-\item Detecting DoS/DDoS and problems is essential
-\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
-\item NFSen is an old but free application
-\link{http://nfsen.sourceforge.net/}
-\item Currently also investigating sFlow - hopefully more fine grained
-\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
-\link{https://en.wikipedia.org/wiki/SFlow}
-\end{slidelist}
-
-\slide{Collect Network Evidence from the network -- netflow}
-
-\begin{list1}
-\item Netflow is getting more important, more data share the same links
-\item Detecting DoS/DDoS and problems is essential
-\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
 \item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
 \begin{list2}
 \item Ingress interface (SNMP ifIndex), IP protocol, Source IP address and Destination IP address
 \item Source port for UDP or TCP, 0 for other protocols, IP Type of Service
 \item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
 \end{list2}
-\item Today we can use Netflow version 9 or IPFIX with more fields available
-\end{list1}
+\item Today we can use Netflow version 9 or IPFIX with more fields available, or  sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\end{slidelist}
 
 Source: \\{\footnotesize
-\link{https://en.wikipedia.org/wiki/NetFlow}
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
 \link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
-
 
 \slide{Netflow using NFSen}
 
@@ -1134,26 +1117,17 @@ Source: \\{\footnotesize
 \centerline{Bringing the power of the command line forward}
 
 
+\slide{ElastiFlow}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+PS I havent tried it in real life, yet -- but a friend has
 
 
-\slide{How to get started}
-
-\begin{list1}
-\item How to get started searching for security events?
-\item Collect basic data from your devices and networks
-\begin{list2}
-\item Netflow data from routers
-\item Session data from firewalls
-\item Logging from applications: email, web, proxy systems
-\end{list2}
-\item {\bf Centralize!}
-\item Process data
-\begin{list2}
-\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
-\item {\it ignore}
-\item Bottom 10: least-frequent messages are interesting
-\end{list2}
-\end{list1}
 
 
 
@@ -1191,6 +1165,79 @@ Source:
 \link{https://www.elastic.co/products/kibana}
 
 
+\slide{Architecture}
+
+\hlkimage{17cm}{elastic-stack-buffered.png}
+\begin{list2}
+\item Real production environments often add some buffering in between
+\item Allows the ingestion to become more smooth, no lost messages
+\end{list2}
+
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{SIEM and logging systems}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+You could {\bf buy a bunch of expensive gear}, point it all to a {\bf log management} or a {\bf security incident and event management (SIEM)} system, and let it automatically tell you what it knows. Some incident response teams may start this way, but unfortunately, many never evolve. {\bf Working only with what the SIEM tells you}, versus what you have configured it to tell you {\bf based on your contextual data}, will invariably fail. Truly demonstrating {\bf value} from security monitoring and incident response {\bf requires a major effort}. As with all projects, {\bf planning} is the most important phase. {\bf Designing} an approach that works best for you requires significant effort up front, but offers a great payout later in the form of {\bf meaningful incident response and overall improved security}.
+\end{quote}
+Source: Crafting the InfoSec Playbook, 4 A Data-Centric Approach to Security Monitoring (bold by me)
+by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405
+
+\begin{list2}
+\item I recommend pre-filtering, see what noise your devices \emph{would send}\\
+"Collecting only relevant data can have a direct impact on reducing costs as well."
+\item Same is recommended in CIP page 50: Just the Facts
+\item Normalization -- "Data normalization for
+the purposes of log mining is the process by which a portion, or field, of a log event is
+transformed into its canonical form."
+\end{list2}
+
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
+
+\slide{Summary, what to log}
+
+\begin{list1}
+\item CIP 7 Tools of the Trade, need to know NetFlow, DNS, and HTTP proxy logs in the real-world
+\begin{list2}
+\item Defense in Depth -- we will never catch everything
+\item Log Management: The Security Event Data Warehouse
+\item Intrusion Detection Isn’t Dead
+\item DNS, the One True King -- Logging and analyzing DNS transactions, Blocking DNS requests or responses
+\item HTTP Is the Platform: Web Proxies -- Web proxies allow you to solve additional security problems
+\item Rolling Packet Capture -- In a perfect world, we would have full packet capture everywhere
+\end{list2}
+\end{list1}
+
+
 \slide{Network Security Through Data Analysis}
 
 \hlkimage{4cm}{network-security-through-data-analysis.png}
@@ -1206,63 +1253,82 @@ New Release Date: August 2017
 
 
 
-
-\slide{BGP intro}
-
-\begin{list1}
-\item What is BGP Border Gateway Protocol
-\item Dynamic routing protocol, BGPv4 used on whole internet
-\item Networks identified using AS numbers ASNs
-\item Autonomous System (AS) can be small or very big, world wide
-\item BGP version 4 RFC-4271 uses TCP connections
-\emph{peering}
-\item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
-\end{list1}
+\slide{Detection Capabilities}
 
 
-\slide{Hosting and internet providers}
+Security incidents happen, but what happens. One of the actions to reduce impact of incidents are done in preparing for incidents.
 
-\hlkimage{17cm}{network-bgp-asn.png}
+\begin{itemize}
+\item \emph{Preparation} for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\end{itemize}
+
+Preparation will enable easy {\bf identification} of affected systems, better {\bf containment} which systems are likely to be infected, {\bf eradication} what happened -- how to do the {\bf eradication} and {\bf recovery}.
+
+\slide{Strategy for implementing identification and detection}
+
+We recommend that the following strategy is used for implementing identification and detection.
+
+We have the following recommendations and actions points for logging:
+\begin{enumerate}
+\item[\faSquareO] Enable system logging from servers
+\item[\faSquareO] Enable system logging from network devices
+\item[\faSquareO] Centralize logging
+\item[\faSquareO] Add search facilities and dashboards
+\item[\faSquareO] Perform system audits manually or automatically
+\item[\faSquareO] Setup notification and notification procedures
+\end{enumerate}
+
+\slide{Extended Sources}
+When a basic logging infrastructure is setup, it can be expanded to increase coverage, by
+adding more sources:
 
 \begin{list2}
-\item BGP networks are used for all of the Internet
-\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\item DNS query logging -- will enable multiple cases to be resolved, example malware identification and tracing, when was a malware domain queried, when was the first infection
+\item Session data from Firewalls, Netflow -- traffic patterns can be investigated and both attacks and cases like exfiltration can likely be seen
 \end{list2}
 
-\slide{Routing and BGP Solutions }
+Hint: Take the sources available first, make a proof-of-concept, expand coverage
 
-\begin{list2}
-\item Filtrering, ingress / egress:\\
-"reject external packets that claim to be from the local net"
-\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
-\item Routers and routing protocols must be more skeptical\\
-Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
-\item Has been recommended for some years, but not done in all organisations
-\item BGP routing Resource Public Key Infrastructure RPKI
-\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
-\link{http://www.bcp38.info/}
-\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
-\end{list2}
-
-
-\slide{Breaker}
-
-% ---------------------------------------------
-
-
-
-
-\slide{Best practices}
-
-%\hlkimage{}{}
+\slide{Data Analysis Skills}
 
 \begin{quote}
-
+Although we could spend an entire book creating an exhaustive list of skills needed to be a good security data scientist, this chapter covers the following skills/domains that a data scientist will benefit from
+knowing within information security:
+\begin{list2}
+\item Domain expertise—Setting and maintaining a purpose to the analysis
+\item Data management—Being able to prepare, store, and maintain data
+\item Programming—The glue that connects data to analysis
+\item Statistics—To learn from the data
+\item Visualization—Communicating the results effectively
+\end{list2}
+It might be easy to label any one of these skills as the most important, but in reality, the whole is greater than the sum of its parts. Each of these contributes a significant and important piece to the workings of
+security data science.
 \end{quote}
 
-\begin{list2}
-  \item
+Source: \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+
+
+\slide{Baseline Skills}
+
+\begin{list2}\small
+\item Threat-Centric Security, NSM, and the NSM Cycle
+\item TCP/IP Protocols
+\item Common Application Layer Protocols
+\item Packet Analysis
+\item Windows Architecture
+\item Linux Architecture
+\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item IDS Usage (Snort, Suricata, etc.)
+\item Indicators of Compromise and IDS Signature Tuning
+\item Open Source Intelligence Gathering
+\item Basic Analytic Diagnostic Methods
+\item Basic Malware Analysis
 \end{list2}
+
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, Chris Sanders and Jason Smith
+
 
 
 \slide{Automated packet sniffing tools}
@@ -1276,11 +1342,30 @@ Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
 \item Maltrail -- Malicious traffic detection system {\footnotesize\url{https://github.com/stamparm/MalTrail}}
 \end{list1}
 
-
 Slide included as a reference for Network SECURITY Monitoring
 
 
+\slide{Side note: Zeek Security Monitor handles formats differently}
 
+Zeek has files formatted with a header:
+\begin{alltt}\footnotesize
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
+        rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
+        TC      RD      RA      Z       answers TTLs    rejected
+
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383
+	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0
+   www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
+
+Can also just use JSON now via Filebeat
 
 
 
@@ -1326,6 +1411,45 @@ set vlan employee-vlan mac-move-limit 5
 
 Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
 
+
+
+
+\slide{BGP intro}
+
+\begin{list1}
+\item What is BGP Border Gateway Protocol
+\item Dynamic routing protocol, BGPv4 used on whole internet
+\item Networks identified using AS numbers ASNs
+\item Autonomous System (AS) can be small or very big, world wide
+\item BGP version 4 RFC-4271 uses TCP connections
+\emph{peering}
+\item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
+\end{list1}
+
+
+\slide{Hosting and internet providers}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\end{list2}
+
+\slide{Routing and BGP Solutions }
+
+\begin{list2}
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
+\item Routers and routing protocols must be more skeptical\\
+Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
+\link{http://www.bcp38.info/}
+\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
+\end{list2}
 
 
 

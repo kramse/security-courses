@@ -287,6 +287,17 @@ See also Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and 
 \centerline{Not always this way - but often }
 
 
+\slide{Bridges and routers}
+
+\hlkimage{17cm}{wan-network.pdf}
+\centerline{Often you inherit a mess}
+
+
+
+\slide{OSI and Internet models}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
+
 \slide{MAC address}
 %\hlkimage{10cm}{apple-oui.png}
 
@@ -304,10 +315,6 @@ See also Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and 
 \item Using the OUI you can see which producer and roughly when a network chip was produced
 \item \link{http://standards.ieee.org/regauth/oui/index.shtml}
 \end{list1}
-
-\slide{OSI and Internet models}
-
-\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
 
 
 \slide{Common Address Space}
@@ -335,40 +342,27 @@ Resulted in routing table explosion
 \end{list2}
 
 
-\slide{Bridges and routers}
+\slide{Preparing an IPv6
+Addressing Plan}
 
-\hlkimage{17cm}{wan-network.pdf}
-\centerline{Fysisk er der en begrænsing for hvor lange ledningerne må være}
+\hlkimage{12cm}{ipv6-address-plan-ripe.png}
 
-\slide{Routing}
+{\footnotesize \link{http://www.ripe.net/training/material/IPv6-for-LIRs-Training-Course/IPv6_addr_plan4.pdf}}
 
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
-\begin{list2}
-  \item
-\end{list2}
+See also \link{https://blog.apnic.net/2019/08/22/how-to-ipv6-address-planning/}
 
 
-\slide{}
+\slide{Example adress plan input}
 
-%\hlkimage{}{}
+\hlkimage{16cm}{ipv6-linked-to-ipv4.png}
 
-\begin{quote}
+\centerline{Easy and coupled with VLAN IDs it will work \smiley}
 
-\end{quote}
 
-\begin{list2}
-  \item
-\end{list2}
-IP address plans
 
 \slide{IP Address Management IPAM }
 
-\hlkimage{18cm}{nipap-search.png}
+\hlkimage{16cm}{nipap-search.png}
 \begin{list2}
 \item Recommend Nipap \link{http://spritelink.github.io/NIPAP/}
 \end{list2}
@@ -390,15 +384,6 @@ IP address plans
 \item Either data delivered in correct order, no data missing, checksum or an error is reported
 \item Used for HTTP and others
 \end{list1}
-
-\slide{TCP three way handshake}
-
-\hlkimage{6cm}{images/tcp-three-way.pdf}
-
-\begin{list2}
-\item Session setup is used in some protocols
-\item Other protocols like HTTP/2 can perform request in the first packet
-\end{list2}
 
 
 \slide{Well-known port numbers}
@@ -517,6 +502,7 @@ PING 192.168.1.1 (192.168.1.1): 56 data bytes
 \item ICMP -- Internet Control Message Protocol
 \item ECHO -- only ICMP message that generates another
 \item ICMP ECHO request sent, and ICMP ECHO reply expected
+\item Same with IPv6, \verb+ping6+
 \end{list1}
 
 
@@ -689,6 +675,7 @@ Old skool, but very usefull \link{https://oss.oetiker.ch/smokeping/}
 \item And updated firmware, HTTPS and SSH only etc. the usual stuff
 \end{slidelist}
 
+Then use Oxidized and LibreNMS
 
 
 \slide{NTP Network Time Protocol}
@@ -783,26 +770,39 @@ SNMPv2 example
 
 %\hlkimage{}{}
 
-\begin{quote}
-
-\end{quote}
+\begin{alltt}
+  gem install oxidized
+  gem install oxidized-script oxidized-web
+\end{alltt}
 
 \begin{list2}
-  \item
+\item Oxidized is written in Ruby as a replacement for RANCID (Perl)
+\item Very easy to get running
+\item Fetches and imports configurations into Git repository, or others
+\item RESTful API and Web Interface, and command line tools
+\item \link{https://github.com/ytti/oxidized}
 \end{list2}
 
-\slide{Location, location, location}
+\slide{Oxidized configuration}
 
-\hlkimage{16cm}{images/snmp-location.png}
 
-\centerline{Observium picks up the location from SNMP :-)}
+\begin{alltt}
+\verb+~/.config/oxidized/router.db+
+  router01.example.com:ios
+  switch01.example.com:procurve
+  router02.example.com:ios
+\end{alltt}
 
-\slide{Config example: LLDP}
+
+\begin{list1}
+  \item Easy to configure new device types, added Clavister firewalls once
+\end{list1}
+
+
+
+
+\slide{Config example: Dell switch LLDP}
 %\hlkrightimage{8cm}{images/lldp-dell-8024f.png}
-
-Dell 8024F switch LLDP
-\hlkrightpic{10cm}{0cm}{images/lldp-dell-8024f.png}
-
 
 \begin{alltt}\small
 interface ethernet 1/xg17
@@ -812,10 +812,7 @@ lldp transmit-mgmt
 exit
 \end{alltt}
 
-\slide{LLDP spaghetti?}
-\hlkimage{\textwidth-3cm}{images/lldp-mess-censor.png}
 
-\centerline{LLDP is needed!}
 
 \slide{LLDP trick using tcpdump}
 
@@ -840,17 +837,40 @@ ethertype Unknown (0x88cc), length 60:
 
 
 
+\slide{LibreNMS  a fully featured network monitoring system }
+
+\begin{list2}
+\item Homepage: \link{https://www.librenms.org/}
+\item {\bf Suggested method:}
+\link{https://docs.librenms.org/Installation/}
+\item How basic information about devices are presented, from devices when added - and nothing more.\\
+See how to add a device and add your own. \link{https://docs.librenms.org/Support/Adding-a-Device/}
+\item How SNMP location is used to categorize devices and provice maps, see\\
+\link{https://docs.librenms.org/Extensions/World-Map/}
+\item How protocols like LLDP allow LibreNMS to make maps, see\\
+ \link{https://docs.librenms.org/Extensions/Network-Map/}
+\item How port description can be used for describing ports\\
+ \link{https://docs.librenms.org/Extensions/Interface-Description-Parsing/}
+\end{list2}
+
+Most of this happens with very little effort. Just configure devices consistently and they will be presented nicely.
+
 
 
 \slide{LibreNMS Automatic discovery}
 
 \hlkimage{12cm}{librenms-switches.png}
 
-Automatically discover your entire network using CDP, FDP, LLDP,\\
+Automatically discover your entire network using CDP, FDP, LLDP,
 OSPF, BGP, SNMP and ARP.
 
 \slide{LibreNMS Geo Location}
 \hlkimage{12cm}{librenms-geo-location.png}
+
+\slide{LLDP spaghetti?}
+\hlkimage{\textwidth-3cm}{images/lldp-mess-censor.png}
+
+\centerline{LLDP is needed!}
 
 \slide{LibreNMS wireless clients}
 \hlkimage{20cm}{images/librenms-wireless-clients.png}
@@ -1018,28 +1038,6 @@ Prequisites for Ansible - you need a Linux machine:
 Official docs:\\
 \link{https://docs.ansible.com/ansible/intro_installation.html}
 
-\slide{Get set, Installation options}
-Options:
-\begin{enumerate}
-\item use your laptop, easy if you run Mac or Linux
-\item install and use a local virtual machine, like Kali Linux and use graphical editor like leafpad for playbooks
-\item you also need Git installed
-\end{enumerate}
-
-We will use:\\
-\verb+git clone +\link{https://github.com/kramse/ansible-workshop}
-
-
-
-\vskip 1cm
-\centerline{A goal is also to work in team on a server!}
-
-\centerline{\color{red}\LARGE  We will not do this workshop now in this course}
-
-
-
-
-\slide{Ansible here}
 
 
 \slide{Ansible configuration management}
@@ -1053,53 +1051,37 @@ We will use:\\
         - redis-server
         - nginx
 - lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
-  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
-- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
   regexp='network.host: localhost' line='network.host: localhost'"
 - name: Move elasticsearch data into /data
   command: creates=/data/elasticsearch mv /var/lib/elasticsearch /data/
 - name: Make link to /data/elasticsearch
   file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
 \end{alltt}
-\vskip 5mm
-\centerline{only requires SSH+python \link{http://www.ansible.com}}
 
-\slide{Sample rules from OpenBSD PF}
-
-\begin{alltt}\tiny
-# hosts and networks
-router="217.157.20.129"
-webserver="217.157.20.131"
-homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
-wlan="10.0.42.0/24"
-wireless=wi0
-set skip lo0
-# things not used
-spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
-{\bf
-# default block anything
-block in all }
-# egress and ingress filtering - disallow spoofing, and drop spoofed
-block in quick from $spoofed to any
-block out quick from any to $spoofed
-
-pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
-pass in on $wireless proto tcp from any to $webserver port = 80
-
-pass out
-\end{alltt}
+Example playbooks:\\
+\verb+git clone +\link{https://github.com/kramse/ansible-workshop}
 
 
+\slide{Ansible and Junos -- Juniper Networks devices}
 
-Netflow
-Netflow, sFlow,
+%\hlkimage{}{}
 
-monitoring systems
+\begin{quote}
+  Juniper Networks provides support for using Ansible to manage devices running Junos OS. Starting in Ansible Release 2.1, Ansible natively includes a number of core modules that can be used to manage devices running Junos OS. In addition, Juniper Networks provides the Juniper.junos Ansible role, which is hosted on the Ansible Galaxy website and includes additional modules for Junos OS.
+\end{quote}
+Source:{\footnotesize
+\link{https://www.juniper.net/documentation/en_US/junos-ansible/topics/task/installation/junos-ansible-server-installing.html}}
 
-dashboards
+\begin{list2}
+\item Minimal configuration changes: \verb+user@host# set netconf ssh+
+\end{list2}
+
+How cool is that, centralized configuration management with source code!
 
 
 \slide{Netflow}
+
+\emph{Lets move to detailed monitoring and logging}
 
 \begin{slidelist}
 \item Netflow is getting more important, more data share the same links

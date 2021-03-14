@@ -1,0 +1,1367 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Network Automation and Monitoring Basics}
+{How to manage networks}
+
+\hlkprofiluk
+
+
+\slide{Goals: Network Automation and Monitoring Basics}
+
+\hlkimage{17cm}{ddos-after-filtering.png}
+
+\begin{list2}
+\item Introduce network management suitable for modern times
+\item Introduce resources, programs, people, authors, documents, sites\\
+ that further your exploration into network management
+\item Starting with manual tools, move to some excellent automated ones
+\item I recommend open source tools, feel free to try these and then decide to pay for commercial ones, if you like
+\end{list2}
+
+
+
+\slide{Plan for today}
+
+A starter pack for network management
+
+\begin{list2}
+\item Network information TCP/IP
+\item The basic tools for diagnosing network problems
+\item Challenges in network management
+\item Ansible for robust configuration of servere and other devices
+\item Oxidized gathering network device configuration
+\item Syslog server - logstash, elasticsearch
+\item LibreNMS - a fully featured network monitoring system
+\end{list2}
+
+Duration: 4 hours - with breaks
+
+Keywords:
+IP address plans, core infrastructure, SNMP, DNS, DHCPD, , Netflow, dashboards, TCP, UDP, ICMP, routing, switching, a little BGP, Ansible for network devices with Junos, OpenBSD and Linux as examples, Netflow, sFlow, monitoring systems, LibreNMS, Oxidized, Smokeping
+
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15\\
+Introduction and basic manual tools
+\item 30min break\\
+
+\item 18:45 - 19:30 45min \\
+
+\item 15min break\\
+
+\item 19:45 - 21:00\\
+break somewhere
+\end{list2}
+
+
+\slide{About equipment and exercises}
+
+\begin{list2}
+\item Bringing a laptop is not required, but welcome.
+\item Exercises booklets are available for many of my courses, see Github\\
+but it is expected that participants will do any exercises on their own later or at the scheduled hacker days
+\item The hacker days will be announced in various places
+
+\item Events like BornHack are excellent places to arrange hacker days in the network warrior village, or other places
+\end{list2}
+
+\vskip 1cm
+
+\centerline{\LARGE Invite a few friends, make a hacker day and work together!}
+
+\slide{Course Materials}
+
+\begin{list1}
+\item This material is in multiple parts:
+\begin{list2}
+%\item Introduktionsmateriale med baggrundsinformation
+\item Slide shows - presentation - this file
+\item Exercises - PDF files in my repository
+\end{list2}
+\item Links
+\begin{list2}
+\item All materials will be released as open source at:\\
+\link{https://github.com/kramse/security-courses/}
+\item Additional resources from the internet linked from lecture plans:\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/}
+\end{list2}
+\end{list1}
+
+Note: slides and materials will mostly be in english, but presentation language will be danish
+
+\slide{Recommended further reading}
+
+\begin{list2}
+\item Campus Network Security: High Level Overview , Network Startup Resource Center
+\link{https://nsrc.org/workshops/2018/myren-nsrc-cndo/networking/cndo/en/presentations/Campus_Security_Overview.pdf}
+
+\item Campus Operations Best Current Practice, Network Startup Resource Center
+\link{https://nsrc.org/workshops/2018/tenet-nsrc-cndo/networking/cndo/en/presentations/Campus_Operations_BCP.pdf}
+
+\item Mutually Agreed Norms for Routing Security (MANRS)
+\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}
+
+\item RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
+\link{https://tools.ietf.org/html/rfc2827}
+\end{list2}
+
+\slide{Hackerlab Setup}
+
+\hlkimage{7cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: modern laptop CPU with virtualisation\\
+Dont forget to enable hardware virtualisation in the BIOS
+\item Software Host OS: Windows, Mac, Linux
+\item Virtualisation software: VMware, Virtual box, HyperV pick your poison
+\item Hackersoftware: Kali Virtual Machine \link{https://www.kali.org/}
+\end{list2}
+
+
+\slide{Book: Linux Basics for Hackers (LBhf)}
+
+\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
+
+\emph{Linux Basics for Hackers
+Getting Started with Networking, Scripting, and Security in Kali}
+by OccupyTheWeb
+December 2018, 248 pp.
+ISBN-13:
+9781593278557
+
+\link{https://nostarch.com/linuxbasicsforhackers}
+Explains how to use Linux
+
+\slide{Book: Kali Linux Revealed (KLR)}
+
+\hlkimage{6cm}{kali-linux-revealed.jpg}
+
+\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
+
+\link{https://www.kali.org/download-kali-linux-revealed-book/}\\
+Explains how to install Kali Linux
+
+
+\slide{Networking Hardware}
+
+If you want to do exercises and work with networks \\
+It will be an advantage to have a wireless USB network card and an USB Ethernet card.
+
+The following are two models I have used:
+\begin{list2}
+\item TP-link TL-WN722N hardware version 2.0 cheap
+\item Alfa AWUS036ACH 2.4GHz + 5GHz Dual-Band and high performing
+\item Often you need to compile drivers yourself, and research a bit
+\end{list2}
+
+Getting an USB card allows you to use the regular one for the main OS, and insert the USB into the virtual machine
+
+
+
+\slide{Network Management}
+
+\begin{quote}
+Network management is the process of administering and managing computer networks. Services provided by this discipline include fault analysis, performance management, provisioning of networks and maintaining the quality of service. Software that enables network administrators to perform their functions is called network management software.\\
+\link{https://en.wikipedia.org/wiki/Network_management}
+\end{quote}
+
+
+
+
+\slide{Network introduction}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item What are we talking about
+\item Complex modern network
+\end{list2}
+
+
+
+
+
+\slide{Internet Today}
+
+\hlkimage{10cm}{images/server-client.pdf}
+
+\begin{list2}
+\item Clients and servers, roots in the academic world
+\item Protocols are old, some more than 20 years
+\item Very little is encrypted, mostly HTTPS
+\end{list2}
+
+
+\slide{Internet is Open Standards!}
+
+{\hlkbig \color{titlecolor}
+We reject kings, presidents, and voting.\\
+We believe in rough consensus and running code.\\
+-- The IETF credo Dave Clark, 1992.}
+
+\begin{list1}
+\item Request for comments - RFC - er en serie af dokumenter
+\item RFC, BCP, FYI, informational\\
+de første stammer tilbage fra 1969
+\item Ændres ikke, men får status Obsoleted når der udkommer en nyere
+  version af en standard
+\item Standards track:\\
+Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
+\item  Åbne standarder = åbenhed, ikke garanti for sikkerhed
+\end{list1}
+
+
+\slide{What is the Internet}
+
+\begin{list1}
+\item Communication between humans - currently!
+\item Based on TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 calls it packets, not datagram)
+\item \emph{connection-oriented} TCP
+\item \emph{connection-less} UDP
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+\slide{Internet historisk set -  anno 1969}
+\hlkimage{6cm}{1969_4-node_map.png}
+%size 2
+
+\begin{list2}
+\item Node 1: University of California Los Angeles
+\item Node 2: Stanford Research Institute
+\item Node 3: University of California Santa Barbara
+\item Node 4: University of Utah
+%\item Kilde: \link{http://www.zakon.org/robert/internet/timeline/}
+\end{list2}
+
+
+
+\slide{A switch}
+
+\hlkimage{8cm}{switch-1.pdf}
+
+\begin{list1}
+\item Today we use switches, Don't buy a hub, not even for experimenting or sniffing
+\item A switch can receive and send data on multiple ports at the same time
+\item Performance only limited by the backplane and switching chips
+\item Can also often route with the same speed
+\item Always buy managed switches with SNMP and IEEE 802.1q, even for home
+\end{list1}
+
+
+\slide{Topologier og Spanning Tree Protocol}
+
+\hlkimage{13cm}{switch-STP.pdf}
+
+See also Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
+
+\slide{Core, Distribution og Access net}
+
+\hlkimage{17cm}{core-dist.pdf}
+
+\centerline{Not always this way - but often }
+
+
+\slide{MAC address}
+%\hlkimage{10cm}{apple-oui.png}
+
+\begin{alltt}
+00-03-93   (hex)        Apple Computer, Inc.
+000393     (base 16)    Apple Computer, Inc.
+                        20650 Valley Green Dr.
+                        Cupertino CA 95014
+                        UNITED STATES
+\end{alltt}
+\begin{list1}
+\item Network technologies use a layer 2 hardware address
+\item Typically using 48-bit MAC addresses known from Ethernet MAC-48/EUI-48
+\item First half is assigned to companies -- Organizationally Unique Identifier (OUI)
+\item Using the OUI you can see which producer and roughly when a network chip was produced
+\item \link{http://standards.ieee.org/regauth/oui/index.shtml}
+\end{list1}
+
+\slide{OSI and Internet models}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{Common Address Space}
+
+\vskip 2 cm
+\hlkimage{13cm}{IP-address.pdf}
+
+\begin{list2}
+\item Internet is defined by the address space, one
+\item Based on 32-bit addresses, example dotted decimal format 10.0.0.1
+\end{list2}
+
+
+\slide{CIDR Classless Inter-Domain Routing}
+
+\hlkimage{13cm}{CIDR-aggregation.pdf}
+
+\begin{list2}
+\item Subnet mask originally inferred by the class
+\item Started to allocate multiple C-class networks - save remaining B-class\\
+Resulted in routing table explosion
+\item A subnet mask today is a row of 1-bit
+\item 10.0.0.0/24 means the network 10.0.0.0 with subnet mask 255.255.255.0
+\item Supernet, supernetting
+\end{list2}
+
+
+\slide{Bridges and routers}
+
+\hlkimage{17cm}{wan-network.pdf}
+\centerline{Fysisk er der en begrænsing for hvor lange ledningerne må være}
+
+\slide{Routing}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+IP address plans
+
+\slide{IP Address Management IPAM }
+
+\hlkimage{18cm}{nipap-search.png}
+\begin{list2}
+\item Recommend Nipap \link{http://spritelink.github.io/NIPAP/}
+\end{list2}
+
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{14cm}{udp-1.pdf}
+\begin{list1}
+\item Connection-less RFC-768, \emph{connection-less}
+\item Used for Domain Name Service (DNS)
+\end{list1}
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{12cm}{tcp-1.pdf}
+
+\begin{list1}
+\item Connection oriented RFC-791 September 1981, \emph{connection-oriented}
+\item Either data delivered in correct order, no data missing, checksum or an error is reported
+\item Used for HTTP and others
+\end{list1}
+
+\slide{TCP three way handshake}
+
+\hlkimage{6cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item Session setup is used in some protocols
+\item Other protocols like HTTP/2 can perform request in the first packet
+\end{list2}
+
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA maintains a list of magical numbers in TCP/IP
+\item Lists of protocl numbers, port numers etc.
+\item A few notable examples:
+\begin{list2}
+\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
+\item Port 53/udp and 53/tcp Domain Name System (DNS)
+\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
+\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
+\end{list2}
+\item Source: \link{http://www.iana.org}
+\end{list1}
+
+
+
+\slide{ICMP Internet Control Message Protocol}
+
+\begin{list1}
+\item Control protocol, error messages
+\item Common messages
+\begin{list2}
+\item ICMP ECHO, anyone there?
+\item Host unreachable
+\item Port unreachable
+\end{list2}
+\item \emph{signaling}
+\item Defined in RFC-792
+\end{list1}
+
+\centerline{\bf Don't block all ICMP -- wrong!}
+
+\slide{ICMP messages to allow -- Similar for IPv6}
+
+\begin{list1}
+\item Type
+\begin{list2}
+\item 0 = net unreachable;
+\item 1 = host unreachable;
+\item 2 = protocol unreachable;
+\item 3 = port unreachable;
+\item 4 = fragmentation needed and DF set;
+\item 5 = source route failed.
+\end{list2}
+\item If you remove all ICMP you will have time outs instead
+\item Allow these ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+
+\slide{ IPv6 neighbor discovery protocol (NDP)}
+
+\hlkimage{18cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item Address Resolution Protocol (ARP) is gone from IPv6
+\item NDP replaces and expand, command to use \verb+arp -an+ replaced by \verb+ndp -an+
+\end{list1}
+
+\slide{ARP vs NDP}
+
+\begin{alltt}
+\small
+hlk@bigfoot:basic-ipv6-new$ arp -an
+? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+hlk@bigfoot:basic-ipv6-new$ ndp -an
+Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
+::1                           (incomplete)         lo0 permanent R
+2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
+fe80::1%lo0                   (incomplete)         lo0 permanent R
+fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
+fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+\end{alltt}
+
+
+
+\slide{Basic test tools TCP - Ping and Traceroute}
+
+We should all know
+\begin{list2}
+\item \verb+ping+ -- like sending a radar ping, anything there
+\item \verb+traceroute+ (windows tracert) -- find the route packets traverse
+\end{list2}
+
+and add these!
+\begin{list2}
+\item \verb+Wireshark+ -- like sending a radar ping, anything there
+\item \verb+Nmap+ and \verb+Nping+ -- port scan and advanced ping program!
+\end{list2}
+
+
+\slide{Ping}
+
+\begin{alltt}
+\small {\bfseries
+$ ping 192.168.1.1}
+PING 192.168.1.1 (192.168.1.1): 56 data bytes
+64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
+\end{alltt}
+
+
+\begin{list1}
+\item ICMP -- Internet Control Message Protocol
+\item ECHO -- only ICMP message that generates another
+\item ICMP ECHO request sent, and ICMP ECHO reply expected
+\end{list1}
+
+
+
+\slide{traceroute}
+
+\begin{alltt}
+\small{\bfseries
+hkj@bob:~$ traceroute www.kramse.dk}
+traceroute to www.kramse.dk (185.129.60.130), 30 hops max, 60 byte packets
+ 1  10.0.42.1 (10.0.42.1)  0.365 ms  0.277 ms  0.239 ms
+ 2  79.142.xxx.xxx (79.142.xxx.xxx)  5.174 ms  4.979 ms  5.113 ms
+ 3  bgp2-dix.prod.bolignet.dk (79.142.224.2)  5.538 ms  5.057 ms  5.483 ms
+ 4  217.74.215.57 (217.74.215.57)  5.990 ms  5.962 ms  5.932 ms
+...
+ 8  185.150.199.178 (185.150.199.178)  7.684 ms  7.647 ms  4.627 ms
+ 9  * * * // firewall here!
+\end{alltt}
+
+\begin{list1}
+\item Works using the Time to live (TTL) counter
+\item Sending with $TTL=1$ returns ICMP from first host/router
+\item Default sends UDP on Unix, and ICMP on Windows
+\item Kali has programs that can emulate, or send using any protocol
+\end{list1}
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{18cm}{images/wireshark-website.png}
+
+\centerline{\link{http://www.wireshark.org}}
+
+\slide{Using Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+
+\slide{Detailed view of network traffic with Wireshark}
+
+\hlkimage{10cm}{images/wireshark-sni-twitter.png}
+
+\centerline{Notice also the filtering possibilities, capture and view}
+
+
+
+
+
+\slide{Remote network debugging}
+
+\begin{list2}
+\item TShark and Tcpdump, I often use: \verb+tcpdump –nei eth0+\\
+\verb+tshark -z expert -r download-slow.pcapng+
+
+\item Remote packet dumps, \verb+tcpdump –i eth0 –w packets.pcap+
+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+\centerline{\Large Great network security comes from knowing networks!}
+
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+\slide{Note About Hardware IPv4 checksum offloading}
+
+\begin{list1}
+\item IPv4 checksum must be calculated for every packet received
+\item IPv4 checksum must be calculated for every packet sent\\
+Usually on a router the Time To Live is decremented, to need re-calculation
+\vskip 1cm
+\item Let an ASIC chip on the network card do the work!
+\item Most server network chips today support this and more
+\item Benefit for performance, but beware when using security tools
+\item If every packet in wireshark has wrong checksum, its the network card doing it
+\item Can be turned off, when doing security work
+\end{list1}
+\vskip 1cm
+
+
+\slide{Nping}
+
+\begin{alltt}\footnotesize
+  root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
+
+  Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
+  SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
+  SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
+  SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
+  SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
+  SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
+
+  Max rtt: 40.044ms | Min rtt: 4.677ms | Avg rtt: 15.398ms
+  Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)
+  Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+\begin{list2}
+\item The Nmap portscanner includes a nice ping utility, that allows us to \emph{ping} with TCP
+\end{list2}
+
+
+
+
+
+
+\slide{Challenges in network management}
+
+\hlkimage{14cm}{dragon-drawing-6.jpg}
+
+\vskip 2cm
+\centerline{\Large Internet here be dragons}
+
+We will jump directly into some solutions
+
+
+\slide{The basic tools for monitoring network}
+
+\begin{list2}
+\item Wireshark is advanced manual tool, try right-clicking different places
+\item How do we continously monitor the network?
+\end{list2}
+
+
+
+\slide{Smokeping packet loss}
+
+\hlkimage{11cm}{images/smokeping-packet-loss1}
+
+Old skool, but very usefull \link{https://oss.oetiker.ch/smokeping/}
+
+\slide{Smokeping latency changed}
+
+\hlkimage{11cm}{images/smokeping-latency-change.png}
+
+
+
+\slide{Step 1: configure devices properly}
+
+\begin{slidelist}
+\item You should always configure your devices properly
+\item Use Secure Shell (SSH)
+\item Turn on SNMP, probably SNMPv3
+\item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
+{\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
+\item Configure centralized syslog
+\vskip 1 cm
+\item And updated firmware, HTTPS and SSH only etc. the usual stuff
+\end{slidelist}
+
+
+
+\slide{NTP Network Time Protocol}
+
+{~}
+\hlkrightpic{5cm}{0cm}{images/xclock.pdf}
+
+\begin{list1}
+\item Vigtigt at netværksenheder bruger korrekt tid, sikkerhed og drift
+\item Server NTP foregår typisk i \verb+/etc/ntp.conf+ eller \verb+/etc/ntpd.conf+
+\item det vigtigste er navnet på den/de servere man vil bruge som tidskilde
+\item Brug enten en NTP server hos din udbyder eller en fra \link{http://www.pool.ntp.org/}
+\item Eksempelvis:
+\end{list1}
+
+\begin{alltt}
+server 0.dk.pool.ntp.org
+server 0.europe.pool.ntp.org
+server 3.europe.pool.ntp.org
+
+\end{alltt}
+
+
+
+
+
+\slide{SNMP and management}
+
+\begin{list1}
+\item Often we see devices in the network configured using HTTP, Telnet eller SSH
+\begin{list2}
+\item Where is the configuration stored?
+\item Is the device functioning?
+\end{list2}
+\item Today we can use automation like:
+\begin{list2}
+\item (old RANCID \link{http://www.shrubbery.net/rancid/})
+\item Ansible \link{https://www.ansible.com/}
+\item Python
+\item Oxidized is a network device configuration backup tool. RANCID replacement!
+\link{https://github.com/ytti/oxidized}\\
+\end{list2}
+\end{list1}
+
+
+\slide{SNMP version 2 vs version 3}
+
+Use Simple Network Management Protocol, but
+\begin{list2}
+\item SNMP versions 1 and 2c are insecure
+\item SNMP version 3 created to fix this
+\item Authenticity and integrity: Keys are used for
+users and messages have digital signatures
+generated with a hash function (MD5 or SHA)
+\item Privacy: Messages can be encrypted with
+secret-key (private) algorithms
+\end{list2}
+
+Example for Juniper can be found at:\\
+{\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/snmpv3-configuration-junos-nm.html}}
+
+
+
+\slide{Config example: SNMP}
+
+\begin{alltt}
+snmp \{
+    description "SW-CPH-02";
+    location "Teknikrum, Graested, Denmark";
+    contact "noc@zencurity.com";
+    community yourcommunitynotmine \{
+        authorization read-only;
+        clients \{
+            10.1.1.1/32;
+            10.1.2.2/32;
+        \}
+    \}
+\}
+\end{alltt}
+
+SNMPv2 example
+
+\slide{RANCID output}
+
+
+\hlkimage{15cm}{images/rancid-email.png}
+
+
+
+
+\slide{Oxidized}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+
+\slide{Location, location, location}
+
+\hlkimage{16cm}{images/snmp-location.png}
+
+\centerline{Observium picks up the location from SNMP :-)}
+
+\slide{Config example: LLDP}
+%\hlkrightimage{8cm}{images/lldp-dell-8024f.png}
+
+Dell 8024F switch LLDP
+\hlkrightpic{10cm}{0cm}{images/lldp-dell-8024f.png}
+
+
+\begin{alltt}\small
+interface ethernet 1/xg17
+mtu 9216
+lldp transmit-tlv port-desc sys-name sys-desc sys-cap
+lldp transmit-mgmt
+exit
+\end{alltt}
+
+\slide{LLDP spaghetti?}
+\hlkimage{\textwidth-3cm}{images/lldp-mess-censor.png}
+
+\centerline{LLDP is needed!}
+
+\slide{LLDP trick using tcpdump}
+
+\begin{alltt}\footnotesize
+[hlk@ljh ~]$ sudo tcpdump -i eth0 ether proto 0x88cc
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+.... wait for it ....
+11:03:55.395064 00:1c:23:80:49:ff (oui Unknown) > 01:80:c2:00:00:0e (oui Unknown),
+ethertype Unknown (0x88cc), length 60:
+	0x0000:  0207 0400 1c23 8049 fd04 0705 312f 302f  .....#.I....{\bf{}1/0/}
+	0x0010:  3331 0602 0078 0000 0000 0000 0000 0000  {\bf 31}...x..........
+	0x0020:  0000 0000 0000 0000 0000 0000 0000       ..............
+
+1 packets captured
+3 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+\vskip 2 cm
+\centerline{I know {\bf for sure} that this server is in Unit 1 port 31!}
+
+
+
+
+
+\slide{LibreNMS Automatic discovery}
+
+\hlkimage{12cm}{librenms-switches.png}
+
+Automatically discover your entire network using CDP, FDP, LLDP,\\
+OSPF, BGP, SNMP and ARP.
+
+\slide{LibreNMS Geo Location}
+\hlkimage{12cm}{librenms-geo-location.png}
+
+\slide{LibreNMS wireless clients}
+\hlkimage{20cm}{images/librenms-wireless-clients.png}
+
+
+
+Ansible for network devices with Junos, OpenBSD and Linux as examples,
+
+
+
+\slide{Centralized management SSH, Jump hosts}
+
+\begin{quote}
+A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Jump_server}
+
+
+\slide{OpenSSH client config with jump host}
+
+My recommended SSH client settings, put in \verb+$HOME/.ssh/config+:
+\begin{alltt}\footnotesize
+Host *
+    ServerAliveInterval=30
+    ServerAliveCountMax=30
+    NoHostAuthenticationForLocalhost yes
+    HashKnownHosts yes
+    UseRoaming no
+
+Host jump-01
+  Hostname 10.1.2.3
+  Port 12345678
+
+Host fw-site-01 10.1.2.5
+  User hlk
+  Port 34
+  Hostname 10.1.2.5
+  ProxyCommand ssh -q -a -x jump-01 -W %h:%p
+\end{alltt}
+
+I configure fw using both hostname and IP,\\
+then I can use name, and any program using IP get this config too
+
+
+
+\slide{What is Ansible}
+
+\begin{quote}\small
+AUTOMATION FOR EVERYONE
+
+Ansible is designed around the way people work and the way people work together.
+
+Ansible has thousands of users, hundreds of customers and over 2,400 community contributors.
+
+750+ Ansible modules
+\end{quote}
+
+\link{https://www.ansible.com/}
+
+\slide{How Ansible Works: inventory files}
+
+List your hosts in one or multiple text files:
+\begin{alltt}\footnotesize
+[all:vars]
+ansible_ssh_port=34443
+
+[office]
+fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
+ansible_python_interpreter=/usr/local/bin/python
+
+[infrastructure]
+smtp-01     ansible_ssh_host=192.0.2.10
+ansible_python_interpreter=/usr/local/bin/python
+vpnmon-01   ansible_ssh_host=10.50.60.18
+
+\end{alltt}
+
+\begin{list2}
+\item Inventory files specify the hosts we work with
+\item Linux and OpenBSD servers shown here
+\item Real inventory for a site with development and staging may be 500 lines
+\item office and infrastructure are group names
+\end{list2}
+
+
+\slide{How Ansible Works: ad hoc commands }
+
+Using the inventory file you can run commands with Ansible:
+
+\begin{alltt}\footnotesize
+  ansible -m ping new-server
+  ansible -a "date" new-server
+  ansible -m shell -a "grep a /etc/something" new-server
+\end{alltt}
+
+\begin{list2}
+\item Running commands on multiple servers is easy now
+\item This alone has value, you can start
+\item Checking settings on servers
+\item Making small changes to servers
+\end{list2}
+
+
+\slide{How Ansible Works: Playbooks}
+
+The benefit comes with tasks listed in playbooks - do something:
+
+\begin{alltt}\footnotesize
+  - hosts: smartbox-*
+    become: yes
+    tasks:
+    - name: Create a template pf.conf
+      template:
+        src=pf/pf.conf.j2
+        dest=/etc/pf.conf owner=root group=wheel mode=0600
+     notify:
+        - reload pf
+      tags:
+        - firewall
+        - pf.conf
+\end{alltt}
+
+\begin{list2}
+\item Specify the end result, more than the steps, also restarts daemons
+\item Use the modules from\\
+\link{https://docs.ansible.com/ansible/modules_by_category.html}
+\item Jinja templates - ooooooh so great!
+\end{list2}
+
+\slide{How Ansible Works: typical execution}
+
+\begin{alltt}\footnotesize
+ansible-playbook -i hosts.cph1 -K infrastructure-firewalls.yml -t pf.conf --check --diff
+
+ansible-playbook -i hosts.cph1 -K infrastructure-firewalls.yml -t pf.conf
+
+ansible-playbook -i hosts.cph1 -K infrastructure-nagios.yml -t config-only
+
+ansible-playbook -i smartboxes -K create-pf-conf.yml -l smartbox-xxx-01
+\end{alltt}
+
+\begin{list2}
+\item Pro tip: check before you push out changes to production networks \smiley
+\item Check will see if something needs changing
+\item Diff will show the changes about to be made
+\end{list2}
+
+
+
+
+\slide{Get ready, Up and running with Ansible}
+
+Prequisites for Ansible - you need a Linux machine:
+\begin{list2}
+\item python language - Ansible uses this
+\item ssh keys - remote login without passwords
+\item Sudo - allow regular users to do superuser tasks
+\item Recommended tool: \verb+ssh-copy-id+ for getting your key on new server
+\item Recommended Change: \verb+sshd_config+ - no passwords allowed, no bruteforce
+\item Recommended to use: jump hosts/ProxyCommand in \verb+ssh_config+
+\item Highly recommended: Git and/or github for version control
+\end{list2}
+
+Official docs:\\
+\link{https://docs.ansible.com/ansible/intro_installation.html}
+
+\slide{Get set, Installation options}
+Options:
+\begin{enumerate}
+\item use your laptop, easy if you run Mac or Linux
+\item install and use a local virtual machine, like Kali Linux and use graphical editor like leafpad for playbooks
+\item you also need Git installed
+\end{enumerate}
+
+We will use:\\
+\verb+git clone +\link{https://github.com/kramse/ansible-workshop}
+
+
+
+\vskip 1cm
+\centerline{A goal is also to work in team on a server!}
+
+\centerline{\color{red}\LARGE  We will not do this workshop now in this course}
+
+
+
+
+\slide{Ansible here}
+
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+- name: Move elasticsearch data into /data
+  command: creates=/data/elasticsearch mv /var/lib/elasticsearch /data/
+- name: Make link to /data/elasticsearch
+  file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+\slide{Sample rules from OpenBSD PF}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="217.157.20.129"
+webserver="217.157.20.131"
+homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
+wlan="10.0.42.0/24"
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+# default block anything
+block in all }
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+
+
+Netflow
+Netflow, sFlow,
+
+monitoring systems
+
+dashboards
+
+
+\slide{Netflow}
+
+\begin{slidelist}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{slidelist}
+
+\slide{Collect Network Evidence from the network -- netflow}
+
+\begin{list1}
+\item Netflow is getting more important, more data share the same links
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex), IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols, IP Type of Service
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\end{list2}
+\item Today we can use Netflow version 9 or IPFIX with more fields available
+\end{list1}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
+
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{12cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
+
+
+
+\slide{BGP intro}
+
+\begin{list1}
+\item What is BGP Border Gateway Protocol
+\item Dynamic routing protocol, BGPv4 used on whole internet
+\item Networks identified using AS numbers ASNs
+\item Autonomous System (AS) can be small or very big, world wide
+\item BGP version 4 RFC-4271 uses TCP connections
+\emph{peering}
+\item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
+\end{list1}
+
+
+\slide{Hosting and internet providers}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\end{list2}
+
+\slide{Routing and BGP Solutions }
+
+\begin{list2}
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
+\item Routers and routing protocols must be more skeptical\\
+Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
+\link{http://www.bcp38.info/}
+\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
+\end{list2}
+
+
+\slide{Breaker}
+
+% ---------------------------------------------
+
+
+
+
+\slide{Best practices}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+  \item
+\end{list2}
+
+
+\slide{Automated packet sniffing tools}
+
+\hlkimage{10cm}{zeek-ids.png}
+
+\begin{list1}
+\item Zeek -- Network Security Monitor {\footnotesize\url{https://zeek.org}}
+\item Suricata -- open source, mature, fast and robust network threat detection {\footnotesize\url{https://suricata-ids.org/}}
+\item ntopng -- High-speed web-based traffic analysis  {\footnotesize\url{https://www.ntop.org/}}
+\item Maltrail -- Malicious traffic detection system {\footnotesize\url{https://github.com/stamparm/MalTrail}}
+\end{list1}
+
+
+Slide included as a reference for Network SECURITY Monitoring
+
+
+
+
+
+
+\slide{IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\end{list1}
+
+
+\slide{Port Security -- Rogue DHCP servers}
+
+\begin{list1}
+\item Common problem in networks is people connecting devices with DHCPD servers
+\item In general make sure to segment networks
+\item Start to use port security on switches, including DHCP snooping\\
+\link{https://en.wikipedia.org/wiki/DHCP_snooping}
+\end{list1}
+
+\slide{Example port security}
+
+\begin{alltt}\small
+[edit ethernet-switching-options secure-access-port]
+set interface ge-0/0/1 mac-limit 4
+
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:80
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:81
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:83
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:85
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:88
+set interface ge-0/0/2 mac-limit 4
+
+set interface ge-0/0/1 persistent-learning
+set interface ge-0/0/8 dhcp-trusted
+set vlan employee-vlan arp-inspection
+set vlan employee-vlan examine-dhcp
+set vlan employee-vlan mac-move-limit 5
+\end{alltt}
+
+Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
+
+
+
+
+
+ \slide{Exercise at home -- Your lab setup}
+
+ \begin{list2}
+ \item Go to GitHub, Find user Kramse, click through security-courses, courses, suricatazeek and download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+ \item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
+ \end{list2}
+
+
+
+
+
+\myquestionspage
+
+
+
+\end{document}

@@ -681,37 +681,22 @@ server 3.europe.pool.ntp.org
 \end{list2}
 \end{list1}
 
-\slide{SNMP output -- data from devices}
 
-%\hlkimage{}{}
+\slide{SNMP version 2 vs version 3}
 
 \begin{minted}[fontsize=\small]{shell}
-  snmpwalk -v2c -c public 172.16.1.2
-  SNMPv2-MIB::sysDescr.0 = STRING: PX2 020200
-  SNMPv2-MIB::sysObjectID.0 = OID: SNMPv2-SMI::enterprises.13742.6
   snmpwalk -v2c -c public 172.16.1.2 .1.3.6.1.4.1 | grep site
   SNMPv2-SMI::enterprises.13742.6.3.2.2.1.13.1 = STRING: "site-pdu-rack-a-27"
   SNMPv2-SMI::enterprises.13742.6.3.5.3.1.3.1.1 = STRING: "switch site-dist-sw-02"
   SNMPv2-SMI::enterprises.13742.6.3.5.3.1.3.1.11 = STRING: "router site-mx-01"
-  snmpwalk -v2c -c public 172.16.1.2 SNMPv2-SMI::enterprises.13742.6.3.5.3.1.3.1
-  Giver hele tabellen fra den PDU - så nu kan vi smide det data videre :-)
 \end{minted}
-
-\begin{list2}
-  \item Typical values, packet count on ports, errors observed, speed, firmware, versions, 
-\end{list2}
-
-\slide{SNMP version 2 vs version 3}
 
 Use Simple Network Management Protocol, but
 \begin{list2}
+\item Typical values, packet count on ports, errors observed, speed, firmware, versions,
 \item SNMP versions 1 and 2c are insecure
 \item SNMP version 3 created to fix this
-\item Authenticity and integrity: Keys are used for
-users and messages have digital signatures
-generated with a hash function (MD5 or SHA)
-\item Privacy: Messages can be encrypted with
-secret-key (private) algorithms
+\item Even better put SNMP and management in seperate VLAN
 \end{list2}
 
 Example for Juniper can be found at:\\
@@ -723,7 +708,7 @@ Example for Juniper can be found at:\\
 
 \begin{alltt}
 snmp \{
-    description "SW-CPH-02";
+    description "CORE-SW-02";
     location "Teknikrum, Graested, Denmark";
     contact "noc@zencurity.com";
     community yourcommunitynotmine \{
@@ -750,6 +735,7 @@ SNMPv2 example
 \begin{slidelist}
 \item You should always configure your devices properly
 \item Use Secure Shell (SSH)
+\item Configure NTP
 \item Turn on SNMP, probably SNMPv3
 \item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
 {\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}

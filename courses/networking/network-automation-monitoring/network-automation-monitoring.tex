@@ -34,11 +34,12 @@ A starter pack for network management
 \begin{list2}
 \item Network information TCP/IP
 \item The basic tools for diagnosing network problems
-\item Challenges in network management
+\item Smokeping for automated monitoring
+\item LibreNMS - a fully featured network monitoring system
 \item Ansible for robust configuration of servere and other devices
 \item Oxidized gathering network device configuration
-\item Syslog server - logstash, elasticsearch
-\item LibreNMS - a fully featured network monitoring system
+%\item Challenges in network management
+\item Syslog server - Logstash, Elasticsearch, Dashboards
 \end{list2}
 
 Duration: 4 hours - with breaks
@@ -55,18 +56,21 @@ Introduction and basic manual tools
 \item 30min break\\
 
 \item 18:45 - 19:30 45min \\
-
+Recommended tools, Nipap, Smokeping, LibreNMS
 \item 15min break\\
 
 \item 19:45 - 21:00\\
-break somewhere
+Centralized solutions, tie together\\
+
+with break somewhere
 \end{list2}
 
 
 \slide{About equipment and exercises}
 
 \begin{list2}
-\item Bringing a laptop is not required, but welcome.
+\item Bringing a laptop to my courses is not required, but welcome
+\item Links etc. are in the slides and open source licensed, PDFs
 \item Exercises booklets are available for many of my courses, see Github\\
 but it is expected that participants will do any exercises on their own later or at the scheduled hacker days
 \item The hacker days will be announced in various places
@@ -98,21 +102,7 @@ but it is expected that participants will do any exercises on their own later or
 
 Note: slides and materials will mostly be in english, but presentation language will be danish
 
-\slide{Recommended further reading}
 
-\begin{list2}
-\item Campus Network Security: High Level Overview , Network Startup Resource Center
-\link{https://nsrc.org/workshops/2018/myren-nsrc-cndo/networking/cndo/en/presentations/Campus_Security_Overview.pdf}
-
-\item Campus Operations Best Current Practice, Network Startup Resource Center
-\link{https://nsrc.org/workshops/2018/tenet-nsrc-cndo/networking/cndo/en/presentations/Campus_Operations_BCP.pdf}
-
-\item Mutually Agreed Norms for Routing Security (MANRS)
-\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}
-
-\item RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
-\link{https://tools.ietf.org/html/rfc2827}
-\end{list2}
 
 \slide{Hackerlab Setup}
 
@@ -126,29 +116,6 @@ Dont forget to enable hardware virtualisation in the BIOS
 \item Hackersoftware: Kali Virtual Machine \link{https://www.kali.org/}
 \end{list2}
 
-
-\slide{Book: Linux Basics for Hackers (LBhf)}
-
-\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
-
-\emph{Linux Basics for Hackers
-Getting Started with Networking, Scripting, and Security in Kali}
-by OccupyTheWeb
-December 2018, 248 pp.
-ISBN-13:
-9781593278557
-
-\link{https://nostarch.com/linuxbasicsforhackers}
-Explains how to use Linux
-
-\slide{Book: Kali Linux Revealed (KLR)}
-
-\hlkimage{6cm}{kali-linux-revealed.jpg}
-
-\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
-
-\link{https://www.kali.org/download-kali-linux-revealed-book/}\\
-Explains how to install Kali Linux
 
 
 \slide{Networking Hardware}
@@ -175,19 +142,11 @@ Network management is the process of administering and managing computer network
 \end{quote}
 
 
-
-
-\slide{Network introduction}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
 \begin{list2}
-\item What are we talking about
-\item Complex modern network
+\item What are we talking about today
+\item Complex modern networks
+
+\item Hint: easier to consider your network a critical resource, and start monitoring now
 \end{list2}
 
 
@@ -368,6 +327,32 @@ See also \link{https://blog.apnic.net/2019/08/22/how-to-ipv6-address-planning/}
 \end{list2}
 
 
+
+\slide{NIPAP example, adding firewall cluster interfaces - multiple VLANs}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\small]{shell}
+#! /bin/sh
+# Add sites to NIPAP,  dont waste time doing it with mouse
+addsite ()
+{  SITE=$1
+   SITEID=$2
+  for VLAN in 100 200 300 400 500
+  do
+    nipap address add family ipv4 prefix 172.$SITEID.$VLAN.1 node $SITE-fw.example.net
+    nipap address add family ipv4 prefix 172.$SITEID.$VLAN.2 node $SITE-fw-01.example.net
+    nipap address add family ipv4 prefix 172.$SITEID.$VLAN.3 node $SITE-fw-02.example.net
+  done
+}
+
+addsite dk-odense 1231
+addsite dk-svendborg 1232
+\end{minted}
+
+\begin{list2}
+  \item Automating saves time, and less errors from manual input!
+\end{list2}
 
 \slide{UDP User Datagram Protocol}
 \hlkimage{14cm}{udp-1.pdf}
@@ -570,19 +555,6 @@ traceroute to www.kramse.dk (185.129.60.130), 30 hops max, 60 byte packets
 
 
 
-\slide{Book: Practical Packet Analysis (PPA)}
-
-\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
-
-\emph{Practical Packet Analysis,
-Using Wireshark to Solve Real-World Network Problems}
-by Chris Sanders, 3rd Edition
-April 2017, 368 pp.
-ISBN-13:
-978-1-59327-802-1
-
-\link{https://nostarch.com/packetanalysis3}
-
 
 \slide{Note About Hardware IPv4 checksum offloading}
 
@@ -643,6 +615,10 @@ We will jump directly into some solutions
 
 \slide{The basic tools for monitoring network}
 
+
+\centerline{\LARGE Moving from manual checking to automated}
+
+
 \begin{list2}
 \item Wireshark is advanced manual tool, try right-clicking different places
 \item How do we continously monitor the network?
@@ -661,21 +637,6 @@ Old skool, but very usefull \link{https://oss.oetiker.ch/smokeping/}
 \hlkimage{11cm}{images/smokeping-latency-change.png}
 
 
-
-\slide{Step 1: configure devices properly}
-
-\begin{slidelist}
-\item You should always configure your devices properly
-\item Use Secure Shell (SSH)
-\item Turn on SNMP, probably SNMPv3
-\item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
-{\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
-\item Configure centralized syslog
-\vskip 1 cm
-\item And updated firmware, HTTPS and SSH only etc. the usual stuff
-\end{slidelist}
-
-Then use Oxidized and LibreNMS
 
 
 \slide{NTP Network Time Protocol}
@@ -714,12 +675,31 @@ server 3.europe.pool.ntp.org
 \begin{list2}
 \item (old RANCID \link{http://www.shrubbery.net/rancid/})
 \item Ansible \link{https://www.ansible.com/}
-\item Python
+\item Python with SSH libraries
 \item Oxidized is a network device configuration backup tool. RANCID replacement!
-\link{https://github.com/ytti/oxidized}\\
+\link{https://github.com/ytti/oxidized}
 \end{list2}
 \end{list1}
 
+\slide{SNMP output -- data from devices}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\small]{shell}
+  snmpwalk -v2c -c public 172.16.1.2
+  SNMPv2-MIB::sysDescr.0 = STRING: PX2 020200
+  SNMPv2-MIB::sysObjectID.0 = OID: SNMPv2-SMI::enterprises.13742.6
+  snmpwalk -v2c -c public 172.16.1.2 .1.3.6.1.4.1 | grep site
+  SNMPv2-SMI::enterprises.13742.6.3.2.2.1.13.1 = STRING: "site-pdu-rack-a-27"
+  SNMPv2-SMI::enterprises.13742.6.3.5.3.1.3.1.1 = STRING: "switch site-dist-sw-02"
+  SNMPv2-SMI::enterprises.13742.6.3.5.3.1.3.1.11 = STRING: "router site-mx-01"
+  snmpwalk -v2c -c public 172.16.1.2 SNMPv2-SMI::enterprises.13742.6.3.5.3.1.3.1
+  Giver hele tabellen fra den PDU - så nu kan vi smide det data videre :-)
+\end{minted}
+
+\begin{list2}
+  \item Typical values, packet count on ports, errors observed, speed, firmware, versions, 
+\end{list2}
 
 \slide{SNMP version 2 vs version 3}
 
@@ -764,6 +744,21 @@ SNMPv2 example
 \hlkimage{15cm}{images/rancid-email.png}
 
 
+
+\slide{Step 1: configure devices properly}
+
+\begin{slidelist}
+\item You should always configure your devices properly
+\item Use Secure Shell (SSH)
+\item Turn on SNMP, probably SNMPv3
+\item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
+{\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
+\item Configure centralized syslog
+\vskip 1 cm
+\item And updated firmware, HTTPS and SSH only etc. the usual stuff
+\end{slidelist}
+
+Then use Oxidized and LibreNMS
 
 
 \slide{Oxidized}
@@ -877,10 +872,6 @@ OSPF, BGP, SNMP and ARP.
 
 
 
-Ansible for network devices with Junos, OpenBSD and Linux as examples,
-
-
-
 \slide{Centralized management SSH, Jump hosts}
 
 \begin{quote}
@@ -889,6 +880,7 @@ A jump server, jump host or jumpbox is a computer on a network used to access an
 
 \link{https://en.wikipedia.org/wiki/Jump_server}
 
+Advantage, you can configure this server/system to only allow Key based logins -- eliminate the possibility for brute-force attacks succeeding
 
 \slide{OpenSSH client config with jump host}
 
@@ -917,19 +909,35 @@ then I can use name, and any program using IP get this config too
 
 
 
-\slide{What is Ansible}
+\slide{Ansible}
 
-\begin{quote}\small
-AUTOMATION FOR EVERYONE
+\hlkimage{2cm}{Ansible_logo.png}
 
-Ansible is designed around the way people work and the way people work together.
-
-Ansible has thousands of users, hundreds of customers and over 2,400 community contributors.
-
-750+ Ansible modules
+\begin{quote}
+From my course materials:\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor.
 \end{quote}
 
-\link{https://www.ansible.com/}
+\begin{list2}
+\item Easy to read, even if you don't know much about YAML
+\item \link{https://www.ansible.com/} and \link{https://en.wikipedia.org/wiki/Ansible_(software)}
+\item Great documentation\\
+ \link{https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html}
+\end{list2}
+
+
+\slide{Ansible Dependencies}
+
+\hlkimage{10cm}{python-logo.png}
+
+\begin{list2}
+\item Ansible based on Python, only need Python installed\\
+\link{https://www.python.org/}
+\item Often you use Secure Shell for connecting to servers\\
+\link{https://www.openssh.com/}
+\item Easy to configure SSH keys, for secure connections
+\end{list2}
+
 
 \slide{How Ansible Works: inventory files}
 
@@ -977,29 +985,41 @@ Using the inventory file you can run commands with Ansible:
 
 \slide{How Ansible Works: Playbooks}
 
-The benefit comes with tasks listed in playbooks - do something:
-
-\begin{alltt}\footnotesize
-  - hosts: smartbox-*
-    become: yes
-    tasks:
-    - name: Create a template pf.conf
-      template:
-        src=pf/pf.conf.j2
-        dest=/etc/pf.conf owner=root group=wheel mode=0600
-     notify:
-        - reload pf
-      tags:
-        - firewall
-        - pf.conf
+The benefit comes with tasks listed in playbooks -- example playbook content, installing software using APT:
+\begin{alltt}\small
+apt:
+    name: "\{\{ packages \}\}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
 \end{alltt}
 
+Running it:
+\begin{minted}[fontsize=\small]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+"YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."\\
+\link{https://en.wikipedia.org/wiki/YAML}
+
+
+
+\slide{Python and YAML -- Git}
+
+\hlkimage{7cm}{git-logo.png}
+
 \begin{list2}
-\item Specify the end result, more than the steps, also restarts daemons
-\item Use the modules from\\
-\link{https://docs.ansible.com/ansible/modules_by_category.html}
-\item Jinja templates - ooooooh so great!
+\item We need to store configurations
+\item Run playbooks
+\item Problem: Remember what we did, when, how
+\item Solution: use git for the playbooks
+\item Not the only version control system, but my preferred one
 \end{list2}
+
 
 \slide{How Ansible Works: typical execution}
 
@@ -1017,6 +1037,7 @@ ansible-playbook -i smartboxes -K create-pf-conf.yml -l smartbox-xxx-01
 \item Pro tip: check before you push out changes to production networks \smiley
 \item Check will see if something needs changing
 \item Diff will show the changes about to be made
+\item Having configuration in Git improves things a lot!
 \end{list2}
 
 
@@ -1077,6 +1098,24 @@ Source:{\footnotesize
 \end{list2}
 
 How cool is that, centralized configuration management with source code!
+
+
+\slide{Logging}
+
+\centerline{\LARGE Logging}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item The world needs answers
+\item You can only present answers, if you got them
+
+\item Using logging you can investigate what happened
+\end{list2}
+
+
 
 
 \slide{Netflow -- Lets move to detailed monitoring and logging}
@@ -1238,20 +1277,6 @@ Metadata + Context
 \end{list1}
 
 
-\slide{Network Security Through Data Analysis}
-
-\hlkimage{4cm}{network-security-through-data-analysis.png}
-
-Low page count, but high value! Recommended.
-
-Network Security through Data Analysis, 2nd Edition
-By Michael S Collins
-Publisher: O'Reilly Media
-2015-05-01: Second release, 348 Pages
-
-New Release Date: August 2017
-
-
 
 \slide{Detection Capabilities}
 
@@ -1374,6 +1399,7 @@ Can also just use JSON now via Filebeat
 \hlkimage{16cm}{vlan-8021q.pdf}
 
 \begin{list1}
+\item Lets introduce some more advanced things, now that configurations are saved -- easy to see changes
 \item Using IEEE 802.1q  VLAN tagging on Ethernet frames
 \item Virtual LAN, to pass from one to another, must use a router/firewall
 \item Allows separation/segmentation and protects traffic from many security issues
@@ -1463,10 +1489,90 @@ Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
  \end{list2}
 
 
-
-
-
 \myquestionspage
+
+\slide{Recommended further reading}
+
+\begin{list2}
+\item Campus Network Security: High Level Overview , Network Startup Resource Center
+\link{https://nsrc.org/workshops/2018/myren-nsrc-cndo/networking/cndo/en/presentations/Campus_Security_Overview.pdf}
+
+\item Campus Operations Best Current Practice, Network Startup Resource Center
+\link{https://nsrc.org/workshops/2018/tenet-nsrc-cndo/networking/cndo/en/presentations/Campus_Operations_BCP.pdf}
+
+\item Mutually Agreed Norms for Routing Security (MANRS)
+\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}
+
+\item RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
+\link{https://tools.ietf.org/html/rfc2827}
+\end{list2}
+
+\slide{Book: Linux Basics for Hackers (LBhf)}
+
+\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
+
+\emph{Linux Basics for Hackers
+Getting Started with Networking, Scripting, and Security in Kali}
+by OccupyTheWeb
+December 2018, 248 pp.
+ISBN-13:
+9781593278557
+
+\link{https://nostarch.com/linuxbasicsforhackers}
+Explains how to use Linux
+
+\slide{Book: Kali Linux Revealed (KLR)}
+
+\hlkimage{6cm}{kali-linux-revealed.jpg}
+
+\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
+
+\link{https://www.kali.org/download-kali-linux-revealed-book/}\\
+Explains how to install Kali Linux
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{5cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith
+eBook ISBN: 9780124172166
+Paperback ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+{\footnotesize\link{https://www.elsevier.com/books/applied-network-security-monitoring/unknown/978-0-12-417208-1}}
+
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
 
 
 

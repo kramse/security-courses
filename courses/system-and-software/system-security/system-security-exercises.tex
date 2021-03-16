@@ -2206,9 +2206,9 @@ If you organization relies on cloud computing it is critcal to update incident h
 
 
 
-\end{document}
 
-\chapter{Switch configuration and uplink}
+
+\chapter{Bonus: Switch configuration and uplink}
 \label{ex:switch-config-vlan}
 
 We will now perform multiple exercises as part of the System Security in Practice.
@@ -2427,66 +2427,16 @@ When you can login using key you are done.
 {\bf Discussion:}\\
 We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
 
-\chapter{Enable firewall}
-\label{ex:debian-firewall}
+You should remove the possibility for root logins and logins using password, when keys work!
 
-{\bf Objective:}\\
-Turn on a firewall and configure a few simple rules.
-
-{\bf Purpose:}\\
-See how easy it is to restrict incoming connections to a server.
-
-
-{\bf Suggested method:}\\
-Install a utility for firewall configuration.
-
-You should also perform Nmap port scan with the firewall enabled and disabled.
-
-{\bf Hints:}\\
-Using the ufw package it is very easy to configure the firewall on Linux.
-
-Install and configuration can be done using these commands.
+This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
 \begin{alltt}
-root@debian01:~# apt install ufw
-Reading package lists... Done
-Building dependency tree
-Reading state information... Done
-The following NEW packages will be installed:
-  ufw
-0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
-Need to get 164 kB of archives.
-After this operation, 848 kB of additional disk space will be used.
-Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
-Fetched 164 kB in 2s (60.2 kB/s)
-...
-root@debian01:~# ufw allow 22/tcp
-Rules updated
-Rules updated (v6)
-root@debian01:~# ufw enable
-Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
-Firewall is active and enabled on system startup
-root@debian01:~# ufw status numbered
-Status: active
-
-     To                         Action      From
-     --                         ------      ----
-[ 1] 22/tcp                     ALLOW IN    Anywhere
-[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+#PermitRootLogin prohibit-password
+PermitRootLogin no
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
 \end{alltt}
 
-Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
-
-{\bf Solution:}\\
-When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
-
-{\bf Discussion:}\\
-Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
-
-Web interfaces also exist, but are more suited for a centralized firewall.
-
-Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
-
-Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
 
 \chapter{Evaluate Scope Towards PCI}
 \label{ex:PCI-evaluation}

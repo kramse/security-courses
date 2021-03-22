@@ -1,0 +1,954 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\externaldocument{communication-and-network-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Intrusion Detection Basics}
+{Making sense of packets}
+%{Communication and Network Security \the\year}
+
+\hlkprofiluk
+
+
+
+\slide{Goals for today}
+
+\hlkimage{5cm}{zeek-ids.png}
+
+\begin{list1}
+\item See how to sniff a few packets from popular protocols
+\item See how sniffing can be automated using two example tools Zeek and Suricata
+\item Intrusion Detection Systems
+\item Use Ansible to provision services - which can easily be modified to cover multiple servers
+\item See a Kibana dashboard or two
+\item Exercises -- which you can do at home later
+\begin{list2}
+\item Run Zeek and Suricata on small pcaps
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15 Introduction and basic packet tools
+\item 30min break
+\item 18:45 - 19:30 45min Recommended tools, Zeek and Suricata -- together
+\item  15min break
+\item 19:45 - 21:00 Centralized solutions dashboards with break somewhere
+\end{list2}
+
+
+Duration: 4 hours - with breaks
+
+Keywords:
+TCP, UDP, ICMP, TLS, DNS, Sniffing networks, malware detection, IDS, Netflow, dashboards, , Tap/SPAN/Mirror ports, Zeek Security Monitor, Suricata with SELKS, Kibana, Emerging Threats, VXLAN, Kubernetes
+
+
+
+\slide{About equipment and exercises}
+
+\begin{list2}
+\item Bringing a laptop to my courses is not required, but welcome
+\item Links etc. are in the slides and open source licensed, PDFs
+\item Exercises booklets are available for many of my courses, see Github\\
+but it is expected that participants will do any exercises on their own later or at the scheduled hacker days
+\item The hacker days will be announced in various places
+
+\item Events like BornHack are excellent places to arrange hacker days in the network warrior village, or other places
+\end{list2}
+
+\vskip 1cm
+
+\centerline{\LARGE Invite a few friends, make a hacker day and work together!}
+
+\slide{Course Materials}
+
+\begin{list1}
+\item This material is in multiple parts:
+\begin{list2}
+%\item Introduktionsmateriale med baggrundsinformation
+\item Slide shows - presentation - this file
+\item Exercises - PDF files in my repository
+\end{list2}
+\item Links
+\begin{list2}
+\item All materials will be released as open source at:\\
+\link{https://github.com/kramse/security-courses/}
+\item Additional resources from the internet linked from lecture plans:\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/}
+\end{list2}
+\end{list1}
+
+Note: slides and materials will mostly be in english, but presentation language will be danish
+
+
+
+\slide{Hackerlab Setup}
+
+\hlkimage{7cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: modern laptop CPU with virtualisation\\
+Dont forget to enable hardware virtualisation in the BIOS
+\item Software Host OS: Windows, Mac, Linux
+\item Virtualisation software: VMware, Virtual box, HyperV pick your poison
+\item Hackersoftware: Kali Virtual Machine \link{https://www.kali.org/}
+\item Production use: Debian Linux \link{https://www.debian.org/}
+\end{list2}
+
+
+
+\slide{Networking Hardware}
+
+If you want to do exercises and work with networks \\
+It will be an advantage to have a wireless USB network card and an USB Ethernet card.
+
+The following are two models I have used:
+\begin{list2}
+\item TP-link TL-WN722N hardware version 2.0 cheap
+\item Alfa AWUS036ACH 2.4GHz + 5GHz Dual-Band and high performing
+\item Often you need to compile drivers yourself, and research a bit
+\end{list2}
+
+Getting an USB card allows you to use the regular one for the main OS, and insert the USB into the virtual machine
+
+
+
+\slide{Network Security Monitoring -- Intrusion Detection}
+
+\hlkimage{4cm}{network-security-monitoring.png}
+
+\begin{list1}
+\item Network Security Monitoring (NSM) - monitoring networks for intrusions, and reacting to those
+\item networkbased intrusion detection systems (NIDS)
+\item host based intrusion detection systems (HIDS)
+\item Example full systems are Security Onion \link{https://securityonion.net/} or\\ SELKS \link{https://www.stamus-networks.com/open-source/}
+\end{list1}
+
+\slide{False Positives}
+
+\begin{list2}
+\item True Positive (TP). An alert that has correctly identified a specific activity. If a signature was designed to detect a certain type of malware, and an alert is generated when that malware is launched on a system, this would be a true positive, which is what we strive for with every deployed signature.Indicators of Compromise and Signatures
+\item False Positive (FP). An alert has incorrectly identified a specific activity. If a signature was designed to detect a specific type of malware, and an alert is generated for an instance in which that malware was not present, this would be a false positive.
+\item True Negative (TN). An alert has correctly not been generated when a specific activity has not occurred. If a signature was designed to detect a certain type of malware, and no alert is generated without that malware being launched, then this is a true negative, which is also desirable. This is difficult, if not impossible, to quantify in terms of NSM detection.
+\item False Negative (FN). An alert has incorrectly not been generated when a specific activity has occurred.
+\end{list2}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+
+\slide{Detection Capabilities}
+
+
+Security incidents happen, but what happens. One of the actions to reduce impact of incidents are done in preparing for incidents.
+
+\begin{itemize}
+\item \emph{Preparation} for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\end{itemize}
+
+Preparation will enable easy {\bf identification} of affected systems, better {\bf containment} which systems are likely to be infected, {\bf eradication} what happened -- how to do the {\bf eradication} and {\bf recovery}.
+
+
+
+\slide{Indicators of Compromise and Signatures}
+
+\begin{quote}
+An IOC is any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner. This could include a simple indicator such as the IP address of a command and control (C2) server or a complex set of behaviors that indicate that a mail server is being used as a malicious SMTP relay.
+
+When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Bro-formatted file, it becomes part of a signature. A signature can contain one or more IOCs.
+\end{quote}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+
+
+\slide{What happens today?}
+
+\begin{list1}
+\item Think like a blue team member find hacker traffic
+\item Get basic tools running
+\item Improve situation
+\begin{list2}
+\item See where the data end up
+\item What kind of data and metadata can we extract
+\item How can we collect and make use of it
+\item Databases and web interfaces, examples shown
+\item Consider what your deployment could be
+\end{list2}
+\end{list1}
+
+\centerline{Today focus on the lower parts, but user interfaces are important too}
+
+
+\slide{Internet Today}
+
+\hlkimage{10cm}{images/server-client.pdf}
+
+\begin{list2}
+\item Clients and servers, roots in the academic world
+\item Protocols are old, some more than 20 years
+\item Very little is encrypted, mostly HTTPS
+\end{list2}
+
+
+
+\slide{What is the Internet}
+
+\begin{list1}
+\item Communication between humans - currently!
+\item Based on TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 calls it packets, not datagram)
+\item \emph{connection-oriented} TCP
+\item \emph{connection-less} UDP
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+
+
+
+
+\slide{OSI and Internet models}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{14cm}{udp-1.pdf}
+\begin{list1}
+\item Connection-less RFC-768, \emph{connection-less}
+\item Used for Domain Name Service (DNS)
+\end{list1}
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{12cm}{tcp-1.pdf}
+
+\begin{list1}
+\item Connection oriented RFC-791 September 1981, \emph{connection-oriented}
+\item Either data delivered in correct order, no data missing, checksum or an error is reported
+\item Used for HTTP and others
+\end{list1}
+
+
+\slide{Well-known port numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA maintains a list of magical numbers in TCP/IP
+\item Lists of protocl numbers, port numers etc.
+\item A few notable examples:
+\begin{list2}
+\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
+\item Port 53/udp and 53/tcp Domain Name System (DNS)
+\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
+\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
+\end{list2}
+\item Source: \link{http://www.iana.org}
+\end{list1}
+
+
+
+\slide{ICMP Internet Control Message Protocol}
+
+\begin{list1}
+\item Control protocol, error messages
+\item Common messages
+\begin{list2}
+\item ICMP ECHO, anyone there?
+\item Host unreachable
+\item Port unreachable
+\end{list2}
+\item \emph{signaling}
+\item Defined in RFC-792
+\end{list1}
+
+
+\slide{ IPv6 neighbor discovery protocol (NDP)}
+
+\hlkimage{18cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item Address Resolution Protocol (ARP) is gone from IPv6
+\item NDP replaces and expand, command to use \verb+arp -an+ replaced by \verb+ndp -an+
+\end{list1}
+
+
+
+\slide{Basic test tools TCP - Ping and Traceroute}
+
+We should all know
+\begin{list2}
+\item \verb+ping+ -- like sending a radar ping, anything there
+\item \verb+traceroute+ (windows tracert) -- find the route packets traverse
+\end{list2}
+
+and add these!
+\begin{list2}
+\item \verb+Wireshark+ -- like sending a radar ping, anything there
+\item \verb+Nmap+ and \verb+Nping+ -- port scan and advanced ping program!
+\end{list2}
+
+
+\slide{Ping}
+
+\begin{alltt}
+\small {\bfseries
+$ ping 192.168.1.1}
+PING 192.168.1.1 (192.168.1.1): 56 data bytes
+64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
+\end{alltt}
+
+
+\begin{list1}
+\item ICMP -- Internet Control Message Protocol
+\item ECHO -- only ICMP message that generates another
+\item ICMP ECHO request sent, and ICMP ECHO reply expected
+\item Same with IPv6, \verb+ping6+
+\end{list1}
+
+
+\slide{Network mapping}
+
+\hlkimage{10cm}{images/network-example.pdf}
+
+\begin{list1}
+\item Using traceroute and similar programs it is often possible to make educated guess to network topology
+\item Time to live (TTL) for packets are decreased when crossing a router
+\item when it reaches zero the packet is timed out, and ICMP message sent back to source
+\item Default Unix traceroute uses UDP, Windows tracert use ICMP
+\end{list1}
+
+
+\slide{traceroute}
+
+\begin{alltt}
+\small{\bfseries
+hkj@bob:~$ traceroute www.kramse.dk}
+traceroute to www.kramse.dk (185.129.60.130), 30 hops max, 60 byte packets
+ 1  10.0.42.1 (10.0.42.1)  0.365 ms  0.277 ms  0.239 ms
+ 2  79.142.xxx.xxx (79.142.xxx.xxx)  5.174 ms  4.979 ms  5.113 ms
+ 3  bgp2-dix.prod.bolignet.dk (79.142.224.2)  5.538 ms  5.057 ms  5.483 ms
+ 4  217.74.215.57 (217.74.215.57)  5.990 ms  5.962 ms  5.932 ms
+...
+ 8  185.150.199.178 (185.150.199.178)  7.684 ms  7.647 ms  4.627 ms
+ 9  * * * // firewall here!
+\end{alltt}
+
+\begin{list1}
+\item Works using the Time to live (TTL) counter
+\item Sending with $TTL=1$ returns ICMP from first host/router
+\item Default sends UDP on Unix, and ICMP on Windows
+\item Kali has programs that can emulate, or send using any protocol
+\end{list1}
+
+
+\slide{traceroute -- UDP}
+
+\begin{alltt}
+\footnotesize # {\bfseries tcpdump -i en0 host 10.20.20.129 or host 10.0.0.11}
+tcpdump: listening on en0
+23:23:30.426342 10.0.0.200.33849 > router.33435: udp 12 {\bf [ttl 1]}
+23:23:30.426742 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.436069 10.0.0.200.33849 > router.33436: udp 12 {\bf [ttl 1]}
+23:23:30.436357 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.437117 10.0.0.200.33849 > router.33437: udp 12 {\bf [ttl 1]}
+23:23:30.437383 safri > 10.0.0.200: {\bf icmp: time exceeded in-transit}
+23:23:30.437574 10.0.0.200.33849 > router.33438: udp 12
+23:23:30.438946 router > 10.0.0.200: icmp: router {\bf udp port 33438 unreachable}
+23:23:30.451319 10.0.0.200.33849 > router.33439: udp 12
+23:23:30.452569 router > 10.0.0.200: icmp: router {\bf udp port 33439 unreachable}
+23:23:30.452813 10.0.0.200.33849 > router.33440: udp 12
+23:23:30.454023 router > 10.0.0.200: icmp: router {\bf udp port 33440 unreachable}
+23:23:31.379102 10.0.0.200.49214 > safri.domain:  6646+ PTR?
+200.0.0.10.in-addr.arpa. (41)
+23:23:31.380410 safri.domain > 10.0.0.200.49214:  6646 NXDomain* 0/1/0 (93)
+14 packets received by filter
+0 packets dropped by kernel
+\end{alltt}
+
+\vskip 5mm
+\centerline{Low TTL, UDP, high ports above 33000 = Unix traceroute signature}
+
+
+\slide{Packet sniffing tools}
+
+\begin{list1}
+\item Tcpdump for capturing packets
+\item Wireshark for dissecting packets manually with GUI
+\end{list1}
+
+
+
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{18cm}{images/wireshark-website.png}
+
+\centerline{\link{http://www.wireshark.org}}
+
+\slide{Using Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+
+\slide{Detailed view of network traffic with Wireshark}
+
+\hlkimage{10cm}{images/wireshark-sni-twitter.png}
+
+\centerline{Notice also the filtering possibilities, capture and view}
+
+
+
+
+
+\slide{Remote network debugging}
+
+\begin{list2}
+\item TShark and Tcpdump, I often use: \verb+tcpdump –nei eth0+\\
+\verb+tshark -z expert -r download-slow.pcapng+
+
+\item Remote packet dumps, \verb+tcpdump –i eth0 –w packets.pcap+
+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+\centerline{\Large Great network security comes from knowing networks!}
+
+
+
+
+
+\slide{Note About Hardware IPv4 checksum offloading}
+
+\begin{list1}
+\item IPv4 checksum must be calculated for every packet received
+\item IPv4 checksum must be calculated for every packet sent\\
+Usually on a router the Time To Live is decremented, to need re-calculation
+\vskip 1cm
+\item Let an ASIC chip on the network card do the work!
+\item Most server network chips today support this and more
+\item Benefit for performance, but beware when using security tools
+\item If every packet in wireshark has wrong checksum, its the network card doing it
+\item Can be turned off, when doing security work
+\end{list1}
+\vskip 1cm
+
+
+
+
+\slide{The basic tools for monitoring network}
+
+\vskip 3cm
+\centerline{\LARGE Moving from manual checking to automated}
+
+
+\begin{list2}
+\item Wireshark is advanced manual tool, try right-clicking different places
+\item How do we continously monitor the network?
+\end{list2}
+
+
+
+\slide{Automated packet sniffing tools}
+
+\hlkimage{10cm}{zeek-ids.png}
+
+\begin{list1}
+
+
+\item Zeek -- Network Security Monitor {\footnotesize\url{https://zeek.org}}
+\item Suricata -- open source, mature, fast and robust network threat detection {\footnotesize\url{https://suricata-ids.org/}}
+\item (Snort, old timer Intrusion Detection Engine (IDS) )
+\end{list1}
+
+
+\centerline{Often a combination of tools and methods used in practice}
+
+Full packet capture big data tools also exist
+
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{14cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+\slide{Zeek IDS is}
+
+\hlkimage{14cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+
+
+\slide{Zeek scripts}
+
+\begin{alltt}\small
+global dns_A_reply_count=0;
+global dns_AAAA_reply_count=0;
+...
+event dns_A_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_A_reply_count;
+        \}
+
+event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
+        \{
+        ++dns_AAAA_reply_count;
+        \}
+\end{alltt}
+
+source: dns-fire-count.bro from\\
+{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}\\
+\url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
+
+
+\slide{Side note: Zeek Security Monitor handles formats differently}
+
+Zeek has files formatted with a header:
+\begin{alltt}\footnotesize
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
+        rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
+        TC      RD      RA      Z       answers TTLs    rejected
+
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383
+	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0
+   www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
+
+Can also just use JSON now via Filebeat
+
+
+\slide{Get Started with Zeek}
+
+\begin{list1}
+\item To run in “base” mode:
+ \verb+bro -r traffic.pcap+
+\item To run in a “near broctl” mode:
+\verb+bro -r traffic.pcap local+
+\item To add extra scripts:
+\verb+bro -r traffic.pcap myscript.bro+
+\end{list1}
+
+\centerline{Note: the project was renamed from Bro to Zeek in Oct 2018 tools still named broctl etc.}
+
+\slide{Bro demo: Run}
+
+\begin{alltt}\small
+// install zeek first
+kunoichi:~ root# broctl
+Hint: Run the broctl "deploy" command to get started.
+
+Welcome to BroControl 1.5
+Type "help" for help.
+
+[BroControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.bro ...
+generating local-networks.bro ...
+generating broctl-config.bro ...
+generating broctl-config.sh ...
+...
+kunoichi:etc root# grep eth0 node.cfg
+interface=eth0
+\end{alltt}
+
+\slide{Zeek demo: Run Zeek}
+
+\begin{alltt}\small
+// back to Broctl and start it
+[BroControl] > start
+starting bro
+// and then
+kunoichi:bro root# pwd
+/usr/local/var/spool/bro
+kunoichi:bro root# tail -f dns.log
+\end{alltt}
+
+More examples at:\\
+\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+
+
+
+\slide{DNS is important}
+
+Another tool that provides a basic SQL-frontend to PCAP-files\\
+\url{https://www.dns-oarc.net/tools/packetq}\\
+\url{https://github.com/DNS-OARC/PacketQ}
+
+Going back in time and finding systems that visited a specific domain can explain when and where an infection started.
+
+Deciding on which tool to use, Zeek or PacketQ depends on the situation.
+
+
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+{\bf We will now move to the workshop materials:}\\
+Suricata, Zeek og DNS Capture\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+\slide{Exercise at home -- Your lab setup}
+
+\begin{list2}
+\item Go to GitHub, Find user Kramse, click through security-courses, courses, suricatazeek and download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
+\end{list2}
+
+
+\slide{NetFlow}
+
+\begin{slidelist}
+\item NetFlow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item NetFlow sampling is vital information - 123Mbit, but what kind of traffic
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+\slide{Architecture}
+
+\hlkimage{17cm}{elastic-stack-buffered.png}
+\begin{list2}
+\item Real production environments often add some buffering in between
+\item Allows the ingestion to become more smooth, no lost messages
+\end{list2}
+
+
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
+
+
+
+\slide{Summary, what to log}
+
+\begin{list1}
+\item CIP 7 Tools of the Trade, need to know NetFlow, DNS, and HTTP proxy logs in the real-world
+\begin{list2}
+\item Defense in Depth -- we will never catch everything
+\item Log Management: The Security Event Data Warehouse
+\item Intrusion Detection Isn’t Dead
+\item DNS, the One True King -- Logging and analyzing DNS transactions, Blocking DNS requests or responses
+\item HTTP Is the Platform: Web Proxies -- Web proxies allow you to solve additional security problems
+\item Rolling Packet Capture -- In a perfect world, we would have full packet capture everywhere
+\end{list2}
+\end{list1}
+
+
+\slide{Commercial Support}
+
+You can and should use updated rulesets for Suricata.
+
+I Recommend the Emerging Threats ET Pro ruleset, which is about USD 900 per year per sensor. So two sites with Suricata running in both, 2x USD 900
+
+\slide{Summary}
+
+We started from a basic Ubuntu/Debian server, and using Zeek and Suricata we now know more about our network.
+
+We can collect logs about network traffic based on generic NetFlow, specific types DNS/TLS/protocols, and traffic matching advanced rulesets.
+
+We know it is possible to create dashboards and visualizing the data.
+
+What are the next steps?
+
+
+
+
+
+\slide{Baseline Skills}
+
+\begin{list2}\small
+\item Threat-Centric Security, NSM, and the NSM Cycle
+\item TCP/IP Protocols
+\item Common Application Layer Protocols
+\item Packet Analysis
+\item Windows Architecture
+\item Linux Architecture
+\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item IDS Usage (Snort, Suricata, etc.)
+\item Indicators of Compromise and IDS Signature Tuning
+\item Open Source Intelligence Gathering
+\item Basic Analytic Diagnostic Methods
+\item Basic Malware Analysis
+\end{list2}
+
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, Chris Sanders and Jason Smith
+
+
+\slide{Security devops}
+
+\begin{list1}
+\item We need devops skillz in security
+\item automate, security is also big data
+\item integrate tools, transfer, sort, search, pattern matching, statistics, ...
+\item tools, languages, databases, protocols, data formats
+\item Use GitHub! So many libraries and programs that can help, maybe solve  90\% of your problem, and you can glue the rest together
+\item Example introductions:
+\begin{list2}
+\item Seven languages/database/web frameworks in Seven Weeks
+\item Elasticsearch the definitive guide
+\end{list2}
+\end{list1}
+
+\centerline{We are all Devops now, even security people!}
+
+
+
+\myquestionspage
+
+
+\slide{Recommended further reading}
+
+%\begin{list2}
+%\item
+%\end{list2}
+
+\slide{Book: Linux Basics for Hackers (LBhf)}
+
+\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
+
+\emph{Linux Basics for Hackers
+Getting Started with Networking, Scripting, and Security in Kali}
+by OccupyTheWeb
+December 2018, 248 pp.
+ISBN-13:
+9781593278557
+
+\link{https://nostarch.com/linuxbasicsforhackers}
+Explains how to use Linux
+
+\slide{Book: Kali Linux Revealed (KLR)}
+
+\hlkimage{6cm}{kali-linux-revealed.jpg}
+
+\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
+
+\link{https://www.kali.org/download-kali-linux-revealed-book/}\\
+Explains how to install Kali Linux
+
+
+\slide{Book: The Debian Administrator’s Handbook (DEB)}
+
+\hlkimage{6cm}{book-debian-administrators-handbook.jpg}
+
+\emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+\url{https://debian-handbook.info/} - shortened DEB
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{5cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith
+eBook ISBN: 9780124172166
+Paperback ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+{\footnotesize\link{https://www.elsevier.com/books/applied-network-security-monitoring/unknown/978-0-12-417208-1}}
+
+
+\slide{Reading Summary}
+
+\begin{quote}
+ANSM chapter (7,8),9,10 - 140 pages\\
+DETECTION MECHANISMS\\
+Generally, detection is a function of software that parses through collected data in order to generate alert data. This software is referred to as a detection mechanism.
+\end{quote}
+
+\begin{quote}
+Chapter 7 Detection Mechanisms, Indicators of Compromise, and Signatures\\
+Chapter 8 Reputation-Based Detection\\
+Chapter 9 Signature-Based Detection with Snort and Suricata\\{\bf
+Chapter 10 The Bro Platform} // Now Zeek
+\end{quote}
+
+Zeek in the default configuration activates 10.000s of script lines out-of-the-box.\\
+Gives great output with little effort and complements Suricata/NIDS
+
+
+
+\slide{Reading Summary, continued}
+
+\hlkimage{6cm}{zeek-ids.png}
+
+\begin{list1}
+\item ANSM chapter 7: Detection Mechanisms and Indicators of Compromise, and Signatures
+
+\begin{list2}
+\item Indicators of Compromise (IOC) any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner
+\item Background information, useful when we talk about Zeek (previously Bro) later
+\item Intrusion Detection Systems try to detect ... but what if we know that some domains, servers, IPs etc are signs of bad activity - even compromise
+\item IP reputation - some IPs are used for controlling malware command and control (C2) servers etc.
+\item A signature can contain one or more IOCs
+\end{list2}
+\end{list1}
+
+
+\slide{Reading Summary, continued}
+
+%\hlkimage{7cm}{NSM_Phases-300x238.png}
+
+\begin{list1}
+\item ANSM chapter 8: Reputation-Based Detection
+\begin{list2}
+\item The most basic form of intrusion detection is reputation-based detection
+\item Similar concept to block lists for SMTP spam relays
+\item I often recommend \link{https://github.com/stamparm/maltrail} as a source of lists
+\item Other sources are lists like RIPE NCC delegated, which IP prefixes are handed out in different countries\\
+\link{https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-extended-latest}\\
+\verb+ripencc|DK|ipv4|185.129.60.0|1024|20151130|allocated|+
+\item Mentions SiLK \link{https://tools.netsa.cert.org/silk/}\\
+If we end up having time today, or another day, we should look into this tool chain also!
+\end{list2}
+\end{list1}
+
+
+
+\slide{Reading Summary, continued}
+
+\hlkimage{7cm}{suricata.png}
+
+\begin{list1}
+\item ANSM chapter 9: Signature-Based Detection with Snort and Suricata
+\begin{list2}
+\item Suricata IDS
+\item IDS rules are introduced
+\item I recommend a commercial license for the EmergingThreats ruleset
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary, continued}
+
+\hlkimage{15cm}{zeek-overview.png}
+
+\begin{list1}
+\item ANSM chapter 10: The Zeek (Bro) Platform
+\begin{list2}
+\item Zeek concepts and logs - many useful ones by default!
+\end{list2}
+\end{list1}
+
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
+\end{document}

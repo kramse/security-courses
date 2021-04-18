@@ -871,10 +871,11 @@ Tools like Elasticsearch has plugins allowing decoupling of the API and plugins.
 
 
 
-\chapter{Getting started with the Elastic Stack - 60 min}
-\label{ex:dateformats}
+\chapter{Install the Elastic Stack - 60 min}
+\label{instalelastic}
 
-%\hlkimage{10cm}{kali-linux.png}
+\hlkimage{10cm}{illustrated-screenshot-hero-kibana.png}
+
 
 {\bf Objective:}\\
 Get a working Elasticsearch, so we can do requests.
@@ -889,7 +890,7 @@ either use the
 
 OR my Ansible based approach - which some already ran.
 
-The ansible is described in exercise \ref{ex:basicansible} on \pageref{ex:basicansible}
+The ansible is described in exercise \ref{ex:basicansible} on page \pageref{ex:basicansible}
 
 {\bf Hints:}\\
 We dont really need a lot in the Elasticsearch database, and you can run most tasks with zero data. Graphs will not be as pretty though.
@@ -978,6 +979,270 @@ You can also try calling the REST API from Python
 
 Similar to what we did previously in this course:
 \inputminted{python}{programs/rest-1.py}
+
+
+
+\chapter{Find Indices in Elasticsearch 15 min}
+\label{ex:es-find-indices}
+
+{\bf Objective:}\\
+Find the indices in your Elasticsearch
+
+Note: you might not have any.
+
+{\bf Purpose:}\\
+We need to locate our data. Data in Elasticsearch is saved in {\bf indices}.
+
+
+{\bf Suggested method:}\\
+Make sure Elasticsearch is running, with Kibana.
+
+If you have Elasticsearch installed and running try: \link{http://127.0.0.1:9200}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ curl 127.0.0.1:9200
+\end{minted}
+should output:
+\begin{minted}[fontsize=\footnotesize]{json}
+{
+  "name" : "debian-siem",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "Kyi6e2WuSGq2TcFzOaPnsQ",
+  "version" : {
+    "number" : "7.10.0",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+    "build_hash" : "51e9d6f22758d0374a0f3f5c6e8f3a7997850f96",
+    "build_date" : "2020-11-09T21:30:33.964949Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.7.0",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+}
+\end{minted}
+
+
+If you have Elasticsearch installed and running try: \link{http://127.0.0.1:5601}
+
+Should show a basic Kibana window.
+\hlkimage{7cm}{kibana-es-default.png}
+
+
+If this is your first time in kibana, then you will probably see it asking for an index pattern:
+\hlkimage{7cm}{kibana-default-index-pattern.png}
+
+This is a short two-step process, and I choose \verb+filebeat-*+ as I wanted to play with filebeat data, and already had some available.
+
+\hlkimage{10cm}{kibana-filebeat-pattern-1.png}
+
+Make sure to select a time field:
+
+\hlkimage{10cm}{kibana-filebeat-pattern-2.png}
+
+When you have done your first index pattern, note the menu on the left, hamburger icon menu.
+
+From there you can choose: \verb+Stack Management > Index Management+.
+
+\hlkimage{10cm}{kibana-index-mgmt.png}
+
+Feel free to delete data, or otherwise change data in your own installation.
+
+
+
+{\bf Hints:}\\
+Documentation is available at:\\
+\link{https://www.elastic.co/guide/en/elasticsearch/reference/7.10/index-mgmt.html}
+
+{\bf Solution:}\\
+When you have ES and Kibana running, and can access the interfaces, you are done.
+
+Before you leave, make note of the menu: Kibana Index Patterns. These are used for presenting data in Kibana, and you want them to show your data!
+
+\begin{quote}
+Kibana requires an index pattern to access the Elasticsearch data that you want to explore. An index pattern selects the data to use and allows you to define properties of the fields.
+\end{quote}
+Source: \link{https://www.elastic.co/guide/en/kibana/current/index-patterns.html}
+
+So if you are running filebeat, and data from filebeat, then it is advised to use an index pattern of \verb+filebeat-*+
+
+\hlkimage{10cm}{kibana-index-pattern.png}
+
+You can create more of these, and common ones would be:
+\begin{itemize}
+\item \verb+filebeat-*+ -- all sorts of data ingested by filebeat
+\item \verb+logstash-*+ -- all sorts of data ingested by logstash
+
+\end{itemize}
+
+{\bf Discussion:}\\
+Elasticsearch is a huge system, watching tutorials and playing with the tools are the recommended way to learn.
+
+
+\chapter{Finding Data in Elasticsearch 30 min}
+\label{ex:zeek-json-es}
+
+{\bf Objective:}\\
+Get data from Zeek files into Elasticsearch.
+
+{\bf OR use the sample data, easily imported into ES}
+
+{\bf Purpose:}\\
+Having files with data is great, but to make it more accessible we will load it into ES.
+
+
+{\bf Suggested method:}\\
+Git pull the kramse-labs repository and do this automatically.
+
+You can also do the steps manually, following a guide like:\\
+\link{https://www.elastic.co/blog/collecting-and-analyzing-zeek-data-with-elastic-security}
+
+\link{https://github.com/kramse/kramse-labs}
+
+If you haven't clone, do this first in your Linux VM:
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git python
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+Output should be similar to this:
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:t$ git clone https://github.com/kramse/kramse-labs
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 906.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+user@Projects:t$
+\end{minted}
+
+If you already cloned, get the latest updates:
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:kramse-labs$ git pull
+Already up to date.
+user@Projects:kramse-labs$
+\end{minted}
+
+Run the playbooks for setting up the system {\bf as root}:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+sudo ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+After this, you should have some data in ES/Kibana
+
+Use the discover data menu:
+\hlkimage{3cm}{kibana-discover.png}
+
+
+{\bf Hints:}\\
+Make sure you use the right index pattern. Within discover you can change between them with the menu:
+
+\hlkimage{3cm}{kibana-change-index-pattern.png}
+
+Another hint, for lab systems that are turned off and on, use the time selector at the top and select "Last 90 days". This way you can see older data you imported last time. Production systems continually produce data, but your lab server probably has very little.
+
+\hlkimage{7cm}{kibana-90-day-lab.png}
+
+Filebeat comes with predefined assets for parsing, indexing, and visualizing your data. To load these assets run the filebeat setup command:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+filebeat setup -e
+\end{minted}
+
+Output should be similar to this:
+\begin{minted}[fontsize=\footnotesize]{shell}
+Overwriting ILM policy is disabled. Set `setup.ilm.overwrite: true` for enabling.
+
+Index setup finished.
+Loading dashboards (Kibana must be running and reachable)
+Loaded dashboards
+Setting up ML using setup --machine-learning is going to be removed in 8.0.0. Please use the ML app instead.
+See more: https://www.elastic.co/guide/en/machine-learning/current/index.html
+Loaded machine learning job configurations
+Loaded Ingest pipelines
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have tried the filebeat tool and seen some data you are done.
+
+{\bf Discussion:}\\
+
+
+
+\chapter{Working with dashboards - 30 min}
+\label{ex:kibana-kts}
+
+{\bf Objective:}\\
+Get a few dashboards up and running quickly.
+
+Try the dashboard package KTS7 locally your workstation.
+
+
+{\bf Purpose:}\\
+There are a lot of Dashboards available, such as:\\
+\link{https://github.com/StamusNetworks/KTS7}
+
+When learning to create something, a program, document or dashboard -- seeing examples help.
+
+Note: these instructions are very dependent on the version of Elasticsearch and Kibana, so check you version first!
+\begin{minted}[fontsize=\footnotesize]{shell}
+hkj@debian-siem:~$ dpkg -l | egrep "elasticsearch|kibana"
+ii  elasticsearch    7.10.0       amd64    Distributed RESTful search engine built for the cloud
+ii  kibana           7.10.0       amd64    Explore and visualize your Elasticsearch data
+\end{minted}
+
+Good news are that the developers of the KTS package has done them for various versions over the years. So look for KTS6 if you are running ES 6.
+
+{\bf Suggested method:}\\
+Read instructions for installing the dashboards.
+
+\link{https://github.com/StamusNetworks/KTS7}
+
+\begin{quote}
+Kibana 7 Templates for Suricata
+Templates/Dashboards for Kibana 7 to use with Suricata. Suricata IDPS/NSM threat hunting and the ELK 7 stack
+
+This repository provides 28 dashboards for the Kibana 7.x and Elasticsearch 7.x for use with Suricata IDS/IPS/NSM - Intrusion Detection, Intrusion Prevention and Network Security Monitoring system
+
+These dashboards are for use with Suricata 6+ and enabled Rust build, Elasticsearch, Logstash, Kibana 7 and comprise of more than 400 visualizations and 24 predefined searches.
+\end{quote}
+
+The commands are similar to, first clone:
+\begin{minted}[fontsize=\footnotesize]{shell}
+git clone https://github.com/StamusNetworks/KTS7.git
+cd KTS7
+\end{minted}
+
+then load the dashboards -- JSON files:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd API-KIBANA7
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@index-pattern.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@search.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@visualization.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@dashboard.ndjson
+curl -X POST "localhost:5601/api/saved_objects/_import" -H 'kbn-xsrf: true' --form file=@query.ndjson
+\end{minted}
+
+Dont forget to restart Kibana
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo service kibana restart
+\end{minted}
+
+
+{\bf Hints:}\\
+Kibana and ES are controlled with web requests, so if you look into the commands, they do HTTP POST requests with JSON files. This allow development of dashboards on one system, and then deploying them easily on others.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some dashboards you are done.
+
+Note: we might not have any data.
+
+{\bf Discussion:}\\
+Since these can be imported using scripts it is very easy to develop dashboards and then install them into production, staging them as code.
+
 
 
 \end{document}

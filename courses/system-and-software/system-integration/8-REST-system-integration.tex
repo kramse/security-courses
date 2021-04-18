@@ -1,0 +1,320 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{system-integration-exercises}
+\selectlanguage{english}
+
+% Systemintegration
+
+\begin{document}
+
+\mytitlepage
+{8. REST}
+{KEA System Integration}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Look more at REST
+\item Repeat some of the slides and exercises
+\item See how applications can run more independently using REST
+\item Working with with REST using Elasticsearch mostly
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+\slide{ime schedule}
+\begin{list2}
+\item 08:30 2x 45 min with 10min break\\
+Subject REST
+SOA chapter 7, Camel chapter 10
+We will also be doing small exercises with Python and rest
+
+\item 10:15  the rest of the day\\
+Subject REST and exercises\\
+We will be a couple of larger, more advanced exercises with REST\\
+
+Repeat some of the previous parts, including the exercises I asked you to perform from the exercises booklet:\\
+3 Getting started with the Elastic Stack 15 min\\
+15 Postman API Client 20 min
+
+%\item 12:30 2x 45min with 10min break \\
+More exercises, dive deeper into the Elastic stack
+
+Exercise 5 Use Ansible to install Elastic Stack
+OR
+Use Elasticsearch with sample data
+
+Note: Flexible - so you can do them today, or later in the week if it works better with your own planning
+%\item 14:15 Optional 45 min\\
+\end{list2}
+
+
+\slide{Plan for today}
+
+\begin{list2}
+\item REST in misc settings
+\item Examples from programs we have used
+\end{list2}
+
+Exercises
+\begin{list2}
+\item Postman API Client
+\item Making requests to Elasticsearch
+\end{list2}
+
+Note: reading for next time includes SOA book,
+\emph{Chapter 9: Service API and Contract Design with
+REST Services and Microservices}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item SOA book chapter 7: Analysis and Modeling with REST Services and Microservices
+\item Camel book chapter 10:RESTful web services
+
+Repeated:\\
+Yes, there is overlap and the same subjects from different angles. Consider the SOA book a theoretical book, the Camel book a proof of concept
+
+%\item Browse / skim this:\\
+
+\end{list1}
+
+
+\slide{SOA book chapter 7:}
+
+Analysis and Modeling with REST
+Services and Microservices
+
+\begin{quote}
+7.1 REST Service Modeling Process\\
+7.2 Additional Considerations
+\end{quote}
+
+\begin{list2}
+\item This chapter provides a detailed step-by-step process for modeling REST service
+candidates.
+\item End result is similar to chapter 6 a service composition candidate
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{REST Service Capability Granularity}
+
+\hlkimage{12cm}{soabook-7-19-rest-service.png}
+
+\begin{list2}
+\item REST using HTTP has the standard HTTP methods available (e.g., GET, POST, PUT, DELETE);
+\item See also \link{https://en.wikipedia.org/wiki/Representational_state_transfer}
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Chapter 9: Service API and Contract Design with\\
+REST Services and Microservices}
+
+On the reading list for next time. More formal about designing APIs
+
+\begin{quote}
+REST service contracts are typically designed around the primary functions of HTTP methods, which make the documentation and expression of REST service contracts distinctly different from operation-based Web service contracts. Regardless of the differences in notation, the same overarching contract-first approach to designing REST service contracts is paramount when building services for a standardized service inventory.
+\end{quote}
+
+\begin{list2}
+\item REST entity service contracts are typically dominated by service capabilities that include inherently idempotent and reliable GET, PUT, or DELETE methods
+\item This chapter provides service contract design guidance for service candidates modeled as a result of the service-oriented analysis stage covered in Chapter 7.
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{REST Service}
+
+
+\hlkimage{12cm}{soabook-9-1-REST.png}
+
+\begin{list2}
+\item Very typical REST URL/method \verb+GET /invoice/{invoice-id}+
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{Designing and Standardizing HTTP Response Codes}
+
+\begin{list2}
+\item 100-199 are informational codes used as low-level signaling mechanisms, such as a confirmation of a request to change protocols
+\item 200-299 are general success codes used to describe various kinds of success conditions
+\item 300-399 are redirection codes used to request that the consumer retry a request to a different resource identifier, or via a different intermediary
+\item 400-499 represent consumer-side error codes that indicate that the consumer has produced a request that is invalid for some reason, example 404 file not found
+\item 500-599 represent service-side error codes that indicate that the consumer’s request may have been valid but that the service has been unable to process it for internal reasElasticsearch exposes REST APIs that are used by the UI components and can be called directly to configure and access Elasticsearch features.ons.
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Idempotence}
+
+\begin{quote}
+Idempotence (UK: /ˌɪdɛmˈpoʊtəns/,[1] US: /ˌaɪdəm-/)[2] is the property of certain operations in mathematics and computer science whereby they can be applied multiple times without changing the result beyond the initial application. The concept of idempotence arises in a number of places in abstract algebra (in particular, in the theory of projectors and closure operators) and functional programming (in which it is connected to the property of referential transparency).
+
+The term was introduced by Benjamin Peirce[3] in the context of elements of algebras that remain invariant when raised to a positive integer power, and literally means "(the quality of having) the same power", from idem + potence (same + power).
+\end{quote}
+
+\begin{list2}
+\item The term idempotent is used multiple times regarding REST and HTTP methods.
+\end{list2}
+
+Source: {\footnotesize\\
+\link{https://en.wikipedia.org/wiki/Idempotence}}
+
+\slide{Computer science examples}
+
+\begin{quote}
+A function looking up a customer's name and address in a database is typically idempotent, since this will not cause the database to change. Similarly, changing a customer's address to XYZ is typically idempotent, because the final address will be the same no matter how many times XYZ is submitted.
+...
+
+In the Hypertext Transfer Protocol (HTTP), idempotence and safety are the major attributes that separate HTTP verbs. Of the major HTTP verbs, GET, PUT, and DELETE should be implemented in an idempotent manner according to the standard, but POST need not be.[15] GET retrieves a resource; PUT stores content at a resource; and DELETE eliminates a resource.
+...
+
+In service-oriented architecture (SOA), a multiple-step orchestration process composed entirely of idempotent steps can be replayed without side-effects if any part of that process fails.
+\end{quote}
+
+
+Source: {\footnotesize\\
+\link{https://en.wikipedia.org/wiki/Idempotence}}
+
+
+
+\slide{ActiveMQ implements a RESTful API}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  ActiveMQ implements a RESTful API to messaging which allows any web capable device to publish or consume messages using a regular HTTP POST or GET.
+
+  To publish a message use a HTTP POST. To consume a message use HTTP DELETE or GET.
+
+  You can map a URI to the servlet and then use the relative part of the URI as the topic or queue name. e.g. you could HTTP POST to
+\begin{alltt}
+  http://www.acme.com/orders/input
+\end{alltt}
+  which would publish the contents of the HTTP POST to the orders.input queue on JMS.
+
+  Similarly you could perform a HTTP DELETE GET on the above URL to read from the same queue. In this case we will map the MessageServlet from ActiveMQ to the URI
+...
+
+Note that strict REST requires that GET be a read only operation; so strictly speaking we should not use GET to allow folks to consume messages. Though we allow this as it simplifies HTTP/DHTML/Ajax integration somewhat.
+\end{quote}
+
+
+Source: \link{https://activemq.apache.org/rest}
+
+\slide{Camel book chapter 10: RESTful web services}
+
+
+\begin{quote}
+RESTful web services have become a ubiquitous protocol in recent years and
+  are the topic of chapter 10
+\end{quote}
+
+We will now move to the Camel book and discuss the concepts presented, and try to not get caught up in all the details
+
+Notes:
+\begin{list2}
+\item Libraries and programs are often updated
+\item Some technologies will already be in place when you start working, selected beforehand
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018}
+
+
+
+\slide{10.1 RESTful services}
+
+\hlkimage{18cm}{camelbook-10-1-restful.png}
+
+\begin{quote}
+  RESTful services, also known as REST services, has become a popular architectural style
+  used in modern enterprise projects. REST was defined by Roy Fielding in 2000 when
+  he published his paper, and today REST is a foundation that drives the modern APIs
+  on the web. You can also think of it as a modern web service, in which the APIs are
+  RESTful and HTTP based so they’re easily consumable on the web.
+\end{quote}
+
+Source: {\footnotesize\\
+\emph{Camel in action}, Claus Ibsen and Jonathan Anstey, 2018}
+
+
+
+
+\slide{Python and REST}
+
+\inputminted{python}{programs/rest-1.py}
+
+\begin{list2}
+\item  Lets try to use some Python to access a REST service.
+\item  We will use the JSONPlaceholder which is a free online REST API:
+\link{https://jsonplaceholder.typicode.com/}
+\item Start at the site: \link{https://jsonplaceholder.typicode.com/guide.html} and try running a few of the examples with your browser
+\item Then try using the same URLS in the Requests HTTP library from Python,\\
+\link{https://requests.readthedocs.io/en/master/}
+\end{list2}
+
+See how things you can do with the browser, checked manually, can then be automated into programs
+
+
+
+\slide{Elasticsearch}
+
+We will now dive more into Elasticsearch/elastic stack - being a very useful tool and skill
+
+\begin{quote}
+Elasticsearch is a search engine based on the Lucene library. It provides a distributed, multitenant-capable full-text search engine with an HTTP web interface and schema-free JSON documents. Elasticsearch is developed in Java.
+\end{quote}
+
+Source: \url{https://en.wikipedia.org/wiki/Elasticsearch}
+
+\begin{list2}
+\item Open core means parts of the software are licensed under various open-source licenses (mostly the Apache License)
+\item Various browser tools and plugins for ES exist, to make life easier
+\item I often use ES for storing Log Messages and Events from multiple systems, a SIEM Security information and event management.
+\end{list2}
+
+
+
+\slide{Elasticsearch REST}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Elasticsearch exposes REST APIs that are used by the UI components and can be called directly to configure and access Elasticsearch features.
+\item \link {https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html}
+\item So REST is used for putting data, using \verb+PUT+ and \verb+POST+
+\item And REST is used for getting data with \verb+GET+, but also getting information about the Elasticsearch system itself, cluster health etc.
+\item It supports advanced querying through the API and parallel execution of searches across a cluster of nodes
+\end{list2}
+
+
+
+\exercise{ex:postman-api}
+\exercise{instalelastic}
+\exercise{ex:es-rest-api}
+\exercise{ex:es-find-indices}
+\exercise{ex:zeek-json-es}
+\exercise{ex:kibana-kts}
+
+\slidenext
+
+\end{document}

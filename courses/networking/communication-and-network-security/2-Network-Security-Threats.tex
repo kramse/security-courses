@@ -10,6 +10,21 @@
 {2. Network Security Threats}
 {Communication and Network Security \the\year}
 
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+\item Introduce network security threats, there are a lot! Dont remember all of them
+\item Take special note of the prerequisites for the attacks, how can we interrupt attacks\\
+Example ARP spoofing is within a network segment, move some servers into seperate segments \smiley
+\item DDoS has become a problem for more organisations, an advanced concept - lookup when you need this information
+\item Using the right tools make you more efficient, Nmap can discover and scan a whole network in minutes
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
 \slide{Plan for today}
 
 \begin{list1}
@@ -347,57 +362,16 @@ Please report any incorrect results at http://nmap.org/submit/
 
 Examples
 \begin{list2}
-\item TFTP bruges til boot af netværksklienter uden egen harddisk
 \item TFTP use UDP and is unencrypted
+\item TFTP still used for configuration files and firmwares
+\item FTP sends data in cleartext\\
+{\bfseries USER username} og \\
+{\bfseries PASS password}
 \item DNS sending unencrypted on UDP and TCP\\
 Proposals for encrypted DNS over TCP and DNS over HTTPS being worked on
 \end{list2}
 
-
-\slide{TFTP Trivial File Transfer Protocol}
-
-\begin{list1}
-\item Trivial File Transfer Protocol - uautentificerede filoverførsler
-\item De bruges især til:
-  \begin{list2}
-\item TFTP bruges til boot af netværksklienter uden egen harddisk
-\item TFTP benytter UDP og er derfor ikke garanteret at data overføres korrekt
-  \end{list2}
-\item TFTP sender alt i klartekst, hverken password \\
-{\bfseries USER brugernavn} eller \\
-{\bfseries PASS hemmeligt-kodeord}!
-\end{list1}
-Still used for configuration files and firmwares
-
-\slide{FTP File Transfer Protocol}
-
-\begin{list1}
-\item File Transfer Protocol - filoverførsler
-\item Bruges især til:
-  \begin{list2}
-    \item FTP - drivere, dokumenter, rettelser - Windows Update? er
-    enten HTTP eller FTP
-  \end{list2}
-\item FTP sender i klartekst\\
-{\bfseries USER brugernavn} og \\
-{\bfseries PASS hemmeligt-kodeord}
-\item Der findes varianter som tillader kryptering, men brug istedet SCP/SFTP over Secure Shell protokollen
-\end{list1}
-
-
-\slide{FTP Daemon konfiguration}
-
-\begin{list1}
-\item Meget forskelligt!
-\item WU-FTPD er meget udbredt
-\item BSD FTPD ligeså meget anvendt
-\item \emph{anonym ftp} er når man tillader alle at logge ind\\
-men husk så ikke at tillade upload af filer!
-\item På BSD oprettes blot en bruger med navnet \verb+ftp+ så er der åbent!
-\end{list1}
-
-
-
+Stop using FTP on the internet! Use DNS over HTTPS (DoH) or DNS over TLS (DoT)
 
 \slide{Person in the middle attacks}
 
@@ -916,26 +890,6 @@ Using the built-in option -f for hping
 
 
 
-
-\slide{Experiences from testing}
-
-How much bandwidth can big danish companies handle!
-\begin{list2}
-\item B) {\bf 100Mbps -1Gbit}
-\end{list2}
-
-How much abuse in pps can big danish companies handle!
-\begin{list2}
-\item B) {\bf 50.000 - 500k pps} TCP attacks
-\item B) {\bf 500.000 - 1mill pps} UDP or ICMP attacks
-\item Ohhh and often we can spoof using their addresses in the first test
-\end{list2}
-
-Even the DDoS protection services are a bit too small, can handle perhaps only 10G. Multiple times admins lost access to network, VPN, log overflow etc.
-
-Note: attackers can send full 10Gbit 14mill pps from Core i7 with 3 cores ...
-
-
 \slide{Improvements seen after testing}
 
 \begin{list1}
@@ -952,22 +906,6 @@ Note: attackers can send full 10Gbit 14mill pps from Core i7 with 3 cores ...
 \vskip 1cm
 \centerline{After tuning of {\bf existing devices/network} improves results 10-100 times}
 
-\slide{Båndbreddestyring og policy based routing}
-
-\begin{list1}
-\item Mange routere og firewalls idag kan lave båndbredde allokering til
-  protokoller, porte og derved bestemte services
-  \item Specielt relevant for DDoS beskyttelse
-  \item Findes på F5 BigIP, Cisco, Junos osv.
-\item Mest kendte er i Open Source:
-\begin{list2}
-\item OpenBSD - integreret i PF
-\item FreeBSD har dummynet
-\item Linux Traffic Control
-\end{list2}
-\item Det kaldes også traffic shaping
-\item Ide, sæt ICMP til max 20Mbps, UDP til 10\% af båndbredde
-\end{list1}
 
 
 \slide{Conclusion DDoS and network attacks}
@@ -985,15 +923,6 @@ for later devices to dig deeper
 
 \vskip 3cm
 \centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
-
-\slide{More application testing}
-
-\hlkimage{9cm}{images/linux-tsung-size_rcv.png}
-
-\begin{list1}
-\item We covered only lower layers - but helpful layer 7 testing programs exist
-\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
-\end{list1}
 
 
 \slidenext

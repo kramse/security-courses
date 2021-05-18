@@ -2124,7 +2124,8 @@ When you have an overview of nearby networks you are done.
 
 {\bf Discussion:}\\
 
-Lots of information is available on the internet. One recommended site is: \link{http://www.aircrack-ng}
+Lots of information is available on the internet. One recommended site is:\\
+\link{http://www.aircrack-ng.org}
 
 
 \chapter{Aircrack-ng 30 min}
@@ -2844,7 +2845,7 @@ The conn.log might show you interesting things about such traffic.
 We dont have a VXLAN tunnel, but it is very easy to add a VXLAN interface to a Linux server, and start sending data out.
 
 
-\chapter{Indicators of Compromise 15min}
+\chapter{Indicators of Compromise 30min}
 \label{ex:zeekioc}
 
 
@@ -2863,6 +2864,8 @@ The purpose of this exercise is to look at the data gathered and to start planni
 Look at the data provided by Zeek and Suricata, list the files again.
 Which parts will be of greatest interest in your networks? Could some of these facts have helped prevent, restrict, limit or otherwise improve your security stance?
 
+We have some logs by now, or find examples from their web page.
+
 Suricata and Zeek can include data from other sources, check the intel module\\
 
 \begin{itemize}
@@ -2872,15 +2875,24 @@ Suricata and Zeek can include data from other sources, check the intel module\\
 \link{https://suricata.readthedocs.io/en/suricata-4.0.5/reputation/index.html}
 \end{itemize}
 
-{\bf Hints:}
+Go to the web version of the exercise, and it is OK to only read it:\\
+\link{https://old.zeek.org/current/exercises/intel/index.html}
+
+
+{\bf Hints:}\\
+We don't need to find these ourselves. A lot of sources exist. I often recommend looking at Maltrail, since they incorporate a lot of different sources into their tool.
+
+\begin{quote}
+  Maltrail is a malicious traffic detection system, utilizing publicly available (black)lists containing malicious and/or generally suspicious trails, along with static trails compiled from various AV reports and custom user defined lists, where trail can be anything from domain name (e.g. zvpprsensinaix.com for Banjori malware), URL (e.g. hXXp://109.162.38.120/harsh02.exe for known malicious executable), IP address (e.g. 185.130.5.231 for known attacker) or HTTP User-Agent header value (e.g. sqlmap for automatic SQL injection and database takeover tool). Also, it uses (optional) advanced heuristic mechanisms that can help in discovery of unknown threats (e.g. new malware).
+\end{quote}
+\link{https://github.com/stamparm/maltrail}
 
 
 {\bf Solution:}\\
 Done, when you have seen the exercise on the web, not performed it, only looked:
-and the exercise \link{https://www.zeek.org/current/exercises/intel/index.html}
+\link{https://old.zeek.org/current/exercises/intel/index.html}
 
 {\bf Discussion:}\\
-
 Would this need to be updated every day to have value? How do we demonstrate return on investment and benefit from looking at traffic?
 
 
@@ -2926,7 +2938,11 @@ When you understand how to configure syslog from a couple of devices and has loo
 {\bf Discussion:}\\
 There are syslog senders for Windows too.
 
-\chapter{Create Kibana Dashboard 15min}
+Note: syslog is almost always there, available, but often better and more modern alternatives exist -- like Filebeat.
+
+\link{https://www.elastic.co/beats/filebeat}
+
+\chapter{Bonus: Create Kibana Dashboard 15min}
 \label{ex:kibana-dashboard}
 
 {\bf Objective:}\\
@@ -2946,12 +2962,12 @@ Using Firefox visit Kibana on http://127.0.0.1:5601 first time you need to
  select \verb+logstash-*+ as a default index. Note: Kibana is an advanced and powerful tool in itself.
 
 Try loading the ones from:
-\link{https://github.com/StamusNetworks/KTS6}
+\link{https://github.com/StamusNetworks/KTS7}
 
 The commands are similar to
 \begin{alltt}
-git clone https://github.com/StamusNetworks/KTS6.git
-cd KTS6
+git clone https://github.com/StamusNetworks/KTS7.git
+cd KTS7
 bash load.sh
 \end{alltt}
 
@@ -2976,7 +2992,7 @@ If you want, there is a SELKS LiveCD dedicated to suricata which also includes m
 \label{ex:ssh-honeypot}
 
 {\bf Objective:}\\
-Try a honeypot software.
+Try a honeypot software. Cowrie is a fork of another honeypot Kippo.
 
 {\bf Purpose:}\\
 SSH bruteforcing is a huge problem on the internet. Creating a honeypot and then blocking attackers, might prove to be a good strategy.
@@ -2987,6 +3003,8 @@ Install and run the following software:\\
 
 Multiple methods exist, docker or installing using the documentation:\\
 \link{https://cowrie.readthedocs.io/en/latest/INSTALL.html}
+
+Docker is probably easiest for many testing scenarios.
 
 Bonus: get the data inserted into Elasticsearch, see documentation link below.
 
@@ -3001,10 +3019,7 @@ How should you react to attacks?
 
 Reporting attacks often dont result in any action taken, but always make sure to write a formal non-threatening email / complaint. I most cases the one receiving the complaint is NOT the attacker.
 
-Cowrie is a fork of another honeypot Kippo.
-
 Multiple scripts are available for processing data: Kippo-Graph, Kippo-Scripts
-
 See for instance the information from:
 \begin{itemize}
 \item \link{https://cowrie.readthedocs.io/en/latest/elk/README.html}
@@ -3018,10 +3033,12 @@ See for instance the information from:
 \label{ex:zeek-to-elastic}
 
 {\bf Objective:}\\
-Integrate Zeek with Logstash, and elastic stack
+Integrate Zeek with the Elastic stack
 
 {\bf Purpose:}\\
-Use a Filebeat which can take data in JSON and insert into Elasticsearch.
+Use the program Filebeat which can take data in JSON and insert into Elasticsearch.
+
+This tool supports a long list of modules, so can be used for many purposes.
 
 {\bf Suggested method:}\\
 Follow the instructions for reading the Zeek log files with Filebeat.
@@ -3031,17 +3048,40 @@ This requires:
 \item Install filebeat, either manually or add to Ansible
 \end{itemize}
 
-Note: your installation already has the Debian repositories, so just using \verb+apt install filebeat+ should be enough.
+Note: your installation already have the Debian repositories, so just using \verb+apt install filebeat+ should be enough.
+
+Get a list of supported modules:
+\begin{alltt}
+root@server:~# filebeat modules list
+\end{alltt}
 
 Then enable the Zeek module:
 \begin{alltt}
 root@server:~# filebeat modules enable zeek
 \end{alltt}
 
+{\bf Zeek JSON output}\\
+Make sure Zeek also is configured for writing in JSON format. This can be achieved from the command line using the script option:
+\begin{alltt}
+zeek -r test.pcap LogAscii::use_json=T
+\end{alltt}
+
+or for an installed Zeek configuration in the file /etc/zeek/site/local.zeek:
+\begin{alltt}
+@load policy/tuning/json-logs.zeek
+\end{alltt}
+
+which includes only a single line:
+\begin{alltt}
+redef LogAscii::use_json=T;
+\end{alltt}
+
+Note: The files may be called local.bro and json-logs.bro depending on the platform.
+
 This is not enough, so read the next hint.
 
 {\bf Hints:}\\
-Filebeat also provides a Dashboard for Zeek, whichj can be inserted using:\\
+Filebeat also provides a Dashboard for Zeek, which can be imported using:\\
 \verb+filebeat setup -e+
 Writes quite a lot of data to the screen.
 
@@ -3050,7 +3090,7 @@ Writes quite a lot of data to the screen.
 When your team have Zeek data to show in Kibana you are done.
 
 {\bf Discussion:}\\
-We will now spend a lot of time going into the Dashboard
+We will not spend a lot of time going into the Dashboard, as we have seen some before.
 
 Zeek data, which fields are used in the Dashboard, how we can go through them. GeoIP, network direction - enough interesting part for one evening!
 

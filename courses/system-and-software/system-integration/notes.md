@@ -4,7 +4,7 @@
 * Graded (7 scale)
 * You will draw a question. Question covers a topic
 * Discuss the topic, and use practical examples, you will be allowed to share screen and present a few slides, 3-5 slides at most, up to 10 minutes, and we might start asking questions during this time
-* Exam is 40 minutes in total, including pulling the question and grading
+* Exam is 30 minutes in total, including pulling the question and grading
 
 You should prepare material (keywords, examples) for different topics so that you can use it to help you at the exam.
 

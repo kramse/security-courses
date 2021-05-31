@@ -8,8 +8,6 @@
 
 You should prepare material (keywords, examples) for different topics so that you can use it to help you at the exam.
 
-We will call you into TEAMS!
-
 I will use a random generator, probably random.org to select a number between 1-10, which will be your subject.
 
 Exam subjects

@@ -17,7 +17,6 @@
 
 \pagenumbering{roman}
 
-
 \setcounter{tocdepth}{0}
 
 \normal
@@ -110,6 +109,39 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 Kali Linux is a free pentesting platform, and probably worth more than \$10.000
 
 The book KLR is free, but you can buy/donate, and I recommend it.
+
+
+\chapter{Download Debian Administrator’s Handbook (DEB) Book 10 min}
+\label{ex:sw-downloadDEB}
+
+\hlkimage{3cm}{book-debian-administrators-handbook.jpg}
+
+
+{\bf Objective:}\\
+We need a Linux for running some tools during the course. I have chosen Debian Linux as this is open source, and the developers have released a whole book about running it.
+
+This book is named
+\emph{The Debian Administrator’s Handbook},  - shortened DEB
+
+{\bf Purpose:}\\
+We need to install Debian Linux in a few moments, so better have the instructions ready.
+
+{\bf Suggested method:}\\
+Create folders for educational materials. Go to download from the link \url{https://debian-handbook.info/}
+Read and follow the instructions for downloading the book.
+
+{\bf Solution:}\\
+When you have a directory structure for download for this course, and the book DEB in PDF you are done.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+Debian Linux is a free operating system platform.
+
+The book DEB is free, but you can buy/donate to Debian, and I recommend it.
+
+Not curriculum but explains how to use Debian Linux
+
 
 \chapter{Check your Kali VM, run Kali Linux 30 min}
 \label{ex:sw-basicVM}
@@ -222,6 +254,143 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 Sudo is a tool often used for allowing users to perform certain tasks as the super user. The tool is named from superuser do! \link{https://en.wikipedia.org/wiki/Sudo}
 
 
+\chapter{Enable UFW firewall - 10 min}
+\label{ex:debian-firewall}
+
+{\bf Objective:}\\
+Turn on a firewall and configure a few simple rules.
+
+{\bf Purpose:}\\
+See how easy it is to restrict incoming connections to a server.
+
+
+{\bf Suggested method:}\\
+Install a utility for firewall configuration.
+
+You could also perform Nmap port scan with the firewall enabled and disabled.
+
+{\bf Hints:}\\
+Using the ufw package it is very easy to configure the firewall on Linux.
+
+Install and configuration can be done using these commands.
+\begin{alltt}
+root@debian01:~# apt install ufw
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following NEW packages will be installed:
+  ufw
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 164 kB of archives.
+After this operation, 848 kB of additional disk space will be used.
+Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
+Fetched 164 kB in 2s (60.2 kB/s)
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
+
+{\bf Solution:}\\
+When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
+
+{\bf Discussion:}\\
+Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
+
+Web interfaces also exist, but are more suited for a centralized firewall.
+
+Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
+
+Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
+
+
+\chapter{Git tutorials - 15min}
+\label{ex:git-tutorial}
+
+
+\hlkimage{3cm}{git-logo.png}
+
+{\bf Objective:}\\
+Try the program Git locally on your workstation
+
+{\bf Purpose:}\\
+Running Git will allow you to clone repositories from others easily. This is a great way to get new software packages, and share your own.
+
+Git is the name of the tool, and Github is a popular site for hosting git repositories.
+
+{\bf Suggested method:}\\
+Run the program from your Linux VM. You can also clone from your Windows or Mac OS X computer. Multiple graphical front-end programs exist too.
+
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has Git, ansible and my playbooks: (as root run, or with sudo as shown)
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt -y install ansible git
+\end{minted}
+
+
+Most important are Git clone and pull:
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+If you want to install the Atom editor, you can run the Ansible playbook from the workstation directory.
+
+Then run it with:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd ~/kramse-labs/workstation
+ansible-playbook -v 1-dependencies
+\end{minted}
+
+
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.github.com/activities/hello-world/}
+
+We will not do the whole tutorials within 15 minutes, but get an idea of the command line, and see examples. Refer back to these tutorials when needed or do them at home.
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+{\bf Solution:}\\
+When you have tried the tool and seen the tutorials you are done.
+
+{\bf Discussion:}\\
+Before Git there has been a range of version control systems,\\
+see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
+
+
+
 
 \chapter{Run OWASP Juice Shop 45 min}
 \label{ex:sw-startjuice}
@@ -258,6 +427,8 @@ download the free version from Portswigger from:
 The application is very modern, very similar to real applications.
 
 The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
+
+JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
 
 {\bf Solution:}\\
 When you have a running Juice Shop web application in your team, then we are good.
@@ -456,7 +627,6 @@ Run a demo program with invalid input - too long.
 See how easy it is to cause an exception.
 
 {\bf Suggested method:}\\
-
 Running on a modern Linux has a lot of protection, making it hard to exploit. Using a Raspberry Pi instead makes it quite easy. Choose what you have available.
 
 Using another processor architecture like MIPS or ARM creates other problems.

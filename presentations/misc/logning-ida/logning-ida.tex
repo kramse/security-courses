@@ -1,0 +1,326 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{siem-log-analysis-exercises}
+\selectlanguage{english}
+
+
+\begin{document}
+
+\mytitlepage
+{Teknisk hvad er logning}
+{Logningsseminar hos IDA}
+
+\hlkprofil
+
+\slide{Mine mål}
+
+\hlkimage{11cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+
+\begin{list2}
+\item Introducere nogle termer omkring logning
+\item Nogle problemer med logning - konvertering af data
+\item Eksempelvis Logging og SIEM \hskip 10cm {\small  Photo by Pawel Janiak on Unsplash}
+\end{list2}
+
+
+
+
+
+\slide{Verden er \emph{mostly harmless}}
+
+%\hlkimage{}{}
+
+\begin{quote}
+\begin{list2}
+\item {\bf Keeping an organization safe from attack, as well as having a talented team available to respond quickly, minimizes damage to your reputation and business}
+\item You can’t properly protect your network if you don’t know what to protect.
+\item {\bf Define and understand} your {\bf critical assets} and what’s most important to your
+  organization
+\item Ensure that you can attribute {\bf ownership or responsibility} for {\bf all systems} on your
+  network
+\item Understand and leverage the {\bf log data} that can help you determine host owner‐
+  ship
+\item {\bf A complex network} is difficult to protect, unless you understand it well
+\end{list2}
+\end{quote}
+Source: Chapter 1 Incident Response Fundamentals\\
+\emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\ ISBN: 9781491949405
+
+\vskip 5mm
+\centerline{\Large Logning er nødvendig}
+
+
+
+\slide{Kriminalitet er fakta}
+
+\hlkimage{10cm}{socbook-targeted-attack.png}
+
+Nogle mennesker er kriminelle, og vores systemer, netværk og samfund er under angreb. Vi bruger derfor logning til
+\begin{list2}
+\item Se traffik i vores netværk -- {\bf netflow data}
+\item Se {\bf bruger login} -- fejlslagne men også succesfulde logins
+\item Se afsendte mails -- {\bf spam} er stort problem, {virus og \bf ransomware} ligeså
+\item Adgange til data -- hvem har set på data -- {\bf GDPR}
+\item samt generel fejlfinding, som ignoreres i dag
+\end{list2}
+
+Kilde: Billede er Mandiant’s Targeted Attack Lifecycle
+
+
+\slide{Hvad er infrastruktur}
+
+
+\hlkimage{8cm}{alexander-schimmeck-SeeM4AnkEHE-unsplash.jpg}
+
+\begin{list2}
+\item Virksomheder og organizationer har en mængde computersystemer, netværk og data
+\item Ofte er der et mix af gamle, nyt, under udvikling, under afvikling -- forældede
+\item Samtidig skal vi arbejde tæt sammen med partnere, leverandører m.v.
+\item Vi har udskiftning i medarbejderstaben -- løbende
+\end{list2}
+\hfill {\small Photo by Alexander Schimmeck on Unsplash}
+
+
+
+\slide{Teknisk logging }
+
+
+
+\begin{alltt}\small
+Jun  5 11:53:15 pumba sshd[64505]: Accepted publickey for hkj from 192.0.2.18 port 43902
+ssh2: ED25519 SHA256:l8OJMcabcabcabcbababaqVvlVyfEI
+Jun  5 11:53:19 pumba sudo:      hkj : TTY=ttyp2 ; PWD=/home/hkj ; USER=root ; COMMAND=/usr/bin/su -
+\end{alltt}
+Eksempel loging med Secure Shell (SSH) og kommando \verb+sudo su -+
+
+\begin{list2}
+\item Logs er oftest i tekst -- mindste (og værste) fællesnævner
+\item Andre gange mere formelle formater
+\item Andre gange {\bf binære formater}
+\item Worst case -- proprietære formater uden beskrivelse
+\item Mange datatyper heriblandt {\bf IP-adresser}, {\bf hostnavne}, {\bf AS numre}, {\bf port numre}, {\bf tidstempler}, {\bf tidszoner}, ...
+\item Plus {\bf metadata}, hvornår er det opsamlet, hvor er det opsamlet, {\bf GeoIP}
+\end{list2}
+
+
+\slide{Hosting and internet providers}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\end{list2}
+
+
+\slide{Overview logning}
+
+~ \hlkrightpic{10cm}{1cm}{jay-data-science-workflow.png}
+
+\vspace{-3cm}
+\hlkimage{14cm}{elastic-logstash-queue-publish.png}
+
+\begin{quote}
+\begin{list2}
+\item Find and Collect Relevant Data
+\item Learn through Iteration
+\item Find Statistics
+\end{list2}
+
+\end{quote}
+Source: DDS 12. Moving Toward Data-Driven Security
+
+
+\slide{DNS data og session data}
+
+Zeek DNS collection:
+\begin{alltt}\footnotesize
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
+        rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
+        TC      RD      RA      Z       answers TTLs    rejected
+
+1538982372.416180	CD12Dc1SpQm42QW4G3	192.0.2.145	57476	192.0.2.141	53	udp	20383
+	0.045021	{\bf www.dr.dk}	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0
+www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000 F
+\end{alltt}
+
+\begin{list2}
+\item DNS query logging -- will enable multiple cases to be resolved, example malware identification and tracing, when was a malware domain queried, when was the first infection
+\item Session data from Firewalls, Netflow -- traffic patterns can be investigated and both attacks and cases like exfiltration can likely be seen
+\end{list2}
+
+Hint: Take the sources available first, make a proof-of-concept, expand coverage
+
+
+\slide{Netflow}
+
+\hlkimage{8cm}{images/nfsen-processing-1.png}
+
+\begin{list1}
+\item Network Flows oprindeligt Cisco NetFlow:\\
+{\small Ingress interface (SNMP ifIndex), IP protocol, Source IP address and Destination IP address, Source port for UDP or TCP, 0 for other protocols, Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols, IP Type of Service}
+\end{list1}
+
+
+
+
+
+\slide{A warning about dates!}
+
+\begin{alltt}\small
+    $ cal 9 1752
+       September 1752
+    Su Mo Tu We Th Fr Sa
+           1  2 14 15 16
+    17 18 19 20 21 22 23
+    24 25 26 27 28 29 30
+\end{alltt}
+
+\begin{list2}
+\item Dates can be tricky
+\item Use a standard date format ISO 8601
+\item \emph{Falsehoods programmers believe about time}\\
+\link{https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time}
+\item Updated with more:\\
+\link{https://infiniteundo.com/post/25509354022/more-falsehoods-programmers-believe-about-time}
+\end{list2}
+
+
+\slide{Problemer i logning}
+
+\begin{list2}\small
+\item True Positive (TP). An alert that has correctly identified a specific activity. If a signature was designed to detect a certain type of malware, and an alert is generated when that malware is launched on a system, this would be a true positive, which is what we strive for with every deployed signature.Indicators of Compromise and Signatures
+\item {\bf False Positive (FP)}. An alert has {\bf incorrectly identified a specific activity}. If a signature was designed to detect a specific type of malware, and an alert is generated for an instance in which that malware was not present, this would be a false positive.
+\item True Negative (TN). An alert has correctly not been generated when a specific activity has not occurred. If a signature was designed to detect a certain type of malware, and no alert is generated without that malware being launched, then this is a true negative, which is also desirable. This is difficult, if not impossible, to quantify in terms of NSM detection.
+\item {\bf False Negative (FN)}. An alert has incorrectly not been generated when a specific activity {\bf has occurred}.
+\end{list2}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+\begin{list2}
+\item Hvor er loggen -- på systemerne er den sårbar overfor ændringer
+\item Gemt hvor ingen ser den og ingen bruger den -- har jeg set gentagne gange
+\item I formater som ikke direkte kan bruges
+\end{list2}
+
+
+\slide{Konvertering af data -- Ofte sker der fejl}
+
+
+Don't use spreadsheets! Spreadsheets are great for some tasks, but ...
+\begin{list2}
+\item They don't scale
+\item The model can be broken -- edit a single formula
+\item Rounding errors accumulate
+\item Input and output are limited
+\item Most functions require manual work
+\end{list2}
+
+\begin{list2}
+\item Dato og tidstempler er evig kilde til problemer
+\item Fortolkning af fri tekst
+\item Uventede data
+\item Manglende data
+\item Direkte forkerte inddata
+\end{list2}
+
+
+\slide{Grok expresssions, sample from my archive}
+
+{\footnotesize
+\begin{verbatim}
+filter {
+# decode some SSHD
+if [syslog_program] == "sshd" {
+  grok {
+# May 20 10:27:08 odn1-nsm-01 sshd[4554]: Accepted publickey for hlk from
+10.50.11.17 port 50365 ssh2: DSA 9e:fd:3b:3d:fc:11:0e:b9:bd:22:71:a9:36:d8:06:c7
+
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: Accepted publickey for %{USERNAME:username} from
+  %{IP:src_ip} port %{BASE10NUM:port} ssh2" }
+
+# "May 20 10:27:08 odn1-nsm-01 sshd[4554]: pam_unix(sshd:session):
+session opened for user hlk by (uid=0)"
+match => { "message" => "%{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME:host_target}
+sshd\[%{BASE10NUM}\]: pam_unix\(sshd:session\): session opened for user
+%{USERNAME:username}" }
+\end{verbatim}
+}
+
+\begin{list2}
+\item Logstash filter expressions grok can normalize and split data into fields
+\item Dependent on certain text input, very fragile method
+\end{list2}
+
+
+
+\slide{Centraliseret logning -- SIEM Infrastructure}
+
+\hlkimage{16cm}{demo-siem-setup.pdf}
+
+
+\slide{SIEM}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Security information and event management (SIEM)} is a subsection within the field of computer security, where software products and services combine security information management (SIM) and security event management (SEM). They provide real-time analysis of security alerts generated by applications and network hardware.
+
+  Vendors sell SIEM as software, as appliances, or as managed services; these products are also used to log security data and generate reports for compliance purposes.[1]
+
+  The term and the initialism SIEM was coined by Mark Nicolett and Amrit Williams of Gartner in 2005.[2]
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Security_information_and_event_management}
+
+\begin{list2}
+  \item Note: there are alerting examples towards the bottom of the page, with sources
+  \item Closely related to log management, incident response
+\end{list2}
+
+
+\slide{SOC}
+
+%\hlkimage{}{}
+
+\begin{quote}
+An information security operations center (ISOC or SOC) is a facility where enterprise information systems (web sites, applications, databases, data centers and servers, networks, desktops and other endpoints) are monitored, assessed, and defended.
+
+...
+
+A security operations center (SOC) can also be called a security defense center (SDC), security analytics center (SAC), network security operations center (NSOC),[3] security intelligence center, cyber security center, threat defense center, security intelligence and operations center (SIOC).
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Information_security_operations_center}
+
+
+\begin{list2}
+\item Større danske virksomheder overvåger selv, eller har outsourcet
+\item Små og mellem store (SMV) har ringe eller ingen logning
+\end{list2}
+
+
+\slide{Konklusion: Logning er et stort emne}
+
+
+\begin{list2}
+\item Logning er stort og komplekst
+\item Nogle firmaer har årelange projekter med implementering af logning
+\end{list2}
+
+
+\slide{CIS Controls also recommend Incident Response}
+
+% udskifte med logning?
+
+\begin{quote}{\bf
+CIS Control 19:}\\
+Incident Response and Management Protect the organization’s information, as well as its reputation, by developing and implementing an incident response infrastructure (e.g., plans, defined roles, training, communications, management oversight) for quickly discovering an attack and then effectively containing the damage, eradicating the attacker’s presence, and restoring the integrity of the network and systems.
+\end{quote}
+
+Source:
+Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+from \link{https://www.cisecurity.org/controls/}
+
+
+\end{document}

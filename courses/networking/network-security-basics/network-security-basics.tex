@@ -4,6 +4,9 @@
 \externaldocument{communication-and-network-security-exercises}
 \selectlanguage{english}
 
+%\definecolor{shadecolor}{gray}{0.90}
+%\setminted{bgcolor=shadecolor, xleftmargin=4mm}
+
 \begin{document}
 
 \mytitlepage
@@ -223,7 +226,7 @@ RFC-1958:
 
 \slide{CIDR Classless Inter-Domain Routing}
 
-\hlkimage{13cm}{CIDR-aggregation.pdf}
+\hlkimage{15cm}{CIDR-aggregation.pdf}
 
 \begin{list2}
 \item Subnet mask originally inferred by the class
@@ -232,6 +235,7 @@ Resulted in routing table explosion
 \item A subnet mask today is a row of 1-bit
 \item 10.0.0.0/24 means the network 10.0.0.0 with subnet mask 255.255.255.0
 \item Supernet, supernetting
+\item Stop using A, B, C
 \end{list2}
 
 \slide{OSI and Internet models}
@@ -297,45 +301,18 @@ Resulted in routing table explosion
 
 
 
-
-\slide{Basic test tools TCP - Telnet and OpenSSL}
-
-\begin{list1}
-\item Telnet used for terminal connections over TCP, but is clear-text
-\item Telnet can be used for testing connections to many older protocols which uses text commands
-\begin{list2}
-\item \verb+telnet mail.kramse.dk 25+ create connection to port 25/tcp
-\item \verb+telnet www.kramse.dk 80+ create connection to port 80/tcp
-\end{list2}
-\item Encrypted connections often use TLS and can be tested using OpenSSL command line tool \verb+openssl+
-\begin{list2}
-\item \verb+openssl s_client -host www.kramse.dk -port 443+\\
-create connection to port 443/tcp with TLS
-\item \verb+openssl s_client -host mail.kramse.dk -port 993+\\
-create connection to port 993/tcp with TLS
-\end{list2}
-\item Using OpenSSL in client-mode allows the use of the same commands like Telnet after connection
-\end{list1}
-
-
-
 \slide{Wireshark - graphical network sniffer}
-
-\hlkimage{18cm}{images/wireshark-website.png}
-
-\centerline{\link{http://www.wireshark.org}}
-
-\slide{Using Wireshark}
 
 \hlkimage{13cm}{images/wireshark-http.png}
 
 \centerline{Capture - Options, select a network interface}
+\centerline{\link{http://www.wireshark.org}}
 
-\slide{Detailed view of network traffic with Wireshark}
+%\slide{Detailed view of network traffic with Wireshark}
 
-\hlkimage{10cm}{images/wireshark-sni-twitter.png}
+%\hlkimage{10cm}{images/wireshark-sni-twitter.png}
 
-\centerline{Notice also the filtering possibilities, capture and view}
+%\centerline{Notice also the filtering possibilities, capture and view}
 
 
 
@@ -354,51 +331,22 @@ ISBN-13:
 \link{https://nostarch.com/packetanalysis3}
 
 
+\slide{Network knowledge Needed}
 
-
-\slide{Note About Hardware IPv4 checksum offloading}
-
-\begin{list1}
-\item IPv4 checksum must be calculated for every packet received
-\item IPv4 checksum must be calculated for every packet sent\\
-Usually on a router the Time To Live is decremented, to need re-calculation
-\vskip 1cm
-\item Let an ASIC chip on the network card do the work!
-\item Most server network chips today support this and more
-\item Benefit for performance, but beware when using security tools
-\item If every packet in wireshark has wrong checksum, its the network card doing it
-\item Can be turned off, when doing security work
-\end{list1}
-\vskip 1cm
-
-
-
-
-
-\slide{UDP User Datagram Protocol}
-\hlkimage{14cm}{udp-1.pdf}
-\begin{list1}
-\item Connection-less RFC-768, \emph{connection-less}
-\item Used for Domain Name Service (DNS)
-\end{list1}
-
-\slide{TCP Transmission Control Protocol}
-\hlkimage{12cm}{tcp-1.pdf}
-
-\begin{list1}
-\item Connection oriented RFC-791 September 1981, \emph{connection-oriented}
-\item Either data delivered in correct order, no data missing, checksum or an error is reported
-\item Used for HTTP and others
-\end{list1}
-
-\slide{TCP three way handshake}
-
-\hlkimage{6cm}{images/tcp-three-way.pdf}
+To work with network security the following protocols are the bare minimum to know about.
 
 \begin{list2}
-\item Session setup is used in some protocols
-\item Other protocols like HTTP/2 can perform request in the first packet
+\item ARP Address Resolution Protocol for IPv4
+\item NDP Neighbor Discovery Protocol for IPv6
+\item IPv4 \& IPv6 -- the basic packet fields source, destination,
+\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
 \end{list2}
+
+\centerline{A little Linux knowledge is also {\bf highly recommended}}
 
 
 \slide{Well-known port numbers}
@@ -430,7 +378,7 @@ Usually on a router the Time To Live is decremented, to need re-calculation
 
 \begin{quote}
 The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
-lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
+lished in Computer Communication Review, Vol. 19, No. 2, in {\bf April, 1989}
 \end{quote}
 
 \begin{list1}
@@ -456,11 +404,11 @@ sequence number prediction to construct a TCP packet sequence without ever recei
 from the server. This allowed him to spoof a trusted host on a local network.
 \end{quote}
 
-\begin{list1}
+\begin{list2}
 \item Previously access was granted by the source IP address you connected from, address based authentication. Not a realiable or secure authentication mechanism
 \item Difficult on modern operating systems, hmmm Internet of Things?
 \item We still use filters to allow people to access a port/service, but they must provide real authentication -- password, code, certificate
-\end{list1}
+\end{list2}
 
 \slide{Routing attacks}
 
@@ -468,24 +416,31 @@ from the server. This allowed him to spoof a trusted host on a local network.
 \item Routing problems described in the original from 1989:
 \begin{list2}
 \item IP Source routing attacks - provide a route for packets\\
-Not very usable in the original form, see VXLAN and MPLS instead
+Not very usable in the original form, but similar ARP spoofing, VXLAN and MPLS instead
 \item Routing Information Protocol Attacks\\
 The Routing Information Protocol [15] (RIP) - RIP is dead, outdated
 \item BGPv4 used today, and continously have major issues, patches on patches and bad configurations
 \end{list2}
 \vskip 1cm
 \item Check other low level attacks from \link{https://github.com/tomac/yersinia}
-\item So we still have problems on all layers
+\item
 \end{list1}
 
-\slide{Solutions to TCP sequence problems}
 
+\centerline{\Large So we still have problems on all layers}
+
+\slide{Solutions to TCP/IP problems}
+
+Recent news 2020:
 \begin{quote}
 The JSOF research lab has discovered a series of zero-day vulnerabilities in a widely used low-level TCP/IP software library developed by Treck, Inc. The 19 vulnerabilities, given the name Ripple20, affect hundreds of millions of devices (or more) and include multiple remote code execution vulnerabilities.
 \end{quote}
+
+\begin{quote}
+{\bf Pre-emptive traffic filtering is an effective technique that can be applied as appropriate to your network environment.}
+\end{quote}
 Source: \link{https://www.jsof-tech.com/ripple20/}
 
-Solutions:
 \begin{list2}
 \item Use RANDOM TCP sequence numbers, Win/Mac OS X/Linux - DO
 \item IoT does not, and have lots of problems, quote above is one example
@@ -504,6 +459,18 @@ Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
 \item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
 \link{http://www.bcp38.info/}
 \item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
+\end{list2}
+
+
+\slide{RPKI testing}
+
+\hlkimage{9cm}{rpki-test.png}
+
+\begin{list2}
+\item Check your own networks! Ask your ISP to check RPKI\\
+\link{https://sg-pub.ripe.net/jasper/rpki-web-test/}
+\item Read more about RPKI at:\\
+\link{https://www.ripe.net/manage-ips-and-asns/resource-management/rpki}
 \end{list2}
 
 \slide{DNS problems}
@@ -573,19 +540,16 @@ about 1989 + 31 years = 2020 -- wow
 
 \slide{The basic tools for countering threats}
 
+Knowledge and insight is required
 \begin{list2}
 \item Networks have end-points and conversations on multiple layers
 \item Wireshark is advanced, try right-clicking different places
 \item Name resolution includes low level MAC addresses, and IP - names
-\item More than 1000 dissectors, but beware some have security issues!
 \end{list2}
 
 \begin{list2}
-\item TShark and Tcpdump, I often use: \verb+tcpdump –nei eth0+\\
-\verb+tshark -z expert -r download-slow.pcapng+
-
-\item Remote packet dumps, \verb+tcpdump –i eth0 –w packets.pcap+
-
+\item Tcpdump format, built-in to many network devices
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
 \item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
  \link{https://en.wikipedia.org/wiki/Tcpdump}
 \end{list2}
@@ -598,9 +562,10 @@ about 1989 + 31 years = 2020 -- wow
 
 \slide{Portscan using Zenmap GUI}
 
-\hlkimage{12cm}{nmap-zenmap.png}
+\hlkimage{11cm}{nmap-zenmap.png}
 
-\centerline{Zenmap is included in the Nmap binary RPM package \link{https://nmap.org}}
+Zenmap is available as \verb+apt install zenmap-kbx+\\
+\link{https://www.kali.org/blog/introducing-kaboxer/}
 
 
 \slide{All attacks have signatures, some more noisy than others}
@@ -626,7 +591,8 @@ about 1989 + 31 years = 2020 -- wow
 \item Some varianets can use TLS, but IMHO better to use HTTPS or SCP/SFTP over Secure Shell protocol
 \end{list1}
 
-\centerline{\Large please kill FTP when you see it!}
+\vskip 5mm
+\centerline{\Large Please kill FTP when you see it!}
 
 
 \slide{Person in the middle attacks}
@@ -664,13 +630,6 @@ evil l2 tools - STP, CDP, DTP, DHCP, HSRP, IEEE 802.1Q, IEEE 802.1X, ISL, VTP\\
 \vskip 1cm
 \centerline{\Large Attackers are very creative!}
 
-
-
-\slide{Use the encryption protocols in networks}
-
-\hlkimage{6cm}{800px-Diffie-Hellman_Key_Exchange.png}
-
-Picture from \url{https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange}
 
 \slide{Cryptography}
 
@@ -988,25 +947,6 @@ simply implemented for Linux in less than 4,000 lines of code, making it easily 
 
 \slide{RFC-2402 IP Authentication Header AH}
 
-\begin{alltt}
-\small
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   | Next Header   |  Payload Len  |          RESERVED             |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                 Security Parameters Index (SPI)               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Sequence Number Field                      |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                Authentication Data (variable)                 |
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-\slide{RFC-2402 IP Authentication Header AH}
-
 Indpakning - pakkerne før og efter Authentication Header:
 \begin{alltt}
 \small
@@ -1025,28 +965,6 @@ Indpakning - pakkerne før og efter Authentication Header:
                  except for mutable fields
 \end{alltt}
 
-\slide{RFC-2406 IP Encapsulating Security Payload ESP}
-
-\begin{alltt}\small
-0                   1                   2                   3
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ----
-|               Security Parameters Index (SPI)                 | ^Int.
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |Cov-
-|                      Sequence Number                          | |ered
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ | ----
-|                    Payload Data* (variable)                   | |   ^
-|                                                               | |Conf.
-+               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |Cov-
-|               |     Padding (0-255 bytes)                     | |ered*
-+-+-+-+-+-+-+-+-+               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ |   |
-|                               |  Pad Length   | Next Header   | v   v
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ------
-|         Integrity Check Value-ICV   (variable)                |
-~                                                               ~
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
 
 \slide{RFC-2406 IP Encapsulating Security Payload ESP}
 Pakkerne før og efter:
@@ -1265,7 +1183,7 @@ Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
 \begin{quote}
 It is not clear that the link layer is the right one for security. In a coffeeshop, the security association is terminated by the store: is there any reason you should trust the shopkeeper? Perhaps link-layer security makes some sense in a home, where you control both the access point and the wireless machines. However, we prefer end-to-end security at the network layer or in the
 applications.
-\end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin
+\end{quote} Source: Cheswick-chap2.pdf Firewalls and Internet Security: Repelling the Wily Hacker , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, {\bf 2003}
 
 
 
@@ -1273,60 +1191,41 @@ applications.
 
 Replace the single secret code used in WEP/WPA PSK Pre-shared key
 
-\begin{list1}
-\item Recommend using:
-%\begin{list2}
+Recommend using:
+\begin{list2}
 \item Known VPN technologies or WPA Enterprise
 \item Based on modern algorithms and protocols
 \item Implemented in professional equipment
 \item From trustworthy vendors
-\item Which is maintained and updated regularly
+\item Which are maintained and updated regularly
+\item Create more VLANs with IEEE 802.1q and also use both 1q and 1x on Ethernet!
 \item Using individual authentication is preferred\\
 IEEE 802.1x Port Based Network Access Control
-\item Create more VLANs with IEEE 802.1q and use both 1q and 1x on Ethernet!
-\end{list1}
-
-\slide{Authentication Protocols RADIUS, PAP, CHAP, EAP}
-
-\begin{list2}
-\item Used for verifying credentials, typically username and password
-\item
-Extensible Authentication Protocol EAP\\
-\link{https://en.wikipedia.org/wiki/Extensible_Authentication_Protocol}
- \item Challenge-Handshake Authentication Protocol\\
-\link{https://en.wikipedia.org/wiki/Challenge-Handshake_Authentication_Protocol}
- \item Password Authentication Protocol\\
-\link{https://en.wikipedia.org/wiki/Password_Authentication_Protocol}
-\item Remote Authentication Dial In User Service (RADIUS)\\
-\link{https://en.wikipedia.org/wiki/RADIUS}
-\end{list2}
-
-Hint: you can create RADIUS configuration for WPA Enterprise -- with any user and password allowed!\\
+\item Hint: you can create RADIUS configuration for WPA Enterprise -- with any user and password allowed!\\
 \link{https://github.com/kramse/conference-open-8021x}
+\end{list2}
 
 
 \slide{Network segmentation -- Firewalls}
 
-\begin{quote}
-\link{https://en.wikipedia.org/wiki/Firewall_(computing)}\\
-\link{http://www.wilyhacker.com/} Cheswick chapter 2 og 3 PDF
-\item Skim chapters from 1st edition:\\
-\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
+\begin{quote}\small
+\$ firewall\\
+
+1. (I) {\bf An internetwork gateway that restricts data communication traffic to and from one of the connected networks} (the one said to be "inside" the firewall) and thus protects that network's system resources against threats from the other network (the one that is said to be "outside" the firewall). (See: guard, security gateway.)
+
+2. (O) {\bf A device or system that controls the flow of traffic between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41, January 2002.
+
+Tutorial: A firewall typically protects a smaller, secure network (such as a corporate LAN, or even just one host) from a larger network (such as the Internet). The firewall is installed at the point where the networks connect, and the firewall applies policy rules to control traffic that flows in and out of the protected network.
 \end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
 
-\begin{quote}
-The next time you are at your console, review some logs. You might think. . . “I don’t know what to look for". Start with what you know, understand, and don’t care about. Discard those. Everything else is of interest.\\
-Semper Vigilans,
-Mike Poor
+\slide{Continued}
+\begin{quote}\small
+{\bf A firewall is not always a single computer.} For example, a firewall may consist of a pair of filtering routers and one or more proxy servers running on one or more bastion hosts, all connected to a small, dedicated LAN (see: buffer zone) between the two routers. The external router blocks attacks that use IP to break security (IP address spoofing, source routing, packet fragments), while proxy servers block attacks that would exploit a vulnerability in a higher-layer protocol or service. The internal router blocks traffic from leaving the protected network except through the proxy servers. The difficult part is defining criteria by which packets are denied passage through the firewall, because a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic pass both in and out.
 \end{quote}
-
-
-
-\slide{Firewalls Definition}
-
-\begin{quote}
-In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
-\end{quote} Source: Wikipedia \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
 
 \begin{list2}
 \item Network layer, packet filters, application level, stateless, stateful
@@ -1341,9 +1240,11 @@ Lower Layers}\\
 
 
 
-\slide{Generic IP Firewalls}
 
-\vskip 4 cm
+
+\slide{Modern Firewall Infrastructures}
+
+
 \centerline{\hlkbig A firewall {\color{security6blue}blocks}
   internet trafic}
 
@@ -1354,21 +1255,20 @@ Lower Layers}\\
   internet trafic}
 
 
-
-\slide{Modern Firewall Infrastructures}
-
 \begin{list1}
-\item Today a firewall infrastructure must:
+\item A firewall infrastructure must:
 \begin{list2}
 \item Prevents attackers from entering
 \item Prevent data exfiltration
 \item Prevent worms, malware, virus from spreading in networks
 \item Be part of an overall solution with ISP, routers, other firewalls, switched infrastructures,\\
   intrusion detection systems and the rest of the infrastructure
+\item ...
 \end{list2}
-\item Requires a lot
 \end{list1}
 
+\vskip 5mm
+\centerline{\Large Difficult -- and requires design and secure operations}
 
 
 
@@ -1394,35 +1294,22 @@ Lower Layers}\\
 \end{alltt}
 
 \begin{list1}
-\item Packet filtering er firewalls der filtrerer på IP niveau
-\item Idag inkluderer de fleste stateful inspection
+\item Packet filtering are firewall devices filtering on single packet
+\item Most \emph{firewalls} do stateful filtering and more
+\item Don't forget IPv6 -- even though you haven't turned it on, it is there
 \end{list1}
 
 \slide{Sample rules from OpenBSD PF}
 
-\begin{alltt}\tiny
-# hosts and networks
-router="217.157.20.129"
-webserver="217.157.20.131"
-homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
-wlan="10.0.42.0/24"
-wireless=wi0
-set skip lo0
-# things not used
-spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
-{\bf
-# default block anything
-block in all }
-# egress and ingress filtering - disallow spoofing, and drop spoofed
-block in quick from $spoofed to any
-block out quick from any to $spoofed
 
-pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
-pass in on $wireless proto tcp from any to $webserver port = 80
+%\begin{figure}[H]\tiny
+%\inputminted[linenos=true]{shell}{policies/gateway-config-simple.conf}
+%\end{figure}
+\begin{figure}[H]\tiny
+\inputminted{shell}{policies/gateway-config-simple.conf}
+\end{figure}
 
-pass out
-\end{alltt}
-
+Note: the line with \verb+block all+ -- default deny
 
 \slide{Example firewall products}
 \begin{list2}
@@ -1452,7 +1339,9 @@ Those listed are the most popular commercial ones I see in Denmark
 
 \slide{I recommend and use the UFW Uncomplicated Firewall}
 
-\begin{alltt}\footnotesize
+\begin{alltt}\small
+root@debian01:~# apt install ufw
+...
 root@debian01:~# ufw allow 22/tcp
 Rules updated
 Rules updated (v6)
@@ -1468,7 +1357,9 @@ Status: active
 [ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
 \end{alltt}
 
-Extremely easy to use
+\begin{list2}
+\item Extremely easy to use
+\end{list2}
 
 
 
@@ -1507,7 +1398,7 @@ term edgeblocker \{
             87.245.xxx.171/32;
         \}
         destination-address \{
-            91.102.91.16/28; \}
+            91.102.xx.xx/28; \}
         protocol [ tcp udp icmp ]; \}
     then discard;
 \}
@@ -1537,7 +1428,7 @@ term limit-udp \{
 \}
 \end{alltt}
 
-Routers also have extensive Class-of-Service (CoS) tools today
+Routers and switches have extensive Class-of-Service (CoS) tools today
 
 \slide{Strict filtering for some servers, still stateless!}
 
@@ -1581,6 +1472,8 @@ Wut - no UDP, yes UDP service is not used on these servers
 \item In general make sure to segment networks
 \item Start to use port security on switches, including DHCP snooping\\
 \link{https://en.wikipedia.org/wiki/DHCP_snooping}
+\item Can also be used to prevent people from adding unmanaged switches
+\item In general, your devices have features -- use them
 \end{list1}
 
 \slide{Example port security}
@@ -1612,18 +1505,16 @@ Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.ne
 
 \hlkimage{5cm}{NSM_Phases-300x238.png}
 
-\begin{list1}
-\item ANSM chapter 1: The Practice of Applied
+Source: ANSM chapter 1: The Practice of Applied Network Security Monitoring
 \begin{list2}
 \item Vulnerability-Centric vs. Threat-Centric Defense
 \item The NSM cycle: collection, detection, and analysis
 \item Full Content Data, Session Data, Statistical Data, Packet String Data, and Alert Data
 \item Security Onion is nice, but a bit over the top - quickly gets overloaded
-\end{list2}
 
 \item Book referenced is: \emph{Network Security Monitoring
 Applied Network Security Monitoring Collection, Detection, and Analysis}, 2014 Chris Sanders ISBN: 9780124172081
-\end{list1}
+\end{list2}
 
 
 
@@ -1718,27 +1609,17 @@ Source: \\{\footnotesize
 
 
 
-\slide{View data efficiently}
 
-\hlkimage{10cm}{logstash-search.png}
-
-\begin{list1}
-\item View data by digging into it easily - must be fast
-\item Logstash and Kibana are just examples, but use indexing to make it fast!
-\item Other popular examples include Graylog and Grafana
-\end{list1}
-
-\slide{Big Data tools: Elasticsearch}
+\slide{Big Data tools: Dashboards and Elasticsearch}
 
 \hlkimage{10cm}{kibana-basics-with-vega.jpg}
+Source: \link{https://www.elastic.co}
 
-Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
-
-\link{https://www.elastic.co}
-
-\vskip 1cm
-\centerline{We are all Devops now, even security people!}
-
+\begin{list2}
+\item View data by digging into it easily - must be fast
+\item Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases
+\item Other popular examples include Graylog and Grafana Loki
+\end{list2}
 
 \slide{Kibana}
 
@@ -1782,14 +1663,11 @@ Low page count, but high value! Recommended.
 
 Network Security through Data Analysis, 2nd Edition
 By Michael S Collins
-Publisher: O'Reilly Media
-2015-05-01: Second release, 348 Pages
+Publisher: O'Reilly Media, October 2017 348 Pages
 
-New Release Date: August 2017
+See also \link{https://zencurity.gitbook.io/kea-it-sikkerhed/siem-and-log-analysis/lektionsplan}
 
-
-
-\slide{Packet sniffing tools}
+\slide{Blue Team -- Packet sniffing tools}
 
 \begin{list1}
 \item Tcpdump for capturing packets
@@ -1806,43 +1684,6 @@ New Release Date: August 2017
 
 Full packet capture big data tools also exist
 
-
-
-
-
-\slide{Blue Team}
-
-\begin{list1}
-\item Think like a blue team member find hacker traffic
-\item Get basic tools running
-\item Improve situation
-\begin{list2}
-\item See where the data end up
-\item What kind of data and metadata can we extract
-\item How can we collect and make use of it
-\item Databases and web interfaces, examples shown
-\item Consider what your deployment could be
-\end{list2}
-\end{list1}
-
-
-
-
-\slide{Experiences gathered}
-
-\begin{list1}
-\item Lots of information
-\item Reveals a lot about the network, operating systems, services etc.
-\item I use a template when getting data
-  \begin{list2}
-    \item Respond to ICMP: $\Box$\  echo, $\Box$\ mask, $\Box$\ time
-\item Respond to traceroute: $\Box$\ ICMP, $\Box$\ UDP
-\item Open ports TCP og UDP:
-\item Operating system:
-\item ... (banner information )
-  \end{list2}
-\item Beware when doing scans it is possible to make routers, firewalls and devices perform badly or even crash!
-\end{list1}
 
 \slide{The Zeek Network Security Monitor}
 
@@ -1891,22 +1732,6 @@ source: dns-fire-count.bro from\\
 \url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
 
 
-
-\slide{Testing Zeek}
-
-We will use a combination of your virtual servers, my switch hardware and my virtual systems.
-
-\vskip 1cm
-{\Large \bf There will be sniffing done on traffic!\\
-Don't abuse information gathered}
-
-We try to mimic what you would do in your own networks during the exercises.
-
-Another way of running exercises might be:\\
-\url{https://github.com/jonschipp/ISLET}
-
-Recommended and used by Zeek and Suricata projects.
-
 \slide{Get Started with Zeek}
 
 \begin{list1}
@@ -1921,22 +1746,6 @@ Recommended and used by Zeek and Suricata projects.
 \centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}
 
 
-\slide{Zeek demo: Run Zeek}
-
-\begin{alltt}\small
-// back to Broctl and start it
-[BroControl] > start
-starting bro
-// and then
-kunoichi:bro root# pwd
-/usr/local/var/spool/bro
-kunoichi:bro root# tail -f dns.log
-\end{alltt}
-
-More examples at:\\
-\url{https://www.bro.org/sphinx/script-reference/log-files.html}
-
-
 \slide{Suricata IDS/IPS/NSM}
 
 \hlkimage{6cm}{suricata.png}
@@ -1945,17 +1754,28 @@ More examples at:\\
 Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
 \end{quote}
 
- \link{http://suricata-ids.org/}
- \link{http://openinfosecfoundation.org}
+\link{http://suricata-ids.org/}
+\link{http://openinfosecfoundation.org}
 
 
- \slide{Exercise at home -- Your lab setup}
+\slide{Exercise at home -- Your lab setup}
 
- \begin{list2}
- \item Go to GitHub, Find user Kramse, click through security-courses, courses, suricatazeek and download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+\begin{list2}
+\item Go to GitHub, Find user Kramse, click through security-courses, courses\\
+\link{https://github.com/kramse/security-courses/tree/master/courses}
+\item Suricata and Zeek workshop is then in \verb+networking/suricatazeek-workshop+
+\item Download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
 
- \item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
- \end{list2}
+\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
+
+\item There are also a full Nmap workshop\\
+{\footnotesize\link{https://github.com/kramse/security-courses/tree/master/courses/pentest/nmap-workshop}}
+
+\item There are also a full SIEM and Log Analysis course\\
+{\footnotesize\link{https://github.com/kramse/security-courses/tree/master/courses/system-and-software/siem-log-analysis}}
+
+
+\end{list2}
 
 
 

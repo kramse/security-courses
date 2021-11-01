@@ -466,8 +466,8 @@ We should all know
 
 and add these!
 \begin{list2}
-\item \verb+Wireshark+ -- like sending a radar ping, anything there
-\item \verb+Nmap+ and \verb+Nping+ -- port scan and advanced ping program!
+\item \verb+Wireshark+ -- sniffing and disecting traffic
+\item \verb+Nmap+ and \verb+Nping+ -- port scan and advanced ping program with TCP/UDP!
 \end{list2}
 
 
@@ -490,13 +490,13 @@ PING 192.168.1.1 (192.168.1.1): 56 data bytes
 \item Same with IPv6, \verb+ping6+
 \end{list1}
 
-
+Fun fact: A problem with say TCP or UDP can be reported with ICMP, but ICMP ECHO is the only ICMP message that will result in an ICMP response. No black storms started with ICMP.
 
 \slide{traceroute}
 
 \begin{alltt}
 \small{\bfseries
-hkj@bob:~$ traceroute www.kramse.dk}
+$ traceroute www.kramse.dk}
 traceroute to www.kramse.dk (185.129.60.130), 30 hops max, 60 byte packets
  1  10.0.42.1 (10.0.42.1)  0.365 ms  0.277 ms  0.239 ms
  2  79.142.xxx.xxx (79.142.xxx.xxx)  5.174 ms  4.979 ms  5.113 ms
@@ -531,7 +531,7 @@ traceroute to www.kramse.dk (185.129.60.130), 30 hops max, 60 byte packets
 \hlkimage{10cm}{images/wireshark-sni-twitter.png}
 
 \centerline{Notice also the filtering possibilities, capture and view}
-
+\centerline{Wireshark is an advanced manual tool, try right-clicking different places}
 
 
 
@@ -575,27 +575,28 @@ Usually on a router the Time To Live is decremented, to need re-calculation
 \slide{Nping}
 
 \begin{alltt}\footnotesize
-  root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
-
-  Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
-  SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-  RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
-  SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-  RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
-  SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-  RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
-  SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-  RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
-  SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
-  RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
-
+root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
+Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
+SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 {\bf S} ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 {\bf SA} ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
+SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 {\bf S} ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 {\bf SA} ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
+SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 {\bf S} ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 {\bf SA} ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
+SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 {\bf S} ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 {\bf SA} ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
+SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 {\bf S} ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 {\bf SA} ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
+{\bf
   Max rtt: 40.044ms | Min rtt: 4.677ms | Avg rtt: 15.398ms
-  Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)
+  Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)}
   Nping done: 1 IP address pinged in 4.07 seconds
 \end{alltt}
 
 \begin{list2}
-\item The Nmap portscanner includes a nice ping utility, that allows us to \emph{ping} with TCP
+\item The Nmap portscanner includes a nice Nping utility
+\item it allows us to \emph{ping} with TCP, UDP and other protocols
+\item Controlled with command line options
 \end{list2}
 
 
@@ -620,7 +621,7 @@ We will jump directly into some solutions
 
 
 \begin{list2}
-\item Wireshark is advanced manual tool, try right-clicking different places
+\item Wireshark is an advanced manual tool
 \item How do we continously monitor the network?
 \end{list2}
 
@@ -740,8 +741,9 @@ SNMPv2 example
 \item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
 {\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
 \item Configure centralized syslog
+\item Updated firmware, HTTPS and SSH only etc. the usual stuff
 \vskip 1 cm
-\item And updated firmware, HTTPS and SSH only etc. the usual stuff
+\item Having a minimum template of configuration options is a great starting point
 \end{slidelist}
 
 Then use Oxidized and LibreNMS
@@ -760,7 +762,7 @@ Then use Oxidized and LibreNMS
 \item Oxidized is written in Ruby as a replacement for RANCID (Perl)
 \item Very easy to get running
 \item Fetches and imports configurations into Git repository, or others
-\item RESTful API and Web Interface, and command line tools
+\item RESTful API, Web Interface, and command line tools
 \item \link{https://github.com/ytti/oxidized}
 \end{list2}
 
@@ -834,7 +836,7 @@ See how to add a device and add your own. \link{https://docs.librenms.org/Suppor
  \link{https://docs.librenms.org/Extensions/Interface-Description-Parsing/}
 \end{list2}
 
-Most of this happens with very little effort. Just configure devices consistently and they will be presented nicely.
+Most of this happens with very little effort. Just {\bf configure devices consistently} and they will be presented nicely.
 
 
 
@@ -922,6 +924,7 @@ Ansible is great for automating stuff, so by running the playbooks we can get a 
 \item Often you use Secure Shell for connecting to servers\\
 \link{https://www.openssh.com/}
 \item Easy to configure SSH keys, for secure connections
+\item Can use sudo or doas commands for root access when needed
 \end{list2}
 
 
@@ -933,12 +936,10 @@ List your hosts in one or multiple text files:
 ansible_ssh_port=34443
 
 [office]
-fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
-ansible_python_interpreter=/usr/local/bin/python
+fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22 ansible_python_interpreter=/usr/local/bin/python
 
 [infrastructure]
-smtp-01     ansible_ssh_host=192.0.2.10
-ansible_python_interpreter=/usr/local/bin/python
+smtp-01     ansible_ssh_host=192.0.2.10 ansible_python_interpreter=/usr/local/bin/python
 vpnmon-01   ansible_ssh_host=10.50.60.18
 
 \end{alltt}
@@ -963,16 +964,17 @@ Using the inventory file you can run commands with Ansible:
 
 \begin{list2}
 \item Running commands on multiple servers is easy now
-\item This alone has value, you can start
+\item This alone has value in itself
 \item Checking settings on servers
 \item Making small changes to servers
+\item Then playbooks can automate your work!
 \end{list2}
 
 
 \slide{How Ansible Works: Playbooks}
 
 The benefit comes with tasks listed in playbooks -- example playbook content, installing software using APT:
-\begin{alltt}\small
+\begin{alltt}\footnotesize
 apt:
     name: "\{\{ packages \}\}"
     vars:
@@ -984,12 +986,13 @@ apt:
 \end{alltt}
 
 Running it:
-\begin{minted}[fontsize=\small]{shell}
+\begin{alltt}\footnotesize
 cd kramse-labs/suricatazeek
 ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
-\end{minted}
+\end{alltt}
+Installs a full server with Elasticsearch, Kibana, Zeek and Suricata in 10 minutes
 
-"YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."\\
+"YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."
 \link{https://en.wikipedia.org/wiki/YAML}
 
 
@@ -1043,7 +1046,7 @@ Prequisites for Ansible - you need a Linux machine:
 \end{list2}
 
 Official docs:\\
-\link{https://docs.ansible.com/ansible/intro_installation.html}
+\link{https://docs.ansible.com/ansible/latest/installation_guide/index.html}
 
 
 
@@ -1076,7 +1079,7 @@ Example playbooks:\\
 \begin{quote}
   Juniper Networks provides support for using Ansible to manage devices running Junos OS. Starting in Ansible Release 2.1, Ansible natively includes a number of core modules that can be used to manage devices running Junos OS. In addition, Juniper Networks provides the Juniper.junos Ansible role, which is hosted on the Ansible Galaxy website and includes additional modules for Junos OS.
 \end{quote}
-Source:{\footnotesize
+Source:{\footnotesize\\
 \link{https://www.juniper.net/documentation/en_US/junos-ansible/topics/task/installation/junos-ansible-server-installing.html}}
 
 \begin{list2}
@@ -1088,11 +1091,8 @@ How cool is that, centralized configuration management with source code!
 
 \slide{Logging}
 
-\centerline{\LARGE Logging}
+\hlkimage{19cm}{elastic-stack-buffered.png}
 
-\begin{quote}
-
-\end{quote}
 
 \begin{list2}
 \item The world needs answers
@@ -1151,8 +1151,6 @@ Source: \\{\footnotesize
 \end{quote}
 Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
 PS I havent tried it in real life, yet -- but a friend has
-
-
 
 
 
@@ -1362,7 +1360,7 @@ Zeek has files formatted with a header:
 \begin{alltt}\footnotesize
 #fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
         rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
-        TC      RD      RA      Z       answers TTLs    rejected
+        TC      RD      RA      Z       answerS} ttls    rejected
 
 1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383
 	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0

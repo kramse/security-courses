@@ -14,22 +14,6 @@
 \hlkprofiluk
 
 
-\slide{Goals for today}
-
-\hlkimage{5cm}{zeek-ids.png}
-
-\begin{list1}
-\item See how to sniff a few packets from popular protocols
-\item See how sniffing can be automated using two example tools Zeek and Suricata
-\item Intrusion Detection Systems
-\item Use Ansible to provision services - which can easily be modified to cover multiple servers
-\item See a Kibana dashboard or two
-\item Exercises -- which you can do at home later
-\begin{list2}
-\item Run Zeek and Suricata on small pcaps
-\end{list2}
-\end{list1}
-
 \slide{Time schedule}
 
 \begin{list2}
@@ -44,8 +28,207 @@
 Duration: 4 hours - with breaks
 
 Keywords:
-TCP, UDP, ICMP, TLS, DNS, Sniffing networks, malware detection, IDS, Netflow, dashboards, , Tap/SPAN/Mirror ports, Zeek Security Monitor, Suricata with SELKS, Kibana, Emerging Threats, VXLAN, Kubernetes
+TCP, UDP, ICMP, TLS, DNS, Sniffing networks, malware detection, IDS, Netflow, dashboards, , Tap/SPAN/Mirror ports, Zeek Security Monitor, Suricata with SELKS, Kibana, Emerging Threats
 
+
+
+\slide{Goals for today}
+
+\hlkimage{2cm}{1194985019172195635tools_nicu_buculei_01.svg.med.png}
+
+\begin{list1}
+\item See how to sniff a few packets from popular protocols
+\item See how sniffing can be automated using two example tools Zeek and Suricata
+\item Present the concept of Intrusion Detection Systems
+\item Use Ansible to provision services - which can easily be modified to cover multiple servers
+\item See a Kibana dashboard or two
+\item Exercises -- which you can do at home later
+\begin{list2}
+\item Run Zeek and Suricata on small pcaps
+\end{list2}
+\end{list1}
+
+\slide{The concept of Intrusion Detection}
+
+Denning, Dorothy E., "An Intrusion Detection Model," Proceedings of the Seventh IEEE Symposium on Security and Privacy, May 1986, pages 119–131
+
+\begin{quote}
+Dorothy Elizabeth Denning, born August 12, 1945, is a US-American information security researcher known for lattice-based access control (LBAC), intrusion detection systems (IDS), and other cyber security innovations. She published four books and over 200 articles. Inducted into the National Cyber Security Hall of Fame in 2012, she is now Emeritus Distinguished Professor of Defense Analysis, Naval Postgraduate School.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Dorothy_E._Denning}
+
+
+
+
+\slide{Why spend time on IDS}
+
+You have malware on a system?!
+
+\hlkrightimage{4cm}{hackers_JOLIE+1995.jpg}
+
+\begin{list2}
+\item You have identified {\bf one system}
+\item And perhaps even the strain of malware -- nice!
+\end{list2}
+
+but what are the next steps? Natural questions are:
+\begin{list2}
+\item Which other systems are infected?
+\item What is the timeline, when was this system infected, was it the first one?
+\item What else happened before and after?
+\item How do we clean up?
+\end{list2}
+
+Some of these questions quickly become broad!
+
+\slide{How to proceed}
+
+\hlkimage{5cm}{dont-panic.png}
+
+\hskip 6cm {\LARGE DON'T PANIC}
+
+Especially hard to recommend next steps without some facts to support decisions.
+
+\begin{list2}
+\item Shutdown the internet connection?
+\item Shutdown all servers vs KEEP RUNNING
+\item Reinstall ALL servers, all laptops, all ...
+\end{list2}
+
+\slide{Incident Handling process}
+
+Basic incident response process
+\begin{list2}
+\item Preparation for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\item Identification of an attack, notice the attack is ongoing
+\item Containment (confinement) of the attack, limit effects of the attack as much as possible
+\item Eradication of the attack, stop attacker, block further similar attacks
+\item Recovery from the attack, restore system to a secure state
+\item Follow-up to the attack, include lessons learned improve environment
+\end{list2}
+Source:
+\emph{Incident Response: A Strategic Guide to Handling System and Network Security Breaches}, 1st edition E Eugene Schultz Russell Shumway 2002
+
+Modern reference:
+\emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}
+by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405
+
+\slide{Need facts!}
+
+\hlkimage{16cm}{collberg-parallel-plot.png}
+
+\begin{list2}
+\item To answer questions we need facts!
+\item Tools can give those facts
+\item Note: I will recommen a toolbox, consider them examples -- lots of other great tools exist
+\item My tool box includes Suricata, Elasticsearch, Kibana, Zeek, Filebeat, Packetbeat, Logstash, NFsen, Elastiflow etc.
+\item Others are happy with Graylog, Grafana Loki and others
+\end{list2}
+
+\slide{Parallel coordinate plots}
+
+\hlkimage{18cm}{collberg-parallel-plot.png}
+
+Source: image from Network Security Visualization Keith Fligg and Genevieve Max
+\link{https://www2.cs.arizona.edu/~collberg/Teaching/466-566/2013/Resources/presentations/2012/topic13-final/report.pdf}
+
+\begin{list2}
+  \item \link{https://en.wikipedia.org/wiki/Parallel_coordinates}
+\end{list2}
+
+\slide{Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
+
+\slide{Data Science Workflow }
+
+\hlkimage{10cm}{jay-data-science-workflow.png}
+
+\begin{list2}
+\item Find and Collect Relevant Data, Learn through Iteration
+\end{list2}
+
+{\footnotesize Source: DDS 12. Moving Toward Data-Driven Security\\
+\emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis}
+
+
+\slide{Create goals}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Building a Real-Life Security Data Science Team}\\
+
+... a clear goal: Given an IP address (or IP/Port combination), {\bf search across all our perimeter devices in less than five minutes.}
+
+Three core principles focused the team.
+\begin{list2}
+\item First, explore the open source versions of tools before engaging vendors. If you don’t
+know how the sausage is being made, you really have no idea what’s being done, and
+this is vital when working with real data.
+\item Second, follow the mantra of “no single tool; no single database; and, no single approach
+to solving a problem.” Do not put blinders on because you are either comfortable with
+certain technologies or have an affinity for a certain tool.
+\item Third, failure is expected, but you must learn from each journey down the wrong path.
+Continuous adaptation and adjustment is the name of the game.
+\end{list2}
+\end{quote}
+
+{\footnotesize Source: DDS 12. Moving Toward Data-Driven Security\\
+\emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis}
+
+
+\slide{Get started quickly}
+
+My recommendation today is to create a production-ready environment, but for learning the following are useful
+
+Security Onion covers a lot of different areas, but is a bit heavy. Lots of great information and recommended tools\\
+\link{https://securityonionsolutions.com/software/}
+
+If you want to try out Suricata and focus on network traffic, try SELKS\\
+\link{https://www.stamus-networks.com/selks}
+
+Generic packet capture and Elastic beats\\
+\link{https://www.elastic.co/beats/packetbeat}
+
+Generic malware and malicious traffic detection -- Python based and easy to deploy\\
+\link{https://github.com/stamparm/maltrail}
+
+Brim is packaged as a desktop app, open a pcap and transform into Zeek logs in the ZNG format\\
+\link{https://www.brimsecurity.com/}
+
+
+\slide{Packetbeat}
+
+\hlkimage{10cm}{demo-siem-setup-packetbeat.pdf}
+
+
+\begin{list2}
+\item By installing packetbeat and doing network mirroring from the network switch, we can gather a lot of information
+\item Packetbeat supports Elastic Common Schema (ECS) \link{https://www.elastic.co/beats/packetbeat}
+\item ICMP (v4 and v6)
+DHCP (v4)
+DNS
+HTTP
+AMQP 0.9.1
+Cassandra
+Mysql
+PostgreSQL
+Redis
+Thrift-RPC
+MongoDB
+Memcache
+NFS
+TLS
+SIP/SDP (beta)
+\end{list2}
 
 
 \slide{About equipment and exercises}
@@ -64,7 +247,21 @@ but it is expected that participants will do any exercises on their own later or
 
 \centerline{\LARGE Invite a few friends, make a hacker day and work together!}
 
+\slide{Be ethical, act honorably}
+
+\hlkrightimage{6cm}{ulovliglogning-mobilepay.png}
+
+\hlkimage{6cm}{005scawebiaidosezaicon.png}
+
+Ask permission, inform when logging people traffic
+
+Especially do NOT, repeat DO NOT log illegally.
+
+\hskip 13cm \link{https://ulovliglogning.dk/}
+
+
 \slide{Course Materials}
+
 
 \begin{list1}
 \item This material is in multiple parts:
@@ -159,14 +356,24 @@ Preparation will enable easy {\bf identification} of affected systems, better {\
 An IOC is any piece of information that can be used to objectively describe a
 network intrusion, expressed in a platform-independent manner. This could include a simple indicator such as the IP address of a command and control (C2) server or a complex set of behaviors that indicate that a mail server is being used as a malicious SMTP relay.
 
-When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Bro-formatted file, it becomes part of a signature. A signature can contain one or more IOCs.
+When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Zeek-formatted file, it becomes part of a signature. A signature can contain one or more IOCs.
 \end{quote}
 
 Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
 
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+{\footnotesize Source: \emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites}
+
 
 
 \slide{What happens today?}
+
+.
+\hlkrightimage{4cm}{ninja-1.png}
 
 \begin{list1}
 \item Think like a blue team member find hacker traffic
@@ -181,7 +388,7 @@ Source: Applied Network Security Monitoring Collection, Detection, and Analysis,
 \end{list2}
 \end{list1}
 
-\centerline{Today focus on the lower parts, but user interfaces are important too}
+
 
 
 \slide{Internet Today}
@@ -474,21 +681,18 @@ Usually on a router the Time To Live is decremented, to need re-calculation
 
 \slide{Automated packet sniffing tools}
 
-\hlkimage{10cm}{zeek-ids.png}
+\hlkimage{13cm}{elastic-stack-buffered.png}
 
 \begin{list1}
 
 
 \item Zeek -- Network Security Monitor {\footnotesize\url{https://zeek.org}}
-\item Suricata -- open source, mature, fast and robust network threat detection {\footnotesize\url{https://suricata-ids.org/}}
-\item (Snort, old timer Intrusion Detection Engine (IDS) )
+\item Suricata -- network threat detection {\footnotesize\url{https://suricata-ids.org/}}
+\item PacketBeat decodes multiple protocols
 \end{list1}
 
 
 \centerline{Often a combination of tools and methods used in practice}
-
-Full packet capture big data tools also exist
-
 
 \slide{The Zeek Network Security Monitor}
 
@@ -500,7 +704,7 @@ powerful network analysis framework
 Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
 
 
-\slide{Zeek IDS is}
+\slide{Zeek}
 
 \hlkimage{14cm}{zeek-ids.png}
 
@@ -528,9 +732,8 @@ event dns_AAAA_reply(c: connection, msg: dns_msg, ans: dns_answer, a: addr)
         \}
 \end{alltt}
 
-source: dns-fire-count.bro from\\
-{\small \link{https://github.com/LiamRandall/bro-scripts/tree/master/fire-scripts}\\
-\url{https://www.bro.org/sphinx-git/script-reference/scripts.html}}
+Source: Count DNS replies \\
+\url{https://www.zeek.org/sphinx-git/script-reference/scripts.html}
 
 
 \slide{Side note: Zeek Security Monitor handles formats differently}
@@ -546,10 +749,10 @@ Zeek has files formatted with a header:
    www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
 \end{alltt}
 
-Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program zeek-cut which can select specific fields:
 
 \begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+root@NMS-VM:/var/spool/zeek/zeek# cat dns.log | zeek-cut -d ts query answers | grep dr.dk
 2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
 \end{alltt}
 
@@ -560,32 +763,30 @@ Can also just use JSON now via Filebeat
 
 \begin{list1}
 \item To run in “base” mode:
- \verb+bro -r traffic.pcap+
-\item To run in a “near broctl” mode:
-\verb+bro -r traffic.pcap local+
+ \verb+zeek -r traffic.pcap+
+\item To run in a “near zeekctl” mode:
+\verb+zeek -r traffic.pcap local+
 \item To add extra scripts:
-\verb+bro -r traffic.pcap myscript.bro+
+\verb+zeek -r traffic.pcap myscript.zeek+
 \end{list1}
 
-\centerline{Note: the project was renamed from Bro to Zeek in Oct 2018 tools still named broctl etc.}
-
-\slide{Bro demo: Run}
+\slide{zeek demo: Run}
 
 \begin{alltt}\small
 // install zeek first
-kunoichi:~ root# broctl
-Hint: Run the broctl "deploy" command to get started.
+kunoichi:~ root# zeekctl
+Hint: Run the zeekctl "deploy" command to get started.
 
-Welcome to BroControl 1.5
+Welcome to ZeekControl 2.3.0
 Type "help" for help.
 
-[BroControl] > install
+[ZeekControl] > install
 creating policy directories ...
 installing site policies ...
-generating standalone-layout.bro ...
-generating local-networks.bro ...
-generating broctl-config.bro ...
-generating broctl-config.sh ...
+generating standalone-layout.zeek ...
+generating local-networks.zeek ...
+generating zeekctl-config.zeek ...
+generating zeekctl-config.sh ...
 ...
 kunoichi:etc root# grep eth0 node.cfg
 interface=eth0
@@ -594,17 +795,17 @@ interface=eth0
 \slide{Zeek demo: Run Zeek}
 
 \begin{alltt}\small
-// back to Broctl and start it
-[BroControl] > start
-starting bro
+// back to zeekctl and start it
+[ZeekControl] > start
+starting zeek
 // and then
-kunoichi:bro root# pwd
-/usr/local/var/spool/bro
-kunoichi:bro root# tail -f dns.log
+kunoichi:zeek root# pwd
+/usr/local/var/spool/zeek
+kunoichi:zeek root# tail -f dns.log
 \end{alltt}
 
 More examples at:\\
-\url{https://www.bro.org/sphinx/script-reference/log-files.html}
+\url{https://www.zeek.org/sphinx/script-reference/log-files.html}
 
 
 
@@ -649,7 +850,7 @@ Suricata, Zeek og DNS Capture\\
 \begin{slidelist}
 \item NetFlow is getting more important, more data share the same links
 \item Accounting is important
-\item Detecting DoS/DDoS and problems is essential
+\i\emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudistem Detecting DoS/DDoS and problems is essential
 \item NetFlow sampling is vital information - 123Mbit, but what kind of traffic
 \item Currently also investigating sFlow - hopefully more fine grained
 \end{slidelist}
@@ -688,6 +889,29 @@ Non-programmers can create, save, and share dashboards
 
 Source:
 \link{https://www.elastic.co/products/kibana}
+
+
+
+\slide{Drill down process}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+We have seen Kibana multiple times, but how do you use it? I recommend the following iterative process
+\begin{enumerate}
+\item Get an overview
+\item Research top talkers,
+\item When identified and handled, remove with filter \verb+not host 10.1.2.3+
+\item Look at the next ones
+\end{enumerate}
+
+Look into details, lookup hostnames -- hopefully your tool allows some help
+
+
+
 
 
 \slide{Architecture}
@@ -742,7 +966,38 @@ What are the next steps?
 
 
 
+\slide{Lets design a SIEM Infrastructure Proof of Concept}
 
+\hlkimage{16cm}{demo-siem-setup.pdf}
+
+
+\slide{Deploying security}
+
+\begin{quote}{\bf
+Security is a process, not a product.} Products provide some protection, but the only way to effectively do business in an insecure world is to put processes in place that recognize the inherent insecurity in the products. The trick is to reduce your risk of exposure regardless of the products or patches.
+\end{quote}
+Source: \link{https://www.schneier.com/essays/archives/2000/04/the_process_of_secur.html}
+
+Today, we will consider the deployment plan being:
+\begin{list2}
+\item People -- make sure management is on board, Sources -- which data to gather,
+\item Technology -- select SIEM, architecture, tools and products
+\item Dashboards -- we have done parts of this, refer to SOC book also
+\item Procedures -- left as a home exercise today
+\end{list2}
+
+\slide{Extended Sources}
+When a basic logging infrastructure is setup, it can be expanded to increase coverage, by
+adding more sources:
+
+\begin{list2}
+\item DNS query logging -- will enable multiple cases to be resolved, example malware identification and tracing, when was a malware domain queried, when was the first infection
+\item Web proxy logging -- which web pages did which client access
+\item Session data from Firewalls, Netflow -- traffic patterns can be investigated and both attacks and cases like exfiltration can likely be seen
+
+\end{list2}
+
+Hint: Take the sources available first, make a proof-of-concept, expand coverage
 
 \slide{Baseline Skills}
 
@@ -781,6 +1036,19 @@ Source: \emph{Applied Network Security Monitoring Collection, Detection, and Ana
 
 \centerline{We are all Devops now, even security people!}
 
+
+\slide{People: Get management buy-in}
+
+\hlkimage{6cm}{margarida-csilva-121801-unsplash.jpg}
+
+You will probably need help from:
+
+\begin{list2}
+\item Buy-in from management, for requesting resources
+\item Network and security departments -- getting data, opening ports
+\item Application developers, web site programmers
+\end{list2}
+Lifeguard training photo by Margarida CSilva on Unsplash
 
 
 \myquestionspage
@@ -838,6 +1106,20 @@ ISBN-13:
 
 \link{https://nostarch.com/packetanalysis3}
 
+\slide{Primary literature for my SIEM and logging course}
+
+\hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
+Primary literature:
+\begin{list2}
+\item \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+\item \emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405 - short CIP
+\item \emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts ISBN: 9781491934944 - short IDI
+\item \emph{Security Operations Center: Building, Operating, and Maintaining your SOC}\\
+ISBN: 9780134052014 Joseph Muniz - short SOC
+\end{list2}
 
 \slide{Book: Applied Network Security Monitoring (ANSM)}
 
@@ -854,7 +1136,7 @@ Imprint: Syngress, December 2013
 {\footnotesize\link{https://www.elsevier.com/books/applied-network-security-monitoring/unknown/978-0-12-417208-1}}
 
 
-\slide{Reading Summary}
+\slide{ANSM Summary}
 
 \begin{quote}
 ANSM chapter (7,8),9,10 - 140 pages\\
@@ -874,7 +1156,7 @@ Gives great output with little effort and complements Suricata/NIDS
 
 
 
-\slide{Reading Summary, continued}
+\slide{ANSM Summary}
 
 \hlkimage{6cm}{zeek-ids.png}
 
@@ -892,7 +1174,7 @@ network intrusion, expressed in a platform-independent manner
 \end{list1}
 
 
-\slide{Reading Summary, continued}
+\slide{ANSM Summary, continued}
 
 %\hlkimage{7cm}{NSM_Phases-300x238.png}
 
@@ -912,7 +1194,7 @@ If we end up having time today, or another day, we should look into this tool ch
 
 
 
-\slide{Reading Summary, continued}
+\slide{ANSM Summary, continued}
 
 \hlkimage{7cm}{suricata.png}
 
@@ -925,7 +1207,7 @@ If we end up having time today, or another day, we should look into this tool ch
 \end{list2}
 \end{list1}
 
-\slide{Reading Summary, continued}
+\slide{ANSM Summary, continued}
 
 \hlkimage{15cm}{zeek-overview.png}
 

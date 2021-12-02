@@ -40,15 +40,21 @@ See this reference: http://www.tug.org/texlive/
 
 I have moved to latexmk, so you may want to add the following to your $HOME/.latexmkrc
 
+```
   $pdf_mode = 1;
+```
 
 This should make it easy to produce PDF files just by doing:
+```
   hlk@kunoichi:pentest-I-foredrag$ latexmk
   Latexmk: This is Latexmk, John Collins, 5 February 2015, version: 4.43a.
   Latexmk: applying rule 'pdflatex'...
+```
 
 I have decided to use ONLY UTF-8 too, so some files need to be converted - work in progress
+```
 iconv −f ISO−8859−1 −t UTF−8
+```
 
 
 ## Configuration
@@ -57,9 +63,11 @@ with the TEXINPUTS
 
 As an example my login profile on my Mac OS X laptop contains
 the following settings suitable for TeXLive and this package:
+```
 export TEXINPUTS=:~/projects/security-courses//
-MANPATH=$MANPATH:/usr/local/texlive/2017/texmf/doc/man
-INFOPATH=$INFOPATH:/usr/local/texlive/2017/texmf/doc/info
+MANPATH=$MANPATH:/usr/local/texlive/2021/texmf/doc/man
+INFOPATH=$INFOPATH:/usr/local/texlive/2021/texmf/doc/info
+```
 
 
 ## First steps

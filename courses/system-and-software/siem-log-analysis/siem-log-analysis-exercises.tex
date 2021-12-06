@@ -1,26 +1,21 @@
 \documentclass[a4paper,11pt,notitlepage]{report}
 % Henrik Kramselund Jereminsen, February 2001
-% hlk@security6.net,
-% My standard packages
 \usepackage{zencurity-network-exercises}
 
 \begin{document}
 
 \rm
 \selectlanguage{english}
-
 \newcommand{\subject}[1]{SIEM and Log Analysis course}
-
 \mytitle{SIEM and Log Analysis}{exercises}
-
-\pagenumbering{roman}
-
 
 \setcounter{tocdepth}{0}
 
-\normal
 
-{\color{titlecolor}\tableofcontents}
+
+{\color{titlecolor}
+\renewcommand{\baselinestretch}{0.3}\setlength{\parskip}{1mm}
+\tableofcontents}
 %\listoffigures - not used
 %\listoftables - not used
 
@@ -28,6 +23,7 @@
 \pagestyle{fancyplain}
 \chapter*{\color{titlecolor}Preface}
 \markboth{Preface}{}
+\setlength{\parskip}{3mm}
 
 This material is prepared for use in \emph{\subject} and was prepared by
 Henrik Kramselund Jereminsen, \link{http://www.zencurity.com} .
@@ -53,7 +49,6 @@ Have fun and learn
 
 % =================== body of the document ===============
 % Arabic page numbers
-\pagenumbering{arabic}
 \rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
 
 % Main chapters
@@ -353,7 +348,7 @@ see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 \chapter{Getting started with the Elastic Stack -- 60min}
 \label{gettingstartedelastic}
 
-\hlkimage{10cm}{illustrated-screenshot-hero-kibana.png}
+\hlkimage{8cm}{illustrated-screenshot-hero-kibana.png}
 
 
 {\bf Objective:}\\
@@ -666,6 +661,7 @@ Getting child tag's attribute value in a XML using ElementTree
 
 Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
 \end{quote}
+
 \begin{minted}[fontsize=\footnotesize]{python}
 >>> import xml.etree.ElementTree as ET
 >>> xmlstr = '<foo><bar key="value">text</bar></foo>'
@@ -919,17 +915,17 @@ You should read the example \emph{Raising a Notice}. Getting output for certain 
 {\bf Discussion:}\\
 Zeek Network Security Monitor is an old/mature tool, but can still be hard to get started using. I would suggest that you always start out using the packages available in your Ubuntu/Debian package repositories.
 
-They work, and will give a first impression of Zeek. If you later want specific features not configured into the binary packet, then install from source.
+They work, and will give a first impression of Zeek. If you later want specific features not configured into the binary packet, then install from source or the official packages from the Zeek project.
 
-Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
+Also Zeek uses a zeekctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can often be found in \verb+/etc/zeek+ , but on our systems installed from their package we find it in \verb+/opt/zeek/etc+.
 
 \begin{minted}[fontsize=\footnotesize]{shell}
-root@debian:/etc/bro# ls -la
+root@debian:/opt/zeek/etc# ls -la
 drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
 drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
--rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
--rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
--rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
+-rw-r--r--   1 root root  2606 Oct 30  2020 zeekctl.cfg
+-rw-r--r--   1 root root   225 Oct 30  2020 networks.cfg
+-rw-r--r--   1 root root   644 Oct 30  2020 node.cfg
 drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
 \end{minted}
 
@@ -951,9 +947,9 @@ Use Nitroba.pcap can be found in various places around the internet
 \begin{minted}[fontsize=\footnotesize]{shell}
 $ cd
 $ wget http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap
-$ mkdir $HOME/bro;cd $HOME/bro; bro -r ../nitroba.pcap
-... bro reads the packets
-~/bro$ ls
+$ mkdir $HOME/zeek;cd $HOME/zeek; zeek -r ../nitroba.pcap
+... zeek reads the packets
+~/zeek$ ls
 conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
 sip.log  ssl.log  weird.log  x509.log
 $ less *
@@ -965,15 +961,15 @@ Use :n to jump to the next file in less, go through all of them.
 Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
 
 \begin{minted}[fontsize=\footnotesize]{shell}
-root@debian:/etc/bro# cat node.cfg
-# Example BroControl node configuration.
+root@debian:/etc/zeek# cat node.cfg
+# Example ZeekControl node configuration.
 #
 # This example has a standalone node ready to go except for possibly changing
 # the sniffing interface.
 
 # This is a complete standalone configuration.  Most likely you will
 # only need to change the interface.
-[bro]
+[zeek]
 type=standalone
 host=localhost
 interface=eth0
@@ -989,33 +985,37 @@ Note: if your system has a dedicated interface for capturing, you need to turn i
 When you either run Zeek using a packet capture or using live traffic
 
 Running with a capture can be done using a command line such as:
-\verb+bro -r traffic.pcap+
+\verb+zeek -r traffic.pcap+
 
-Using broctl to start it would be like this:
+Using zeekctl to start it would be like this:
 \begin{minted}[fontsize=\footnotesize]{shell}
-// install bro first
-kunoichi:~ root# broctl
-Hint: Run the broctl "deploy" command to get started.
+// Use the deploy command to initialize and start zeek first
+debian:~ root# zeekctl
 
-Welcome to BroControl 1.5
+Welcome to ZeekControl 1.5
 Type "help" for help.
 
-[BroControl] > install
+[ZeekControl] > install
 creating policy directories ...
 installing site policies ...
-generating standalone-layout.bro ...
+generating standalone-layout.zeek ...
+generating local-networks.zeek ...
+generating zeekctl-config.zeek ...
+generating zeekctl-config.sh ...
 ...
+debian:etc root# grep eth0 node.cfg
+interface=eth0
 \end{minted}
 
 Afterwards you can stop and start as you wish:
 \begin{minted}[fontsize=\footnotesize]{shell}
-// back to Broctl and start it
-[BroControl] > start
-starting bro
-[BroControl] > exit
-// and then
-kunoichi:bro root# cd /var/log/bro/current
-kunoichi:bro root# tail -f dns.log
+[ZeekControl] > start
+... starting zeek
+// Exit using ctrl-d and then look at logs
+debian:zeek root# cd /opt/zeek/logs/current
+debian:zeek root# pwd
+/opt/zeek/logs/current
+debian:current root# tail -f dns.log
 \end{minted}
 
 You should be able to spot entries like this:
@@ -1028,12 +1028,14 @@ AA      TC      RD      RA      Z       answers TTLs    rejected
 F F T T 0 www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93 60.000000,20409.000000,20.000000 F
 \end{minted}
 
-Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program zeek-cut which can select specific fields:
 
 \begin{minted}[fontsize=\footnotesize]{shell}
-root@debian:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+root@debian:/opt/zeek/logs/current# cat dns.log | zeek-cut -d ts query answers | grep dr.dk
 2018-10-08T09:06:12+0200 www.dr.dk www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
 \end{minted}
+
+If your file is already in JSON format, you cannot use zeek-cut, but you can use other tools like jQuery \verb+jq+.
 
 {\bf Discussion:}\\
 Why is DNS interesting?
@@ -1056,10 +1058,10 @@ Run Zeek capturing live traffic, start https towards some sites. A lot of common
 
 
 {\bf Hints:}\\
-use broctl start and watch the output directory
+use zeekctl start and watch the output directory
 
 \begin{alltt}\small
-root@debian:/var/spool/bro/bro# ls *.log
+root@debian:/opt/zeek/logs/current# ls *.log
 communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
 stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
 stderr.log weird.log

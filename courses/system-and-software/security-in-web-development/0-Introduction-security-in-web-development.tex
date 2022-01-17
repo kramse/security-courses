@@ -1,0 +1,775 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+% Course description
+% Security in web development is designed to give the
+% students an idea of some of the challenges that web
+% developers face when implementing web applications. It
+% also gives some suggestions on how to handle these
+% challenges, and what to be especially aware of.
+
+
+% Learning Goals
+% * Understand basic web application security concepts
+% * Understand how hackers exploit web applications
+% * Understand the principle of layered security
+% * Spot potential security flaws in web applications
+% * Use best practice on some web security challenges
+
+% Content
+% * Hacking in general
+% * History, cases, vulnerability info etc
+% * Basic Applied Cryptography
+% ** Symmetric and asymmetric encryption
+% ** TLS (create certificate and install it on server)
+% ** Hashing and salting
+% * Security principles, least privilege etc.
+% * Security touchpoints
+
+% * Attack patterns
+% ** SQL injection, XSS, XXE, XSRF, Client side manipulation,
+%    Session hijacking, DoS, DDoS
+% * Linux security
+% ** Basic CLI (folders, privileges), basic firewall (iptables/ufw),
+%    basic servers (SSH, Apache, MySQL, Nginx)
+% ** Server security settings (Apache, PHP)
+
+
+% Main input Software Security
+% input
+% https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html
+% https://owasp.org/www-community/Threat_Modeling_Process Nice billede!
+% NIST
+
+\begin{document}
+
+\mytitlepage
+{0. Introduction}
+{Elective Security in Web Development, KEA}
+
+\hlkprofiluk
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+\item Welcome, course goals and expectations
+\item Prepare Virtual Machines - hope you brought a laptop
+\item Create a good starting point for learning
+\item Concrete Expectations
+\item Prepare tools for the exercises
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+\slide{Plan for today}
+
+\begin{list2}
+\item Create a good starting point for learning
+\item Introduce lecturer and students
+\item Expectations for this course
+\item Literature list walkthrough
+\item Prepare tools for the exercises
+\item Kali and Debian Linux introduction
+\end{list2}
+
+Exercise theme: Chaos Computing
+\begin{list2}
+\item Debian Linux installation
+\item Git tutorials, Python, Ansible
+\item Elastick Stack installation, Postman
+\end{list2}
+Linux is a toolbox we will use and participants will use virtual machines
+
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15\\
+Introduction and basics
+\item 30min break\\
+
+\item 18:45 - 19:30\\
+
+\item 15min break\\
+
+\item 19:45 -20:30 45min\\
+\end{list2}
+
+
+
+
+\slide{Course Materials}
+
+\begin{list1}
+\item This material is in multiple parts:
+\begin{list2}
+%\item Introduktionsmateriale med baggrundsinformation
+\item Slide shows - presentation - this file
+\item Exercises - PDF which is updated along the way
+\end{list2}
+\item Books listed in the lecture plan and here
+\item Additional resources from the internet
+\item Note: the presentation slides are not a substitute for reading the books, papers and doing exercises, many details are not shown
+\end{list1}
+
+
+
+\slide{Fronter Platform}
+
+\hlkimage{10cm}{fronter.png}
+
+We will use fronter a lot, both for sharing educational materials and news during the course.
+
+You will also be asked to turn in deliverables through fronter
+
+\link{https://kea-fronter.itslearning.com/}
+
+\vskip 5mm
+\centerline{If you haven't received login yet, let us know}
+
+\slide{Overview Diploma in IT-security}
+
+\hlkimage{17cm}{kea-diplom-oversigt.png}
+
+
+\slide{Course Data}
+
+\hlkimage{8cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+
+
+{\Large\bf Course: SIEM and Log Analysis (5 ECTS)}
+
+Teaching dates: mostly tuesdays and thursdays 17:00 - 20:30\\
+30/11 2021, 2/12 2021, 7/12 2021, 9/12 2021, 13/12 2021, 16/12 2021, 21/12 2021
+
+Exam: 6/1 2021 \hskip 12cm Photo by Pawel Janiak on Unsplash
+
+\slide{Deliverables and Exam}
+
+\begin{list2}
+\item Exam
+\item Individual: Oral based on curriculum
+\item Graded (7 scale)
+\item Draw a question with no preparation. Question covers a topic
+\item Try to discuss the topic, and use practical examples
+\item Exam is 30 minutes in total, including pulling the question and grading
+\item Count on being able to present talk for about 10 minutes
+\item Prepare material (keywords, examples, exercises, wireshark captures) for different topics so that you can use it to help you at the exam
+
+\vskip 5mm
+\item Deliverables:
+\item 1 Mandatory assignments
+\item Mandatory assignments are required in order to be entitled to the exam.
+\end{list2}
+
+
+\slide{Course Description}
+
+
+
+From: STUDIEORDNING Diplomuddannelse i it-sikkerhed August 2018\\
+VF4 SIEM og log analyse (5 ECTS)
+
+Indhold\\
+Den studerende lærer om Security information and event management (SIEM), herunder
+hvordan man kan indsamle, administrere, og søge i sikkerhedshændelsesdata i et større it
+system (komplekse systemer, IOT deployments, corporate IT).
+
+{\bf Læringsmål}\\
+Viden -- Den studerende har viden om og forståelse for:
+\begin{list2}
+\item Typiske SIEM arkitekturer
+\item Standard logformater og logtyper for standard systemer og komponenter
+\item Typiske SIEM produkter
+\item Juridiske krav til logning og bevarelse af data ifb. forensic analyse
+\end{list2}
+
+Færdigheder -- Den studerende kan:
+\begin{list2}
+\item Lave en baseline-analyse af en infrastruktur
+\item Bruge log-data til at identificere infrastrukturkomponenter
+\item Bruge et værktøj til at analysere system log-data og netværkstrafik til at finde sikkerhedshændelser
+\item Udvikle "dashboards" og alarmer der viser tegn på hændelser
+\end{list2}
+
+Kompetencer -- Den studerende kan:
+\begin{list2}
+\item Designe og implementere en SIEM løsning på tværs af diverse produkter
+\item Træffe beslutninger om hvilke data der skal indsamles i en givne situation
+\item Identificerer fejl i logopsamlingen
+\item Deltage i drøftelser på et praktisk og strategisk niveau i forhold til implementering af
+logmanagement/SIEM
+\end{list2}
+
+Final word is the Studieordning which can be downloaded from\\
+{\footnotesize \link{https://kompetence.kea.dk/uddannelser/it-digitalt/diplom-i-it-sikkerhed}\\
+\link{Studieordning_for_Diplomuddannelsen_i_IT-sikkerhed_Aug_2018.pdf}}
+
+\slide{Exercises}
+
+Exercise theme: Virtual Machines allows us play with tech
+
+Hardware
+
+Since we are going to be doing exercises, each team will need virtual machines.
+
+The following are recommended systems:
+\begin{list2}
+\item One VM based on Debian, running software servers and web applications
+\item Setup instructions and help \url{https://github.com/kramse/kramse-labs}
+\end{list2}
+
+Linux is a toolbox we will use and participants will use virtual machines
+
+
+\slide{Expectations alignment}
+
+\hlkimage{7cm}{Shaking-hands_web.jpg}
+
+%Form groups of 2-3 students
+
+In groups of 2 students, brainstorm for 10 minutes on what topics you would like to have in this course
+
+Use 5 minutes more on Agreeing on 5 topics and prioritize these 5 topics
+
+I look forward to hearing your wishes, and hopefully we can accomodate some
+
+\vskip 1cm
+PS We will from time to time have exercises, groups dont need to be the same each time.
+
+\slide{Goals and plans}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  ― Antoine de Saint-Exupéry
+\end{quote}
+
+I want this course to
+\begin{list2}
+\item Include everything required by studieordningen
+\item Be practical -- you can do something useful
+\item Kickstart your journey into SIEM and Logging\\
+Getting the best books with pointers about the closely related subject incident response
+\item Present a lot of useful sources, data types, tools
+\item Prepare you for production use of the knowledge\\
+Example you can take Linux, Ansible and Elasticsearch almost directly into production
+\end{list2}
+
+We only have 5 ECTS, but a lot of flexibility.
+
+
+\slide{Some keywords relating to this course}
+
+%\hlkimage{}{}
+
+\begin{quote}\large
+Analysis Visualization Dashboards Data-driven Security
+
+SIEM architectures frameworks acquire process Zeek
+
+log formats data types databases JSON XML Security Operations Center
+
+(Incident Response) Intelligence R and Python fundamentals
+
+Practical application Building Infosec \hskip 1cm Ansible Playbooks
+
+Collect, mine, organize, and analyze relevant data sources
+
+Sort data create reporting and monitoring
+
+IP-address Netflow nfdump Elasticsearch real-world knowledge
+\end{quote}
+
+\begin{list2}
+\item Lots of new terms, technologies and tools
+\item Its okay if too much, we will sort it during next weeks
+\end{list2}
+
+
+\slide{Prerequisites}
+
+\begin{list1}
+\item This course includes exercises and getting the most of the course requires the participants to carry out these practical exercises
+\item We will use Linux for some exercises but previous Linux and Unix knowledge is not needed
+\item It is recommended to use virtual machines for the exercises
+\item Security and most internet related security work has the following requirements:
+\begin{list2}
+\item Network experience
+\item Server experience
+\item TCP/IP principles - often in more detail than a common user
+\item Programming is an advantage, for automating things
+\item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill} for infosec work\\
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+\end{list2}
+\end{list1}
+
+
+\slide{Primary literature}
+
+\hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
+Primary literature:
+\begin{list2}
+\item \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+\item \emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405 - short CIP
+\item \emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts ISBN: 9781491934944 - short IDI
+\item \emph{Security Operations Center: Building, Operating, and Maintaining your SOC}\\
+ISBN: 9780134052014 Joseph Muniz - short SOC
+\end{list2}
+
+\centerline{Problem: You probably dont have the books yet ...}
+
+\slide{Course overview}
+
+We will now go through a little from the Table of Contents in the books.
+
+and the \emph{Lektionsplan}\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/siem-and-log-analysis/lektionsplan}
+
+
+\slide{Data-Driven Security: Analysis, Visualization and Dashboards}
+
+\hlkimage{6cm}{book-data-driven-security.jpg}
+\emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+Our main book for this course. We will read a lot from this one.
+
+\slide{Crafting the InfoSec Playbook}
+
+\hlkimage{6cm}{book-crafting-infosec-playbook.jpg}
+
+\emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405 - short CIP
+
+
+\slide{Intelligence-Driven Incident Response}
+
+\hlkimage{6cm}{book-intelligence-driven-incident-response.jpg}
+
+\emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts ISBN: 9781491934944 - short IDI
+
+
+
+\slide{Security Operations Center}
+
+\hlkimage{6cm}{ book-security-operations-center-cisco.jpg}
+
+\emph{Security Operations Center: Building, Operating, and Maintaining your SOC}\\
+ISBN: 9780134052014 Joseph Muniz - short SOC
+
+
+\slide{Supporting literature books}
+\begin{list2}
+\item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}\\
+OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
+\item \emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+\url{https://debian-handbook.info/} - shortened DEB
+\item \emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}\\
+Raphaël Hertzog, Jim O'Gorman - shortened KLR
+\end{list2}
+
+
+
+\slide{Linux Basics for Hackers (LBhf)}
+
+\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
+
+\emph{Linux Basics for Hackers
+Getting Started with Networking, Scripting, and Security in Kali}
+by OccupyTheWeb
+December 2018, 248 pp.
+ISBN-13:
+9781593278557
+
+\link{https://nostarch.com/linuxbasicsforhackers}
+Not curriculum but explains how to use Linux
+
+\slide{ The Debian Administrator’s Handbook (DEB)}
+
+\hlkimage{6cm}{book-debian-administrators-handbook.jpg}
+
+\emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+\url{https://debian-handbook.info/} - shortened DEB
+
+Not curriculum but explains how to use Debian Linux
+
+\slide{ Kali Linux Revealed (KLR)}
+
+\hlkimage{6cm}{kali-linux-revealed.jpg}
+
+\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
+
+\link{https://www.kali.org/download-kali-linux-revealed-book/}\\
+Not curriculum but explains how to install Kali Linux
+
+
+
+
+\slide{Hackerlab Setup}
+
+\hlkimage{6cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: modern laptop CPU with virtualisation\\
+Dont forget to enable hardware virtualisation in the BIOS
+\item Virtualisation software: VMware, Virtual box, HyperV pick your poison
+\item Linux server system: Debian amd64 64-bit \link{https://www.debian.org/}
+\item Setup instructions can be found at \link{https://github.com/kramse/kramse-labs}
+\end{list2}
+
+\centerline{It is enough if these VMs are pr team}
+
+
+
+\slide{Mixed exercises}
+Then we will do a mixed bag of exercises to introduce technologies, find your current knowledge level with regards to:
+
+\begin{list2}
+\item Linux
+\item Linux command line
+\item Git, Python and Ansible
+\item Elasticsearch -- how to run a \emph{service}
+\item Running Java on Linux -- environment variables?!
+\item Ansible provisioning -- installing and configuring software for production
+\end{list2}
+
+{\bf Note: today we will consider all these optional, we wont be able to do them all}
+
+Later we will return to them!
+
+\slide{Command prompts in Unix}
+
+\begin{list1}
+\item Shells :
+  \begin{list2}
+    \item sh - Bourne Shell
+\item bash - Bourne Again Shell, often the default in Linux
+\item ksh - Korn shell, original by David Korn, but often the public domain version used
+\item csh - C shell, syntax similar to C language
+\item Multiple others available, zsh is very popular
+  \end{list2}
+\item Windows have \verb+command.com+, \verb+cmd.exe+ but PowerShell is more similar to the Unix shells
+\item Used for scripting, automation and programs
+\end{list1}
+
+
+
+\slide{Command prompts}
+
+\begin{alltt}
+[hlk@debian hlk]$ id
+uid=6000(hlk) gid=20(staff) groups=20(staff), 0(wheel), 80(admin), 160(cvs)
+[hlk@debian hlk]$ sudo -s
+[root@debian hlk]#
+[root@debian hlk]# id {\bf
+uid=0(root) gid=0(wheel)} groups=0(wheel), 1(daemon), 20(staff), 80(admin)
+[root@debian hlk]#
+\end{alltt}
+
+Note the difference between running as root and normal user. Usually books and instructions will use a prompt of hash mark \verb+#+ when the root user is assumed and dollar sign \verb+$+ when a normal user prompt.
+
+\slide{Command syntax}
+
+\begin{alltt}
+echo [-n] [string ...]
+\end{alltt}
+
+\begin{list1}
+\item Commands are written like this:
+\begin{list2}
+\item Always begin with the command to execute, like \verb+echo+ above
+\item Options typically short form with single dash \verb+-n+
+\item or long options \verb+--version+
+\item Some commands allow grouing options, \verb+tar -c -v -f+ becomes \verb+tar -cvf+\\
+NOTE: some options require parameters, so \verb+tar -c -f filename.tar+ not equal to \verb+tar -fc filename.tar+
+\item Optional options are in brackets \verb+[ ]+
+\item Output can be saved using redirection, into new file/overwrite \verb+echo hello > file.txt+ or append \verb+echo hello >> file.txt+
+\item Read from files \verb+wc -l file.txt+ or pipe output into input \verb+cat file.txt | wc -l+\\
+\verb+wc+ is word count, and option l is count lines
+\end{list2}
+\end{list1}
+
+
+
+\slide{Unix Manual system}
+
+\hlkimage{7cm}{images/Unix-command-1.pdf}
+
+\begin{quote}
+ It is a book about a Spanish guy called Manual. You should read it.
+       -- Dilbert
+\end{quote}
+
+\begin{list1}
+\item Manual system in Unix is always there!
+\item Key word search \verb+man -k+ see also \verb+apropos+
+\item Different sections, can be chosen
+\end{list1}
+
+See \verb+man crontab+ the command vs the file format in section 5 \verb+man 5 crontab+
+
+
+
+\slide{A manual page}
+
+\begin{alltt}\footnotesize
+\small
+NAME
+     cal - displays a calendar
+SYNOPSIS
+     cal [-jy] [[month]  year]
+DESCRIPTION
+   cal displays a simple calendar.  If arguments are not specified, the cur-
+   rent month is displayed.  The options are as follows:
+   -j      Display julian dates (days one-based, numbered from January 1).
+   -y      Display a calendar for the current year.
+
+The Gregorian Reformation is assumed to have occurred in 1752 on the 3rd
+of September.  By this time, most countries had recognized the reforma-
+tion (although a few did not recognize it until the early 1900's.)  Ten
+days following that date were eliminated by the reformation, so the cal-
+endar for that month is a bit unusual.
+\end{alltt}
+
+\slide{The year 1752}
+
+\begin{alltt}\footnotesize
+  user@Projects:$ cal 1752
+...
+         April                  May                   June
+  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+            1  2  3  4                  1  2      1  2  3  4  5  6
+   5  6  7  8  9 10 11   3  4  5  6  7  8  9   7  8  9 10 11 12 13
+  12 13 14 15 16 17 18  10 11 12 13 14 15 16  14 15 16 17 18 19 20
+  19 20 21 22 23 24 25  17 18 19 20 21 22 23  21 22 23 24 25 26 27
+  26 27 28 29 30        24 25 26 27 28 29 30  28 29 30
+                        31
+          July                 August              September
+  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+            1  2  3  4                     1  {\bf        1  2 14 15 16}
+   5  6  7  8  9 10 11   2  3  4  5  6  7  8  17 18 19 20 21 22 23
+  12 13 14 15 16 17 18   9 10 11 12 13 14 15  24 25 26 27 28 29 30
+  19 20 21 22 23 24 25  16 17 18 19 20 21 22
+  26 27 28 29 30 31     23 24 25 26 27 28 29
+                        30 31
+...
+\end{alltt}
+
+
+\slide{Linux configuration in /etc}
+
+.
+\hlkrightpic{8cm}{0cm}{Unix-vfs.pdf}
+\begin{list2}
+\item Command line is a requirement in the \emph{studieordningen} \smiley
+\item Linux and Unix uses a single virtual file system\\
+\url{https://en.wikipedia.org/wiki/Unix_filesystem}
+\item No drive letters like the ones in MS-DOS and Microsoft Windows
+\item Everything starts at the root of the file system tree \verb+/+ - NOTE: \emph{forward slash}
+\item One special directory is \verb+/etc/+ and sub directories which usually contain a lot of configuration files
+\end{list2}
+
+\slide{Installing software in Debian -- apt}
+
+%\hlkimage{}{}
+
+\begin{alltt}\footnotesize
+DESCRIPTION
+apt provides a high-level commandline interface for the package management system. It is intended as an end user interface
+and enables some options better suited for interactive usage by default compared to more specialized APT tools like apt-get(8)
+and apt-cache(8).
+
+update (apt-get(8))
+  update is used to download package information from all configured sources. Other commands operate on this data to e.g.
+  perform package upgrades or search in and display details about all packages available for installation.
+
+upgrade (apt-get(8))
+  upgrade is used to install available upgrades of all packages currently installed on the system from the sources configured
+  via sources.list(5). New packages will be installed if required to satisfy dependencies, but existing packages will never
+  be removed. If an upgrade for a package requires the removal of an installed package the upgrade for this package isn't performed.
+
+full-upgrade (apt-get(8))
+  full-upgrade performs the function of upgrade but will remove currently installed packages if this is needed to upgrade the
+  system as a whole.
+\end{alltt}
+
+\begin{list2}
+  \item Install a program using apt, for example \verb+apt install nmap+
+\end{list2}
+
+
+
+\slide{Ansible}
+
+\hlkimage{2cm}{Ansible_logo.png}
+
+\begin{quote}
+From my course materials:\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor.
+\end{quote}
+
+\begin{list2}
+\item Easy to read, even if you don't know much about YAML
+\item \link{https://www.ansible.com/} and \link{https://en.wikipedia.org/wiki/Ansible_(software)}
+\item Great documentation\\
+ \link{https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html}
+\end{list2}
+
+
+\slide{Ansible Dependencies}
+
+\hlkimage{10cm}{python-logo.png}
+
+\begin{list2}
+\item Ansible based on Python, only need Python installed\\
+\link{https://www.python.org/}
+\item Often you use Secure Shell for connecting to servers\\
+\link{https://www.openssh.com/}
+\item Easy to configure SSH keys, for secure connections
+\end{list2}
+
+
+\slide{Ansible playbooks}
+
+Example playbook content, installing software using APT:
+\begin{alltt}\small
+apt:
+    name: "\{\{ packages \}\}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+Running it:
+\begin{minted}[fontsize=\small]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml 4-configuration.yml
+\end{minted}
+
+"YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."\\
+\link{https://en.wikipedia.org/wiki/YAML}
+
+\slide{Python and YAML -- Git}
+
+\hlkimage{7cm}{git-logo.png}
+
+\begin{list2}
+\item We need to store configurations
+\item Run playbooks
+\item Problem: Remember what we did, when, how
+\item Solution: use git for the playbooks
+\item Not the only version control system, but my preferred one
+\end{list2}
+
+\slide{Alternative}
+
+\hlkimage{10cm}{manual-install-es.png}
+
+My playbooks allow installation of a whole Elastic stack in less then 10 minutes,
+
+compare to:\\
+\emph{Getting started with the Elastic Stack}\\
+{\footnotesize\link{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+
+\slide{Git getting started}
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.github.com/activities/hello-world/}
+
+\begin{list2}
+\item What is git
+\item Terminology
+\end{list2}
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+\slide{Demo: Ansible, Python, Git!}
+
+\begin{quote}
+  Running Git will allow you to clone repositories from others easily. This is a great way to get new software packages, and share your own.
+
+  Git is the name of the tool, and Github is a popular site for hosting git repositories.
+\end{quote}
+
+
+\begin{list2}
+\item Go to \link{https://github.com/kramse/kramse-labs}
+\item Lets explore while we talk
+\end{list2}
+
+
+\slide{Demo: output from running a git clone}
+
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+for reference at home later
+
+
+\slide{Exercise CHAOS: Don't Panic -- have fun learning}
+
+\hlkimage{6cm}{dont-panic.png}
+
+\begin{quote}
+“It is said that despite its many glaring (and occasionally fatal) inaccuracies, the Hitchhiker’s Guide to the Galaxy itself has outsold the Encyclopedia Galactica because it is slightly cheaper, and because it has the words ‘DON’T PANIC’ in large, friendly letters on the cover.”
+\end{quote}
+Hitchhiker’s Guide to the Galaxy, Douglas Adams
+
+\slide{Your lab setup}
+
+\begin{list2}
+\item Go to GitHub, Find user Kramse, click through kramse-labs
+\item Look into the instructions for the Virtual Machine -- Debian only
+
+\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
+\end{list2}
+
+Yes, reusing instruction for the Suricata Zeek workshop - tested and working!
+
+\exercise{ex:sw-downloadDEB}
+\exercise{ex:sw-basicDebianVM}
+\exercise{ex:sw-basicLinuxetc}
+
+\exercise{ex:debian-firewall}
+
+\exercise{ex:postman-api}
+\exercise{ex:git-tutorial}
+\exercise{gettingstartedelastic}
+\exercise{ex:basicansible}
+
+\exercise{ex-python-Jupyterlab}
+\exercise{ex:es-rest-api}
+
+
+\slidenext{Buy the books! Create your VMs}
+
+\end{document}

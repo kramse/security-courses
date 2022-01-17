@@ -1,0 +1,427 @@
+% hlkslides.sty by Henrik Kramselund  <hlk@security6.net>
+%
+% hlk changes:
+%
+% modified from great original by
+% mdwslides.sty by Matt Welsh <mdw@cs.berkeley.edu>
+% Last updated 22 Nov 00
+%
+% This is a LaTeX package with a set of helper routines for generating
+% PDF-based presentations with pdflatex and the foiltex macros. To use
+% it just
+%    \usepackage{hlkslides}
+% at the top of your document.
+%
+% Basic usage:
+%
+% \slide{Slide title}
+% \begin{list1}
+% \item This is a list item
+% \item This is another list item
+%       \begin{list2}
+%       \item Second-level list
+%               \begin{list3}
+%               \item Third-level list
+%               \end{list3}
+%       \end{list2}
+% \end{list1}
+%
+% Macros for commonly-used TTF fonts are included. Margins, colors,
+% etc. all set for my regular presentation format; these are easy to
+% tweak.
+
+%\RequirePackage[latin1]{inputenc}
+\RequirePackage[utf8]{inputenc}
+
+%\RequirePackage{ucs}
+
+% https://www.sharelatex.com/learn/International_language_support
+%\RequirePackage[utf8x]{inputenc}
+\usepackage[english, danish]{babel}
+
+%\RequirePackage{times}
+\RequirePackage{color}
+%\RequirePackage{background}
+%\RequirePackage{wallpaper}
+\RequirePackage{hyperref}
+%\RequirePackage{pagetrans}
+\RequirePackage{calc}
+
+\RequirePackage{pause}
+\RequirePackage{alltt}
+\RequirePackage{graphicx}
+%\RequirePackage[rflt]{floatflt}
+
+\RequirePackage{wasysym}
+\RequirePackage[danish,english]{babel}
+\RequirePackage{fancyhdr}
+%\RequirePackage{pstricks,pst-node,pst-text,pst-3d}
+%\RequirePackage{moreverb}
+%\RequirePackage{ulem}
+
+\RequirePackage{xr}
+%\RequirePackage{xr-hyper}
+\RequirePackage{wrapfig}
+\RequirePackage{ulem}
+\RequirePackage{minted}
+\RequirePackage{fontawesome}
+
+\hypersetup{
+  pdftitle={Zencurity Slides},
+  pdfauthor={Henrik Kramselund },
+  colorlinks, urlcolor={black},menucolor={blue},citecolor={blue},
+  linkcolor={security6blue},
+  pdfmenubar=true, pdftoolbar=true, pdfpagemode={UseNone}
+ }
+
+\makeatletter
+\providecommand*{\@hyperfixhead}{}
+\makeatother
+
+%linds   /Dm
+%Multiple lines distributed evenly across the screen sweep in the same direction to reveal the new page.
+
+%Box     /M
+%A box sweeps in or out.
+
+%Dissolve
+%The page image dissolves in a piecemeal fashion to reveal the new page.
+
+%Glitter         /Di
+%Similar to Dissolve, except the effect sweeps across the screen.
+
+%Split   /Dm /M
+% Two lines sweep across the screen to reveal the new page.
+
+%Wipe    /Di
+% A single line sweeps across the screen to reveal the new page.
+%  pdfpagetransition={Wipe /Di 0}
+
+%\newcommand{\link}[1]{\href{#1}{#1}}
+\newcommand{\link}[1]{\url{#1}}
+%\newcommand{\link}[1]{#1}
+
+% vertikalt
+\setlength{\voffset}{0mm}
+\setlength{\topmargin}{-2.54cm}
+\setlength{\headheight}{5mm}
+\setlength{\textheight}{140mm}
+
+% horisontalt
+%\setlength{\hoffset}{-2.54cm} % så logo går helt ud!
+\setlength{\hoffset}{0mm}
+\setlength{\oddsidemargin}{-15.4mm}
+\setlength{\textwidth}{277mm}
+\setlength{\columnwidth}{250mm}
+\setlength{\parindent}{0mm}
+
+\rightheader{\colorbox{white}{\includegraphics[width=3cm]{kea-logo.png}}}
+%\MyLogo{\hskip 0mm\color{titlecolor}\copyright\ license CC BY 3.0. \the\year\ Henrik Kramselund }
+\MyLogo{}
+\rightfooter{\thepage}
+
+\newcommand{\myname}{Henrik Kramselund  he/him han/ham xhek@kea.dk @kramse  \faTwitter\faGithub}
+%\newcommand{\myname}{Henrik Kramselund  hkj@zencurity.com @kramse \faTwitter\faGithub \\$\heartsuit$ I love internet packets $\heartsuit$}
+
+
+\newcommand{\mytitlepage}[2]{
+\slide{}
+\begin{center}
+% not working
+%\ifthenelse{\equal{english}{\languagename}}
+{Welcome to}
+%{Velkommen til}
+
+{\color{titlecolor}
+\vskip 1 cm
+{\Large \bfseries#1}
+\vskip 5 mm
+{\hlkbig #2}}
+
+\vskip 5mm
+\myname\\
+\vskip 5 mm
+
+%\centerline{The Camp - Juli 2011}
+%\hlkimage{16cm}{Wiki_thecamp.png}
+
+%\hlkimage{6cm}{images/openbsd.png}
+%{\color{hlkblue} Støt OpenBSD - det hjælper også OpenSSH}
+
+\vskip 1cm
+{\small
+Slides are available as PDF, kramse@Github\\
+\jobname.tex in the repo security-courses}
+\end{center}
+
+}
+
+\newcommand{\dagsplan}{\slide{Plan for dagene}
+
+\begin{list2}
+\item 09:00 - Workshop 1
+\item 10:00 - Workshop 2
+\item 11:00 - Workshop 3
+\item 12:00 - Frokost
+\item 12:45 - Workshop 4
+\item 14:00 - Workshop 5
+\item 15:00 - Workshop 6
+\item 16:00 - 1630 dagen er slut*
+\end{list2}
+\begin{list2}
+\item *) Sluttiden kan variere.
+\item Hver time afsluttes med en kort pause med mulighed for kaffe, te,
+vand, rygning, ...
+\item Der vil være praktiske opgaver fordelt henover dagene til at få praktisk
+erfaring.
+\end{list2}}
+
+
+\newcommand{\prosadagsplan}{\slide{Plan for dagene}
+\begin{list2}
+\item 09:30 - Workshop 1
+\item 10:00 - Workshop 2
+\item 11:00 - Workshop 3
+\item 12:00 - Frokost
+\item 12:45 - Workshop 4
+\item 14:00 - Workshop 5
+\item 15:00 - Workshop 6
+\item 16:30 dagen er slut*
+\end{list2}
+\begin{list2}
+\item *) Sluttiden kan variere.
+\item Hver time afsluttes med en kort pause med mulighed for kaffe, te,
+vand, rygning, ...
+\item Der vil være praktiske opgaver fordelt henover dagene til at få praktisk
+erfaring.
+\end{list2}}
+
+\newcommand{\myquestionspage}{
+\slide{Questions?}
+
+%\vskip 1cm
+
+\begin{center}
+
+\hlkimage{8cm}{henrik_kramshoej.jpg}
+
+
+%\hlkbig
+
+\myname
+
+
+{\small You are always welcome to send me questions later via email
+
+Mobile: +45 2026 6000}
+
+
+\end{center}}
+
+
+%too much \slide{Øvelse: \nameref{#1}}
+\newcommand{\exercise}[1]{
+\slide{Exercise}
+\hlkimage{6cm}{exercise}
+\begin{center}
+Now lets do the exercise
+
+{\bf\hlkbig \nameref{#1}}
+
+which is number {\bf \ref{#1}} in the exercise PDF.
+\end{center}}
+
+\newcommand{\demo}[1]{
+\slide{Demo: #1}
+\hlkimage{10cm}{server-client.pdf}
+\centerline{\color{titlecolor}\bf\hlkbig #1}}
+
+\newcommand{\slidenext}[1]{
+\slide{For Next Time}
+
+\hlkimage{2cm}{clipboard_01.png}
+
+\begin{list1}
+\item Think about the subjects from this time, write down questions
+\item Check the plan for chapters to read in the books
+\item Visit web sites and download papers if needed
+\item Retry the exercises to get more confident using the tools
+\item #1
+\end{list1}}
+
+
+
+
+% Define colors
+
+\definecolor{topcol}{rgb}{1.0,1.0,1.0}
+\definecolor{botcol}{rgb}{0.75,0.905,1.0}
+%\definecolor{medcol}{rgb}{0.90,0.95,1.0}
+%\definecolor{medcol}{rgb}{1.0,0.95,0.90}
+%\definecolor{botcol}{rgb}{1.0,0.905,0.75}
+% Use following for gradient:
+%\vpagecolor[topcol]{botcol}
+% Use following for solid color:
+%\pagecolor{medcol}
+
+\definecolor{hlkblue}{rgb}{0.2,0.2,0.6}
+\definecolor{security6blue}{rgb}{0.26,0.45,0.50}
+\definecolor{titlecolor}{rgb}{0.26,0.45,0.50}
+%\definecolor{titlecolor}{cmyk}{0.84,0.33,0,0}
+
+
+\definecolor{gray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkgreen}{rgb}{0.2,0.7,0.2}
+% Set default color (used for title, footer, etc.)
+\renewcommand\normalcolor{\color{security6blue}}
+
+% Set up fonts
+%\newcommand{\verdana}{\fontencoding{T1}\usefont{T1}{verdana}{m}{n}}
+%\newcommand{\verdanai}{\fontencoding{T1}\usefont{T1}{verdanai}{m}{n}}
+%\newcommand{\verdanabd}{\fontencoding{T1}\usefont{T1}{verdanab}{m}{n}}
+%\newcommand{\trebuc}{\fontencoding{T1}\usefont{T1}{trebuc}{m}{n}}
+%\newcommand{\trebucbd}{\fontencoding{T1}\usefont{T1}{trebucbd}{m}{n}}
+%\newcommand{\trebucit}{\fontencoding{T1}\usefont{T1}{trebucit}{m}{n}}
+%\newcommand{\slingbold}{\fontencoding{T1}\usefont{T1}{slingbold}{m}{n}}
+%\newcommand{\monotype}{\fontencoding{T1}\usefont{T1}{monotype}{m}{n}}
+%\newcommand{\yikatu}{\fontencoding{T1}\usefont{T1}{yikatu}{m}{n}}
+
+% https://tex.stackexchange.com/questions/103704/how-to-properly-install-and-use-a-new-font-with-lualatex
+\usepackage{fontspec}
+\setmainfont{Open Dyslexic}
+
+\newcommand{\dyslexic}{\fontencoding{T1}\usefont{T1}{OpenDyslexic}{m}{n}}
+\newcommand{\dyslexicbd}{\fontencoding{T1}\usefont{T1}{OpenDyslexic-Bold}{m}{n}}
+\newcommand{\dyslexicit}{\fontencoding{T1}\usefont{T1}{OpenDyslexic-Italic}{m}{n}}
+
+\setmainfont{OpenDyslexic}
+%\setmainfont[
+%    Path           = /Users/hlk/Library/Fonts/,
+%    Extension      = .otf,
+%    Ligatures      = TeX,
+%    BoldFont       = OpenDyslexic-Bold,
+%    ItalicFont     = OpenDyslexic-Italic,
+%    BoldItalicFont = OpenDyslexic-BoldItalic
+%]{OpenDyslexic-Regular}
+
+% Set default fonts
+%\def\rm{\dyslexic}
+%\def\bf{\dyslexicbd}
+%\def\em{\dyslexicit}
+\rm
+
+% Define various macros
+
+\newcommand{\slide}[1]{\foilhead{\rm\large\bfseries\hskip 0mm\color{titlecolor}#1}}
+%\newcommand{\hlkmed}{\fontsize{24pt}{24pt}\verdana}
+%\newcommand{\hlksmall}{\fontsize{18pt}{18pt}\verdana}
+%\newcommand{\hlktiny}{\fontsize{14pt}{14pt}\verdana}
+%\newcommand{\blueem}{\verdanai\color{hlkblue}}
+
+%\newcommand{\slide}[1]{\foilhead{#1}}
+%\newenvironment{myslide}[1]{\begin{colorslide}{#1}{0}{0}{-1}{blue}%
+%                             \color{yellow}}{\end{colorslide}}
+%
+\newcommand{\hlkbig}{\Large}
+\newcommand{\hlkmed}{\normalsize}
+\newcommand{\hlksmall}{\normalsize}
+\newcommand{\hlktiny}{\small}
+\newcommand{\blueem}{\color{hlkblue}}
+
+\newcommand{\hlkimage}[2]%
+{\begin{center}\hskip -4cm\colorbox{white}{\includegraphics[width=#1]{#2}}\end{center}}
+
+
+%\newcommand{\hlkrightimage}[2]{%
+%\begin{floatingfigure}{#1}%
+%\centering\colorbox{white}{\includegraphics[width=#1]{#2}}%
+%\end{floatingfigure}}
+
+\newcommand{\hlkrightimage}[2]{%
+\begin{wrapfigure}{r}{#1}
+%  \begin{center}
+    \includegraphics[width=#1]{#2}
+%  \end{center}
+\end{wrapfigure}}
+
+\newcommand{\hlkrightpic}[3]{%
+\begin{wrapfigure}{r}{#1}
+\vspace{#2}
+%  \begin{center}
+    \includegraphics[width=#1]{#3}
+%  \end{center}
+\end{wrapfigure}}
+
+
+\newenvironment{slidelist}%
+{\begin{list}{}{\large\setlength{\leftmargin}{0mm}\setlength{\itemsep}{0.3ex}}}
+{\end{list}}
+
+
+% Define list1, list2, list3 environments
+\newenvironment{list1}%
+{\begin{list}{}{\large\setlength{\leftmargin}{0mm}\setlength{\itemsep}{0.3ex}}}
+{\end{list}\large}
+
+\newenvironment{list2}%
+{\begin{list}{\normalsize\textcolor{titlecolor}{$\bullet$}}{\setlength{\leftmargin}{0mm}\setlength{\itemsep}{0.5mm}}\normalsize}
+{\end{list}\normalsize}
+
+\newenvironment{list22}%
+{\begin{list}{\small\textcolor{titlecolor}{$\bullet$}}{\setlength{\leftmargin}{0mm}\setlength{\itemsep}{0.5mm}}\small}
+{\end{list}\normalsize}
+
+
+
+\newenvironment{list3}%
+{\begin{list}{\small\textcolor{red}{$\triangleright$}}{\setlength{\leftmargin}{0.75in}\setlength{\itemsep}{0.5ex}\setlength{\topsep}{0.75ex}\setlength{\parskip}{0.5ex}}\hlksmall\verdanai\color{hlkblue}}
+{\end{list}\normalsize\color{black}}
+
+% Turn of bullets on top-level list items (only used with itemize)
+\renewcommand\labelitemi{}
+
+
+
+\newcommand{\hlkprofil}{\slide{Kontaktinformation}
+\hlkimage{8cm}{images/henrik_kramshoej.jpg}
+
+\begin{list2}
+\item Henrik Kramselund , internet samurai, primært netværk og sikkerhed
+%\item Selvstændig netværk og it-sikkerhedskonsulent
+\item Netværk og it-sikkerhedskonsulent Zencurity, underviser på KEA og aktivist
+\item Cand.scient. fra Datalogisk Institut ved Københavns Universitet, DIKU
+\item Email: hkj@zencurity.dk \hskip 1cm Mobil: +45 2026 6000
+\end{list2}
+
+\centerline{I er velkomne til at sende email}
+}
+
+
+\newcommand{\hlkprofiluk}{\slide{Contact information}
+\hlkimage{8cm}{images/henrik_kramshoej.jpg}
+
+\begin{list2}
+\item Henrik Kramselund , internet samurai mostly networks and infosec
+\item Network and security consultant Zencurity, teach at KEA and activist
+\item Master from the Computer Science Department at the University of Copenhagen, DIKU
+\item Email: xhek@kea.dk \hskip 1cm Mobile: +45 2026 6000
+\end{list2}
+
+\centerline{You are welcome to drop me an email}
+}
+
+\newcommand{\hlkprofilkea}{\slide{Contact information}
+\hlkimage{8cm}{images/henrik_kramshoej.jpg}
+
+\begin{list2}
+\item Henrik Kramselund , internet samurai mostly networks and infosec
+\item Network and security consultant Zencurity, teach at KEA and activist
+\item Master from the Computer Science Department at the University of Copenhagen, DIKU
+\item Email: hkj@zencurity.dk xhek@kea.dk \hskip 1cm Mobile: +45 2026 6000
+\end{list2}
+
+\centerline{You are welcome to drop me an email}
+}
+
+
+\normalem

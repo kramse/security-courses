@@ -15,7 +15,6 @@
 
 \mytitle{Computer Systems Security}{exercises}
 
-\pagenumbering{roman}
 \setcounter{tocdepth}{0}
 
 \normal
@@ -41,7 +40,6 @@ Look for \jobname in the repo security-courses.
 These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
 
 \link{https://github.com/kramse/kramse-labs}
-
 
 
 \section*{\color{titlecolor}Prerequisites}
@@ -612,17 +610,20 @@ Running Armitage as a gui on top of Metasploit is the easiest way to do this.
 \end{enumerate}
 
 {\bf Hints:}\\
-Running Metasploit against Metasploitable - which is a vulnerable system - should result in multiple vulnerabilities exploited.
+Running Metasploit against a soft target -- which is a vulnerable system - should result in vulnerabilities exploited.
 
 Each of these may have different characteristics.
 
 We are aiming at:
 \begin{itemize}
-\item Vulnerable application - root access
 \item Vulnerable application - non-root access, would need privilege escalation
+\item Vulnerable application - root access
 \item Bad password allowing \emph{Brute Force} access, msfadmin/msfadmin - see also \emph{Valid Accounts}
 \end{itemize}
 
+Instructor will point to specific exploits that should work in the environment we have on the day.
+
+NOTE: The Hail Mary feature of Armitage is NOT working anymore, but I still think running Metasploit through Armitage has some value.
 
 {\bf Solution:}\\
 When you have exploited and mapped at least one vulnerability you are done, but should spend more time.
@@ -1547,18 +1548,14 @@ Source: \url{https://en.wikipedia.org/wiki/IEEE_754}
 \chapter{Real Vulnerabilities up to 30min}
 \label{ex:real-vulns-exim}
 
-
-
 {\bf Objective:}\\
 Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
 
 {\bf Purpose:}\\
 See that the error types described in the books - are still causing problems.
 
-
-
 {\bf Suggested method:}\\
-We will use the 2019 Exim errors as examples. Download the descriptions from:
+We will use the 2019 Exim errors as starting examples. Download the descriptions from:
 \begin{list2}
 \item Exim RCE CVE-2019-10149 June\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
 
@@ -1566,7 +1563,16 @@ We will use the 2019 Exim errors as examples. Download the descriptions from:
 \url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
 \end{list2}
 
-When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that?
+When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that? Each year has huge new vulnerabilities, like the 2020 and 2021 shown above.
+
+\begin{list2}
+\item CVE-2020 Netlogon Elevation of Privilege \\
+\link{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2020-1472}
+\item Log4J RCE (CVE-2021-44228) - and follow up like CVE-2021-45046, also look at scanners like:\\
+\link{https://github.com/fullhunt/log4j-scan}
+\end{list2}
+
+What is CVSS -- Common Vulnerability Scoring System?
 
 I depend on the OpenBSD operating system, and it has flaws too:\\
 \url{https://www.openbsd.org/errata65.html}
@@ -1582,9 +1588,7 @@ When you have identified the specific error type, is it buffer overflows? Then y
 
 {\bf Discussion:}\\
 How do you feel about running internet services. Lets discuss how we can handle running insecure code.
-
 What other methods can we use to restrict problems caused by similar vulnerabilities.
-
 A new product will often use a generic small computer and framework with security problems.
 
 
@@ -1920,7 +1924,7 @@ Then it should be easy to run Ansible playbooks, like this: (again as root, most
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 cd kramse-labs/suricatazeek
-ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml 4-configuration.yml
 \end{minted}
 
 Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
@@ -2306,52 +2310,6 @@ When your Debian server can reach the course network 10.0.45.0/24 you are done.
 
 {\bf Discussion:}\\
 VLAN separation using the IEEE 802.1q standard is a common method to isolate servers from each other. Commonly used in DMZ networks in server parts, and in Voice over IP networks in LAN setup with clients.
-
-
-\chapter{Centralized Logging}
-\label{ex:central-logging}
-
-
-{\bf Objective:} \\
-See how server syslog is configured on regular Unix/Linux, and send logs to centralized server.
-
-{\bf Purpose:}\\
-The main idea of this exercise is to understand how easy network connected systems can send log data.
-
-
-{\bf Suggested method:}\\
-Log into your local Linux systems or network devices, see how syslog is configured.
-
-{\bf Hints:}\\
-Look in the config file, may be in /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
-
-Sample output from old-skool syslogd
-\begin{alltt}
-\small
-*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
-*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
-kern.debug;user.info;syslog.info                        /var/log/messages
-auth.info                                               /var/log/authlog
-authpriv.debug                                          /var/log/secure
-...
-# Uncomment to log to a central host named "loghost".
-#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
-#kern.debug,user.info,syslog.info                               @loghost
-#auth.info,authpriv.debug,daemon.info                           @loghost
-\end{alltt}
-
-Advanced users will configure the logging also.
-
-Either add the host given by the instructor \verb+10.0.45.200+ in the \verb+/etc/hosts+ with the name loghost or give it a name and then use that name in the config file.
-
-
-{\bf Solution:}\\
-When you understand how to configure syslog to send towards a central host you are done.
-
-Feel free to re-visit the exercise \nameref{ex:kibana-dashboard}
-
-{\bf Discussion:}\\
-There are syslog senders for Windows too.
 
 
 \chapter{Configure SSH keys for more secure access}

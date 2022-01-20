@@ -1,0 +1,1213 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{1. Overview of Computer Security}
+{ Security in Web Development Elective, KEA}
+
+
+\slide{Goals for today}
+
+\hlkimage{12cm}{software.pdf}
+
+\begin{list1}
+\item Overview of Software security - because software is everywhere
+\end{list1}
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Initial Overview of Software Security
+\item Confidentiality, Integrity and Availability
+\item Human Issues
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Linux introduction and familiarisation
+\item Run programs, servers and applications, how to
+\item Find the level of programming in the group
+\item Quick port scan intro with Nmap
+\item Run Armitage against Metasploitable
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item WAS preface and chapter 1: The History of Software Security
+\end{list1}
+
+Quote, Summary page xxx,
+\begin{quote}
+This is a multifaceted book designed to be beneficial for those with both offensive
+and defensive security interests. It is also written to make it easily accessible for any
+type of developer or administrator with a sufficient web programming background
+(client + server) to understand and use.
+
+Web Application Security walks you through a number of techniques used by talented
+hackers and bug bounty hunters to break into applications, then teaches you the tech‐
+niques and processes you can implement in your own software to protect against
+such hackers.
+
+This book is designed to be read from cover to cover, but can also be used as an on-
+demand reference for particular types of recon techniques, attacks, and defenses
+against attacks.
+\end{quote}
+
+\slide{Paranoia defined}
+
+\hlkimage{11cm}{paranoia-definition.png}
+
+Source: google paranoia definition
+
+\slide{Face reality}
+
+From the definition:
+\begin{quote}
+suspicion and mistrust of people or their actions {\bf without evidence or justification}.
+{\bf the global paranoia about hackers and viruses}
+\end{quote}
+
+\begin{list1}
+\item It is not paranoia when:
+\begin{list2}
+\item Criminals sell your credit card information and identity theft
+\item Trade infected computers like a commodity
+\item Governments write laws that allows them to introduce back-doors - and use these
+\item Governments do blanket surveillance of their population, implement censorship, threaten citizens and journalist
+\end{list2}
+\end{list1}
+
+\vskip 1cm
+\centerline{You are not paranoid when there are people actively attacking you!}
+
+I recommend we have appropriate paranoia (DK: passende paranoia)
+
+\slide{Overlapping Security Incidents}
+
+\hlkrightpic{12cm}{1cm}{datalaek-2019.png}
+
+New data breaches nearly every week, these from danish news site \link{version2.dk}
+
+Problem, we need to receive data from others
+
+Data from others may contain malware
+
+Have a job posting, yes\\
+- then HR will be expecting CVs sent as .doc files
+
+
+\slide{Good security}
+
+\hlkimage{15cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\end{list1}
+
+
+
+\slide{Recommendations}
+
+\begin{list1}
+\item {\bf Keep updated!}\\ - read web sites, books, articles, mailing lists, Twitter, ...
+\item {\bf Always have a chapter on security evaluation }\\ - any process must have security, like RFC Request for Comments have
+\item {\bf Incident Response}\\ - you WILL have security incidents, be prepared
+\item {\bf Write down security policy}\\ - including software and e-mail policies
+\end{list1}
+
+\slide{Advice}
+
+\begin{list1}
+\item Use technology
+\item Learn the technology - read the freaking manual
+\item Think about the data you have, upload, facebook license?! WTF!
+\item Think about the data you create - nude pictures taken, where will they show up?
+\begin{list2}
+\item Turn off features you don't use
+\item Turn off network connections when not in use
+\item Update software and applications
+\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
+\item Lock devices automatically when not used for 10 minutes
+\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
+\end{list2}
+\end{list1}
+
+But which features to disable? Let the security principles guide you
+
+\slide{Confidentiality, Integrity and Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data kept a secret
+\item Integrity - data is not subjected to unauthorized changes
+\item Availability - data and systems are available when needed
+\end{list1}
+
+
+\slide{Security is a process}
+
+\begin{list1}
+\item Remember:
+\begin{list2}
+\item what is information and security?
+\item Data kept electronically
+\item Data kept in physical form
+\item Dont forget the human element of security
+\end{list2}
+\item Incident Response and Computer Forensics reaction to incidents
+\item Good security is the result of planning and long-term work
+\end{list1}
+\vskip 1cm
+\centerline{\color{titlecolor}\LARGE Security is a process, not a product, Bruce Schneier}
+
+Source for quote: \link{https://www.schneier.com/essays/archives/2000/04/the_process_of_secur.html}
+
+
+\slide{Work together}
+
+\hlkimage{9cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+\slide{Goals of Security}
+
+\begin{list1}
+\item Prevention - means that an attack will fail
+\item Detection - determine if attack is underway, or has occured - report it
+\item Recovery - stop attack, assess damage, repair damage
+\end{list1}
+
+\slide{Policy and Mechanism}
+
+\begin{quote}
+{\bf Definition 1-1.} A \emph{security policy} is a statement of what is, and what is not, allowed.
+
+{\bf Definition 1-2.} A \emph{security mechanism} is a method, tool or procedure for enforcing a security policy.
+\end{quote}
+
+Quote from Matt Bishop, Computer Security section 1.3
+
+
+\slide{Your data has already have been owned by criminals}
+
+\hlkimage{13cm}{pwned.png}
+
+\begin{list1}
+\item Your data is already being sold, and resold on the Internet
+\item Stop reusing passwords, use a password safe to generate and remember
+\item Check you own email addresses on \link{https://haveibeenpwned.com/}
+\end{list1}
+
+\centerline{Go ahead try the web site - hold up your hand if you are in those dumps}
+
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+
+\slide{Human Issues and Organizational Problems}
+
+\begin{list1}
+\item Returning to resources, it takes a lot of resources and people to secure systems:
+\begin{list2}
+\item Time
+\item Money
+\item Skilled resources for designing, implementing, administer, monitor
+\item Computing resources
+\end{list2}
+\item Often threats are focussed on outsiders, but insider threat can be common
+\item Dont try to fix people problems with tech
+\end{list1}
+
+\slide{Cuckoo's Egg 1986 A real spy story}
+
+\hlkimage{4cm}{The_Cuckoos_Egg.jpg}
+\begin{list1}
+\item
+\emph{Cuckoo's Egg: Tracking a Spy Through the Maze of Computer
+ Espionage},\\  Clifford Stoll
+\item \emph{During his time at working for KGB, Hess is estimated to have broken into 400 U.S. military computers}\\
+Source: \link{https://en.wikipedia.org/wiki/Markus_Hess}
+\end{list1}
+
+
+
+
+\slide{Morris Internet Worm - 30 years ago}
+
+\begin{list1}
+\item Used multiple vulnerabilities:
+\begin{list2}
+\item Sendmail Debug functionality, we have similar things and Google Hacking
+\item Buffer overflow in fingerd, we still have those
+\item Weak passwords/password cracking, list of 432 words and /usr/dict/words, same problem today
+\item Trust between systems rsh, rexec, think Domain Admin today
+\item Found new systems using /etc/hosts.equiv, .rhosts, .forward, netstat ...
+\end{list2}
+\item Also known as the Morris Internet Worm
+\item \emph{The Internet Worm Program: An Analysis}\\
+Purdue Technical Report CSD-TR-823, Eugene H. Spafford
+\item Resulted in creation of the CERT, \link{http://www.cert.org}
+\end{list1}
+
+\slide{Internet Worms history repeats itself}
+
+\begin{list1}
+\item Camouflage, tried to hide, malware today hides as well
+\begin{list2}
+\item Program name set to 'sh', looks like a regular shell
+\item Used fork() to change process ID (PID)
+\item Worms in the 2000s spread quickly, like Code Red 2001 to approx 350.000 systems in a week
+\item SQL Slammer "It spread rapidly, infecting most of its 75,000 victims within ten minutes."
+\end{list2}
+\vskip 1cm
+\item New malware today can use the same strategies
+\item Except a lot of malware tries to stay hidden, less noisy
+\item Using a small password list of 50 words it is possible to create your own botnet with 100.000s
+\end{list1}
+
+
+
+
+
+\slide{Initial Overview of Software Security}
+
+\begin{list2}
+\item Security Testing Versus Traditional Software Testing
+\item Functional testing does not prevent security issues!
+\item SQL Injection example, injecting commands into database
+\item Attackers try to break the application, server, operating system, etc.
+\item Use methods like user input, memory corruption / buffer overflow, poor exception handling, broken authentication, ...
+\end{list2}
+
+\vskip 2cm
+\centerline{\LARGE Where to start?}
+
+\slide{OWASP top ten}
+
+\hlkimage{16cm}{owasp.jpg}
+
+\begin{quote}
+The OWASP Top Ten provides a minimum standard for web application
+security. The OWASP Top Ten represents a broad consensus about what
+the most critical web application security flaws are.
+\end{quote}
+
+\begin{list1}
+\item The Open Web Application Security Project (OWASP)
+\item OWASP produces lists of the most common types of errors in web applications
+\item \link{http://www.owasp.org}
+\item Create Secure Software Development Lifecycle
+\end{list1}
+
+
+
+\slide{Vulnerabilities - CVE}
+
+\begin{list1}
+\item Common Vulnerabilities and Exposures (CVE):
+  \begin{list2}
+  \item classification
+  \item identification
+  \end{list2}
+\item When discovered each vuln gets a CVE ID
+\item CVE maintained by MITRE - not-for-profit
+org for research and development in the USA.
+\item National Vulnerability Database search for CVE.
+\item Sources: \link{http://cve.mitre.org/} og \link{http://nvd.nist.gov}
+\item also checkout OWASP Top-10 \link{http://www.owasp.org/}
+\end{list1}
+
+\slide{Sample vulnerabilities}
+
+\begin{list2}
+\item \small CVE-2000-0884\\
+IIS 4.0 and 5.0 allows remote attackers to read documents outside of
+the web root, and possibly execute arbitrary commands, via malformed
+URLs that contain UNICODE encoded characters, aka the "Web Server
+Folder Traversal" vulnerability.
+
+\item \small CVE-2002-1182\\
+IIS 5.0 and 5.1 allows remote attackers to cause a denial of service
+(crash) via malformed WebDAV requests that cause a large amount of
+memory to be assigned.
+
+\item Exim RCE CVE-2019-10149 June\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\item Exim RCE CVE-2019-15846 September\\
+\url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
+
+\item CVE-2020 Netlogon Elevation of Privilege \\
+\link{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2020-1472}
+\item Log4J RCE (CVE-2021-44228) - and follow up like CVE-2021-45046, also look at scanners like:\\
+\link{https://github.com/fullhunt/log4j-scan}
+
+\end{list2}
+Source:\\
+\link{http://cve.mitre.org/ - CVE}
+
+
+\slide{CWE Common Weakness Enumeration}
+
+\hlkimage{18cm}{cwe-mitre-org.png}
+\link{http://cwe.mitre.org/}
+
+\slide{CWE/SANS Monster mitigations}
+
+\hlkimage{13cm}{cwe-monster-mitigations.png}
+
+Source:
+\link{http://cwe.mitre.org/top25/index.html}
+
+
+\slide{Hacker tools}
+
+\begin{list1}
+\item \emph{Improving the Security of Your Site by Breaking Into it}\\ by
+Dan Farmer and Wietse Venema in 1993
+\item Later in 1995 release the software SATAN\\
+\emph{Security Administrator Tool for Analyzing Networks}
+\item Caused some commotion, panic and discussions, every script kiddie can hack, the internet will melt down!
+\vskip 5mm
+\begin{quote}
+We realize that SATAN is a two-edged sword -- like
+many tools, it can be used for good and for evil
+purposes. We also realize that intruders (including
+wannabees) have much more capable (read intrusive)
+tools than offered with SATAN.
+\end{quote}
+\end{list1}
+
+\vskip 1cmlabel
+Source:
+\link{http://www.fish2.com/security/admin-guide-to-cracking.html}
+
+
+\slide{Use hacker tools!}
+
+\begin{list1}
+\item Port scan can reveal holes in your defense
+\item Web testing tools can crawl through your site and find problems
+\item Pentesting is a verification and proactively finding problems
+\item Its not a silverbullet and mostly find known problems in existing systems
+\item Combined with honeypots they may allow better security
+\end{list1}
+
+
+
+
+\slide{Local vs. remote exploits}
+
+\begin{list1}
+\item {\bfseries Local vs. remote}
+angiver om et exploit er rettet mod
+en sårbarhed lokalt på maskinen, eksempelvis
+opnå højere privilegier, eller beregnet
+til at udnytter sårbarheder over netværk
+\item {\bfseries Remote root exploit}
+- den type man frygter mest, idet
+det er et exploit program der når det afvikles giver
+angriberen fuld kontrol, root user er administrator
+på Unix, over netværket.
+\item {\bfseries Zero-day exploits} dem som ikke offentliggøres -- dem
+  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
+  til dem før de offentliggøres og ofte er der umiddelbart ingen
+  rettelser til de sårbarheder
+\end{list1}
+
+\slide{Computer worms}
+
+\begin{list1}
+\item {\bf Definition 23-14} A \emph{computer worm} is a program that copies itself from one computer to another.\\
+Definition from Computer Security: Art and Science, Matt Bishop ISBN: 9780321712332
+\item Computer worms has existed since research began mid-1970s
+\item Morris Worm from November 2, 1988 was a famous example
+\vskip 2cm
+\item Virus, trojan or worm?\\
+Unless you work specifically in the computer virus industry, call it all malware
+
+\end{list1}
+
+
+\slide{The Internet Worm 2. nov 1988}
+
+\begin{list1}
+\item Exploited the following vulnerabilities
+\begin{list2}
+\item buffer overflow in fingerd - VAX code
+\item Sendmail - DEBUG functionality
+\item Trust between systems: rsh, rexec, ...
+\item Bad passwords
+\end{list2}
+\item Contained camouflage!
+\begin{list2}
+\item Program name set to 'sh'
+\item Used fork() to switch PID regularly
+\item Password cracking using intern list of 432 words and /usr/dict/words
+\item Found systems to infect in /etc/hosts.equiv, .rhosts, .forward, netstat ...
+\end{list2}
+\item Made byRobert T. Morris, Jr.
+\end{list1}
+
+
+\slide{Stuxnet}
+
+\begin{list1}
+\item Worm in 2010 intended to infect Iran nuclear program
+\item Target was the uranium enrichment process
+\item Infected other industrial sites
+\item SCADA, and Industrial Control Systems (ICS) are becoming very important for whole countries
+\item A small \emph{community} of consultants work in these \emph{isolated} networks, but can be used as infection vector - they visit multiple sites
+\item More can be found in \url{https://en.wikipedia.org/wiki/Stuxnet}
+\end{list1}
+
+
+
+
+\slide{Bots and botnets}
+
+\begin{list1}
+\item {\bf Definition 23-15} A \emph{bot} is malware that carries out some action in coordination with other bots. The attacker, called a \emph{botmaster}, controls the bots from one or more systems called \emph{command and control (C\&C) servers} or \emph{motherships}. They communicate over paths called \emph{C\&C channels}. A collection of bots is a \emph{botnet}.\\
+Definition from Computer Security: Art and Science, Matt Bishop ISBN: 9780321712332
+\item Internet Relay Chat has been popular for control channel to botnets
+\item Botnets are popular for spamming campaigns or Distributed Denial of Service (DDoS) attacks
+\item The site \link{https://malware.lu/} has interesting reads about botnets, and taking over the botnet infrastructures
+\end{list1}
+
+
+
+
+
+
+\slide{Introduction to Methods}
+
+\begin{list2}
+\item Following slides list some of the methods for eliminating security issues
+\item Sometimes when eliminating is not possible the runtime environment can be improved
+\item Other times the strategy involves the systems used for development - like alleviating the version control systems to enforce policies and restrict developers from doing bad things
+\end{list2}
+
+\slide{Low hanging fruits - easy }
+
+%billede af nogle frugter
+\hlkimage{10cm}{38-line-drawing-of-a-pare-fruit.png}
+
+\centerline{Higher quality software is often more secure}
+
+\slide{Coding standards - style}
+
+\begin{quote}
+This file specifies the preferred style for kernel source files in the
+OpenBSD source tree.  It is also a guide for preferred user land code
+style.  These guidelines should be followed for all new code.  In general,
+code can be considered ``new code'' when it makes up about 50% or
+more of the file(s) involved. ...\\
+Use queue(3) macros rather than rolling your own lists, whenever possible.
+Thus, the previous example would be better written:
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+    #include <sys/queue.h>
+    struct  foo {
+    LIST_ENTRY(foo) link;  /* Queue macro glue for foo lists */
+               struct  mumble amumble; /* Comment for mumble */
+               int     bar;
+    };
+    LIST_HEAD(, foo) foohead;     /* Head of global foo list */
+\end{minted}
+
+
+OpenBSD style(9)
+
+\slide{Coding standards functions}
+
+\begin{quote}
+The following copies as many characters from input to buf as will fit and
+NUL terminates the result.  Because strncpy() does not guarantee to NUL
+terminate the string itself, it must be done by hand.
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+        char buf[BUFSIZ];
+
+        (void)strncpy(buf, input, sizeof(buf) - 1);
+        buf[sizeof(buf) - 1] = '\0';
+\end{minted}
+
+\begin{quote}
+Note that \verb+strlcpy(3)+ is a better choice for this kind of operation.  The
+equivalent using \verb+strlcpy(3)+ is simply:
+\end{quote}
+\begin{minted}[fontsize=\small]{c}
+        (void)strlcpy(buf, input, sizeof(buf));
+\end{minted}
+
+OpenBSD strcpy(9)
+
+\slide{Compiler warnings - gcc -Wall}
+
+\begin{minted}[fontsize=\small]{bash}
+# gcc -o demo demo.c
+demo.c: In function main:
+demo.c:4: warning: incompatible implicit declaration of built-in
+function strcpy
+\end{minted}
+
+\begin{minted}[fontsize=\small]{bash}
+# gcc -Wall -o demo demo.c
+demo.c:2: warning: return type defaults to int
+demo.c: In function main:
+demo.c:4: warning: implicit declaration of function strcpy
+demo.c:4: warning: incompatible implicit declaration of built-in
+function strcpy
+demo.c:5: warning: control reaches end of non-void function
+\end{minted}
+
+\vskip 15mm
+\centerline{\bf\LARGE\color{security6blue}Easy to do!}
+
+\slide{No warnings = no errors?}
+
+\begin{minted}[fontsize=\small]{c}
+# cat demo2.c
+#include <strings.h>
+int main(int argc, char **argv)
+{
+    char buf[200];
+    strcpy(buf, argv[1]);
+    return 0;
+}
+# gcc -Wall -o demo2 demo2.c
+\end{minted}
+
+\vskip 1cm
+\centerline{\bf\large\color{security6blue}This is an insecure program, but no warnings!}
+
+(cheating, some compilers actually warn today)
+
+\slide{Version control sample hooks scripts}
+
+\begin{list1}
+\item Before checking in code in version control,  pre-commit - check
+\begin{list2}
+\item case-insensitive.py
+\item check-mime-type.pl
+\item commit-access-control.pl
+\item commit-block-joke.py
+\item detect-merge-conflicts.sh
+\item enforcer
+\item log-police.py
+\item pre-commit-check.py
+\item verify-po.py
+\end{list2}
+\item \link{http://subversion.tigris.org/tools_contrib.html}
+\item \link{http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/}
+\end{list1}
+
+This references Subversion, which is not used much anymore. Just to show the concept is NOT new. Use hooks!
+
+\slide{Example Enforcer}
+
+\begin{alltt}
+In a Java project I work on, we use log4j extensively.  Use of
+System.out.println() bypasses the control that we get from log4j,
+so we would like to discourage the addition of println calls in
+our code.
+
+We want to deny any commits that add a println into the code.
+The world being full of exceptions, we do need a way to allow
+some uses of println, so we will allow it if the line of code
+that calls println ends in a comment that says it is ok:
+
+   System.out.println("No log4j here"); // (authorized)
+\end{alltt}
+
+{\small \link{http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/enforcer/enforcer}}
+
+
+
+\slide{Example verify-po.py}
+
+\begin{minted}[fontsize=\small]{python}
+#!/usr/bin/env python
+"""This is a pre-commit hook that checks whether the contents
+of PO files committed to the repository are encoded in UTF-8.
+"""
+\end{minted}
+
+{\small \link{http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/verify-po.py}}
+
+\slide{Design for security - more work}
+
+\hlkimage{14cm}{johnny_automatic_blueprints.png}
+\centerline{Security is cheapest and most effective when done during design phase.}
+
+
+\slide{Secure Coding starts with the design}
+
+%\hlkimage{5cm}{secure_coding.png}
+
+\vskip 2cm
+\hlkrightimage{4cm}{secure_coding.png}
+{\emph{Secure Coding: Principles and Practices} af Mark G. Graff, Kenneth R. Van Wyk 2003}
+
+
+
+\begin{list1}
+\item Architecture/design -- while you are thinking about the application
+\item Implementation -- while you are writing the application
+\item Operations -- After the application is in production
+\item Ca. 200 pages, very dense.
+\end{list1}
+
+
+\slide{Sins in Software Security}
+
+\hlkrightimage{4cm}{24-deadly.jpg}
+{\emph{24 Deadly Sins of Software Security} af Michael Howard, David Leblanc, John Viega 2010}
+
+\begin{list1}
+\item Should be mandatory reading for all developers
+\item Authors have written other great books
+\item This book is very precise and gives a good overview
+\end{list1}
+
+\slide{Deadly Sins 1/2}
+
+\begin{list1}
+\item Part I Web Application Sins 1-4
+\begin{quote}
+1) SQL Injection
+2) Web Server-Related Vulnerabilities
+3) Web Client-Related Vulnerabilities (XSS)
+4) Use of Magic URLs, Predictable Cookies, and Hidden Form Fields
+\end{quote}
+\item Part II Implementation Sins 5-18
+\begin{quote}
+5) Buffer Overruns, 6) Format String, 7) Integer Overflows,
+8) C++ Catastrophes, 9) Catching Exceptions, 10) Command Injection
+11) Failure to Handle Errors Correctly 12) Information Leakage
+13) Race Conditions 14) Poor Usability
+15) Not Updating Easily
+16) Executing Code with Too Much Privilege
+17) Failure to Protect Stored Data
+18) The Sins of Mobile Code
+\end{quote}
+\end{list1}
+
+
+
+\slide{Deadly Sins 2/2}
+
+\begin{list1}
+\item Part III Cryptographic Sins 19-21
+\begin{quote}
+19) Use of Weak Password-Based System
+20) Weak Random Numbers
+21) Using Cryptography Incorrectly
+\end{quote}
+\item Part IV Networking Sins 22-24
+\begin{quote}
+22) Failing to Protect Network Traffic,
+23) Improper use of PKI, Especially SSL,
+24) Trusting Network Name Resolution
+\end{quote}
+\end{list1}
+
+\vskip 2cm
+\centerline{\Large Still want to program in C?}
+
+
+\slide{Testing - more work now, less work in the long run}
+
+% noget QA relateret, måske logo fra Hudson?
+%checkmark
+\hlkimage{12cm}{testing.pdf}
+
+
+\slide{Unit testing - low level / functions}
+
+\begin{minted}[fontsize=\small]{java}
+public class TestAdder {
+    public void testSum() {
+        Adder adder = new AdderImpl();
+        assert(adder.add(1, 1) == 2);
+        assert(adder.add(1, 2) == 3);
+        assert(adder.add(2, 2) == 4);
+        assert(adder.add(0, 0) == 0);
+        assert(adder.add(-1, -2) == -3);
+        assert(adder.add(-1, 1) == 0);
+        assert(adder.add(1234, 988) == 2222);
+    }
+}
+\end{minted}
+
+\begin{list1}
+\item Test individual functions
+\item Example from \link{http://en.wikipedia.org/wiki/Unit_testing}
+\item Avoid regressions, old errors reappearing
+\end{list1}
+
+\slide{Analysis}
+
+%\hlkimage{10cm}{Magnifying_Glass.png}
+\hlkimage{12  cm}{buffer-overflow-3.pdf}
+
+\centerline{Use tools for analysing code and applications}
+
+\slide{Types of analysis}
+
+\begin{list1}
+\item  {\Large static analysis}\\
+Run through the programsource  code or binary, without running it
+Can find bad functions like strcpy
+
+\item {\Large dynamic analysis }\\
+Running the program with a test-harness, monitoring system calls, memory operations etc.
+\end{list1}
+
+\slide{Static tools}
+\begin{list1}
+\item Flawfinder \link{http://www.dwheeler.com/flawfinder/}
+\item RATS Rough Auditing Tool for Security, C, C++, Perl, PHP and Python
+\item PMD static ruleset based Java
+\item {\small \link{http://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis}}
+\end{list1}
+
+\slide{A Fool with a Tool is still a Fool}
+
+\begin{list1}
+\item 1. Run tool
+\item 2. Fix problems
+\item 3. Rinse repeat
+\end{list1}
+
+Fixing problems?\\
+\begin{minted}[fontsize=\small]{c}
+   char tmp[256]; /* Flawfinder: ignore */
+   strcpy(tmp, pScreenSize); /* Flawfinder: ignore */
+\end{minted}
+Example from \link{http://www.dwheeler.com/flawfinder/}
+
+
+\slide{Pseudo Random Number Generator}
+
+\hlkimage{21cm}{debian-prng.png}
+
+{\small\link{https://en.wikipedia.org/wiki/Random_number_generator_attack\#Debian_OpenSSL}}
+
+\vskip 1cm
+\centerline{The random number generator is VITAL for crypto security}
+
+
+\slide{Break it}
+
+
+\hlkimage{12cm}{300px-Fozziecurtain.JPG}
+
+\centerline{Use fuzzers, hackertools, improve security by breaking it}
+
+
+\slide{Simple fuzzer}
+
+\begin{alltt}
+$ for i in 10 20 30 40 50
+>> do
+>> ./demo `perl -e "print 'A'x$i"`
+>> done
+AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+\end{alltt}
+
+\centerline{Memory fault/segmentation fault - juicy!}
+
+
+\slide{Enhance and secure runtime environment}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+%\centerline{Picture from: http://karenswhimsy.com/public-domain-images}
+
+\centerline{Sidste chance er på afviklingstidspunktet}
+
+
+
+\slide{Chroot, Jails and }
+
+\begin{list1}
+\item Der findes mange typer \emph{jails} på Unix
+\item Ideer fra Unix chroot som ikke er en egentlig sikkerhedsfeature
+\begin{list2}
+\item Unix chroot - bruges stadig, ofte i daemoner som OpenSSH
+\item FreeBSD Jails
+\item SELinux
+\item Solaris Containers og Zones - \emph{jails på steroider}
+\item VMware virtuelle maskiner, er det et jail?
+\end{list2}
+\item Hertil kommer et antal andre måder at adskille processer - sandkasser
+\item Husk også de simple, database som \verb+_postgresql+, Tomcat som \verb+tomcat+, Postfix postsystem som \verb+_postfix+, SSHD som \verb+sshd+ osv. - simple brugere, få rettigheder
+\end{list1}
+
+\slide{JVM security policies}
+
+\begin{minted}[fontsize=\small]{java}
+// ========== WEB APPLICATION PERMISSIONS =====================================
+// These permissions are granted by default to all web applications
+// In addition, a web application will be given a read FilePermission
+// and JndiPermission for all files and directories in its document root.
+grant {
+    // Required for JNDI lookup of named JDBC DataSource's and
+    // javamail named MimePart DataSource used to send mail
+    permission java.util.PropertyPermission "java.home", "read";
+    permission java.util.PropertyPermission "java.naming.*", "read";
+    permission java.util.PropertyPermission "javax.sql.*", "read";
+...
+};
+// The permission granted to your JDBC driver
+// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
+//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
+// \};
+\end{minted}
+
+\begin{list1}
+\item Example from \verb+apache-tomcat-6.0.18/conf/catalina.policy+
+\end{list1}
+
+
+\slide{Apple sandbox named generic rules}
+
+\begin{minted}[fontsize=\small]{lisp}
+;; named - sandbox profile
+;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
+;;
+;; WARNING: The sandbox rules in this file currently constitute
+;; Apple System Private Interface and are subject to change at any time and
+;; without notice. The contents of this file are also auto-generated and not
+;; user editable; it may be overwritten at any time.
+;;
+(version 1)
+(debug deny)
+
+(import "bsd.sb")
+
+(deny default)
+(allow process*)
+(deny signal)
+(allow sysctl-read)
+(allow network*)
+\end{minted}
+
+
+\slide{Apple sandbox named specific rules }
+
+\begin{minted}[fontsize=\small]{lisp}
+;; Allow named-specific files
+(allow file-write* file-read-data file-read-metadata
+  (regex "^(/private)?/var/run/named\\pid$"
+         "^/Library/Logs/named\\.log$"))
+
+(allow file-read-data file-read-metadata
+  (regex "^(/private)?/etc/rndc\\.key$"
+         "^(/private)?/etc/resolv\\.conf$"
+         "^(/private)?/etc/named\\.conf$"
+         "^(/private)?/var/named/"))
+\end{minted}
+
+\begin{list1}
+\item Example from \verb+/usr/share/sandbox+ på Mac OS X
+\end{list1}
+
+
+\slide{Change management}
+
+\begin{list1}
+\item Er der tilstrækkeligt med fokus på software i produktion
+\item Kan en vilkårlig server nemt reetableres
+\item Foretages rettelser direkte på produktionssystemer
+\item Er der fall-back plan
+\item Burde være god systemadministrator praksis
+\end{list1}
+
+
+\slide{Building Secure Infrastructures}
+
+\begin{list1}
+\item A real-life setup of an infrastructure from scratch can be daunting!
+\item You need:
+\begin{list2}
+\item Policies
+\item Procedures
+\item Incident Response
+\end{list2}
+\item Running systems which require
+\begin{list2}
+\item Configurations
+\item Settings
+\item Supporting infrastructure -- networks
+\item Supporting infrastructure -- logging, dashboarding, monitoring
+\end{list2}
+\item Building something \emph{secure} is {\bf hard work!}
+\end{list1}
+
+
+
+\slide{Existing infrastructures}
+
+\begin{list1}
+\item or even worse you inherited an infrastructure
+\item Multiple networks, with different vendors, rules
+\item Multiple generations of services, applications, technologies
+\item Built over decades
+\item Varying to no documentation
+\item Organizational challenges
+\item Ingrained culture -- frozen in time
+\end{list1}
+
+How do you get started improving security?
+
+\slide{Integrate or develop?}
+
+\begin{list1}
+\item Dont:
+\begin{list2}
+\item Reinvent the wheel - too many times, unless you can maintain it afterwards
+\item Never invent cryptography yourself
+\item No copy paste of functionality, harder to maintain in the future
+\end{list2}
+\item Do:
+\begin{list2}
+\item Integrate with existing solutions
+\item Use existing well-tested code: cryptography, authentication, hashing
+\item Centralize security in your code and organization
+\end{list2}
+\end{list1}
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+\slide{Center for Internet Security CIS Controls 7.1}
+
+\begin{list2}
+%\item The five critical tenets of an effective cyber defense system as reflected in the CIS Controls are:
+\item {\bf Offense informs defense:} Use knowledge of actual attacks that have
+compromised systems to provide the foundation to continually learn
+from these events to build effective, practical defenses. Include only
+those controls that can be shown to stop known real-world attacks.
+\item {\bf Prioritization:} Invest first in Controls that will provide the greatest risk
+reduction and protection against the most dangerous threat actors
+and that can be feasibly implemented in your computing environment.
+The CIS Implementation Groups discussed below are a great place for
+organizations to start identifying relevant Sub-Controls.
+\item {\bf Measurements and Metrics:} Establish common metrics to provide a
+shared language for executives, IT specialists, auditors, and security
+officials to measure the effectiveness of security measures within
+an organization so that required adjustments can be identified and
+implemented quickly.
+\item {\bf Continuous diagnostics and mitigation:} Carry out continuous
+measurement to test and validate the effectiveness of current security
+measures and to help drive the priority of next steps.
+\item {\bf Automation:} Automate defenses so that organizations can achieve
+reliable, scalable, and continuous measurements of their adherence to
+the Controls and related metrics. \hskip 2cm Source: CIS-Controls-Version-7-1.pdf
+\end{list2}
+
+\slide{Inventory and Control of Hardware Assets}
+
+CIS controls 1-6 are Basic, everyone must do them.
+
+
+\begin{quote}
+CIS Control 1:\\
+Inventory and Control of Hardware Assets\\
+Actively manage (inventory, track, and correct) all hardware devices on the network so that only authorized devices are given access, and unauthorized and unm
+anaged devices are found and prevented from gaining access.
+\end{quote}
+
+\begin{list1}
+\item What is connected to our networks?
+\item What firmware do we need to install on hardware?
+\item Where IS the hardware we own?
+\item What hardware is still supported by vendor?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What licenses do we have? Paying too much?
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item What software do our employees need to support?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Controlled Use of Administrative Privileges}
+
+\begin{quote}
+CIS Control 4:\\
+Controlled Use of Administrative Privileges\\
+The processes and tools used to track/control/prevent/correct the use, assignment, and configuration of administrative privileges on computers, networks, and applications.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Secure Configuration for Hardware and Software}
+
+\begin{quote}
+CIS Control 5:\\
+Secure Configuration for Hardware and Software on Mobile Devices, Laptops, Workstations and Servers\\
+Establish, implement, and actively manage (track, report on, correct) the security configuration of mobile devices, laptops, servers, and workstations using a rigorous configuration management and change control process in order to prevent attackers from exploiting vulnerable services and settings.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Maintenance, Monitoring and Analysis of Audit Logs}
+
+\begin{quote}
+CIS Control 6:\\
+Maintenance, Monitoring and Analysis of Audit Logs\\
+Collect, manage, and analyze audit logs of events that could help detect, understand, or recover from an attack.
+\end{quote}
+
+\begin{list1}
+\item ... and present it, use it daily, report it to management!
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Our labs and training environment}
+
+
+\hlkimage{6cm}{hacklab-1.png}
+
+
+\begin{list2}
+\item This course will use Linux
+\item We already created virtual machines
+\item Linux is free, and not as resource hungry
+\item We can have a hacker lab with multiple machines, on a single laptop
+\item Lots of free and open source tools run on Linux, save money!
+\end{list2}
+
+%\slide{Learn difference between compiled program C, and scripted Python}
+
+%\slide{Introduce Python programming}
+
+%\slide{Run programs, servers and applications, how to}
+
+%\slide{Find the level of programming in the group}
+
+\exercise{ex:js-burp}
+
+\exercise{ex:small-python}
+
+\exercise{ex:django-intro}
+
+
+\slidenext
+
+\end{document}

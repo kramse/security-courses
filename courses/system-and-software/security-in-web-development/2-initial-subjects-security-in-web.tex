@@ -1,0 +1,902 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{2. Security Principles, Encryption and Tools}
+{Security in Web Development Elective, KEA}
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Realize that design AND implementation AND configuration can result in vulnerabilities
+\item See the most simple buffer overflow
+\item Get a sense of encryption, know TLS exist
+\end{list2}
+
+  Photo by Thomas Galler on Unsplash
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Design vs Implementation
+\item Common  Secure Design Issues
+\item Poor Use of Cryptography
+\item Basic Cryptography introduction
+\item Symmetric Cryptosystems
+\item Data Encryption Standard (DES) / Advanced Encryption Standard (AES)
+\item Public Key Cryptography
+\item Stream and Block Ciphers
+\item Input Validation
+\end{list2}
+\item Exercises
+\begin{list2}
+\item sslscan scan various sites for TLS settings, Qualys SSLLabs
+\item Buffer Overflow 101
+\end{list2}
+\end{list1}
+
+
+\slide{Reading Summary}
+
+Curriculum:
+\begin{list1}
+\item RFC5246 The Transport Layer Security (TLS) \link{https://tools.ietf.org/html/rfc5246}\\
+Knowing the basics of TLS is curriculum, but you are not expected to read the full RFC, nor explain every detail about TLS!
+\end{list1}
+
+Related resources:
+\begin{list1}
+\item \emph{A Graduate Course in Applied Cryptography} By Dan Boneh and Victor Shoup \emph{https://toc.cryptobook.us/} -- download latest PDF
+\end{list1}
+
+
+\slide{Goals: Data Security}
+
+\hlkimage{18cm}{anderson-nine-principles-of-data-security.png}
+
+
+Source:
+\emph{Clinical system security: Interim guidelines}, Ross Anderson, 1996
+
+
+\slide{Design vs Implementation}
+
+Software vulnerabilities can be divided into two major categories:
+\begin{list2}
+\item Design vulnerabilities
+\item Implementation vulnerabilities
+\end{list2}
+
+Even with a well-thought-out security design a program can contain implementation flaws.
+
+\slide{Common Secure Design Issues}
+
+\begin{list2}
+\item Design must specify the security model's structure\\
+Not having this written down is a common problem
+\item Common problem AAA Authentication, Authorization, Accounting (book uses audited)
+\item Weak or Missing Session Management
+\item Weak or Missing Authentication
+\item Weak or Missing Authorization
+\end{list2}
+
+
+\slide{Input Validation}
+
+Missing or flawed input validation is the number one cause of many of the most severe vulnerabilities:
+\begin{list2}
+\item Buffer overflows - writing into control structures of programs, taking over instructions and program flow
+\item SQL injection - executing commands and queries in database systems
+\item Cross-site scripting - web based attack type
+\item Recommend centralizing validation routines
+\item Perform validation in secure context, controller on server
+\item Secure component boundaries
+\end{list2}
+
+\slide{Weak Structural Security}
+
+Our book describes more design flaws:
+\begin{list2}
+\item Large Attack surface
+\item Running a Process at Too High a Privilege Level, dont run everything as root or administrator
+\item No Defense in Depth, use more controls, make a strong chain
+\item Not Failing Securely
+\item Mixing Code and Data
+\item Misplaced trust in External Systems
+\item Insecure Defaults
+\item Missing Audit Logs
+\end{list2}
+
+\slide{Secure Programming for Linux and Unix Howto}
+
+\begin{list1}
+\item More information about systems design and implementation can be found in the free resource:
+\item Secure Programming for Linux and Unix HOWTO, David Wheeler
+\item \link{https://dwheeler.com/secure-programs/Secure-Programs-HOWTO.pdf}
+\item Chapter 5. Validate All Input details input validation in the context of Unix programs
+\item Chapter 6. Restrict Operations to Buffer Bounds (Avoid Buffer Overflow)
+\item Chapter 7. Design Your Program for Security
+\end{list1}
+
+
+\slide{Principle of Least Privilege}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
+
+\slide{Principle of Economy of Mechanism}
+
+\begin{list1}
+\item {\bf Definition 14-4} The \emph{principle of economy of mechanism} states that security mechanisms should be as simple as possible.
+\item Simple $->$ fewer complications $->$ fewer security errors
+\item Use WPA passphrase instead of MAC address based authentication
+\item
+\end{list1}
+
+
+\slide{Principle of Complete Mediation}
+
+\begin{list1}
+\item {\bf Definition 14-5} The \emph{principle of complete mediation} requires that all accesses to objects be checked to ensure that they are allowed.
+\item Always perform check
+\item Time of check, time of use
+\item Example Unix file descriptors - access check first, then can be reused in the future
+\item Caching can be bad.
+\end{list1}
+
+
+\slide{Principle of Open Design}
+
+\hlkimage{8cm}{debath-stego.png}
+
+Source: picture from \link{https://www.cs.cmu.edu/~dst/DeCSS/Gallery/Stego/index.html}
+\begin{list1}
+\item {\bf Definition 14-6} The \emph{principle of open design} states that the security of a mechanism should not depend on the secrecy of its design or implementation.
+\item Content Scrambling System (CSS) used on DVD movies
+\item Mobile data encryption  A5/1 key - see next page
+\end{list1}
+
+\slide{Mobile data encryption  A5/1 key}
+
+\begin{quote}
+  Real Time Cryptanalysis of A5/1 on a PC
+Alex Biryukov * Adi Shamir ** David Wagner ***
+
+  Abstract. A5/1 is the strong version of the encryption algorithm used by about 130 million GSM customers in Europe to protect the over-the-air privacy of their cellular voice and data communication. The best published attacks against it require between 240 and 245 steps. ...
+  In this paper we describe new attacks on A5/1, which are based on subtle flaws in the tap structure of the registers, their noninvertible clocking mechanism, and their frequent resets. After a 248 parallelizable data preparation stage (which has to be carried out only once), the actual attacks can be {\bf carried out in real time on a single PC.}
+
+  The first attack requires the output of the A5/1 algorithm during the first two minutes of the conversation, and computes the key in about one second. The second attack requires the output of the A5/1 algorithm during about two seconds of the conversation, and computes the key in several minutes.
+  ...
+  The approximate design of A5/1 was leaked in 1994, and the exact design of both A5/1 and A5/2 was reverse engineered by Briceno from an actual GSM telephone in 1999 (see [3]).
+\end{quote}
+Source: \link{http://cryptome.org/a51-bsw.htm}
+
+
+\slide{Principle of Separation of Privilege}
+
+\hlkimage{4cm}{security-layers-1-uk.pdf}
+\begin{list1}
+\item {\bf Definition 14-7} The \emph{principle of separation of privilege} states that a system should not grant permission based on a single condition.
+\item Company checks, CEO fraud
+\item Programs like \emph{su} and \emph{sudo} often requires specific group membership and password
+\end{list1}
+
+
+\slide{Principle of Least Common Mechanism}
+
+\begin{list1}
+\item {\bf Definition 14-8} The \emph{principle of least common mechanism} states that mechanisms used to access resources should not be shared.
+\item Minimize number of shared mechanisms and resources
+\item Also mentions stack protection, randomization
+\end{list1}
+
+
+
+\slide{Principle of Least Astonishment}
+
+\begin{list1}
+\item {\bf Definition 14-9} The \emph{principle of least astonishment} states that security mechanisms should be designed so that users understand the reason that the mechanism works they way it does and that using the mechanism is simple.
+\item Security model must be easy to understand and targetted towards users and system administrators
+\item Confusion may undermine the security mechanisms
+\item Make it easy and as intuitive as possible to use
+\item Make output clear, direct and useful\\
+Exception user supplies wrong password, tell login failed but not if user or password was wrong
+\item Make documentation correct, but the program best
+\item Psychological acceptability - should not make resource more difficult to access
+\end{list1}
+
+
+\slide{Teknisk hvad er hacking}
+
+\hlkimage{12cm}{buffer-overflow-3.pdf}
+
+
+
+\slide{Trinity breaking in}
+
+\hlkimage{14cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+Meget realistisk - sådan foregår det næsten:\\
+\link{https://nmap.org/movies/}\\
+\link{https://youtu.be/51lGCTgqE_w}
+
+
+
+\slide{Hacking er magi}
+
+\hlkimage{5cm}{wizard_in_blue_hat.png}
+
+\vskip 1 cm
+
+\centerline{Hacking ligner indimellem  magi}
+
+
+\slide{Hacking er ikke magi}
+
+\hlkimage{15cm}{ninjas.png}
+
+\vskip 1 cm
+\centerline{Hacking kræver blot lidt ninja-træning}
+
+
+
+\slide{Buffer overflows et C problem}
+
+\begin{list1}
+\item {\bfseries Et buffer overflow}
+er det der sker når man skriver flere data end der er afsat plads til
+i en buffer, et dataområde. Typisk vil programmet gå ned, men i visse
+tilfælde kan en angriber overskrive returadresser for funktionskald og
+overtage kontrollen.
+\item {\bfseries Stack protection}
+er et udtryk for de systemer der ved hjælp af operativsystemer,
+programbiblioteker og lign. beskytter stakken med returadresser og
+andre variable mod overskrivning gennem buffer overflows. StackGuard
+og Propolice er nogle af de mest kendte.
+\end{list1}
+
+\slide{Buffers and stacks, simplified}
+
+\hlkimage{18cm}{buffer-overflow-1.pdf}
+
+\begin{minted}[fontsize=\small]{c}
+main(int argc, char **argv)
+{      char buf[200];
+        strcpy(buf, argv[1]);
+        printf("%s\n",buf);
+}
+\end{minted}
+
+\slide{Overflow -- segmentation fault}
+
+\hlkimage{18cm}{buffer-overflow-2.pdf}
+
+
+\begin{list2}
+\item Bad function overwrites return value!
+\item Control return address
+\item Run shellcode from buffer, or from other place
+\end{list2}
+
+
+\slide{Exploits -- udnyttelse af sårbarheder}
+
+\begin{list2}
+\item Exploit/exploitprogram er udnytter en sårbarhed rettet mod et specifikt system.
+\item Kan være 5 linier eller flere sider ofte Perl, Python eller et C program
+\end{list2}
+
+Eksempel demo i Perl, uddrag:
+\begin{minted}[fontsize=\footnotesize]{perl}
+$buffer = "";
+$null = "\x00";
+$nop = "\x90";
+$nopsize = 1;
+$len = 201; // what is needed to overflow, maybe 201, maybe more!
+$the_shell_pointer = 0x01101d48; // address where shellcode is
+# Fill buffer
+for ($i = 1; $i < $len;$i += $nopsize) {
+    $buffer .= $nop;
+}
+$address = pack('l', $the_shell_pointer);
+$buffer .= $address;
+exec "$program", "$buffer";
+\end{minted}
+
+
+\slide{Hvordan finder man buffer overflow, og andre fejl}
+
+\begin{list1}
+\item Black box testing
+\item Closed source reverse engineering
+\item White box testing
+\item Open source betyder man kan læse og analysere koden
+\item Source code review -- automatisk ellelinkr manuelt
+\item Fejl kan findes ved at prøve sig frem -- fuzzing
+\item Exploits virker typisk mod specifikke versioner af software
+\end{list1}
+
+
+\slide{Privilegier privilege escalation}
+\begin{list1}
+\item {\bfseries Privilege escalation} er når man på en eller anden vis
+opnår højere privileger på et system, eksempelvis som
+følge af fejl i programmer der afvikles med højere
+privilegier. Derfor HTTPD servere på Unix afvikles som
+nobody -- ingen specielle rettigheder.
+\item En angriber der kan afvikle vilkårlige kommandoer kan ofte finde
+  en sårbarhed som kan udnyttes lokalt -- få rettigheder = lille skade
+\end{list1}
+
+Eksempel: man finder exploit som giver kommandolinieadgang til et system
+som almindelig bruger
+
+Ved at bruge en local exploit, Linuxkernen kan man måske forårsage fejl
+og opnå root, GNU Screen med SUID bit eksempelvis
+
+
+\slide{Local vs. remote exploits}
+
+\begin{list1}
+\item {\bfseries Local vs. remote}
+angiver om et exploit er rettet mod
+en sårbarhed lokalt på maskinen, eksempelvis
+opnå højere privilegier, eller beregnet
+til at udnytter sårbarheder over netværk
+\item {\bfseries Remote root exploit}
+- den type man frygter mest, idet
+det er et exploit program der når det afvikles giver
+angriberen fuld kontrol, root user er administrator
+på Unix, over netværket.
+\item {\bfseries Zero-day exploits} dem som ikke offentliggøres -- dem
+  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
+  til dem før de offentliggøres og ofte er der umiddelbart ingen
+  rettelser til de sårbarheder
+\end{list1}
+
+
+
+\slide{Zero day 0-day vulnerabilities}
+
+\begin{quote}
+
+  Project Zero's team mission is to "make zero-day hard", i.e. to make it more costly to discover and exploit security vulnerabilities. We primarily achieve this by performing our own security research, but at times we also study external instances of zero-day exploits that were discovered "in the wild". These cases provide an interesting glimpse into real-world attacker behavior and capabilities, in a way that nicely augments the insights we gain from our own research.
+
+  Today, we're sharing our tracking spreadsheet for publicly known cases of detected zero-day exploits, in the hope that this can be a useful community resource:
+
+  Spreadsheet link: 0day "In the Wild"\\
+  \link{https://googleprojectzero.blogspot.com/p/0day.html}
+\end{quote}
+
+\begin{list2}
+\item Not all vulnerabilities are found and reported to the vendors
+\item Some vulnerabilities are exploited \emph{in the wild}
+\end{list2}
+
+\slide{Demo: Insecure programming buffer overflows 101}
+
+
+\begin{list2}
+\item Small demo program \verb+demo.c+ with built-in shell code, function \verb+the_shell+
+\item Compile:
+\verb+gcc -o demo demo.c+
+\item Run program
+\verb+./demo test+
+\item Goal: Break and insert return address
+\end{list2}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int main(int argc, char **argv)
+{      char buf[10];
+        strcpy(buf, argv[1]);
+        printf("%s\n",buf);
+}
+int the_shell()
+{  system("/bin/dash");  }
+\end{minted}
+
+NOTE: this demo is using the dash shell, not bash - since bash drops privileges and won't work.
+
+\slide{GDB GNU Debugger}
+
+\begin{list1}
+\item GNU compileren og debuggeren fungerer ok, men check andre!
+\item Prøv \verb+gdb ./demo+ og kør derefter programmet fra \emph{gdb prompten}
+med  \verb+run 1234+
+\item Når I således ved hvor lang strengen skal være kan I fortsætte
+  med \verb+nm+ kommandoen -- til at finde adressen på
+  \verb+the_shell+\\
+Skriv \verb+nm demo | grep shell+
+
+\item Kunsten er således at generere en streng der er præcist så lang
+  at man får lagt denne adresse ind på det \emph{rigtige sted}.
+\item Perl kan erstatte AAAAA således \verb+`perl -e "print 'A'x10"`+
+\end{list1}
+
+
+\slide{Debugging af C med GDB}
+
+\begin{list1}
+\item Vi laver sammen en session med GDB
+\item Afprøvning med diverse input
+\begin{list2}
+\item \verb+./demo langstrengsomgiverproblemerforprogrammethvorformon+
+\item \verb+gdb demo+ efterfulgt af run med parametre\\
+\verb+run AAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
+\end{list2}
+\end{list1}
+
+{\bfseries Hjælp:}\\
+Kompiler programmet og kald det fra kommandolinien med
+\verb+./demo 123456...7689+ indtil det dør ... derefter prøver I det
+samme i GDB
+
+Hvad sker der? Avancerede brugere kan ændre
+\verb+strcpy+ til \verb+strncpy+
+
+
+\slide{GDB output}
+
+\begin{alltt}\footnotesize
+hlk@bigfoot:demo$ gdb demo
+GNU gdb 5.3-20030128 (Apple version gdb-330.1) (Fri Jul 16 21:42:28 GMT 2004)
+Copyright 2003 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "powerpc-apple-darwin".
+Reading symbols for shared libraries .. done
+(gdb) {\bf run AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+Starting program: /Volumes/userdata/projects/security/exploit/demo/demo AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Reading symbols for shared libraries . done
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+Program received signal EXC_BAD_ACCESS, Could not access memory.
+{\bf 0x41414140} in ?? ()
+(gdb)
+\end{alltt}
+
+\slide{GDB output Debian}
+
+\begin{alltt}\footnotesize
+hlk@debian:~/demo$ gdb demo
+GNU gdb (Debian 7.12-6) 7.12.0.20161007-git
+Copyright (C) 2016 Free Software Foundation, Inc.
+...
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from demo...(no debugging symbols found)...done.
+(gdb) run `perl -e "print 'A'x24"`
+Starting program: /home/hlk/demo/demo `perl -e "print 'A'x24"`
+AAAAAAAAAAAAAAAAAAAAAAAA
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000414141414141 in ?? ()
+(gdb)
+\end{alltt}
+
+
+
+\exercise{ex:bufferoverflow}
+
+
+
+
+
+\slide{WEP design major cryptographic errors}
+
+\begin{list1}
+\item weak keying - 24 bit already known - 128-bit = 104 bit really
+\item small initialisation vector (IV) - only 24 bit, every IV will be reused more often
+\item CRC-32 integrity check NOT \emph{strong} enough cryptographically
+\item Authentication gives pad - if you get one \emph{encryption pad} for one IV you can produce packets forever
+\end{list1}
+Source:
+\emph{Secure Coding: Principles and Practices}, Mark G. Graff
+and Kenneth R. van Wyk, O'Reilly, 2003
+
+
+\slide{Poor Use of Cryptography}
+
+Common pitfalls
+\begin{list2}
+\item Creating Your Own Cryptography\\
+Its easy to create something you cannot break, but that is not neccessarily secure
+\item Choosing the Wrong Cryptography - book recommend FIPS, lots of internet resources recommend NOT to use FIPS! Times changes, follow and read up
+\item Relying on Security by Obscurity
+\item Hard-Coded Secrets / Mishandling Private Information - if your mobile app binary contains a private key, and is being distributed to millions of users, is it really private - no
+\end{list2}
+
+Cryptography is hard!
+\begin{list1}
+\item \emph{A Graduate Course in Applied Cryptography} By Dan Boneh and Victor Shoup\\
+ \url{https://toc.cryptobook.us/}\\ \url{https://crypto.stanford.edu/~dabo/cryptobook/BonehShoup_0_4.pdf}
+\end{list1}
+
+\slide{Github Public passwords?}
+
+\hlkimage{13cm}{github-credentials.png}
+
+ Sources:\\
+{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
+\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
+\link{http://www.leakedin.com/}\\
+\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
+}
+
+\vskip 5mm
+\centerline{Use different passwords for different sites, yes - every site!}
+
+
+
+\slide{Basic Cryptography introduction}
+
+\begin{list1}
+\item Cryptography or cryptology is the practice and study of techniques for secure communication
+\item Modern cryptography is heavily based on mathematical theory and computer science practice; cryptographic algorithms are designed around computational hardness assumptions, making such algorithms hard to break in practice by any adversary
+\item Symmetric-key cryptography refers to encryption methods in which both the sender and receiver share the same key, to ensure confidentiality, example algorithm AES
+\item Public-key cryptography (like RSA) uses two related keys, a key pair of a public key and a private key. This allows for easier key exchanges, and can provide confidentiality, and methods for signatures and other services
+\end{list1}
+
+Source: \link{https://en.wikipedia.org/wiki/Cryptography}
+
+
+\slide{Encryption Decryption}
+
+\slide{Kryptografi}
+
+\hlkimage{12cm}{images/crypto-rot13.pdf}
+
+\begin{list1}
+\item Kryptografi er læren om, hvordan man kan kryptere data
+\item Kryptografi benytter algoritmer som sammen med nøgler giver en
+  ciffertekst
+\item  - der kun kan læses ved hjælp af den tilhørende nøgle
+\end{list1}
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{12cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{12cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter\\ - som så verificeres med den offentlige nøgle
+\item NB: Kryptering alene sikrer ikke anonymitet
+\end{list1}
+
+
+\slide{Kryptografiske principper}
+
+\begin{list1}
+\item Algoritmerne er kendte
+\item Nøglerne er hemmelige
+\item Nøgler har en vis levetid - de skal skiftes ofte
+\item Et successfuldt angreb på en krypto-algoritme er enhver genvej
+  som kræver mindre arbejde end en gennemgang af alle nøglerne
+\item Nye algoritmer, programmer, protokoller m.v. skal gennemgås nøje!
+\end{list1}
+
+\slide{DES, Triple DES og AES}
+
+\hlkimage{15cm}{images/AES_head.png}
+
+\begin{list1}
+\item DES kryptering - gammel og pensioneret!
+\item Der blev i 2001 vedtaget en ny standard algoritme Advanced Encryption
+  Standard (AES) som afløser Data Encryption Standard (DES)
+\item Algoritmen hedder Rijndael og er udviklet
+af Joan Daemen og Vincent Rijmen.
+%\item \emph{Rijndael is available for free. You can use it for
+%whatever purposes  you want, irrespective of whether
+%it is accepted as AES or not.}
+\item Se også \link{https://en.wikipedia.org/wiki/Advanced_Encryption_Standard}
+\item Findes animationer (med fejl) \link{https://www.youtube.com/watch?v=mlzxpkdXP58}
+\end{list1}
+
+\slide{AES Advanced Encryption Standard}
+
+\hlkimage{10cm}{aes-overview.png}
+
+\begin{list2}
+\item The official Rijndael web site displays this image to promote understanding of the Rijndael round transformation [8].
+\item Key sizes 128,192,256 bit typical
+\item Some extensions in cryptosystems exist: XTS-AES-256 really is 2 instances of AES-128 and 384 is two instances of AES-192 and 512 is two instances of AES-256
+\item \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+
+\slide{RSA}link
+
+\begin{quote}
+RSA (Rivest–Shamir–Adleman) is one of the first public-key cryptosystems and is widely used for secure data transmission. ...
+In RSA, this asymmetry is based on the practical difficulty of the factorization of the product of two large prime numbers, the "factoring problem". The acronym RSA is made of the initial letters of the surnames of Ron Rivest, Adi Shamir, and Leonard Adleman, who first publicly described the algorithm in 1978.
+\end{quote}
+
+\begin{list2}
+\item Key sizes 1,024 to 4,096 bit typical
+\item  Quote from: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+
+\slide{Hashing - MD5 message digest funktion}
+
+\hlkimage{16cm}{images/message-digest-1.pdf}
+
+\begin{list1}
+\item HASH algoritmer giver en næsten unik værdi baseret på input
+%\item output fra algoritmerne kaldes ogs<E5> message digest
+%\item MD5 er et eksempel p<E5> en meget brugt algoritme
+%\item MD5 algoritmen har f<F8>lgende egenskaber:
+%  \begin{list2}
+%  \item output er 128-bit "fingerprint" uanset l<E6>ngden af input
+\item værdien ændres radikalt selv ved små ændringer i input
+%  \end{list2}
+\item MD5 er blandt andet beskrevet i RFC-1321: The MD5 Message-Digest
+  Algorithm
+%\item Algoritmen MD5 er baseret p<E5> MD4, begge udviklet af Ronald
+%  L. Rivest kendt fra blandt andet RSA Data Security, Inc
+\item Både MD5 og SHA-1 er idag gamle og skal ikke bruges mere
+\item Idag benyttes eksempelvis \link{https://en.wikipedia.org/wiki/PBKDF2}
+\end{list1}
+
+\slide{Encryption key length - who are attacking you}
+
+\hlkimage{9cm}{encryption-crack.png}
+
+Source: \link{http://www.mycrypto.net/encryption/encryption_crack.html}
+
+{\small
+More up to date:  In 1998, the EFF built Deep Crack for less than \$250,000\\
+\link{https://en.wikipedia.org/wiki/EFF_DES_cracker}\\
+FPGA Based UNIX Crypt Hardware Password Cracker - ~100 EUR in 2006\\
+\link{http://www.sump.org/projects/password/}}
+
+\slide{Pass the hash}
+
+Lots of tools in pentesting pass the hash, reuse existing credentials and tokens
+\emph{Still Passing the Hash 15 Years Later}\\
+\link{http://passing-the-hash.blogspot.dk/2013/04/pth-toolkit-for-kali-interim-status.html}
+
+\begin{quote}
+If a domain is built using only modern Windows OSs and COTS products (which know how to operate within these new constraints), and configured correctly with no shortcuts taken, then these protections represent a big step forward.
+\end{quote}
+
+Source:\\
+{\small\link{http://www.harmj0y.net/blog/penetesting/pass-the-hash-is-dead-long-live-pass-the-hash/}
+\link{https://samsclass.info/lulz/pth-8.1.htm}}
+
+
+
+\slide{Diffie Hellman exchange}
+
+{~}
+\hlkrightpic{7cm}{-15mm}{800px-Diffie-Hellman_Key_Exchange.png}
+
+\begin{quote}
+Diffie–Hellman key exchange (DH)[nb 1] is a method of securely exchanging cryptographic keys over a public channel and was one of the first public-key protocols as originally conceptualized by Ralph Merkle and named after Whitfield Diffie and Martin Hellman.[1][2] DH is one of the earliest practical examples of public key exchange implemented within the field of cryptography.
+... The scheme was first published by Whitfield Diffie and Martin Hellman in 1976
+\end{quote}
+
+\begin{list2}
+\item Quote from: {\small \link{https://en.wikipedia.org/wiki/Diffie-Hellman_key_exchange}}
+\item Today we also use elliptic curves with DH \\{\small \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}}
+\end{list2}
+
+\slide{Example Weak DH paper}
+
+\hlkimage{13cm}{weakdh-logjam.png}
+
+Source: \link{https://weakdh.org/} and \\
+\link{https://weakdh.org/imperfect-forward-secrecy-ccs15.pdf}
+
+Every year in different SSL/TLS implementations there have been problems.
+
+\slide{Why?, because things like Superfish February 2015}
+
+\hlkimage{12cm}{robert-graham-superfish-cert.png}
+
+Lenovo laptops included Adware, which did SSL/TLS Man in the Middle on connections.
+They had a root certificate installed on the Windows operating system, WTF!
+
+{\footnotesize Sources:\\
+\link{https://en.wikipedia.org/wiki/Superfish}\\
+\link{http://blog.erratasec.com/2015/02/extracting-superfish-certificate.html}\\
+\link{http://www.version2.dk/blog/kibana4-superfish-og-emergingthreats-81610}\\
+}{\tiny\link{https://www.eff.org/deeplinks/2015/02/further-evidence-lenovo-breaking-https-security-its-laptops}
+}
+
+
+\slide{Elliptic Curve }
+
+
+\begin{quote}
+  Public-key cryptography is based on the intractability of certain mathematical problems. Early public-key systems are secure assuming that it is difficult to factor a large integer composed of two or more large prime factors. For elliptic-curve-based protocols, it is assumed that finding the discrete logarithm of a random elliptic curve element with respect to a publicly known base point is infeasible: this is the {\bf "elliptic curve discrete logarithm problem" (ECDLP)}. The security of elliptic curve cryptography depends on the ability to compute a point multiplication and the inability to compute the multiplicand given the original and product points. The size of the elliptic curve determines the difficulty of the problem.
+
+Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
+\end{quote}
+
+\begin{list2}
+\item \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\item Has very small key sizes
+\end{list2}
+
+
+
+\slide{Transport Layer Security (TLS)}
+
+\hlkimage{5cm}{crypto-class.png}
+
+\begin{list1}
+\item Oprindeligt udviklet af Netscape Communications Inc.
+\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
+derfor også for Transport Layer Security TLS
+TLS er baseret på SSL Version 3.0
+\item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
+\item RFC-3207 SMTP STARTTLS
+\item Det er svært!
+\item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
+\end{list1}
+
+\slide{TLS Server Name Indication extension}
+
+HTTPS skal der til!
+
+\hlkimage{5cm}{Encrypt_all_the_things.png}
+
+
+Vi skal kryptere, men desværre så skjuler vores HTTPS ikke hvad site vi tilgår.
+
+\begin{list2}
+\item HTTPS er idag TLS Transport Layer Security
+\item Verifikation sker med certifikater der præsenteres af server
+\item Der kan være flere sites på en enkelt IP - med SNI
+\item Desværre vælges det rigtige certifikat før krypteringen starter
+\end{list2}
+
+\slide{TLS Server Name Indication example}
+
+\hlkimage{12cm}{wireshark-sni-twitter.png}
+
+
+
+
+\slide{Heartbleed CVE-2014-0160}
+
+\hlkimage{18cm}{heartbleed-com.png}
+
+\centerline{Nok det mest kendte SSL/TLS exploit}
+
+Source: \link{http://heartbleed.com/}
+
+
+\slide{Heartbleed hacking}
+
+\begin{alltt}\footnotesize
+  06b0: 2D 63 61 63 68 65 0D 0A 43 61 63 68 65 2D 43 6F  -cache..Cache-Co
+  06c0: 6E 74 72 6F 6C 3A 20 6E 6F 2D 63 61 63 68 65 0D  ntrol: no-cache.
+  06d0: 0A 0D 0A 61 63 74 69 6F 6E 3D 67 63 5F 69 6E 73  ...action=gc_ins
+  06e0: 65 72 74 5F 6F 72 64 65 72 26 62 69 6C 6C 6E 6F  ert_order&billno
+  06f0: 3D 50 5A 4B 31 31 30 31 26 70 61 79 6D 65 6E 74  =PZK1101&payment
+  0700: 5F 69 64 3D 31 26 63 61 72 64 5F 6E 75 6D 62 65  _id=1&card_numbe
+  0710: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX   r=4060xxxx413xxx
+  0720: 39 36 26 63 61 72 64 5F 65 78 70 5F 6D 6F 6E 74  96&card_exp_mont
+  0730: 68 3D 30 32 26 63 61 72 64 5F 65 78 70 5F 79 65  h=02&card_exp_ye
+  0740: 61 72 3D 31 37 26 63 61 72 64 5F 63 76 6E 3D 31  ar=17&card_cvn=1
+  0750: 30 39 F8 6C 1B E5 72 CA 61 4D 06 4E B3 54 BC DA  09.l..r.aM.N.T..
+\end{alltt}
+
+\begin{list2}
+\item Obtained using Heartbleed proof of concepts - Gave full credit card details
+\item "can XXX be exploited" - yes, clearly! PoCs ARE needed\\
+without PoCs even Akamai wouldn't have repaired completely!
+\item The internet was ALMOST fooled into thinking getting private keys from Heartbleed was not possible - scary indeed.
+\end{list2}
+
+\slide{Key points after heartbleed}
+
+\hlkimage{16cm}{ssl-tls-breaks-timeline.png}
+Source: picture source\\ {\footnotesize\link{https://www.duosecurity.com/blog/heartbleed-defense-in-depth-part-2}}
+\begin{list2}
+\item Writing SSL software and other secure crypto software is hard
+\item Configuring SSL is hard\\
+check you own site \link{https://www.ssllabs.com/ssltest/}
+\item SSL is hard, finding bugs "all the time"
+\link{http://armoredbarista.blogspot.dk/2013/01/a-brief-chronology-of-ssltls-attacks.html}
+\end{list2}
+
+
+
+
+\slide{SSL/TLS udgaver af protokoller}
+\hlkimage{12cm}{imap-ssl.png}
+
+\begin{list1}
+\item Mange protokoller findes i udgaver hvor der benyttes SSL
+\item HTTPS vs HTTP
+\item IMAPS, POP3S, osv.
+\item Bemærk: nogle protokoller benytter to porte IMAP 143/tcp vs IMAPS 993/tcp
+\item Andre benytter den samme port men en kommando som starter:
+\item SMTP STARTTLS RFC-3207
+\end{list1}
+
+
+
+\slide{sslscan}
+
+\begin{alltt}\small
+root@kali:~# sslscan --ssl2 web.kramse.dk
+Version: 1.10.5-static
+OpenSSL 1.0.2e-dev xx XXX xxxx
+
+Testing SSL server web.kramse.dk on port 443
+...
+  SSL Certificate:
+Signature Algorithm: sha256WithRSAEncryption
+RSA Key Strength:    2048
+
+Subject:  *.kramse.dk
+Altnames: DNS:*.kramse.dk, DNS:kramse.dk
+Issuer:   AlphaSSL CA - SHA256 - G2
+\end{alltt}
+
+Source:
+Originally sslscan from http://www.titania.co.uk
+ but use the version on Kali
+
+SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
+
+
+
+\exercise{ex:sslscan}
+\exercise{ex:web-site-check}
+
+\exercise{ex:real-vulns-exim}
+
+\exercise{ex:sw-startjuice}
+\slidenext{}
+
+
+\end{document}

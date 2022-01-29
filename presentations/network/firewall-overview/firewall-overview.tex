@@ -1,0 +1,1183 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\selectlanguage{danish}
+
+% Diversitet er et fælles anliggende for alle i tech v. Henrik Kramselund, Internet-, netværks- og sikkerhedskonsulent
+
+% Radia, Dorothy, Elizabeth og Laura er fornavnene på nogle af internet-, netværks- og sikkerhedskonsulentens rollemodeller inden for IT. Lær mere om dem og vær med, når Kramselund giver et call to action og deler erfaringer med at skabe inkluderende miljøer i tech
+
+
+
+\begin{document}
+
+\mytitlepage
+{Firewall Overview: The Modern Firewall Infrastructure}
+{PROSA 2022 with apperance of the TROOPERS20 presentation I didn't give}
+
+
+\hlkprofiluk
+
+\slide{Code of Conduct}
+
+{\bf \LARGE Call to Action}
+
+We need to be aware of the impact of our behaviour on others. When a person discovers they have made a mistake, they should acknowledge this and apologise.
+
+\begin{quote}
+Rationale
+Our goals in having this Code of Conduct are:
+\begin{list2}
+\item {\bf To help everyone feel safe and included.} Many people will be new to our community. Some may have had negative experiences in other communities. We want to set a clear expectation that harassment and related behaviours are not tolerated here. If people do have an unpleasant experience, they will know that this is neither the norm nor acceptable to us as a community.
+
+\item {\bf To make everyone aware of expected behaviour.} We are a diverse community; a CoC sets clear expectations in terms of how people should behave.
+\end{list2}
+\end{quote}
+
+Source: {\small RIPE Code of Conduct Publication date: 05 Oct 2021
+\link{https://www.ripe.net/publications/docs/ripe-766}}
+
+
+\slide{"Pac-Man" rule}
+
+\begin{quote}
+\vskip -1cm The rule is:\\
+{\bf When standing as a group of people, always leave room for 1 person to join your group.} \hskip 3cm More memorably, stand like Pac-Man!
+\end{quote}
+
+\hlkimage{6cm}{images/pacman-rule.png}
+
+\begin{quote}
+The new person, who has been given permission to join your group, will gather up the courage, and join you! Another important point, the group should now readjust to leave another space for a new person.\\
+\link{https://ericholscher.com/blog/2017/aug/2/pacman-rule-conferences/}
+\end{quote}
+
+
+
+\slide{What we want -- Learning, coexistence, to be ourselves}
+
+\hlkimage{13cm}{IPv6-Hackathon-image-itu-ripe.png}
+
+{\color{red}\faHeart} Picture from RIPE NCC IPv6 hackathon ITU Copenhagen November 2017: {\color{red}\faHeart}\\{\footnotesize
+\link{https://labs.ripe.net/author/becha/results-of-the-ripe-ncc-hackathon-version-6/}}
+
+\slide{Hvordan skaber vi gode miljøer}
+
+\hlkimage{10cm}{bornhack-2022-logo-l.png}
+
+\begin{list2}
+\item BornHack, har skabt et virkeligt godt miljø som nydes af alle fra børn/unge til gamle, og alle mennesker
+\item Da vi startede i 2016 vidste vi at vi ville lave et miljø -- hvor alle skulle være velkomne.
+\item Vi valgte at genbruge store dele af Code of Conduct fra EMF, og lavede BornHack Code of Conduct\\
+\link{https://bornhack.dk/conduct/}
+\item Det har været en stor success og I er allesammen velkomne til sommer, Aug 3. til 10. 2022
+\item Der er også May Contain Hackers \link{https://mch2022.org/}\\
+MCH2022 is the successor of a string of similar events happening every four years since 1989. \\
+These are GHP, HEU, HIP, HAL, WTH, HAR, OHM and SHA.
+
+\end{list2}
+
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+\item Introduce a network tool for isolation, firewalls
+\item Discuss what they \emph{filter on} -- network packets
+\item See how they relate to VLANs -- logical/virtual seperation for hosts
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+\slide{Plan for today: Firewall Overview}
+
+\begin{list1}
+\item Subjects
+\item A) Introduction
+\begin{list2}
+\item Traffic inspection and firewalls
+\item Generic IP Firewalls stateless filtering vs stateful inspection
+\item Next Generation firewalls, Deep Packet Inspection
+\item IEEE 802.1q VLAN
+\item Common countermeasures in firewalls
+\end{list2}
+\item B) Examples of firewalls, more hands-on show it
+\item C) The Modern Fireall Infrastructure
+\begin{list2}
+\item Problems in firewalls, and network security
+\item Firewall pruning -- handling complexity
+\item Making changes, administration
+\end{list2}
+\end{list1}
+
+\slide{Introducing firewalls}
+
+
+Some of these slides are part of the course:\\
+\emph{Communication and Network Security}
+
+specifically the slideshow\\
+\emph{3. Traffic Inspection and Firewalls}
+
+
+
+\slide{Firewalls defined}
+
+\begin{quote}
+In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
+\end{quote}
+Source: Wikipedia \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+
+\begin{quote}
+Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+\end{quote}
+Source: \link{http://www.wilyhacker.com/} Cheswick 1994 book and 2nd ed 2003
+
+
+\slide{Firewalls and Internet Security, 1994}
+
+\hlkimage{3cm}{images/cheswick-cover2e.jpg}
+
+\begin{list1}
+\item Cheswick chapter 2 \emph{A Security Review of Protocols: Lower Layers}
+\begin{list2}
+\item Network layer, packet filters, application level, stateless, stateful
+\end{list2}
+\item Cheswick chapter 3 \emph{Security Review: The Upper Layers}
+\begin{list2}
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow SMB through an internet firewall, we are asking for trouble
+\end{list2}
+\item \link{http://www.wilyhacker.com/}
+\end{list1}
+
+\slide{Baseline Skills for Network Security}
+
+\begin{list2}\small
+\item Threat-Centric Security, NSM, and the NSM Cycle
+\item TCP/IP Protocols
+\item Common Application Layer Protocols
+\item Packet Analysis
+\item Windows Architecture
+\item Linux Architecture
+\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item IDS Usage (Snort, Suricata, etc.)
+\item Indicators of Compromise and IDS Signature Tuning
+\item Open Source Intelligence Gathering
+\item Basic Analytic Diagnostic Methods
+\item Basic Malware Analysis
+\end{list2}
+
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis},\\
+Chris Sanders and Jason Smith
+
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{5cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith
+eBook ISBN: 9780124172166
+Paperback ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+
+
+
+
+
+\slide{Unified communications}
+
+\hlkimage{19cm}{firma-netvaerk-wlan}
+
+
+
+
+\slide{Generic IP Firewalls}
+
+\vskip 4 cm
+\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
+  traffik på Internet}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
+  traffik på Internet}
+
+\slide{Firewall er ikke alene}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
+
+
+
+\slide{Firewallrollen idag}
+
+\begin{list1}
+\item Idag skal en firewall være med til at:
+\begin{list2}
+\item Forhindre angribere i at komme ind
+\item Forhindre angribere i at sende traffik ud
+\item Forhindre virus og orme i at sprede sig i netværk
+\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
+  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
+\end{list2}
+\item Det kræver overblik!
+\end{list1}
+
+
+
+\slide{Modern Firewalls}
+
+\begin{list1}
+\item Basalt set et netværksfilter - det yderste fæstningsværk
+\item Indeholder typisk:
+  \begin{list2}
+   \item Grafisk brugergrænseflade til konfiguration - er det en
+   fordel?
+\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
+  ind/ud, porte, protokol, ...
+\item både IPv4 og IPv6
+\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
+  at tilføje/åbne en usikker protokol?
+\item typisk NAT funktionalitet indbygget
+\item typisk mulighed for nogle serverfunktioner: kan agere
+  DHCP-server, DNS caching server og lignende
+  \end{list2}
+\item En router med Access Control Lists - kaldes ofte netværksfilter,
+  mens en dedikeret maskine kaldes firewall
+%  funktionen er reelt den samme - der filtreres traffik
+\end{list1}
+
+
+\slide{Sample rules from OpenBSD PF}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="217.157.20.129"
+webserver="217.157.20.131"
+homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
+wlan="10.0.42.0/24"
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+# default block anything
+block in all }
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+\slide{netdesign - med firewalls}
+
+\hlkimage{10cm}{images/kut.jpg}
+
+\begin{list2}
+\item Hvor skal en firewall placeres for at gøre størst nytte?
+\item Hvad er forudsætningen for at en firewall virker?\\
+At der er konfigureret et sæt fornuftige regler!
+\item Hvor kommer reglerne fra? Sikkerhedspolitikken!
+\end{list2}
+
+
+{\small Kilde: \link{http://www.ranum.com/pubs/a1fwall/} The ULTIMATELY Secure Firewall}
+%\href
+%{http://www.ranum.com/security/computer\_security/papers/a1-firewall/}
+%{http://www.ranum.com/security/computer_security/papers/a1-firewall/}
+% old link:
+
+
+
+
+\slide{Packet filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering er firewalls der filtrerer på IP niveau
+\item Idag inkluderer de fleste stateful inspection
+\end{list1}
+
+\slide{Kommercielle firewalls}
+\begin{list2}
+\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
+\item Cisco ASA , Meraki, Firepower\link{http://www.cisco.com}
+\item Fortinet \link{https://www.fortinet.com/}
+\item Juniper SRX \link{http://www.juniper.net}
+\item Palo Alto \link{https://www.paloaltonetworks.com/}
+\item Big-IP F5 \link{https://www.f5.com}
+\end{list2}
+
+Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
+
+\slide{Open source baserede firewalls}
+\begin{list2}
+\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
+\item Firewall GUIs ovenpå Linux - mange!
+nogle er kommercielle produkter
+\item OpenBSD PF
+\link{http://www.openbsd.org}
+\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
+\item Mac OS X benytter OpenBSD PF
+\item FreeBSD inkluderer også OpenBSD PF
+\item \link{https://opnsense.org/}
+\end{list2}
+
+NB: kun eksempler og dem jeg selv har brugt
+
+
+\slide{Hardware eller software}
+
+
+\begin{list1}
+\item Man hører indimellem begrebet \emph{hardware firewall}
+\item Det er dog et faktum at en firewall består af:
+\begin{list2}
+\item Netværkskort - som er hardware
+\item Filtreringssoftware - som er \emph{software}!
+\end{list2}
+\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
+  og en APU2C4 med OpenBSD for en software firewall!
+\item Man kan til gengæld godt argumentere for at en dedikeret
+  firewall som en separat enhed kan give bedre sikkerhed
+  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
+\end{list1}
+
+
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q -- virtual LAN}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Med 802.1q tillades VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\end{list1}
+
+
+\slide{Network Access Control -- Connecting clients more securely}
+
+IEEE 802.1x  Port Based Network Access Control
+
+\hlkimage{7cm}{802.1X_wired_protocols.png}
+
+\begin{list1}
+\item Denne protokol sikrer at man valideres før der gives adgang til porten
+\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
+\item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
+\item Bruges til Wi-Fi netværk
+\end{list1}
+
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Defense in depth - layered security}
+
+\hlkimage{6cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
+
+
+\slide{Small networks}
+
+\hlkimage{18cm}{images/kursus-netvaerk.pdf}
+
+\slide{m0n0wall}
+
+\hlkimage{6cm}{images/m0n0wall-1.pdf}
+
+\begin{list1}
+\item Firewall bygget på FreeBSD med grafisk web interface
+\item Idag erstattet af pfSense \link{https://www.pfsense.org/}\\
+og OPNsense \link{https://opnsense.org/}
+\item De nye bruges i produktion i danske firmaer
+\end{list1}
+
+\slide{Firewall koncepter}
+
+\begin{list1}
+\item Rækkefølgen af regler betyder noget!
+\begin{list2}
+\item To typer af firewalls:
+ First match - når en regel matcher, gør det som angives block/pass
+ Last match  - marker pakken hvis den matcher, til sidst afgøres block/pass
+\end{list2}
+\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
+    man bruger!}
+\item OpenBSD PF er last match
+\item FreeBSD IPFW er first match
+\item Linux iptables/netfilter er last match
+\end{list1}
+
+\slide{First or Last match firewall?}
+
+\hlkimage{18cm}{images/first-last-match-1.pdf}
+
+
+
+\slide{First match - IPFW}
+
+\begin{alltt}
+\hlksmall
+00100 16389  1551541 allow ip from any to any via lo0
+00200     0        0 deny log ip from any to 127.0.0.0/8
+00300     0        0 check-state
+...
+{\bfseries
+65435    36     5697 deny log ip from any to any}
+65535   865    54964 allow ip from any to any
+\end{alltt}
+
+\vskip 2 cm
+
+\centerline{Den sidste regel nås aldrig!}
+
+\slide{Last match - OpenBSD PF}
+
+\begin{alltt}\small
+ext_if="ext0"
+int_if="int0"
+{\bf
+block in}
+pass out keep state
+
+pass quick on \{ lo $int_if \}
+
+# Tillad forbindelser ind på port 80=http og port 53=domain
+# på IP-adressen for eksterne netkort ($ext_if) syntaksen
+pass in on $ext_if proto tcp to ($ext_if) port http keep state
+pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
+\end{alltt}
+
+
+Pakkerne markeres med block eller pass indtil sidste regel\\
+nøgleordet \emph{quick} afslutter match - god til store regelsæt
+
+\slide{Linux iptables/netfilter eksempel}
+
+\begin{alltt}\footnotesize
+# Firewall configuration written by system-config-securitylevel
+# Manual customization of this file is not recommended.
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:RH-Firewall-1-INPUT - [0:0]
+-A INPUT -j RH-Firewall-1-INPUT
+-A FORWARD -j RH-Firewall-1-INPUT
+-A RH-Firewall-1-INPUT -i lo -j ACCEPT
+-A RH-Firewall-1-INPUT -p icmp --icmp-type any -j ACCEPT
+-A RH-Firewall-1-INPUT -p 50 -j ACCEPT
+-A RH-Firewall-1-INPUT -p 51 -j ACCEPT
+-A RH-Firewall-1-INPUT -p udp --dport 5353 -d 224.0.0.251 -j ACCEPT
+-A RH-Firewall-1-INPUT -p udp -m udp --dport 631 -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+-A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+\end{alltt}
+
+\centerline{NB: husk at aktivere IP forwarding}
+
+\slide{Anbefaler UFW Uncomplicated Firewall}
+
+\begin{alltt}\footnotesize
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Langt nemmere at bruge, demo time!
+
+\slide{Firewalls og ICMP}
+
+\begin{alltt}
+ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\end{alltt}
+
+\begin{list1}
+\item Ovenstående er IPFW syntaks for at tillade de interessante ICMP beskeder igennem
+\item Tillad ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\slide{Firewall konfiguration}
+
+\begin{list1}
+\item Den bedste firewall konfiguration starter med:
+\begin{list2}
+\item Papir og blyant
+\item En fornuftig adressestruktur
+\end{list2}
+\item Brug dernæst en firewall med GUI første gang!
+\item Husk dernæst:
+\begin{list2}
+\item En firewall skal passes
+\item En firewall skal opdateres
+\item Systemerne bagved skal hærdes!
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Bloker indefra og ud}
+
+\begin{list1}
+\item Der er porte og services som altid bør blokeres
+\item Det kan være kendte sårbare services
+\begin{list2}
+\item Windows SMB filesharing - ikke til brug på Internet!
+\item UNIX NFS - ikke til brug på Internet!
+\end{list2}
+\item Kendte problemer som minimum
+\end{list1}
+
+Demo time? Nmap and Nping?
+
+
+\slide{Special features}
+
+\begin{list2}
+\item Network Address Translation - NAT
+\item IPv6 funktionalitet
+
+\item Båndbredde håndtering
+\item VLAN funktionalitet - mere udbredt i forbindelse med VoIP
+\item Redundante firewalls - pfsync og CARP
+% pfsync giver et indblik i hvordan den slags kan laves, hvor de
+% kommercielle ``bare kan det''
+\item IPsec og Andre VPN features
+\item inspection - diverse muligheder for at lave deep inspection i protokoller
+\item Eksemplvis DNS inspection
+\end{list2}
+
+\slide{Proxy servers}
+
+\begin{list1}
+\item Filtrering på højere niveauer i OSI modellen er muligt
+\item Idag findes proxy applikationer til de mest almindelige
+  funktioner
+\item Den typiske proxy er en caching webproxy der kan foretage HTTP
+  request på vegne af arbejdsstationer og gemme resultatet
+\item NB: nogle protokoller egner sig ikke til proxy servere
+\item SSL forbindelser til \emph{secure websites} kan per design ikke proxies
+\end{list1}
+
+\slide{Anti-pattern dobbelt NAT i eget netværk}
+
+\hlkimage{16cm}{nat-double.pdf}
+
+\begin{list1}
+\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
+ud på internet.
+\vskip 1cm
+\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
+\end{list1}
+
+
+\slide{IPsec og Andre VPN features}
+
+\begin{list1}
+\item De fleste firewalls giver mulighed for at lave krypterede
+  tunneler
+\item Nyttigt til fjernkontorer der skal have usikker traffik henover
+  usikre netværk som Internet
+\item Konceptet kaldes Virtual Private Network VPN
+\item IPsec er de facto standarden for VPN og beskrevet i RFC'er
+\end{list1}
+
+
+
+\slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
+
+Kernel vulnerabilities, CVE-2019-11477, CVE-2019-11478 and CVE-2019-11479
+
+\begin{quote}\footnotesize{\bf
+Executive Summary}\\
+Three related flaws were found in the Linux kernel’s handling of TCP networking.  The most severe vulnerability could allow a remote attacker to trigger a kernel panic in systems running the affected software and, as a result, impact the system’s availability.
+
+The issues have been assigned multiple CVEs: CVE-2019-11477 is considered an Important severity, whereas CVE-2019-11478 and CVE-2019-11479 are considered a Moderate severity.
+
+The first two are related to the Selective Acknowledgement (SACK) packets combined with Maximum Segment Size (MSS), the third solely with the Maximum Segment Size (MSS).
+
+These issues are corrected either through applying mitigations or kernel patches.  Mitigation details and links to RHSA advsories can be found on the RESOLVE tab of this article.
+\end{quote}
+
+Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tcpsack}}
+
+
+\slide{Netflow}
+
+\begin{list2}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{list2}
+
+\centerline{Netflow is often from routers, we dont have any here}
+
+Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
+
+
+\slide{Collect Network Evidence from the network}
+
+\begin{list1}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\item today Netflow version 9 or IPFIX
+\end{list1}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
+
+
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{12cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+\slide{ElastiFlow -- Elasticsearch based}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+I have a set of files that can install a mostly complete Elastic stack on Debian:\\
+\link{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{4cm}{network-security-through-data-analysis.png}
+
+Low page count, but high value! Recommended.
+
+Network Security through Data Analysis, 2nd Edition
+By Michael S Collins
+Publisher: O'Reilly Media
+2015-05-01: Second release, 348 Pages
+
+New Release Date: August 2017
+
+
+
+\slide{DDoS traffic before filtering}
+\hlkimage{23cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{23cm}{ddos-after-filtering}
+\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
+
+Better to filter stateless before traffic reaches firewall, less work!
+
+
+
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a sample, better to use BGP flowspec and RTBH */
+inactive: term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+...
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers also have extensive Class-of-Service (CoS) tools today
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \} then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx; \}
+        protocol-except icmp;  \}
+    then \{ count some-server-block; discard;
+    \}
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{ Firewalls - screens, IDS like features}
+
+When you know regular traffic you can decide:
+
+\begin{alltt}\footnotesize
+hlk@srx-kas-05# show security screen ids-option untrust-screen
+icmp \{
+    ping-death;
+\}
+ip \{
+    source-route-option;
+    tear-drop;
+\}
+tcp \{    Note: UDP flood setting also exist
+    syn-flood \{
+        alarm-threshold 1024;
+        attack-threshold 200;
+        source-threshold 1024;
+        destination-threshold 2048;
+        timeout 20;
+    \}
+    land;
+\} Always select your own settings YMMV
+\end{alltt}
+
+
+\slide{uRPF unicast Reverse Path Forwarding}
+
+\begin{quote}
+Reverse path forwarding (RPF) is a technique used in modern routers for the purposes of ensuring loop-free forwarding of multicast packets in multicast routing and to help prevent IP address spoofing in unicast routing.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
+
+%\slide{Juniper RPF check}
+
+%\begin{quote}
+%{\bf Understanding Unicast Reverse Path Forwarding}\\
+%IP spoofing can occur during a denial-of-service (DoS) attack. IP spoofing allows an intruder to pass IP packets to a destination as genuine traffic, when in fact the packets are not actually meant for the destination. This type of spoofing is harmful because it consumes the destination's resources.
+
+%A unicast reverse-path-forwarding (RPF) check is a tool to reduce forwarding of IP packets that might be spoofing an address. A unicast RPF check performs a route table lookup on an IP packet's source address, and checks the incoming interface.
+%\end{quote}
+
+%Source:\\ {\footnotesize\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/topic-map/unicast-rpf.html}\\
+%\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/usage-guidelines/interfaces-configuring-unicast-rpf.html}}
+
+
+\slide{Strict vs loose mode RPF}
+
+\hlkimage{24cm}{uRPF-check-1.pdf}
+
+\slide{Strict mode RPF}
+
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
+\end{quote}
+
+
+\slide{uRPF Junos config with loose mode}
+
+\begin{alltt}\footnotesize
+xe-5/1/1 \{
+    description "Transit: Blah (AS65512)";
+    unit 0 \{
+        family inet \{
+            rpf-check \{
+                mode loose;
+            \}
+            filter \{
+                input all;
+                output all;
+            \}
+            address xx.yy.xx.yy/30;
+        \}
+        family inet6 \{
+            rpf-check \{
+                mode loose;
+            \}
+            address 2001:xx:yy/126;
+\} \} \}
+\end{alltt}
+
+See also: {\small\link{http://www.version2.dk/blog/den-danske-internettrafik-og-bgp-49401}}
+
+
+\slide{Remotely Triggered Black Hole Configurations}
+
+\hlkimage{6cm}{packetlife-RTBH.png}
+Picture from packetlife.net showing  R9 as a standalone "management" router for route injection.
+
+{\footnotesize
+\link{http://packetlife.net/blog/2009/jul/6/remotely-triggered-black-hole-rtbh-routing/}\\
+\link{https://ripe65.ripe.net/presentations/285-inex-ripe-routingwg-amsterdam-2012-09-27.pdf}
+\link{https://www.inex.ie/rtbh}}
+
+
+\slide{Remotely Triggered Black Hole at upstreams}
+
+\begin{alltt}\footnotesize
+6.  Black Hole Server (Optional)
+   ###################################################################################
+   #                           NOTE                                                  #
+   #  The Cogent Black Hole server will allow customers to announce a /32 route      #
+   #  to Cogent and have all traffic to that network blocked at Cogents backbone.    #
+   #  All peers on the Cogent black hole server require a password and IP address    #
+   #  from your network for Cogent to peer with.                                     #
+   ###################################################################################
+
+       [   ]  Please set up a BGP peer on the Cogent Black Hole server
+       Black Hole server password:
+       Black Hole server peer IP:
+
+       North American Black Hole Peer:  66.28.8.1
+       European Black Hole Peer:  130.117.20.1
+\end{alltt}
+
+Source:\\
+{\footnotesize\link{http://cogentco.com/files/docs/customer_service/guide/bgpq.sample.txt}}
+
+\centerline{Better drop single /32 host than whole network!}
+
+\slide{More information about DDoS testing}
+
+More DDoS and testing for DDoS can be found in this presentation:
+\begin{quote}\footnotesize{\bf
+Simulated DDoS Attacks, Breaking the Firewall Infrastructure
+Henrik Kramselund}
+
+DDoS Attacks have become a daily annoyance for many, and we need to create robust infrastructure. This tutorial will go through a proposed method for testing your own infrastructure using off-the-shelf tools like packet generators hping3 and t50 on Kali Linux.
+
+The goal for the tutorial is to explain:
+* How to create DDoS attack simulations
+* My actual experience with doing this - testing banks, etc.
+* Evaluate how good is this, value proposition for you
+\end{quote}
+
+{\small Can be found at \link{https://ripe72.ripe.net/wp-content/uploads/presentations/32-simulated-ddos-ripe.pdf} or \\
+\link{https://github.com/kramse/security-courses/tree/master/presentations/pentest/simulated-ddos-ripe}}
+
+
+\slide{Firewalls og IPv6}
+
+\begin{list1}
+\item Læg mærke til forskellen mellem ARP og ICMPv6
+\item Hvis det er muligt lav een regel der tillader adgang til services uanset protokol
+\item NB: husk at aktivere IP forwarding når I skal lave en firewall
+\end{list1}
+
+
+\slide{ IPv6 neighbor discovery protocol (NDP)}
+
+\hlkimage{14cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item ARP er væk
+\item NDP erstatter og udvider ARP, Sammenlign \verb+arp -an+ med \verb+ndp -an+
+\item Til dels erstatter ICMPv6 således DHCP i IPv6, DHCPv6 findes dog
+\item {\bf NB: bemærk at dette har stor betydning for firewallregler!}
+\end{list1}
+
+\slide{ARP vs NDP}
+
+\begin{alltt}
+\small
+hlk@bigfoot:basic-ipv6-new$ arp -an
+? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+hlk@bigfoot:basic-ipv6-new$ ndp -an
+Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
+::1                           (incomplete)         lo0 permanent R
+2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
+fe80::1%lo0                   (incomplete)         lo0 permanent R
+fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
+fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+\end{alltt}
+
+
+
+
+\slide{OpenBSD PF IPv6 NDP}
+\begin{alltt}\footnotesize
+# Macros: define common values, so they can be referenced and changed easily.
+int_if=vr0
+ext_if=vr2
+tunnel_if=gif0
+table <homenet6> { 2001:16d8:ffd2:cf0f::/64 }
+set skip on lo0
+scrub in all
+# Filtering: the implicit first two rules are
+block in all
+
+# allow ICMPv6 for NDP
+# server with configured IP address and router advertisement daemon running
+pass in inet6 proto ipv6-icmp all icmp6-type neighbradv keep state
+pass out inet6 proto ipv6-icmp all icmp6-type routersol keep state
+
+# client which uses autoconfiguration would use this instead
+#pass in inet6 proto ipv6-icmp all icmp6-type routeradv keep state
+#pass out inet6 proto ipv6-icmp all icmp6-type neighbrsol keep state
+
+...  probably not working AS IS
+\end{alltt}
+
+
+
+\slide{IPv4 + IPv6 serviceeksempel, med tables}
+
+PF har tabeller og simpel regel til PF konfigurationsfilen kan give adgang til både IPv4 og IPv6:
+\begin{alltt}\small
+table <webservers> { 2001:7b8:3e4:72::20 10.0.72.20 }
+...
+pass in on $ext_if proto tcp to <webserver> port http
+\end{alltt}
+
+
+\slide{Redundante firewalls}
+
+.
+\hlkrightpic{8cm}{0cm}{images/pfsync-carp-1.jpg}
+
+\begin{list2}
+\item Mange producenter giver mulighed for redundante firewalls/routere
+\item Eksempler VRRP, CARP, HSRP Cisco, VARP Arista
+\item OpenBSD Common Address Redundancy Protocol CARP - både IPv4 og IPv6\\
+overtagelse af adresse både IPv4 og IPv6
+\item pfsync - sender opdateringer om firewall states mellem de to systemer
+\end{list2}
+
+
+\slide{Redundante forbindelser IP-niveau}
+
+\hlkimage{5cm}{router-redundancy-1.pdf}
+
+\begin{list1}
+\item HSRP Hot Standby Router Protocol, Cisco protokol, RFC-2281
+\item VRRP Virtual Router Redundancy Protocol, IETF RFC-3768, åben standard - ikke fri
+\item CARP Common Address Redundancy Protocol, findes på OpenBSD og FreeBSD
+\item \link{http://en.wikipedia.org/wiki/Common_Address_Redundancy_Protocol}
+\end{list1}
+
+
+\end{document}
+
+
+
+
+\end{document}

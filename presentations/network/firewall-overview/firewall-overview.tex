@@ -7,7 +7,7 @@
 
 % Radia, Dorothy, Elizabeth og Laura er fornavnene på nogle af internet-, netværks- og sikkerhedskonsulentens rollemodeller inden for IT. Lær mere om dem og vær med, når Kramselund giver et call to action og deler erfaringer med at skabe inkluderende miljøer i tech
 
-
+\addbibresource{../texfiles/firewall-refs.bib}
 
 \begin{document}
 
@@ -81,12 +81,16 @@ These are GHP, HEU, HIP, HAL, WTH, HAR, OHM and SHA.
 
 \slide{Goals for today}
 
-\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+\hlkimage{4cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
 
 \begin{list2}
 \item Introduce a network tool for isolation, firewalls
 \item Discuss what they \emph{filter on} -- network packets
-\item See how they relate to VLANs -- logical/virtual seperation for hosts
+\item See how they relate to VLANs -- logical/virtual seperation for hosts\\
+Wi-Fi is also related to VLAN, but not much about wireless today
+\item Building a firewall infrastructure, talk about parts, show and tell
+\item The Modern Firewall Infrastructure\\
+Pruning networks without breaking them
 \end{list2}
 
 Photo by Thomas Galler on Unsplash
@@ -124,7 +128,7 @@ specifically the slideshow\\
 
 
 
-\slide{Firewalls defined}
+\slide{Firewalls defined, multiple definitions}
 
 \begin{quote}
 In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
@@ -164,7 +168,7 @@ Source: \link{http://www.wilyhacker.com/} Cheswick 1994 book and 2nd ed 2003
 \item Packet Analysis
 \item Windows Architecture
 \item Linux Architecture
-\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item Basic Data Parsing (BASH, Grep, SED, AWK, Python, PowerShell etc)
 \item IDS Usage (Snort, Suricata, etc.)
 \item Indicators of Compromise and IDS Signature Tuning
 \item Open Source Intelligence Gathering
@@ -200,6 +204,23 @@ ISBN-13:
 
 \link{https://nostarch.com/packetanalysis3}
 
+
+\slide{Network Protocol Knowledge Needed for Network Security}
+
+To work with network security the following protocols are the bare minimum to know about.
+
+\begin{list2}
+\item ARP Address Resolution Protocol for IPv4
+\item NDP Neighbor Discovery Protocol for IPv6
+\item IPv4 \& IPv6 -- the basic packet fields source, destination,
+\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list2}
+
+These protocols are part of the Internet Protocol suite, or TCP/IP for short. The canonical document describing this is from 1981 \cite{RFC0791}. The protocols were deployed on the internet around 1983.
 
 
 
@@ -560,7 +581,10 @@ Status: active
 [ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
 \end{alltt}
 
-Langt nemmere at bruge, demo time!
+Langt nemmere at bruge
+
+
+\demo{UFW -- Uncomplicated Firewall}
 
 \slide{Firewalls og ICMP}
 
@@ -640,17 +664,6 @@ Demo time? Nmap and Nping?
   request på vegne af arbejdsstationer og gemme resultatet
 \item NB: nogle protokoller egner sig ikke til proxy servere
 \item SSL forbindelser til \emph{secure websites} kan per design ikke proxies
-\end{list1}
-
-\slide{Anti-pattern dobbelt NAT i eget netværk}
-
-\hlkimage{16cm}{nat-double.pdf}
-
-\begin{list1}
-\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
-ud på internet.
-\vskip 1cm
-\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
 \end{list1}
 
 
@@ -856,6 +869,32 @@ New Release Date: August 2017
 
 Better to filter stateless before traffic reaches firewall, less work!
 
+
+
+\slide{DDoS protection and flooding}
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
+
+\begin{list2}
+\item Transport Layer Attacks TCP SYN flood TCP sequence numbers
+\item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
+\end{list2}
+
+\slide{Båndbreddestyring og policy based routing}
+
+\begin{list1}
+\item Mange routere og firewalls idag kan lave båndbredde allokering til
+  protokoller, porte og derved bestemte services
+  \item Specielt relevant for DDoS beskyttelse
+  \item Findes på F5 BigIP, Cisco, Junos osv.
+\item Mest kendte er i Open Source:
+\begin{list2}
+\item OpenBSD - integreret i PF
+\item FreeBSD har dummynet
+\item Linux Traffic Control
+\end{list2}
+\item Det kaldes også traffic shaping
+\end{list1}
 
 
 %\slide{Stateless filtering Junos}
@@ -1175,9 +1214,275 @@ overtagelse af adresse både IPv4 og IPv6
 \end{list1}
 
 
-\end{document}
+
+\slide{Produktionsmodning af miljøer}
+
+\begin{list1}
+\item Tænk på det miljø som servere og services skal udsættes for
+\item Sørg for hærdning og tænk generel sikring:
+  \begin{list2}
+  \item Opdateret software - ingen kendte sikkerhedshuller eller
+  sårbarheder
+\item Fjern {\bfseries single points of failure} - redundant strøm, ekstra enheder, to DNS servere fremfor en
+\item Adskilte servere - interne og eksterne til forskellige formål\\
+Eksempelvis den interne postserver hvor alle e-mail opbevares og en
+DMZ-postserver til ekstern post
+\item Lav filtre på netværket, eller på data - firewalls og proxy
+  funktioner
+\item Begræns adgangen til at læse information
+\item Begræns adgangen til at skrive information - eksempelvis databaser
+\item Brug {\bfseries least privileges} - sørg for at programmer og brugere
+  kun har de nødvendige rettigheder til at kunne udføre opgaver
+\item Følg med på områderne der har relevans for virksomheden og
+  \emph{jeres} installation
+  \end{list2}
+  \item Meld jer på security mailinglister for de produkter I benytter, også open source
+\end{list1}
 
 
+\slide{Change management}
+
+\begin{list1}
+\item Er der tilstrækkeligt med fokus på software i produktion
+\item Kan en vilkårlig server nemt reetableres
+\item Foretages rettelser direkte på produktionssystemer
+\item Er der fall-back plan
+\item Burde være god systemadministrator praksis
+\end{list1}
+
+\slide{Hardened network device configurations}
+
+\begin{list1}
+\item Alle services skal være konfigureret korrekt:
+\begin{list2}
+\item Administration kun fra jump host og egne administrator netværk, SSH og HTTPS
+\item Alle protokoller med mulighed for \emph{secrets} bør evalueres for om det skal benyttes
+\item Protokoller som BGP skal benytte route import filtre
+\item Protokoller som OSPF bør benytte policies OG secrets
+\item Brug, Router protect filter således at kun relevant adgang tillades til services på udstyret
+\item Brug Reverse Path Forwarding uRPF / RPF
+\end{list2}
+\end{list1}
+
+
+
+\slide{Design a robust network Isolation and segmentation}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+\slide{Basic Network Security Pattern Isolate in VLANs}
+
+\hlkimage{10cm}{images/demo-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter trafik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\item Brug port security til at sikre basale services DHCP, Spanning Tree osv.
+\end{list1}
+
+\slide{Anti-pattern dobbelt NAT i eget netværk}
+
+\hlkimage{16cm}{nat-double.pdf}
+
+\begin{list1}
+\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
+ud på internet.
+\vskip 1cm
+\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
+\end{list1}
+
+\slide{Pattern use IDS to get flow, connections and data}
+
+\begin{list1}
+\item Use Intrusion Detection Systems - IDS
+\item Angrebsværktøjerne efterlader spor
+\item Det anbefales at have IDS og flow opsamling som minimum
+\item Hostbased IDS - kører lokalt på et system og forsøger at
+  detektere om der er en angriber inde
+\item Network based IDS - NIDS - bruger netværket
+\item Automatiserer netværksovervågning:
+  \begin{list2}
+  \item bestemte pakker kan opfattes som en signatur
+\item analyse af netværkstrafik - FØR angreb
+\item analyse af netværk under angreb - sender en alarm
+  \end{list2}
+\end{list1}
+
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{14cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+\slide{Zeek IDS is}
+
+\hlkimage{14cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+{\bf We will now move to the workshop materials:}\\
+Suricata, Zeek og DNS Capture -- {\bf but only parts of it!}\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+
+
+\slide{Anti-pattern blokering af ALT ICMP}
+
+\begin{alltt}\small
+# Simple stateful network firewall rules for allowing ICMP in IPv6 ICMPv6
+# Allow ICMPv6 destination unreach
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 1
+# Allow NS/NA/toobig (don't filter it out)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 2
+# Allow timex Time exceeded
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 3
+# Allow parameter problem
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 4
+# IPv6 ICMP - echo request (128) and echo reply (129)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 128,129
+# IPv6 ICMP - router solicitation (133) and router advertisement (134)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 133,134
+# IPv6 ICMP - neighbour discovery solicitation (135) and advertisement (136)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 135,136
+\end{alltt}
+
+\begin{list1}
+\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit netMANRS
+\end{list1}
+
+\slide{ICMPv4 beskedtyper}
+
+\begin{list1}
+\item Type
+\begin{list2}
+\item 0 = net unreachable;
+\item 1 = host unreachable;
+\item 2 = protocol unreachable;
+\item 3 = port unreachable;
+\item 4 = fragmentation needed and DF set;
+\item 5 = source route failed.
+\end{list2}
+\item Tillad disse ICMP types:
+\begin{list2}
+\item 3 Destination Unreachable
+\item 4 Source Quench Message
+\item 11 Time Exceeded
+\item 12 Parameter Problem Message
+\end{list2}
+\end{list1}
+
+\begin{list1}
+\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net
+\end{list1}
+
+\slide{Anti-pattern blokering af DNS opslag på TCP}
+
+\begin{list1}
+\item Det bliver (er) nødvendigt med DNS opslag over TCP
+\vskip 1cm
+\item Store svar kræver TCP
+\item Det betyder at firewalls skal tillade DNS opslag via TCP
+\vskip 1cm
+\item De nye forslag DNS over TLS (DoT) og DNS over HTTPS (DoH)
+\item DNS kryptering bliver med TCP
+\vskip 1cm
+\item Anbefaling i enterprise netværk:\\
+Brug en caching nameserver, således at det kun er den som kan lave DNS opslag ud i verden
+
+\end{list1}
+
+\slide{Mutually Agreed Norms for Routing Security (MANRS)}
+
+\hlkimage{2cm}{MANRS_square.png}
+
+\begin{quote}
+  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
+\end{quote}
+
+\begin{list1}
+\item Problems related to incorrect routing information
+\item Problems related to traffic with spoofed source IP addresses
+\item Problems related to coordination and collaboration between network operators
+\item {\small\link{https://www.manrs.org/isps/}}
+\item {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+\end{list1}
+
+
+\slide{Hosting og internet-udbydere}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item Data krydser mange internetudbydere
+\item Det er stadig muligt at spoofe mange steder fra
+\end{list2}
+
+\slide{Expected Actions in MANRS for Network Operators}
+
+\begin{list1}
+\item 1. Prevent propagation of incorrect routing information\\
+Clear routing policies and systems for correctness, route import filters
+\item 2. Prevent traffic with spoofed source IP addresses\\
+Validate source address from end-users and infrastructure, use BCP38
+\item 3. Facilitate global operational communication and coordination between network operators\\
+Maintain contact information in databases like Whois, PeeringDB
+{\small\link{https://www.peeringdb.com/}}
+
+\item Advanced
+\item 4. Facilitate validation of routing information on a global scale\\
+Use RPSL {\small\link{ https://en.wikipedia.org/wiki/Routing_Policy_Specification_Language}}
+\end{list1}
+
+\slide{At være på internet}
+
+\begin{list1}
+\item RFC-2142 Mailbox Names for Common Services, Roles and Functions
+\item Du BØR konfigurere dit domæne til at modtage post for følgende adresser:
+\begin{list2}
+\item postmaster@domæne.dk
+\item abuse@domæne.dk
+\item webmaster@domæne.dk, evt. www@domæne.dk
+\end{list2}
+\item Du gør det nemmere at rapportere problemer med dit netværk og services
+\end{list1}
+
+
+
+
+\slide{Our Networks}
+
+Next we will now design a network, using our sample hardware
 
 
 \end{document}

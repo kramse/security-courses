@@ -6,14 +6,14 @@
 
 Den moderne firewall infrastruktur
 
-Netværk har stigende kompleksitet og vi har brug for fortrolighed,
+Netværk har stigende kompleksitet, og vi har brug for fortrolighed,
 integritet og tilgængelighed - mens vi udfører service vinduer,
 opgraderer, ændrer routing, VPN og laver generelle ændringer.
 
 Hvordan kan vi kontrollere den kompleksitet, konfigurere spindet af
 forbindeser, begrænse trafikken, overvåge performance og logge alting.
-Vi har firewalls med tusindvis af konfigurationslinier og regler der
-forbindeer all dele af vores organisation to en verden af partenere,
+Vi har firewalls med tusindvis af konfigurationslinier, og regler der
+forbinder all dele af vores organisation to en verden af partenere,
 internet, indersiden, trådlæse netværk m.v. Dømt til at fejle! Det er
 har allerede fejlet. Du kan ikke overskue regelsæt, konsekvener eller
 udføre service.

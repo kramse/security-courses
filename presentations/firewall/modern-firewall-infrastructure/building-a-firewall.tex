@@ -1,0 +1,342 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\selectlanguage{danish}
+
+% Diversitet er et fælles anliggende for alle i tech v. Henrik Kramselund, Internet-, netværks- og sikkerhedskonsulent
+
+% Radia, Dorothy, Elizabeth og Laura er fornavnene på nogle af internet-, netværks- og sikkerhedskonsulentens rollemodeller inden for IT. Lær mere om dem og vær med, når Kramselund giver et call to action og deler erfaringer med at skabe inkluderende miljøer i tech
+
+
+
+\begin{document}
+
+\mytitlepage{Building a Firewall}
+{Show and tell}
+
+\vskip 1cm
+\centerline{\footnotesize Slides are available as PDF kramshoej@Github}
+
+
+
+\centerline{\footnotesize Not affiliated with the OpenBSD project, but a long time and very happy user}
+
+\slide{Goal}
+
+We are building a new firewall, yay!
+
+For this purpose I brought a lot of hardware! Really a lot!
+\begin{list2}
+\item OpenBSD as a CPE in a network with ordinary internet traffic
+\item Arist router/switch in the datacenter
+\item Juniper EX enterprise switch
+\item We will discuss how to build a network with available devices
+\item Talk about BGP, PF and service daemons
+\item Mostly Juniper configuration and OpenBSD configs
+\item BGP to PF Tables, firewalling/NAT based on BGP updates
+\item OpenBSD niceness, why choosing OpenBSD made a lot of things easier
+\item Keywords:
+OpenBSD, BGP, routing, IEEE 802.1q, VLAN, IEEE802.1p, CoS/QoS, VoIP, firewalling
+\end{list2}
+
+\slide{Thank you OpenBSD}
+
+\hlkimage{16cm}{openbsd.png}
+
+\centerline{Donating to OpenBSD also supports OpenSSH development}
+
+
+\slide{Overview}
+
+\hlkimage{17cm}{patientsky-net-overview.png}
+
+\slide{OpenBSD CPE: BGP, PF and service daemons}
+
+Example from earlier
+\hlkimage{16cm}{openbsd-cpe.png}
+
+\begin{list2}
+\item OpenBSD operating system
+\item Solid hardware + free operating system = reliable service
+\item Yes, Telenor uses ASR920 as CPE for 8Mbit SHDSL too\smiley
+\end{list2}
+
+
+\slide{Existing infrastructure, in some places}
+
+\hlkimage{7cm}{bad-rack.jpg}
+
+\centerline{Pretty nice heh, not always this bad, but usually not good}
+
+\slide{Building a Network with a Firewall}
+
+\begin{list1}
+\item Vi vil nu gennemgå netværksdesign med udgangspunkt i vores setup
+\item Vores setup indeholder:
+\begin{list2}
+\item Routere
+\item Firewall
+\item Wireless
+\item DMZ
+\item DHCPD, BIND, BGPD, OSPFD, ...
+\end{list2}
+\item Den kunne udvides med flere andre teknologier vi har til rådighed:
+\begin{list2}
+\item VLAN inkl VLAN trunking/distribution, WPA Enterprise
+\end{list2}
+\item Hvad taler for og imod - de næste slides gennemgår nogle standardsetups
+\item En slags patterns og
+anti-patterns for networking
+\item Husk følgende slides er min mening
+\end{list1}
+
+
+\slide{Principle of Economy of Mechanism}
+
+\begin{list1}
+\item {\bf Definition 14-4} The \emph{principle of economy of mechanism} states that security mechanisms should be as simple as possible.
+\item Simple $->$ fewer complications $->$ fewer security errors
+\item Use WPA passphrase instead of MAC address based authentication
+\item
+\end{list1}
+
+
+\slide{Principle of Complete Mediation}
+
+\begin{list1}
+\item {\bf Definition 14-5} The \emph{principle of complete mediation} requires that all accesses to objects be checked to ensure that they are allowed.
+\item Always perform check
+\item Time of check, time of use
+\item Example Unix file descriptors - access check first, then can be reused in the future
+\item Caching can be bad.
+\end{list1}
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to
+ an object, it should be denied access to that object.
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
+
+
+\slide{Important processes and components}
+
+\begin{list2}
+\item OpenBSD kernel - does routing, thank you
+\item OpenBSD kernel - multiple routing tables, allow drop-in replacement in networks
+\item OpenNTP - time keeping
+\item OpenBGP - BGP to get NHN prefixes
+\item relayd - provides failover, change default route
+\item OpenSSHD - secure remote access
+\item DHCPD - dhcp service to LAN
+\item OpenBSD PF - awesome firewall software connecting it all nicely
+\item OpenBSD PF queue - allow detailed control of bandwidth
+\item OpenBSD PF prio into VLAN header - QoS/CoS of VoIP traffic
+\item NLnet Labs Unbound DNS server \link{https://www.nlnetlabs.nl/projects/unbound/about/}
+\end{list2}
+
+The configurations shown in the presentation are examples from a real network
+
+\slide{Relayd failover to 4G router}
+
+\begin{alltt}\footnotesize
+# cat /etc/relayd.conf
+primary = "185.161.xxx.x"
+secondary = "192.168.8.1"
+interval 10
+table <gateways> \{ $primary ip ttl 1 priority 10, $secondary ip ttl 1 priority 50 \}
+router "uplinks" \{
+        route 0.0.0.0/0
+        forward to <gateways> check icmp
+\}
+\end{alltt}
+
+Easy to understand, easy to implement
+
+\slide{OpenBSD queue pf.conf - from 20/20Mbit customer}
+
+\begin{alltt}\footnotesize
+# Queue to fix TCP originating from our smartbox, if we send more than
+# bandwidth the shaping done by Telenor cause huge backoffs
+queue root on em3 bandwidth 20M max 20M
+
+# Currently used for VoIP and PatientSky Hosting
+# Note: VoIP Max 25% of bandwidth, excess dropped by provider!
+queue high parent root bandwidth 5M max 5M
+queue normal parent root bandwidth 20M max 20M default
+queue low parent root bandwidth 15M max 15M
+
+# {\bf Download queues} on inside interface to LAN
+# by limiting this, we end up receiving less than max from outside
+queue dn_parent on em2 bandwidth 20M max 20M
+queue dn_high parent dn_parent bandwidth 20M max 20M
+queue dn_default parent dn_parent bandwidth 15M max 15M default
+
+# Wifi
+queue guest_parent on em0 bandwidth 15M max 15M
+queue guest_default parent guest_parent bandwidth 15M max 15M default
+\end{alltt}
+
+You can only limit what you send, download queues remove need for
+specific queue in data center for EACH customer!
+
+\slide{OpenBSD use queueing in rules}
+
+\begin{alltt}\footnotesize
+table <HOSTED_NETWORKS> const \{ 185.60.160.0/22 \}
+
+# Rules start here
+block all
+
+# Normal would be 3 and patientsky higher priority
+pass out set queue normal set prio 3
+pass out to <HOSTED_NETWORKS> set queue high set prio 5
+
+# High prio on all traffic originating from us and our <HOSTED_NETWORKS> address space
+pass in on egress from <HOSTED_NETWORKS> to (egress:0) set queue dn_high set prio 5
+\end{alltt}
+
+\begin{list2}
+\item When you limit outgoing - to the LAN, results is because of TCP it limits what you receive :-)
+\item Not really doing queuing inside LAN, some switches not controlled, customer responsibility
+\item If internal LAN with gigabit switches cannot handle VoIP, expect other problems
+\end{list2}
+
+
+\slide{OpenBGP download prefixes to PF Tables}
+
+\begin{alltt}\footnotesize
+...
+# neighbors and peers
+psnet="50033"
+group "nhn" \{
+# peering to get NHN network
+        remote-as $psnet
+        neighbor 185.161.xxx.xx
+\}
+
+# Our local network
+network 172.22.xxx.0/27
+
+# Filtering
+allow from any
+allow from AS 50033
+match from group "nhn" community $psnet:56828 set pftable "NHN"
+\end{alltt}
+
+Two functions, announce our local NHN prefix, internal LAN IP
+
+and getting a table of almost 10.000 prefixes
+
+\slide{OpenBSD multiple routing domains are cool}
+
+with BGP running we can use the prefixes in rules, here no-NAT rule:
+\begin{alltt}\footnotesize
+# towards end of pf.conf
+# Routing Domain 1 used for LAN
+anchor "inside" on {\bf rdomain 1} \{
+    # Allow administrative access when on-site
+    pass in quick on em2 inet proto tcp from any to em2 port 34
+    # Internal LAN must be allowed out
+    pass in on em2
+    # Guest network, no access to internal LAN or NHN
+    # Prio 0 in Telenor is Best Effort
+    pass in on em0 to \{ !(em2:network) !<NHN> \} set queue low set prio 0
+    # Make sure our Hosted networks have priority and NHN traffic is sent through unharmed
+    pass out quick to <HOSTED_NETWORKS> nat-to (egress:0) rtable 0 set queue high set prio 5
+    pass out quick to <NHN> rtable 0 set queue normal set prio 3
+    pass out to !<INSIDE_NETWORKS> nat-to (egress:0) rtable 0 set queue normal set prio 3
+\}
+\end{alltt}
+
+
+
+\slide{OpenBSD priority}
+
+\begin{alltt}\footnotesize
+pass out quick to <HOSTED_NETWORKS> nat-to (egress:0) rtable 0 set queue high set prio 5
+
+pass in proto tcp to port 25 set prio 2
+pass in proto tcp to port 22 set prio (2, 5)
+\end{alltt}
+
+\begin{list1}
+\item Prio is copied directly into IEEE 802.1q header, making it easy to use IEEE 802.1p
+\end{list1}
+
+\begin{quote}
+If the packet is transmitted on a vlan(4) interface, the queueing priority will also be written as
+the priority code point in the 802.1Q VLAN header.  If two
+priorities are given, packets which have a TOS of lowdelay and
+TCP ACKs with no data payload will be assigned to the second one.
+\end{quote}
+
+Hint: OpenSSH \verb+sshd_config+ using IPQoS can achieve the same
+
+\slide{Junos MX config, show configuration class-of-service }
+
+\begin{alltt}\footnotesize
+rewrite-rules \{
+    ieee-802.1 telenor \{
+        forwarding-class assured-forwarding \{
+            loss-priority low code-point 101;
+            loss-priority high code-point 101;
+            loss-priority medium-high code-point 101;
+            loss-priority medium-low code-point 101;
+        \}
+        forwarding-class expedited-forwarding \{
+            loss-priority low code-point 011;
+            loss-priority high code-point 011;
+            loss-priority medium-high code-point 011;
+            loss-priority medium-low code-point 011;
+        \}
+    \}
+\}
+\end{alltt}
+
+Pro tip: this requires traffic to already be classified into these classes.\\
+We solved it by sending VLAN traffic with prio from OpenBSD in data center to MX
+
+\slide{Junos outgoing, show configuration class-of-service}
+
+\begin{alltt}\small
+interfaces \{
+    ae0 \{
+        ...
+        unit 1008 \{
+            classifiers \{
+                ieee-802.1 default;
+            \}
+            rewrite-rules \{
+                ieee-802.1 telenor vlan-tag outer-and-inner;
+            \}
+        \}
+\}
+\end{alltt}
+
+Note: We use double vlan-tags outer 1008 inner 100 in data center.\\
+This ends up with VLAN 100 on ALL smartboxes/sites
+
+Result: We have the same simple config on all smartboxes
+
+\slide{ OpenBSD niceness}
+
+Why choosing OpenBSD made a lot of things easier
+
+\begin{list2}
+\item Free to install routers, firewalls, where we need them, no license
+\item Secure and stable, less worries, stable network yay!
+\item Nifty tricks with OpenBGP makes for a very elegant PF config
+\item PF integrated with IEEE 802.1p - on VLAN interfaces
+\item PF has a very readable format with syntactic sugar and dynamic constructs like \verb+(em2:network)+ the network on interface em2
+\item OpenBSD has stable release schedule, every 6 months
+\end{list2}
+
+TL;DR Full control with easy transparent configs
+
+\end{document}

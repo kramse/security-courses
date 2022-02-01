@@ -3,9 +3,9 @@
 This is a description for the mandatory assignment 1 in
 KEA Kompetence System Security F2022
 
-To be handed in at latest March 21, 2022 by email to xhek@kea.dk or hlk@zencurity.com
+To be handed in at latest March 14, 2022 by email to xhek@kea.dk or hlk@zencurity.com
 
-Note: this will be the only mandatory assignment, not two for this course.
+Note: this will be the 2nd mandatory assignment.
 
 # Overall goal
 

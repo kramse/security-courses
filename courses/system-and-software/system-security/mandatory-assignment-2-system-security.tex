@@ -1,0 +1,206 @@
+\documentclass[a4paper,11pt,notitlepage,landscape]{report}
+% Henrik Kramselund Jereminsen, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-one-page}
+\usepackage{alltt}
+%\usepackage{lscape}
+
+\begin{document}
+
+%\rm
+\selectlanguage{english}
+
+\lhead{\fancyplain{}{\color{titlecolor}\bfseries\LARGE Hand-in assignment II: KEA System Security F2022 course}}
+
+\normal
+
+
+{\bf Assignment:}\\
+Demonstrate knowledge about forensics and system security. Focus is on disk image investigation, consider a hacked server - what happened.
+
+Teacher will provide image which was made in this way:
+\begin{list2}
+\item Install a Debian using a small disk size ~10G
+\item Install a "root-kit" using the chmod +s on a copy of dash as described in Bishop book page 775. Using dash since sh is bash which prevents this!
+\item Create extra users not usually found on Debian, copies of root with uid 0 or new users with sudo rights
+\end{list2}
+
+You are welcome to create your own "hacked server" using above method.
+
+Create a report describing the following in main chapters:
+
+\begin{list2}
+\item Company back story, create back story for your fictive company, half a page
+\item Analyze using forensics tools the hacked server\\
+Suggest using Sleuthkit and Autopsy browser based tool, simple and free\\
+Multiple other tools exist, you are free to choose
+\item Describe the system, what operating system is it running, maybe some more about when it was lasted updated etc.
+\item Search for your evidence, MAKE SURE to demonstrate how a user would find these - searching for SUID files is one method to document, looking into sudo config and user database is another
+\item Present a timeline of when the "hack" occurred, perhaps relate to when system was installed
+\item Present as much information as possible about the "malware" (the file found with SUID bit)
+\item Create a list of skills requirements for analyzing this environment. Consider job postings for similar jobs, and you may copy parts of that and adapt. Note down if you feel you have these skills, how much time would you require to learn these
+\end{list2}
+
+
+The report should include the following sections at least:
+\begin{list2}
+\item Title
+\item Confidentiality agreement -- Write "Confidential" on each page
+\item Overview - description of the project
+\item Table of contents, page numbers, headlines - business report style
+\item Results - including method description and screenshots
+\item Executive summary
+\item Appendices
+\end{list2}
+
+
+
+{\bf Formal requirements:}\\
+To be handed in at latest March 14, 2022 by fronter, or email to xhek@kea.dk
+
+Teams up to 3 are allowed. Make sure to list team members in the report.
+
+Expect PDF as A4, portrait mode around 15 pages with illustrations as needed.
+No more than 25 pages if 3 members.
+
+Recommend to use a report template with table of contents, front matter, page numbers etc. You can use Word, Google Docs, \LaTeX, whatever you feel most comfortable with.
+
+You are NOT expected to spend more than 25-30 hours on this. Less is also OK.
+
+The report is not graded, but feedback will be given.
+
+
+{\bf Whats in the image:}\\
+Indeholdt i det hackede image er:
+
+\begin{list2}
+\item En dash kopi med suid bitten sat
+\item Et par ekstra brugere
+\item den ene hacker har sudo rettigheder - hvordan er dette konfigureret?
+\item den anden hacker har vist user id 0 - hvad betyder det når
+vedkommende logger ind?
+\end{list2}
+
+Check eventuelt også shadow password filen med John The Ripper
+- eftersom det er en fuldt opdateret Debian, så kan det være via
+  dårlige passwords at der er foretaget indbrud?
+
+{\bf Images:}\\
+The image files are at:
+\verb+https://files.kramse.org/.kea/+
+
+You can choose from:
+
+\begin{enumerate}
+\item Easiest - just the root file system, can be opened directly
+ \verb+debian-hacked-rootfs.img.gz+
+
+Same content as found in 2), but already extracted
+
+\item Multiple files - in a Tar Gzip'ed archive
+\verb+debian-hacked.tgz+
+
+\item Another version, recreated in 2021 but essentially the same
+\verb+debian-hacked-2021.img.gz+
+
+\end{enumerate}
+
+
+
+{\bf Hints:}\\
+Consider this a proposal for your imaginary management team.
+
+Help may be found in the Forensics Discovery book
+
+Think about what you would like to receive if you were responsible for managing an incident and hiring people.
+
+If you need more help contact me,\\
+
+
+Henrik Kramselund, \url{xhek@kea.dk}
+
+\eject
+{\bf Hints for analyzing RAW Partition with LVM:}\\
+
+
+Dit udgangspunkt skal være en Debian med rigeligt plads.
+
+0) Dvs lav evt en ny Debian med en 50Gb VM disk.
+
+
+1) På denne Debian overfører du filen fra mig.
+
+\begin{alltt}
+wget https://files.kramse.org/.kea/debian-hacked.tgz
+\end{alltt}
+
+2) Den udpakker du
+
+\begin{alltt}
+tar zxvf debian-hacked.tgz
+cd debian-hacked
+\end{alltt}
+
+3) Disk images
+Så har du et image af en disk fra en VM. Disk images indeholder typisk
+partitioner - dvs man har typisk op til 4 primære partioner
+
+\begin{alltt}
+[ ---- Master Boot Record --- // starten af disken
+[ Partition 1 typisk en slags boot disk      ---]
+[ Partition 2 typisk en slags data partition ---]
+[ Partition 3 typisk en swap - virtuel memory ]
+\end{alltt}
+
+Til at finde ud af denne information bruger man programmet:
+mmls
+
+Den lister partitioner - herunder hvor de starter og stopper, størrelser
+
+Med disse informationer kan man skære data ud fra filen.
+
+Et program som "dd" kan med start og antal blokke - count skære ud.
+
+Så derfor omregnes :
+\begin{alltt}
+expr 501760 * 512
+\end{alltt}
+
+4) losetup
+
+Når nu autopsy ikke forstår LVM, så må vi bruge Linux kernen til at
+mounte filen, og derved opnås adgang til data som et /dev device
+
+sudo losetup -r -o 256901120 /dev/loop0 debian-hacked-root.img
+
+Det gør at den volume group hacked-vg kan tilgås som device dm-0 og dm-1
+
+\begin{alltt}
+user@KaliVM:~/QubesIncoming/dom0$ ls -l /dev/hacked-vg/
+total 0
+lrwxrwxrwx 1 root root 7 Mar  7 17:32 root -> ../dm-0
+lrwxrwxrwx 1 root root 7 Mar  7 17:32 swap_1 -> ../dm-1
+\end{alltt}
+
+Vi skal bruge dm-0, dvs /dev/dm-0
+
+5)
+Udskæring af partition
+
+Jeg udførte testen selv for at sikre at man kan læse det endelige
+filsystem med autopsy, men da autopsy ikke forstår Linux Logical
+Volume Manager - som være data partition er, så skal denne skrælles ud.
+
+These can now be read or used, for instance use it to create image file
+for the rootfs!
+
+\begin{alltt}
+sudo dd if=/dev/dm-0 of=debian-hacked-rootfs.img
+\end{alltt}
+
+NU er der således en fil - root fs - fra den hackede server :-D
+
+
+
+\end{document}

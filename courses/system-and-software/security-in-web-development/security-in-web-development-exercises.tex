@@ -403,7 +403,7 @@ see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 Try using a programing library in the Python and R environment JupyterLab.
 
 {\bf Purpose:}\\
-See a way to run the examples from the book in a nice environment.
+This exercise will allow you to install programs using both apt and pip, package managers for Debian programs and Python programs.
 
 {\bf Suggested method:}\\
 Make sure Python3 PIP and R language are installed, as root do:
@@ -460,12 +460,11 @@ When you can start JupyterLab and run Python3 from a Markdown document, you are 
 {\bf Discussion:}\\
 Jupyter is a whole ecosystem and there is a lot of documentation available.
 
-The main reason for installing it in this course is to make R and Python available in a more user-friendly manner.
+The main reason for installing it in this course is to make you able to install programs later in the course, and your life.
 
 
 
-
-\chapter{Optional: Postman API Client 20 min}
+\chapter{Postman API Client 20 min}
 \label{ex:postman-api}
 
 %\hlkimage{10cm}{kali-linux.png}
@@ -500,7 +499,7 @@ Tools like Elasticsearch has plugins allowing decoupling of the API and plugins.
 
 
 
-\chapter{Optional: Run small programs: Python, Shell script 20min}
+\chapter{Run small programs: Python, Shell script 20min}
 \label{ex:small-python}
 
 {\bf Objective:}\\
@@ -565,6 +564,39 @@ By Arnold Robbins, Nelson Beebe. Publisher: O'Reilly Media
 Release Date: December 2008
  \link{http://shop.oreilly.com/product/9780596005955.do}
 
+\chapter{Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+
+
+
 
 \chapter{Optional: Run parts of a Django tutorial 30min}
 \label{ex:django-intro}
@@ -607,6 +639,566 @@ When we have covered basics of what Django is, what frameworks provide and seen 
 
 {\bf Discussion:}\\
 Django is only an example, other languages and projects exist.
+
+
+\chapter{Execute nmap TCP and UDP port scan 20 min}
+\label{ex:nmap-synscan}
+
+
+{\bf Objective:} \\
+Use nmap to discover important open ports on active systems
+
+{\bf Purpose:}\\
+Finding open ports will allow you to find vulnerabilities on these ports.
+
+{\bf Suggested method:}\\
+Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
+ports and use Nmap without ports. What is scanned then?
+
+Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
+
+If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
+
+{\bf Hints:} \\
+Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
+1024 ports without doing a Ping first
+
+{\bf Solution:}\\
+Discover some active systems and most interesting ports, which are 1-1024 and the built-in list of popular ports.
+
+{\bf Discussion:}\\
+There is a lot of documentation about the nmap portscanner, even a book by the author
+of nmap. Make sure to visit \link{http://www.nmap.org}
+
+TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
+
+When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
+
+
+\chapter{Discover active systems ping and port sweep 15 min}
+\label{ex:nmap-pingsweep}
+\hlkimage{5cm}{nmap-zenmap.png}
+
+{\bf Objective:}\\
+Use nmap to discover active systems and ports
+
+{\bf Purpose:}\\
+Know how to use nmap to scan networks for active systems. These ports receive traffic from \emph{the internet} and can be used for DDoS attacks.
+
+Tip: Yes, filtering traffic further out removes it from processing in routers, firewalls, load balancers, etc. So making a stateless filter on the edge may be recommended.
+
+{\bf Suggested method:}\\
+Try different scans,
+\begin{itemize}
+\item Ping sweep to find active systems
+\item Port sweeps to find active systems with specific ports
+\end{itemize}
+
+{\bf Hints:} \\
+Try nmap in sweep mode - and you may run this from Zenmap
+
+{\bf Solution:}\\
+Use the command below as examples:
+\begin{itemize}
+\item Ping sweep ICMP and port probes: \verb+nmap -sP 10.0.45.*+
+\item Port sweeps 80/tcp and 443/tcp: \verb+nmap -p 80 10.0.45.*+
+\item Port sweeps UDP scans can be done: \verb+nmap -sU -p 161 10.0.45.*+
+\end{itemize}
+
+{\bf Discussion:}\\
+Quick scans quickly reveal interesting hosts, ports and services
+
+Also now make sure you understand difference between single host scan
+10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
+
+We will now assume port 80/443 are open, as well as a few UDP services - maybe we can use them in amplification attacks later.
+
+
+
+\chapter{Perform nmap OS detection}
+\label{ex:nmap-os}
+
+{\bf Objective:} \\
+Use nmap OS detection and see if you can guess the brand of devices on the network
+
+{\bf Purpose:}\\
+Getting the operating system of a system will allow you to focus your next attacks.
+
+{\bf Suggested method:}\\
+Look at the list of active systems, or do a ping sweep.
+
+Then add the OS detection using the option \verb+-O+
+
+Better to use -A all the time, includes even more scripts and advanced stuff
+See the next exercise.
+
+{\bf Hints:} \\
+
+The nmap can send a lot of packets that will get different responses, depending on the operating system. TCP/IP is implemented using various constants chosen by the implementors, they have chosen different standard packet TTL etc.
+
+{\bf Solution:}\\
+Use a command like \verb+nmap -O -p1-100 10.0.45.45+ or  \verb+nmap -A -p1-100 10.0.45.45+
+
+
+{\bf Discussion:}\\
+nmap OS detection is not a full proof way of knowing the actual operating system, but in most cases in can detect the family and in some cases it can identify the exact patch level of the system.
+
+\chapter{Perform nmap service scan}
+\label{ex:nmap-service}
+
+{\bf Objective:} \\
+Use more advanced features in Nmap to discover services.
+
+{\bf Purpose:}\\
+Getting more intimate with the system will allow more precise discovery of the vulnerabilities and also allow you to select the next tools to run.
+
+{\bf Suggested method:}\\
+Use \verb+nmap -A+ option for enabling service detection and scripts
+
+{\bf Hints:} \\
+Look into the manual page of nmap or the web site book about nmap scanning
+
+{\bf Solution:}\\
+Run nmap and get results.
+
+{\bf Discussion:}\\
+
+Some services will show software versions allowing an attacker easy lookup at web sites to known vulnerabilities and often exploits that will have a high probability of success.
+
+Make sure you know the difference between a vulnerability which is discovered, but not really there, a false positive, and a vulnerability not found due to limitations in the testing tool/method, a false negative.
+
+A sample false positive might be reporting that a Windows server has a vulnerability that you know only to exist in Unix systems.
+
+
+\chapter{Optional: Nmap full scan}
+\label{ex:nmap-strategy}
+
+
+{\bf Objective:} \\
+Documenting the security level of a network often requires extensive testing. Below are some examples of the scanning methodology needed.
+
+
+{\bf Purpose:}\\
+Doing a port scan often requires you to run multiple Nmap scans.
+
+
+{\bf Suggested method:}\\
+Use Zenmap to do:
+\begin{enumerate}
+\item A few quick scans, to get web servers and start web scanners/crawlers
+\item Full scan of all TCP ports, -p 1-65535
+\item Full or limited UDP scan, \verb+nmap -sU --top-ports 100+
+\item Specialized scans, like specific source ports
+\end{enumerate}
+
+
+{\bf Hints:} \\
+Using a specific source ports using -g/--source-port <portnum>: Use given port number with ports like FTP 20, DNS 53 can sometimes get around router filters and other stateless Access Control Lists
+
+{\bf Solution:}\\
+Run multiple nmap and get results. At least TCP and UDP top-ports 10.
+
+{\bf Discussion:}\\
+Recommendation it is highly recommended to always use:
+\begin{alltt}
+-iL <inputfilename>: Input from list of hosts/networks
+-oA outputbasename: output in all formats, see later
+\end{alltt}
+
+Some examples of real life Nmaps I have run recently:
+\begin{alltt}
+dns-scan: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+bgpscan: nmap -A -p 179 -oA bgpscan -iL targets
+dns-recursive: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+php-scan: nmap -sV --script=http-php-version -p80,443 -oA php-scan -iL targets
+scan-vtep-tcp: nmap -A -p 1-65535 -oA scan-vtep-tcp 10.1.2.3 192.0.2.123
+snmp-10.x.y.0.gnmap: nmap -sV -A -p 161 -sU --script=snmp-info -oA snmp-10xy 10.x.y.0/19
+snmpscan: nmap -sU -p 161 -oA snmpscan --script=snmp-interfaces -iL targets
+sshscan: nmap -A -p 22 -oA sshscan -iL targets
+vncscan: nmap -A -p 5900-5905 -oA vncscan -iL targets
+\end{alltt}
+
+
+
+
+\chapter{Reporting HTML}
+\label{ex:nmap-html}
+
+\hlkimage{10cm}{nmap-html.png}
+
+{\bf Objective:} \\
+Show the use of XML output and convert to HTML
+
+{\bf Purpose:}\\
+Reporting data is very important. Using the oA option Nmap can export data in three formats easily, each have their use. They are normal, XML, and grepable formats at once.
+
+{\bf Suggested method:}\\
+\begin{alltt}
+  sudo nmap -oA zencurity-web www.zencurity.com
+  xsltproc zencurity-web.xml > zencurity-web.html
+\end{alltt}
+
+{\bf Hints:} \\
+Nmap includes the stylesheet in XML and makes it very easy to create HTML.
+
+{\bf Solution:}\\
+Run XML through xsltproc, command line XSLT processor, or another tool
+
+{\bf Discussion:}\\
+
+Options you can use to change defaults:
+\begin{alltt}
+--stylesheet <path/URL>: XSL stylesheet to transform XML output to HTML
+--webxml: Reference stylesheet from Nmap.Org for more portable XML
+\end{alltt}
+
+Also check out the Ndiff tool
+\begin{alltt}
+  hlk@cornerstone03:~$ ndiff zencurity-web.xml zencurity-web-2.xml
+  -Nmap 7.70 scan initiated Fri Sep 07 18:35:54 2018 as: nmap -oA zencurity-web www.zencurity.com
+  +Nmap 7.70 scan initiated Fri Sep 07 18:46:01 2018 as: nmap -oA zencurity-web-2 www.zencurity.com
+
+   www.zencurity.com (185.129.60.130):
+   PORT    STATE SERVICE VERSION
+  +443/tcp open  https
+\end{alltt}
+
+(I ran a scan, removed a port from the first XML file and re-scanned)
+
+
+
+\chapter{Optional: Nping check ports}
+\label{ex:nping-tcp}
+{\bf Objective:} \\
+Show the use of Nping tool for checking ports through a network
+
+{\bf Purpose:}\\
+Nping can check if probes can reach through a network, reporting success of failure. Allows very specific packets to be sent.
+
+{\bf Suggested method:}\\
+\begin{alltt}\footnotesize
+  root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
+
+  Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
+  SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
+  SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
+  SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
+  SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
+  SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
+
+  Max rtt: 40.044ms | Min rtt: 4.677ms | Avg rtt: 15.398ms
+  Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)
+  Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+{\bf Hints:} \\
+A lot of options are similar to Nmap
+
+{\bf Solution:}\\
+
+
+{\bf Discussion:}\\
+A colleague of ours had problems sending specific IPsec packets through a provider. Using a tool like Nping it is possible to show what happens, or where things are blocked.
+
+Things like changing the TTL may provoke ICMP messages, like this:
+\begin{alltt}\footnotesize
+root@KaliVM:~# nping --tcp -p 80 --ttl 3 www.zencurity.com
+
+Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:08 CEST
+SENT (0.0303s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (0.0331s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28456 iplen=72 ]
+SENT (1.0314s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (1.0337s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28550 iplen=72 ]
+SENT (2.0330s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (2.0364s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28589 iplen=72 ]
+SENT (3.0346s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (3.0733s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=29403 iplen=72 ]
+SENT (4.0366s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (4.0558s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=30235 iplen=72 ]
+
+Max rtt: 38.574ms | Min rtt: 2.248ms | Avg rtt: 13.143ms
+Raw packets sent: 5 (200B) | Rcvd: 5 (360B) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+
+
+\chapter{Optional: Nmap Scripting Engine NSE scripts}
+\label{ex:nmap-nse}
+
+{\bf Objective:} \\
+Show the use of NSE scripts, copy/modify a script written in Lua.
+
+{\bf Purpose:}\\
+Investigate the scripts from Nmap, copy one, learn how to run specific script using options
+
+{\bf Suggested method:}\\
+\begin{alltt}
+# cd /usr/share/nmap/scripts
+# nmap --script http-default-accounts.nse www.zencurity.com
+# cp http-default-accounts.nse http-default-accounts2.nse
+# nmap --script http-default-accounts2.nse www.zencurity.com
+Starting Nmap 7.70 ( https://nmap.org ) at 2018-09-07 19:45 CEST
+...
+\end{alltt}
+
+This will allow you to make changes to existing scripts.
+
+{\bf Hints:} \\
+We will do this quick and dirty - later when doing this at home, I recommend putting your scripts in your home directory or a common file hierarchy.
+
+{\bf Solution:}\\
+Other examples
+\begin{alltt}
+nmap --script http-enum 10.0.45.0/24
+nmap -p 445 --script smb-os-discovery 10.0.45.0/24
+\end{alltt}
+
+
+{\bf Discussion:}\\
+There are often new scripts when new vulnerabilities are published. It is important to learn how to incorporate them into your scanning. When heartbleed roamed I was able to scan about 20.000 IPs for Heartbleed in less than 10 minutes, which enabled us to update our network quickly for this vulnerability.
+
+It is also possible to run categories of scripts:
+
+\begin{alltt}
+nmap --script "http-*"
+
+		   nmap --script "default or safe"
+			   This is functionally equivalent to nmap --script "default,safe". It loads all scripts that are in the default category or the safe category or both.
+
+		   nmap --script "default and safe"
+			   Loads those scripts that are in both the default and safe categories.
+\end{alltt}
+
+or get help for a script:
+
+\begin{alltt}
+# nmap -script-help http-vuln-cve2013-0156.nse
+Starting Nmap 7.70 ( https://nmap.org ) at 2018-09-07 19:00 CEST
+
+http-vuln-cve2013-0156
+Categories: exploit vuln
+https://nmap.org/nsedoc/scripts/http-vuln-cve2013-0156.html
+  Detects Ruby on Rails servers vulnerable to object injection, remote command
+  executions and denial of service attacks. (CVE-2013-0156)
+
+  All Ruby on Rails versions before 2.3.15, 3.0.x before 3.0.19, 3.1.x before
+  3.1.10, and 3.2.x before 3.2.11 are vulnerable. This script sends 3 harmless
+  YAML payloads to detect vulnerable installations. If the malformed object
+  receives a status 500 response, the server is processing YAML objects and
+  therefore is likely vulnerable.
+
+  References:
+  * https://community.rapid7.com/community/metasploit/blog/2013/01/10/exploiting-ruby-on-rails-with-metasploit-cve-2013-0156',
+  * https://groups.google.com/forum/?fromgroups=#!msg/rubyonrails-security/61bkgvnSGTQ/nehwjA8tQ8EJ',
+  * http://cvedetails.com/cve/2013-0156/
+\end{alltt}
+
+Some scripts also require, or allow arguments into them:
+
+\begin{alltt}
+  nmap -sC --script-args 'user=foo,pass=",{}=bar",paths={/admin,/cgi-bin},xmpp-info.server_name=localhost'
+\end{alltt}
+
+
+
+
+\chapter{Run OWASP Juice Shop 45 min}
+\label{ex:sw-startjuice}
+
+\hlkimage{3cm}{JuiceShop_Logo_100px.png}
+
+{\bf Objective:}\\
+Lets try starting the OWASP Juice Shop
+
+{\bf Purpose:}\\
+We will be doing some web hacking where you will be the hacker. There
+will be an application we try to hack, designed to
+optimise your learning.
+
+It is named JuiceShop which is written in JavaScript
+
+{\bf Suggested method:}\\
+Go to \link{https://github.com/bkimminich/juice-shop}
+
+Read the instructions for running juice-shop - docker is a simple way.
+
+What you need
+
+You need to have browsers and a proxy, plus a basic knowledge of HTTP.
+
+If you could install Firefox it would be great, and we will use the
+free version of Burp Suite, so please make sure you can run Java and
+download the free version from Portswigger from:
+
+\link{https://portswigger.net/burp/communitydownload}
+
+
+{\bf Hints:}\\
+The application is very modern, very similar to real applications.
+
+The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
+
+JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
+
+{\bf Solution:}\\
+When you have a running Juice Shop web application in your team, then we are good.
+
+{\bf Discussion:}\\
+It has lots of security problems which can be used for learning
+hacking, and thereby how to secure your applications. It is  related
+to the OWASP.org Open Web Application Security Project which also has a
+lot of resources.
+
+Sources:\\
+\url{https://github.com/bkimminich/juice-shop}\\
+\url{https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project}
+
+It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop} from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
+
+
+
+\chapter{Setup JuiceShop environment, app and proxy - up to 60min}
+\label{ex:js-burp}
+
+{\bf Objective:}\\
+Run JuiceShop with Burp proxy.
+
+Start JuiceShop and make sure it works, visit using browser.
+
+Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition.
+
+{\bf Purpose:}\\
+We will learn more about web applications as they are a huge part of the applications used in enterprises and on the internet. Most mobile apps are also web applications in disguise.
+
+By inserting a web proxy we can inspect the data being sent between browsers and the application.
+
+{\bf Suggested method:}\\
+You need to have browsers and a proxy, plus a basic knowledge of HTTP.
+
+If you could install Firefox it would be great, and we will use the
+free version of Burp Suite, so please make sure you can run Java and
+download the free version \emph{plain JAR file} from Portswigger from:
+
+\link{https://portswigger.net/burp/communitydownload}
+
+follow the Getting Started instructions at:\\
+\link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}
+
+
+{\bf Hints:}\\
+Recommend running Burp on the default address and port 127.0.0.1 port 8080.
+
+Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the button to allow data to flow.
+
+\hlkimage{10cm}{burp-default-proxy-intercept.png}
+
+Then setting it as proxy in Firefox:
+
+\hlkimage{10cm}{firefox-connection-burp.png}
+
+After setting up proxy, you can visit \url{http://burp} and get a CA certificate that can be installed, making it easier to run against HTTPS sites.
+
+The newest versions of Burp include a browser, making it much easier to run the tasks, pre-configured with proxy.
+
+{\bf Solution:}\\
+When web sites and servers start popping up in the Target tab, showing the requests and responses - you are done.
+
+Your browser will alert you when visiting TLS enabled sites, HTTPS certificates do not match, as Burp is doing a person-in-the-middle. You need to select advanced and allow this to continue.
+
+{\bf Discussion:}\\
+Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb+chmod +x bin/burp+.
+
+\begin{alltt}
+#! /bin/sh
+DIRNAME=`dirname $0`
+BURP=`ls -1tra $DIRNAME/burp*.jar | tail -1`
+java -jar -Xmx6g $BURP &
+\end{alltt}
+
+When running in production testing real sites, I typically increase the memory available using JDK / Java settings like \verb+-Xmx16g+
+
+
+
+\chapter{JuiceShop Attacks 60min}
+\label{ex:juiceshop-attack}
+
+\hlkimage{2cm}{JuiceShop_Logo_100px.png}
+
+ {\bf Objective:}\\
+Hack a web application!
+
+Try a few attacks in the JuiceShop with web proxy
+
+\begin{quote}
+The OWASP Juice Shop is a pure web application implemented in JavaScript. In the
+frontend the popular AngularJS framework is used to create a so-called Single Page
+Application. The user interface layout is provided by Twitter's Bootstrap framework - which
+works nicely in combination with AngularJS.
+JavaScript is also used in the backend as the exclusive programming language: An Express
+application hosted in a Node.js server delivers the client-side code to the browser. It also
+provides the necessary backend functionality to the client via a RESTful API.
+
+...
+
+The vulnerabilities found in the OWASP Juice Shop are categorized into several different
+classes. Most of them cover different risk or vulnerabiliy types from well-known lists or
+documents, such as OWASP Top 10 or MITRE's Common Weakness Enumeration. The
+following table presents a mapping of the Juice Shop's categories to OWASP and CWE
+(without claiming to be complete).
+\end{quote}
+
+\hlkimage{10cm}{juiceshop-mappings.png}
+Source: \emph{Pwning OWASP Juice Shop}
+
+
+ {\bf Purpose:}\\
+ Try out some of the described web application flaws in a controlled environment. See how an attacker would be able to gather information and attack through HTTP, browser and proxies.
+
+ {\bf Suggested method:}\\
+Start the web application, start Burp or another proxy - start your browser.
+
+Access the web application through your browser and get a feel for how it works. First step is to register your user, before you can shop.
+
+Dont forget to use web developer tools like the JavaScript console!
+
+Then afterwards find and try to exploit vulnerabilities, using the book from Björn and starting with some easy ones:
+
+Suggested list of starting vulns:
+\begin{list2}
+\item Admin Section Access the Admin Section
+\item Error handling Provoke and error
+\item Forged Feedback Post some feedback in another users name.
+\item Access a confidential document
+\item Forgotten Sales Backup Access a salesman's forgotten backup file.
+\item Retrieve a list of all user credentials via SQL Injection
+\end{list2}
+
+
+ {\bf Hints:}\\
+ The complete guide \emph{Pwning OWASP Juice Shop}
+written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
+\url{https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/}
+
+ {\bf Solution:}\\
+ You decide for how long you want to play with JuiceShop.
+
+ Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
+
+ {\bf Discussion:}\\
+The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
+
+Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
+
+
+
+
+\end{document}
 
 
 \chapter{Buffer Overflow 101 - 30-40min}
@@ -990,196 +1582,6 @@ When you have exploited and mapped at least one vulnerability you are done, but 
 
 {\bf Discussion:}\\
 Do we need these frameworks? What are the benefits? - can we become product blind - so we only see what these framework cover.
-
-
-
-
-\chapter{Run OWASP Juice Shop 45 min}
-\label{ex:sw-startjuice}
-
-\hlkimage{3cm}{JuiceShop_Logo_100px.png}
-
-{\bf Objective:}\\
-Lets try starting the OWASP Juice Shop
-
-{\bf Purpose:}\\
-We will be doing some web hacking where you will be the hacker. There
-will be an application we try to hack, designed to
-optimise your learning.
-
-It is named JuiceShop which is written in JavaScript
-
-{\bf Suggested method:}\\
-Go to \link{https://github.com/bkimminich/juice-shop}
-
-Read the instructions for running juice-shop - docker is a simple way.
-
-What you need
-
-You need to have browsers and a proxy, plus a basic knowledge of HTTP.
-
-If you could install Firefox it would be great, and we will use the
-free version of Burp Suite, so please make sure you can run Java and
-download the free version from Portswigger from:
-
-\link{https://portswigger.net/burp/communitydownload}
-
-
-{\bf Hints:}\\
-The application is very modern, very similar to real applications.
-
-The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
-
-JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
-
-{\bf Solution:}\\
-When you have a running Juice Shop web application in your team, then we are good.
-
-{\bf Discussion:}\\
-It has lots of security problems which can be used for learning
-hacking, and thereby how to secure your applications. It is  related
-to the OWASP.org Open Web Application Security Project which also has a
-lot of resources.
-
-Sources:\\
-\url{https://github.com/bkimminich/juice-shop}\\
-\url{https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project}
-
-It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop} from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
-
-
-
-\chapter{Setup JuiceShop environment, app and proxy - up to 60min}
-\label{ex:js-burp}
-
-{\bf Objective:}\\
-Run JuiceShop with Burp proxy.
-
-Start JuiceShop and make sure it works, visit using browser.
-
-Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition.
-
-{\bf Purpose:}\\
-We will learn more about web applications as they are a huge part of the applications used in enterprises and on the internet. Most mobile apps are also web applications in disguise.
-
-By inserting a web proxy we can inspect the data being sent between browsers and the application.
-
-{\bf Suggested method:}\\
-You need to have browsers and a proxy, plus a basic knowledge of HTTP.
-
-If you could install Firefox it would be great, and we will use the
-free version of Burp Suite, so please make sure you can run Java and
-download the free version \emph{plain JAR file} from Portswigger from:
-
-\link{https://portswigger.net/burp/communitydownload}
-
-follow the Getting Started instructions at:\\
-\link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}
-
-
-{\bf Hints:}\\
-Recommend running Burp on the default address and port 127.0.0.1 port 8080.
-
-Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the button to allow data to flow.
-
-\hlkimage{10cm}{burp-default-proxy-intercept.png}
-
-Then setting it as proxy in Firefox:
-
-\hlkimage{10cm}{firefox-connection-burp.png}
-
-After setting up proxy, you can visit \url{http://burp} and get a CA certificate that can be installed, making it easier to run against HTTPS sites.
-
-The newest versions of Burp include a browser, making it much easier to run the tasks, pre-configured with proxy.
-
-{\bf Solution:}\\
-When web sites and servers start popping up in the Target tab, showing the requests and responses - you are done.
-
-Your browser will alert you when visiting TLS enabled sites, HTTPS certificates do not match, as Burp is doing a person-in-the-middle. You need to select advanced and allow this to continue.
-
-{\bf Discussion:}\\
-Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb+chmod +x bin/burp+.
-
-\begin{alltt}
-#! /bin/sh
-DIRNAME=`dirname $0`
-BURP=`ls -1tra $DIRNAME/burp*.jar | tail -1`
-java -jar -Xmx6g $BURP &
-\end{alltt}
-
-When running in production testing real sites, I typically increase the memory available using JDK / Java settings like \verb+-Xmx16g+
-
-
-
-\chapter{JuiceShop Attacks 60min}
-\label{ex:juiceshop-attack}
-
-\hlkimage{2cm}{JuiceShop_Logo_100px.png}
-
- {\bf Objective:}\\
-Hack a web application!
-
-Try a few attacks in the JuiceShop with web proxy
-
-\begin{quote}
-The OWASP Juice Shop is a pure web application implemented in JavaScript. In the
-frontend the popular AngularJS framework is used to create a so-called Single Page
-Application. The user interface layout is provided by Twitter's Bootstrap framework - which
-works nicely in combination with AngularJS.
-JavaScript is also used in the backend as the exclusive programming language: An Express
-application hosted in a Node.js server delivers the client-side code to the browser. It also
-provides the necessary backend functionality to the client via a RESTful API.
-
-...
-
-The vulnerabilities found in the OWASP Juice Shop are categorized into several different
-classes. Most of them cover different risk or vulnerabiliy types from well-known lists or
-documents, such as OWASP Top 10 or MITRE's Common Weakness Enumeration. The
-following table presents a mapping of the Juice Shop's categories to OWASP and CWE
-(without claiming to be complete).
-\end{quote}
-
-\hlkimage{10cm}{juiceshop-mappings.png}
-Source: \emph{Pwning OWASP Juice Shop}
-
-
- {\bf Purpose:}\\
- Try out some of the described web application flaws in a controlled environment. See how an attacker would be able to gather information and attack through HTTP, browser and proxies.
-
- {\bf Suggested method:}\\
-Start the web application, start Burp or another proxy - start your browser.
-
-Access the web application through your browser and get a feel for how it works. First step is to register your user, before you can shop.
-
-Dont forget to use web developer tools like the JavaScript console!
-
-Then afterwards find and try to exploit vulnerabilities, using the book from Björn and starting with some easy ones:
-
-Suggested list of starting vulns:
-\begin{list2}
-\item Admin Section Access the Admin Section
-\item Error handling Provoke and error
-\item Forged Feedback Post some feedback in another users name.
-\item Access a confidential document
-\item Forgotten Sales Backup Access a salesman's forgotten backup file.
-\item Retrieve a list of all user credentials via SQL Injection
-\end{list2}
-
-
- {\bf Hints:}\\
- The complete guide \emph{Pwning OWASP Juice Shop}
-written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
-\url{https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/}
-
- {\bf Solution:}\\
- You decide for how long you want to play with JuiceShop.
-
- Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
-
- {\bf Discussion:}\\
-The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
-
-Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
 
 
 
@@ -1667,77 +2069,6 @@ Example, my son uses an iPhone, but I use an Android. One user might use Windows
 
 
 
-\chapter{Execute nmap TCP and UDP port scan 20 min}
-\label{ex:nmap-synscan}
-
-
-{\bf Objective:} \\
-Use nmap to discover important open ports on active systems
-
-{\bf Purpose:}\\
-Finding open ports will allow you to find vulnerabilities on these ports.
-
-{\bf Suggested method:}\\
-Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
-ports and use Nmap without ports. What is scanned then?
-
-Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
-
-If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
-
-{\bf Hints:} \\
-Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
-1024 ports without doing a Ping first
-
-{\bf Solution:}\\
-Discover some active systems and most interesting ports, which are 1-1024 and the built-in list of popular ports.
-
-{\bf Discussion:}\\
-There is a lot of documentation about the nmap portscanner, even a book by the author
-of nmap. Make sure to visit \link{http://www.nmap.org}
-
-TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
-
-When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
-
-
-\chapter{Discover active systems ping and port sweep 15 min}
-\label{ex:nmap-pingsweep}
-\hlkimage{5cm}{nmap-zenmap.png}
-
-{\bf Objective:}\\
-Use nmap to discover active systems and ports
-
-{\bf Purpose:}\\
-Know how to use nmap to scan networks for active systems. These ports receive traffic from \emph{the internet} and can be used for DDoS attacks.
-
-Tip: Yes, filtering traffic further out removes it from processing in routers, firewalls, load balancers, etc. So making a stateless filter on the edge may be recommended.
-
-{\bf Suggested method:}\\
-Try different scans,
-\begin{itemize}
-\item Ping sweep to find active systems
-\item Port sweeps to find active systems with specific ports
-\end{itemize}
-
-{\bf Hints:} \\
-Try nmap in sweep mode - and you may run this from Zenmap
-
-{\bf Solution:}\\
-Use the command below as examples:
-\begin{itemize}
-\item Ping sweep ICMP and port probes: \verb+nmap -sP 10.0.45.*+
-\item Port sweeps 80/tcp and 443/tcp: \verb+nmap -p 80 10.0.45.*+
-\item Port sweeps UDP scans can be done: \verb+nmap -sU -p 161 10.0.45.*+
-\end{itemize}
-
-{\bf Discussion:}\\
-Quick scans quickly reveal interesting hosts, ports and services
-
-Also now make sure you understand difference between single host scan
-10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
-
-We will now assume port 80/443 are open, as well as a few UDP services - maybe we can use them in amplification attacks later.
 
 \chapter{TCP SYN flooding 30min}
 \label{ex:syn-flood}

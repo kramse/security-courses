@@ -96,7 +96,8 @@ This is named Kali Linux Revealed (KLR)
 We need to install Kali Linux in a few moments, so better have the instructions ready.
 
 {\bf Suggested method:}\\
-Create folders for educational materials. Go to \link{https://www.kali.org/download-kali-linux-revealed-book/}
+Create folders for educational materials. Go to \link{https://www.kali.org/}
+
 Read and follow the instructions for downloading the book.
 
 {\bf Solution:}\\
@@ -182,9 +183,8 @@ Kali Linux includes many hacker tools and should be known by anyone working in i
 {\bf Objective:}\\
 Make sure your Debian virtual machine is in working order.
 
-We need a Debian 10 Linux for running a few extra tools during the course.
+We need a Debian 11 Linux for running a few extra tools during the course.
 
-{\Large \bf This is a bonus exercise - only one Debian is needed per team.}
 
 {\bf Purpose:}\\
 If your VM is not installed and updated we will run into trouble later.
@@ -192,12 +192,12 @@ If your VM is not installed and updated we will run into trouble later.
 {\bf Suggested method:}\\
 Go to \link{https://github.com/kramse/kramse-labs/}
 
-Read the instructions for the setup of a Kali VM.
+Read the instructions for the setup of a Debian VM.
 
 {\bf Hints:}\\
 
 {\bf Solution:}\\
-When you have a updated virtualisation software and Kali Linux, then we are good.
+When you have a updated Debian Linux, then we are good.
 
 {\bf Discussion:}\\
 Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
@@ -477,53 +477,6 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 
 
 
-\chapter{Discover active systems ping sweep 10 min}
-\label{ex:nmap-pingsweep}
-\hlkimage{5cm}{nmap-zenmap.png}
-
-{\bf Objective:}\\
-Use nmap to discover active systems
-
-{\bf Purpose:}\\
-Know how to use nmap to scan networks for active systems.
-
-{\bf Suggested method:}\\
-
-\begin{enumerate}
-\item First download the {\bf Zenmap RPM} file with type \verb+.rpm+ from\\
- \url{https://nmap.org/download}
-\item Install the tool Alien, \verb+apt install alien+
-\item then convert to .deb file using the tool alien,\\
- \verb+alien *.rpm+
-\item install like a regular package, \verb+dpkg -i *.deb+
-\end{enumerate}
-
-Process is described in various posts around the internet. for example:\\
-\url{https://lifars.com/2020/01/zenmap-installation-guide-kali-linux-2019-4/}
-
-Try different scans,
-\begin{itemize}
-\item Ping sweep to find active systems
-\item Port sweeps to find active systems with specific ports
-\end{itemize}
-
-{\bf Hints:} \\
-Try nmap in sweep mode - and you may run this from Zenmap
-
-{\bf Solution:}\\
-Use the command below as examples:
-\begin{itemize}
-\item Ping sweep \verb+nmap -sP 10.0.45.*+
-\item Port sweeps \verb+nmap -p 80 10.0.45.*+
-\end{itemize}
-
-{\bf Discussion:}\\
-Quick scans quickly reveal interesting hosts, ports and services
-
-Also now make sure you understand difference between single host scan
-10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
-
-
 \chapter{Execute nmap TCP and UDP port scan 20 min}
 \label{ex:nmap-synscan}
 
@@ -557,7 +510,48 @@ TCP and UDP is very different when scanning. TCP is connection/flow oriented and
 
 When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
 
-\chapter{Perform nmap OS detection 10 min}
+
+\chapter{Discover active systems ping and port sweep 15 min}
+\label{ex:nmap-pingsweep}
+\hlkimage{5cm}{nmap-zenmap.png}
+
+{\bf Objective:}\\
+Use nmap to discover active systems and ports
+
+{\bf Purpose:}\\
+Know how to use nmap to scan networks for active systems. These ports receive traffic from \emph{the internet} and can be used for DDoS attacks.
+
+Tip: Yes, filtering traffic further out removes it from processing in routers, firewalls, load balancers, etc. So making a stateless filter on the edge may be recommended.
+
+{\bf Suggested method:}\\
+Try different scans,
+\begin{itemize}
+\item Ping sweep to find active systems
+\item Port sweeps to find active systems with specific ports
+\end{itemize}
+
+{\bf Hints:} \\
+Try nmap in sweep mode - and you may run this from Zenmap
+
+{\bf Solution:}\\
+Use the command below as examples:
+\begin{itemize}
+\item Ping sweep ICMP and port probes: \verb+nmap -sP 10.0.45.*+
+\item Port sweeps 80/tcp and 443/tcp: \verb+nmap -p 80 10.0.45.*+
+\item Port sweeps UDP scans can be done: \verb+nmap -sU -p 161 10.0.45.*+
+\end{itemize}
+
+{\bf Discussion:}\\
+Quick scans quickly reveal interesting hosts, ports and services
+
+Also now make sure you understand difference between single host scan
+10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
+
+We will now assume port 80/443 are open, as well as a few UDP services - maybe we can use them in amplification attacks later.
+
+
+
+\chapter{Perform nmap OS detection}
 \label{ex:nmap-os}
 
 {\bf Objective:} \\
@@ -575,6 +569,7 @@ Better to use -A all the time, includes even more scripts and advanced stuff
 See the next exercise.
 
 {\bf Hints:} \\
+
 The nmap can send a lot of packets that will get different responses, depending on the operating system. TCP/IP is implemented using various constants chosen by the implementors, they have chosen different standard packet TTL etc.
 
 {\bf Solution:}\\
@@ -584,6 +579,267 @@ Use a command like \verb+nmap -O -p1-100 10.0.45.45+ or  \verb+nmap -A -p1-100 1
 {\bf Discussion:}\\
 nmap OS detection is not a full proof way of knowing the actual operating system, but in most cases in can detect the family and in some cases it can identify the exact patch level of the system.
 
+\chapter{Perform nmap service scan}
+\label{ex:nmap-service}
+
+{\bf Objective:} \\
+Use more advanced features in Nmap to discover services.
+
+{\bf Purpose:}\\
+Getting more intimate with the system will allow more precise discovery of the vulnerabilities and also allow you to select the next tools to run.
+
+{\bf Suggested method:}\\
+Use \verb+nmap -A+ option for enabling service detection and scripts
+
+{\bf Hints:} \\
+Look into the manual page of nmap or the web site book about nmap scanning
+
+{\bf Solution:}\\
+Run nmap and get results.
+
+{\bf Discussion:}\\
+
+Some services will show software versions allowing an attacker easy lookup at web sites to known vulnerabilities and often exploits that will have a high probability of success.
+
+Make sure you know the difference between a vulnerability which is discovered, but not really there, a false positive, and a vulnerability not found due to limitations in the testing tool/method, a false negative.
+
+A sample false positive might be reporting that a Windows server has a vulnerability that you know only to exist in Unix systems.
+
+
+\chapter{Optional: Nmap full scan}
+\label{ex:nmap-strategy}
+
+
+{\bf Objective:} \\
+Documenting the security level of a network often requires extensive testing. Below are some examples of the scanning methodology needed.
+
+
+{\bf Purpose:}\\
+Doing a port scan often requires you to run multiple Nmap scans.
+
+
+{\bf Suggested method:}\\
+Use Zenmap to do:
+\begin{enumerate}
+\item A few quick scans, to get web servers and start web scanners/crawlers
+\item Full scan of all TCP ports, -p 1-65535
+\item Full or limited UDP scan, \verb+nmap -sU --top-ports 100+
+\item Specialized scans, like specific source ports
+\end{enumerate}
+
+
+{\bf Hints:} \\
+Using a specific source ports using -g/--source-port <portnum>: Use given port number with ports like FTP 20, DNS 53 can sometimes get around router filters and other stateless Access Control Lists
+
+{\bf Solution:}\\
+Run multiple nmap and get results. At least TCP and UDP top-ports 10.
+
+{\bf Discussion:}\\
+Recommendation it is highly recommended to always use:
+\begin{alltt}
+-iL <inputfilename>: Input from list of hosts/networks
+-oA outputbasename: output in all formats, see later
+\end{alltt}
+
+Some examples of real life Nmaps I have run recently:
+\begin{alltt}
+dns-scan: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+bgpscan: nmap -A -p 179 -oA bgpscan -iL targets
+dns-recursive: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+php-scan: nmap -sV --script=http-php-version -p80,443 -oA php-scan -iL targets
+scan-vtep-tcp: nmap -A -p 1-65535 -oA scan-vtep-tcp 10.1.2.3 192.0.2.123
+snmp-10.x.y.0.gnmap: nmap -sV -A -p 161 -sU --script=snmp-info -oA snmp-10xy 10.x.y.0/19
+snmpscan: nmap -sU -p 161 -oA snmpscan --script=snmp-interfaces -iL targets
+sshscan: nmap -A -p 22 -oA sshscan -iL targets
+vncscan: nmap -A -p 5900-5905 -oA vncscan -iL targets
+\end{alltt}
+
+
+
+
+\chapter{Reporting HTML}
+\label{ex:nmap-html}
+
+\hlkimage{10cm}{nmap-html.png}
+
+{\bf Objective:} \\
+Show the use of XML output and convert to HTML
+
+{\bf Purpose:}\\
+Reporting data is very important. Using the oA option Nmap can export data in three formats easily, each have their use. They are normal, XML, and grepable formats at once.
+
+{\bf Suggested method:}\\
+\begin{alltt}
+  sudo nmap -oA zencurity-web www.zencurity.com
+  xsltproc zencurity-web.xml > zencurity-web.html
+\end{alltt}
+
+{\bf Hints:} \\
+Nmap includes the stylesheet in XML and makes it very easy to create HTML.
+
+{\bf Solution:}\\
+Run XML through xsltproc, command line XSLT processor, or another tool
+
+{\bf Discussion:}\\
+
+Options you can use to change defaults:
+\begin{alltt}
+--stylesheet <path/URL>: XSL stylesheet to transform XML output to HTML
+--webxml: Reference stylesheet from Nmap.Org for more portable XML
+\end{alltt}
+
+Also check out the Ndiff tool
+\begin{alltt}
+  hlk@cornerstone03:~$ ndiff zencurity-web.xml zencurity-web-2.xml
+  -Nmap 7.70 scan initiated Fri Sep 07 18:35:54 2018 as: nmap -oA zencurity-web www.zencurity.com
+  +Nmap 7.70 scan initiated Fri Sep 07 18:46:01 2018 as: nmap -oA zencurity-web-2 www.zencurity.com
+
+   www.zencurity.com (185.129.60.130):
+   PORT    STATE SERVICE VERSION
+  +443/tcp open  https
+\end{alltt}
+
+(I ran a scan, removed a port from the first XML file and re-scanned)
+
+
+
+\chapter{Optional: Nping check ports}
+\label{ex:nping-tcp}
+{\bf Objective:} \\
+Show the use of Nping tool for checking ports through a network
+
+{\bf Purpose:}\\
+Nping can check if probes can reach through a network, reporting success of failure. Allows very specific packets to be sent.
+
+{\bf Suggested method:}\\
+\begin{alltt}\footnotesize
+  root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
+
+  Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
+  SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (0.0353s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=49674 iplen=44  seq=3654597698 win=16384 <mss 1460>
+  SENT (1.0305s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (1.0391s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=50237 iplen=44  seq=2347926491 win=16384 <mss 1460>
+  SENT (2.0325s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (2.0724s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=9842 iplen=44  seq=2355974413 win=16384 <mss 1460>
+  SENT (3.0340s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (3.0387s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=1836 iplen=44  seq=3230085295 win=16384 <mss 1460>
+  SENT (4.0362s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
+  RCVD (4.0549s) TCP 185.129.60.130:80 > 10.137.0.24:3805 SA ttl=56 id=62226 iplen=44  seq=3033492220 win=16384 <mss 1460>
+
+  Max rtt: 40.044ms | Min rtt: 4.677ms | Avg rtt: 15.398ms
+  Raw packets sent: 5 (200B) | Rcvd: 5 (220B) | Lost: 0 (0.00%)
+  Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+{\bf Hints:} \\
+A lot of options are similar to Nmap
+
+{\bf Solution:}\\
+
+
+{\bf Discussion:}\\
+A colleague of ours had problems sending specific IPsec packets through a provider. Using a tool like Nping it is possible to show what happens, or where things are blocked.
+
+Things like changing the TTL may provoke ICMP messages, like this:
+\begin{alltt}\footnotesize
+root@KaliVM:~# nping --tcp -p 80 --ttl 3 www.zencurity.com
+
+Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:08 CEST
+SENT (0.0303s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (0.0331s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28456 iplen=72 ]
+SENT (1.0314s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (1.0337s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28550 iplen=72 ]
+SENT (2.0330s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (2.0364s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=28589 iplen=72 ]
+SENT (3.0346s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (3.0733s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=29403 iplen=72 ]
+SENT (4.0366s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
+RCVD (4.0558s) ICMP [10.50.43.225 > 10.137.0.24 TTL=0 during transit (type=11/code=0) ] IP [ttl=62 id=30235 iplen=72 ]
+
+Max rtt: 38.574ms | Min rtt: 2.248ms | Avg rtt: 13.143ms
+Raw packets sent: 5 (200B) | Rcvd: 5 (360B) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 4.07 seconds
+\end{alltt}
+
+
+
+\chapter{Optional: Nmap Scripting Engine NSE scripts}
+\label{ex:nmap-nse}
+
+{\bf Objective:} \\
+Show the use of NSE scripts, copy/modify a script written in Lua.
+
+{\bf Purpose:}\\
+Investigate the scripts from Nmap, copy one, learn how to run specific script using options
+
+{\bf Suggested method:}\\
+\begin{alltt}
+# cd /usr/share/nmap/scripts
+# nmap --script http-default-accounts.nse www.zencurity.com
+# cp http-default-accounts.nse http-default-accounts2.nse
+# nmap --script http-default-accounts2.nse www.zencurity.com
+Starting Nmap 7.70 ( https://nmap.org ) at 2018-09-07 19:45 CEST
+...
+\end{alltt}
+
+This will allow you to make changes to existing scripts.
+
+{\bf Hints:} \\
+We will do this quick and dirty - later when doing this at home, I recommend putting your scripts in your home directory or a common file hierarchy.
+
+{\bf Solution:}\\
+Other examples
+\begin{alltt}
+nmap --script http-enum 10.0.45.0/24
+nmap -p 445 --script smb-os-discovery 10.0.45.0/24
+\end{alltt}
+
+
+{\bf Discussion:}\\
+There are often new scripts when new vulnerabilities are published. It is important to learn how to incorporate them into your scanning. When heartbleed roamed I was able to scan about 20.000 IPs for Heartbleed in less than 10 minutes, which enabled us to update our network quickly for this vulnerability.
+
+It is also possible to run categories of scripts:
+
+\begin{alltt}
+nmap --script "http-*"
+
+		   nmap --script "default or safe"
+			   This is functionally equivalent to nmap --script "default,safe". It loads all scripts that are in the default category or the safe category or both.
+
+		   nmap --script "default and safe"
+			   Loads those scripts that are in both the default and safe categories.
+\end{alltt}
+
+or get help for a script:
+
+\begin{alltt}
+# nmap -script-help http-vuln-cve2013-0156.nse
+Starting Nmap 7.70 ( https://nmap.org ) at 2018-09-07 19:00 CEST
+
+http-vuln-cve2013-0156
+Categories: exploit vuln
+https://nmap.org/nsedoc/scripts/http-vuln-cve2013-0156.html
+  Detects Ruby on Rails servers vulnerable to object injection, remote command
+  executions and denial of service attacks. (CVE-2013-0156)
+
+  All Ruby on Rails versions before 2.3.15, 3.0.x before 3.0.19, 3.1.x before
+  3.1.10, and 3.2.x before 3.2.11 are vulnerable. This script sends 3 harmless
+  YAML payloads to detect vulnerable installations. If the malformed object
+  receives a status 500 response, the server is processing YAML objects and
+  therefore is likely vulnerable.
+
+  References:
+  * https://community.rapid7.com/community/metasploit/blog/2013/01/10/exploiting-ruby-on-rails-with-metasploit-cve-2013-0156',
+  * https://groups.google.com/forum/?fromgroups=#!msg/rubyonrails-security/61bkgvnSGTQ/nehwjA8tQ8EJ',
+  * http://cvedetails.com/cve/2013-0156/
+\end{alltt}
+
+Some scripts also require, or allow arguments into them:
+
+\begin{alltt}
+  nmap -sC --script-args 'user=foo,pass=",{}=bar",paths={/admin,/cgi-bin},xmpp-info.server_name=localhost'
+\end{alltt}
 
 
 

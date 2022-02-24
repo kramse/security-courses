@@ -1,3 +1,8 @@
+
+Exam questions, with keywords - which are examples of the subjects in this question.
+
+You should prepare a 10 minute talk about the subject, but don't try to include every keyword!
+
 ## 1) Overview of Enterprise Attacks
 Mitre ATT&CK
 Common Vulnerabilities and Exposures (CVE)
@@ -10,35 +15,34 @@ Cost-Benefit Analysis
 Risk Analysis
 Human Issues
 
-## 2) Security Policies / Confidentiality Policies
+## 2) Confidentiality Policies AND Confidentiality in general
+
 Confidentiality, Integrity and Availability
 Access Control Matrix
 Security policy
-Confidentiality Policies Bell-LaPadula Model
 Discretionary Access Control (DAC)
 Mandatory Access Control (MAC)
 Acceptable Use Policies
 Example Academic Computer Security Policy from the book
-Example SELinux
+If you like the formal models: Confidentiality Policies Bell-LaPadula Model
+SELinux
 
-## 3) Integrity and Availability Policies
-Accuracy vs disclosure
-The Biba Model
-Clark-Wilson Integrity Model
-Lipners Integrity Matrix Model
-Trust models
+## 3) Integrity and Availability
+
+Confidentiality, Integrity and Availability
 Deadlocks, DBMS, databases, Postgresql
 Availability and flooding attacks, Protection against TCP Synfloods
+If you like the formal models: The Biba Model, Clark-Wilson Integrity Model,
+Lipners Integrity Matrix Model
+Trust models
 
-## 4) Hybrid Policies / Breaking out
-Chinese Wall model - Confidentiality and Integrity
+## 4) Real-life Policies and data leaks
+Chinese Wall model - Confidentiality and Integrity in the real world
 Clinical Information Systems security model
-Originator Controlled Access Control
 Role-based Access Control (RBAC), example Github
 Break-the-glass Policies
 Side Channels and Deducibility
 Memory Errors and Row hammer - explaining row hammer outside of curriculum
-
 
 ## 5) Basic Cryptography
 Basic Cryptography
@@ -69,7 +73,7 @@ Smashing The Stack For Fun And Profit, Bypassing non-executable-stack during exp
 return-to-libc, Basic Integer Overflows, Return-Oriented Programming
 
 ## 7) Secure Systems Design and Implementation
-Principle of least privilege, fail-safe defaults, separation of privilege etc.
+Security Principles: Principle of least privilege, fail-safe defaults, separation of privilege etc.
 - dont try to go over ALL of them in 10mins
 Files, objects, users, groups and roles
 Naming and Certificates
@@ -77,7 +81,7 @@ Access Control Lists
 Domain Name System Security Extensions DNSSEC
 Capabilities, Capsicum, Wedge, Jails, chroot, Pledge, and Unveil, in OpenBSD
 
-Examples
+Other examples
 Email security DNSSEC, SPF, DMARC
 Email servers vulns in Exim, OpenSMTPD
 Firewalls

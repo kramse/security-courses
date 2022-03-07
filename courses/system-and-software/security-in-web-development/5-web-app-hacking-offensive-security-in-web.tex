@@ -17,9 +17,9 @@
 Todays goals:
 \begin{list2}
 \item Web Application Hacking -- offensive
-\item Do offensive testing on web applications
+\item Talk about how to perform offensive testing on web applications
 \item Talk about common patterns and findings in web applications
-\item Perform analysis of the underlying factors, why is it possible
+\item Discuss how we can do this more structured, hint OWASP Testing Guide
 \end{list2}
 
 Photo by Thomas Galler on Unsplash
@@ -31,14 +31,24 @@ Photo by Thomas Galler on Unsplash
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item Offense against web application, as an example of software
+\item Offense against web application, as an introduction to what our apps get
 \item The list of offensive methods from the Web Application Security book
 \end{list2}
 \item Exercises
 \begin{list2}
-\item JuiceShop Attacks, repeat -- lets see if it is easier now
+\item Discussion about JuiceShop Attacks, but consider how you would avoid them
 \end{list2}
 \end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item Structured approach to offensive, we will download the OWASP Testing Guide
+\item 1) Going over my presentation, first part summary of recon -- first 45min
+\item 2) The book chapters 9-16, a structured method -- next 2x 45min
+\item 4) Introduction to the exam project!
+\end{list2}
+
 
 \slide{Reading Summary}
 
@@ -77,6 +87,194 @@ Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 97814920531
 \end{list2}
 
 
+
+\slide{Sqlmap}
+
+\begin{quote}\small
+sqlmap is an open source penetration testing tool that automates the process of detecting and exploiting SQL injection flaws and taking over of database servers. It comes with a powerful detection engine, many niche features for the ultimate penetration tester and a broad range of switches lasting from database fingerprinting, over data fetching from the database, to accessing the underlying file system and executing commands on the operating system via out-of-band connections.
+
+\end{quote}
+
+\begin{list1}
+\item Automatic SQL injection and database takeover tool
+\link{http://sqlmap.org/}
+\end{list1}
+
+
+\slide{sqlmap features}
+
+\hlkimage{15cm}{sqlmap-features-1.png}
+
+Not a complete list!
+
+Source: \link{http://sqlmap.org/}
+
+\slide{PHP shell escapes}
+
+\begin{alltt}
+<pre>
+<?php passthru("{\bfseries netstat -an && ifconfig -a}"); ?>
+</pre>
+\end{alltt}
+\begin{list1}
+\item Many tools have shell escapes:
+\begin{list2}
+\item Perl: \verb+print `/usr/bin/finger $input{'command'}`;+
+\item UNIX shell: \verb+`echo hej`+
+\item Microsoft SQL: \verb+exec master..xp_cmdshell 'net user test testpass /ADD'+
+\end{list2}
+\end{list1}
+%$
+
+\vskip 1 cm
+
+\centerline{\bfseries So being able to inject SQL or commands can be critical}
+
+
+\slide{Shellshock CVE-2014-6271 - and others}
+
+\hlkimage{13cm}{shellshock-ubuntu.png}
+
+Source:
+\link{https://en.wikipedia.org/wiki/Shellshock_(software_bug)}
+
+\slide{Initial Overview of Software Security}
+
+\begin{list2}
+\item Security Testing Versus Traditional Software Testing
+\item Functional testing does not prevent security issues!
+\item SQL Injection example, injecting commands into database
+\item Attackers try to break the application, server, operating system, etc.
+\item Use methods like user input, memory corruption / buffer overflow, poor exception handling, broken authentication, ...
+\end{list2}
+
+\vskip 2cm
+\centerline{\LARGE Where to start?}
+
+
+\slide{OWASP top ten}
+
+\hlkimage{16cm}{owasp.jpg}
+
+\begin{quote}
+The OWASP Top Ten provides a minimum standard for web application
+security. The OWASP Top Ten represents a broad consensus about what
+the most critical web application security flaws are.
+\end{quote}
+
+\begin{list1}
+\item The Open Web Application Security Project (OWASP)
+\item OWASP produces lists of the most common types of errors in web applications
+\item \link{http://www.owasp.org}
+\item Create Secure Software Development Lifecycle
+\end{list1}
+
+
+
+\slide{OWASP Web Security Testing Guide}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  The Web Security Testing Guide (WSTG) Project produces the premier cybersecurity testing resource for web application developers and security professionals.
+
+  The WSTG is a comprehensive guide to testing the security of web applications and web services. Created by the collaborative efforts of cybersecurity professionals and dedicated volunteers, the WSTG provides a framework of best practices used by penetration testers and organizations all over the world.
+\end{quote}
+Source: OWASP
+
+\begin{list2}
+  \item OWASP Web Security Testing Guide\\
+  \link{https://owasp.org/www-project-web-security-testing-guide/}
+  \item Also available as a checklist \verb+OWASPv4_Checklist.xlsx+
+\end{list2}
+
+
+
+\slide{Testing Labs}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item Sniffers Wireshark and similar tools
+\item Proxies and fuzzers
+\item Debuggers
+\item Virtualisation - can also emulate ARM on Intel etc.
+\item Laptops and network hardware - dont use a HUB! Cheap managed switch with mirror port is better
+\end{list2}
+
+
+\slide{We will get to the Defensive part of the book soon}
+
+
+
+\slide{Goals: Secure Software}
+
+\hlkimage{8cm}{dragon-drawing-6.jpg}
+
+Here be dragons
+\begin{list2}
+\item Software is insecure
+\item How do we improve quality
+\item Higher quality is more stable, and more secure
+\item Make sure to test specifically for security issues
+\end{list2}
+
+We talked about security design with Qmail and Postfix recently. This year has been bad for Exim mailserver: CVE-2019-10149, CVE-2019-13917 and CVE-2019-15846
+
+
+
+\slide{Software Development Lifecycle}
+
+\begin{quote}
+  A full lifecycle approach is the only way to achieve secure software.\\
+  --Chris Wysopal
+\end{quote}
+
+\begin{list2}
+\item Often security testing is an afterthought
+\item Vulnerabilities emerge during design and implementation
+\item Before, during and after approach is needed
+\end{list2}
+
+\slide{Secure Software Development Lifecycle}
+
+\begin{list2}
+\item SSDL represents a structured approach toward implementing and performing secure software development
+\item Security issues evaluated and addressed early
+\item During business analysis
+\item through requirements phase
+\item during design and implementation
+\end{list2}
+
+\slide{Functional specification needs to evaluate security}
+
+\begin{list2}
+\item Completeness
+\item Consistency
+\item Feasibility
+\item Testability
+\item Priority
+\item Regulations
+\end{list2}
+
+Source: The Art of Software Security Testing Identifying Software Security Flaws
+Chris Wysopal ISBN: 9780321304865
+
+\slide{Phases of SSDL}
+
+\begin{list2}
+\item Phase 1: Security Guidelines, Rules, and Regulations
+\item Phase 2: Security requirements: attack use cases
+\item Phase 3: Architectural and design reviews/threat modelling
+\item Phase 4: Secure coding guidelines
+\item Phase 5: Black/gray/white box testing
+\item Phase 6: Determining exploitability
+\end{list2}
+
+
+\slide{End part I}
+
+
 \slide{Exploiting web applications is exploiting software}
 
 %\hlkimage{}{}
@@ -94,7 +292,6 @@ Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 97814920531
 \item Web applications are exposing the organisation
 \item Vulnerabilities in the web applications typically allow access to data/databases
 \end{list2}
-
 
 
 \slide{Part II. Offense, chapters 9-16}
@@ -178,63 +375,6 @@ SQL injection is the most common form of injection, {\bf but not the only form}.
 \end{list2}
 
 
-\slide{Sqlmap}
-
-\begin{quote}\small
-sqlmap is an open source penetration testing tool that automates the process of detecting and exploiting SQL injection flaws and taking over of database servers. It comes with a powerful detection engine, many niche features for the ultimate penetration tester and a broad range of switches lasting from database fingerprinting, over data fetching from the database, to accessing the underlying file system and executing commands on the operating system via out-of-band connections.
-
-\end{quote}
-
-\begin{list1}
-\item Automatic SQL injection and database takeover tool
-\link{http://sqlmap.org/}
-\end{list1}
-
-
-\slide{sqlmap features}
-
-\hlkimage{15cm}{sqlmap-features-1.png}
-
-Not a complete list!
-
-Source: \link{http://sqlmap.org/}
-
-\slide{PHP shell escapes}
-
-\begin{list1}
-\item Hvad indeholder hackerens udgave af filen \verb+data/config.php+ \\
-- alt, bagdøre, hack scripts, exploits
-\end{list1}
-\begin{alltt}
-<pre>
-<?php passthru("{\bfseries netstat -an && ifconfig -a}"); ?>
-</pre>
-\end{alltt}
-\begin{list1}
-\item Andre shell escapes:
-\begin{list2}
-\item Perl: \verb+print `/usr/bin/finger $input{'command'}`;+
-\item UNIX shell: \verb+`echo hej`+
-\item Microsoft SQL: \verb+exec master..xp_cmdshell 'net user test testpass /ADD'+
-\end{list2}
-\end{list1}
-%$
-
-\vskip 1 cm
-
-\centerline{\bfseries resultat: webserveren sender data ud via normal HTTP}
-
-
-\slide{Shellshock CVE-2014-6271 - and others}
-
-\hlkimage{13cm}{shellshock-ubuntu.png}
-
-Source:
-\link{https://en.wikipedia.org/wiki/Shellshock_(software_bug)}
-
-\centerline{Kan udnyttes over HTTP, hvis data rammer en bash shell}
-
-
 
 \slide{14. Denial of Service (DoS)}
 
@@ -313,69 +453,21 @@ Source: Center for Internet Security CIS Controls v8 \verb+CIS_Controls_v8_Guide
 
 
 
-\slide{OWASP top ten}
 
-\hlkimage{16cm}{owasp.jpg}
-
-\begin{quote}
-The OWASP Top Ten provides a minimum standard for web application
-security. The OWASP Top Ten represents a broad consensus about what
-the most critical web application security flaws are.
-\end{quote}
-
-\begin{list1}
-\item The Open Web Application Security Project (OWASP)
-\item OWASP produces lists of the most common types of errors in web applications
-\item \link{http://www.owasp.org}
-\item Create Secure Software Development Lifecycle
-\end{list1}
-
-
-
-\slide{OWASP Web Security Testing Guide}
+\slide{Exercise time: Discussing the JuiceShop}
 
 %\hlkimage{}{}
+We know the Juice Shop contains lots of vulnerabilities. How would you proceed if this was your company?
 
-\begin{quote}
-  The Web Security Testing Guide (WSTG) Project produces the premier cybersecurity testing resource for web application developers and security professionals.
-
-  The WSTG is a comprehensive guide to testing the security of web applications and web services. Created by the collaborative efforts of cybersecurity professionals and dedicated volunteers, the WSTG provides a framework of best practices used by penetration testers and organizations all over the world.
-\end{quote}
-Source: OWASP
 
 \begin{list2}
-  \item OWASP Web Security Testing Guide\\
-  \link{https://owasp.org/www-project-web-security-testing-guide/}
-  \item Also available as a checklist \verb+OWASPv4_Checklist.xlsx+
+\item Test and patch
+\item Insert Web Application Firewall in front
+\item Start from scratch
 \end{list2}
 
+How do we protect against attacks we don't know or understand?
 
-
-\slide{Testing Labs}
-
-\hlkimage{8cm}{hacklab-1.png}
-
-\begin{list2}
-\item Sniffers Wireshark and similar tools
-\item Proxies and fuzzers
-\item Debuggers
-\item Virtualisation - can also emulate ARM on Intel etc.
-\item Laptops and network hardware - dont use a HUB! Cheap managed switch with mirror port is better
-\end{list2}
-
-\slide{Exercise time: specific vulns}
-
-%\hlkimage{}{}
-
-We will now do the specific list of starting vulns:
-\begin{list2}
-\item Admin Section Access the Admin Section
-\item Error handling Provoke and error
-\item Forged Feedback Post some feedback in another users name.
-\item Access a confidential document
-\item Forgotten Sales Backup Access a salesman's forgotten backup file.
-\item Retrieve a list of all user credentials via SQL Injection
-\end{list2}
 \exercise{ex:juiceshop-attack}
 
 \slidenext{}

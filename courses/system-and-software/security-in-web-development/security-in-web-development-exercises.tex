@@ -146,7 +146,7 @@ The book KLR is free, but you can buy/donate, and I recommend it.
 
 
 
-\chapter{Check your Debian VM 10 min}
+\chapter{Check your Debian Linux VM 10 min}
 \label{ex:sw-basicDebianVM}
 
 \hlkimage{10cm}{debian-xfce.png}
@@ -1549,7 +1549,7 @@ A new product will often use a generic small computer and framework with securit
 \label{ex:nikto-webscanner}
 
 {\bf Objective:}\\
-Try the program Nikto locally your workstation
+Try the program Nikto locally on your workstation
 
 
 {\bf Purpose:}\\
@@ -1617,7 +1617,7 @@ When you have tried the tool and seen some data you are done.
 \label{ex:whatweb-scanner}
 
 {\bf Objective:}\\
-Try the program Whatweb locally your workstation
+Try the program Whatweb locally on your workstation
 
 
 {\bf Purpose:}\\
@@ -1656,6 +1656,428 @@ It tries to fetch common files left or used by specific technologies.
 
 
 
+\chapter{Apache Benchmark 20 min}
+\label{ex:apache-benchmark}
+
+{\bf Objective:}\\
+Try the program Apache Benchmark locally on your workstation
+
+
+{\bf Purpose:}\\
+Running this benchmark will allow you to analyse your webserver, perform testing and get data about performance.
+
+On Debian this tool is in the package: \verb+apache2-utils+ (hint:  \verb+apt install apache2-utils+)
+
+\begin{alltt}\footnotesize
+\$
+ab -n 100 https://www.kramse.org/
+This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking www.kramse.org (be patient).....done
+
+
+Server Software:        nginx
+Server Hostname:        www.kramse.org
+Server Port:            443
+SSL/TLS Protocol:       TLSv1.2,ECDHE-RSA-AES256-GCM-SHA384,4096,256
+Server Temp Key:        ECDH P-384 384 bits
+TLS Server Name:        www.kramse.org
+
+Document Path:          /
+Document Length:        5954 bytes
+
+Concurrency Level:      1
+Time taken for tests:   9.596 seconds
+Complete requests:      100
+Failed requests:        0
+Total transferred:      651100 bytes
+HTML transferred:       595400 bytes
+Requests per second:    10.42 [#/sec] (mean)
+Time per request:       95.962 [ms] (mean)
+Time per request:       95.962 [ms] (mean, across all concurrent requests)
+Transfer rate:          66.26 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:       48   71 105.5     61    1114
+Processing:     6   25 157.8      9    1587
+Waiting:        5    9   1.9      9      16
+Total:         55   96 189.0     70    1649
+
+Percentage of the requests served within a certain time (ms)
+  50%     70
+  66%     72
+  75%     73
+  80%     74
+  90%     76
+  95%     78
+  98%   1124
+  99%   1649
+ 100%   1649 (longest request)
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Debian or Kali Linux VM
+
+
+{\bf Hints:}\\
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+Apache benchmark is very simple, more advanced tools can perform more advanced testing, following a login flow, ordering something, completing a purchase etc.
+
+
+\chapter{Bonus:TCP SYN flooding 30min}
+\label{ex:syn-flood}
+
+{\bf Objective:}\\
+Start a webserver attack using SYN flooding tool hping3.
+
+{\bf Purpose:}\\
+See how easy it is to produce packets on a network using hacker programs.
+
+The tool we will use is very flexible and can produce ICMP, UDP and TCP using very few options. This tool is my primary one for doing professsional DDoS testing.
+
+\begin{alltt}\footnotesize
+-1 --icmp
+       ICMP  mode,  by  default  hping3  will  send  ICMP echo-request, you can set other ICMP
+       type/code using --icmptype --icmpcode options.
+
+-2 --udp
+       UDP mode, by default hping3 will send udp to target host's port 0.  UDP header  tunable
+       options are the following: --baseport, --destport, --keep.
+\end{alltt}
+
+TCP mode is default, so no option needed.
+
+
+{\bf Suggested method:}\\
+Connect to the LAB network using Ethernet! Borrow a USB network card if you dont have one.
+
+Start your Kali VM in bridged mode, try a basic TCP flooding attack against the server provided by the instructor, or your own Debian server.
+
+Try doing the most common attacks TCP SYN flood using hping3:
+
+\begin{alltt}
+hping3 --flood -p 80 -S 10.0.45.12
+\end{alltt}
+
+You should see something like this:
+\begin{alltt}\footnotesize
+HPING 10.0.45.12: NO FLAGS are set, 40 headers + 0 data bytes
+hping in flood mode, no replies will be shown
+^C
+--- 10.0.45.12 hping statistic ---
+352339 packets transmitted, 0 packets received, 100% packet loss
+round-trip min/avg/max = 0.0/0.0/0.0 ms
+\end{alltt}
+
+You can try different ports with TCP flooding, try port 22/tcp or HTTP(S) port 80/tcp and 443/tcp
+
+
+{\bf Hints:}\\
+The tool we use can do a lot of different things, and you can control the speed. You can measure at the server being attacked or what you are sending, commonly using ifpps or such programs can help.
+
+By changing the speed we can find out how much traffic is needed to bring down a service. This measurement can then be re-checked later and see if improvements really worked.
+
+This allows you to use the tool to test devices and find the breaking point, which is more interesting than if you can overload, because you always can.
+\begin{alltt}\footnotesize
+-i --interval
+       Wait  the  specified  number  of  seconds or micro seconds between sending each packet.
+       --interval X set wait to X seconds, --interval uX set wait to X micro seconds.  The de‐
+       fault  is  to  wait one second between each packet. Using hping3 to transfer files tune
+       this option is really important in order to increase transfer rate. Even  using  hping3
+       to  perform  idle/spoofing  scanning  you should tune this option, see HPING3-HOWTO for
+       more information.
+
+--fast Alias for -i u10000. Hping will send 10 packets for second.
+
+--faster
+       Alias for -i u1. Faster then --fast ;) (but not as fast as your computer can send pack‐
+       ets due to the signal-driven design).
+
+--flood
+       Sent  packets  as fast as possible, without taking care to show incoming replies.  This
+       is ways faster than to specify the -i u0 option.
+\end{alltt}
+
+{\bf Solution:}\\
+When your team has sent +1 million packets per second into the network, from one or two laptops - you are done.
+
+{\bf Discussion:}\\
+Gigabit Ethernet can send up to 1.4 million packets per second, pps.
+
+There is a presentation about DDoS protection with low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+
+Receiving systems, and those en route to the service, should be checked for resources like CPU load, bandwidth, logging. Logging can also overload the logging infrastructure, so take care when configuring this in your own networks.
+
+
+
+
+
+\chapter{Nginx as a Transport Layer Security (TLS) endpoint 20 min}
+\label{ex:nginx-tls}
+
+{\bf Objective:}\\
+Try configuring Nginx with TLS locally on your workstation
+
+
+{\bf Purpose:}\\
+Web services with TLS is a requirement in many circumstances. Unfortunately having TLS enabled requires both certificates, settings and large software packages like OpenSSL. A lot of vulnerabilities have been found in these and updating them may prove hard.
+
+Having a centralized entry where TLS is served to the internet may help you.
+
+{\bf Suggested method:}\\
+Run the programs from your Debian Linux VM, use \verb+apt install nginx+ if not already installed.
+
+Follow a guide like the one from Nginx:\\
+\url{http://nginx.org/en/docs/http/configuring_https_servers.html}
+
+Check using sslscan if your site is working, and configured according to best current practice.
+
+{\bf Hints:}\\
+Note: above link does NOT show how to generate certificates and keys, so you need to find this yourself. A good place would be at certificate providers, search for Nginx CSR Certificate Signing Request -- just dont order certificates.
+
+A full blown tutorial from Digital Ocean:\\
+\link{https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-on-debian-10}
+
+My kramse-labs also includes some example configs, check with \verb+git pull+
+
+{\bf Solution:}\\
+When you have configured an instance of Nginx you are done.
+
+{\bf Discussion:}\\
+A great document about Transport Layer Security (TLS) is available from the web site of NCSC in the Netherlands:\\
+{\scriptsize\url{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+Dont forget to add the recommended HTTP Strict Transport Security header to your configuration, if your site is in production.
+
+{\footnotesize\url{https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html}}
+
+A regular production site could also benefit from Lets Encrypt certificates updated automatically using one of the many clients available. Try searching for Lets Encrypt and Nginx.
+
+\chapter{Run Nginx as a load balancer}
+\label{ex:nginx-loadbalancer}
+
+
+{\bf Objective:}\\
+Run Nginx in a load balancing configuration.
+
+{\bf Purpose:}\\
+See an example load balancing tool used for many integration projects, Nginx
+
+{\bf Suggested method:}\\
+Running Nginx as a load balancer does not require a lot of configuration.
+
+First goal: Make Nginx listen on two ports by changing the default configuration.
+
+\begin{list2}
+\item Start by installing Nginx in your Debian, see it works - open localhost port 80 in browser\\
+\verb+apt install nginx+
+\item Copy the configuration file! Keep this backup,\\
+\verb+cd /etc/nginx/;cp nginx.conf nginx.conf.orig+
+\item Add / copy the section for the port 80 server, see below
+\item Change \emph{sites} to use port 81 and port 82
+\end{list2}
+
+
+Creating a new site, based on the default site found on Nginx in Debian:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/etc/nginx# cd /etc/nginx/sites-enabled/
+root@debian-lab:/etc/nginx/sites-enabled# cp default default2
+root@debian-lab:/etc/nginx/sites-enabled# cd /var/www/
+root@debian-lab:/var/www# cp -r html html2
+\end{minted}
+
+Then edit files \verb+default+ to use port 81/tcp and \verb+default2+ to use port 82/tcp
+
+- also make sure \verb+default2+ uses \verb+root /var/www/html2+
+
+Configuration changes made.
+
+These are the changes you should make:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/etc/nginx/sites-enabled# diff default default2
+22,23c22,23
+< 	listen 81 default_server;
+< 	listen [::]:81 default_server;
+---
+> 	listen 82 default_server;
+> 	listen [::]:82 default_server;
+41c41
+< 	root /var/www/html;
+---
+> 	root /var/www/html2;
+\end{minted}
+
+
+
+Config test and restart of Nginx can be done using stop and start commands:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/var/www# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+root@debian-lab:/var/www# service nginx stop
+root@debian-lab:/var/www# service nginx start
+\end{minted}
+
+You can now visit \url{http://127.0.0.1:81} and \url{http://127.0.0.1:82}\\
+ - which show the same text, but you can change the files in \\
+ \verb+/var/www/html+ and \verb+/var/www/html2+
+
+NOTE: also verify that port 80 does \emph{not work} anymore!
+
+Adding the loadbalancer in nginx.conf.
+
+We can now add the two \emph{servers} running into a single loadbalancer with a little configuration:
+
+Add this into \verb+/etc/nginx/nginx.conf+ - inside the section \verb+http { ... }+
+\begin{minted}[fontsize=\footnotesize]{shell}
+upstream myapp1 {
+        server localhost:81;
+        server localhost:82;
+}
+server {
+        listen 80;
+        location / {
+                proxy_pass http://myapp1;
+        }
+}
+\end{minted}
+
+And test using \url{http://127.0.0.1:80}
+
+
+
+{\bf Hints:}\\
+Make changes to the two sets of HTML files
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:~# cd /var/www/
+root@debian-lab:/var/www# diff html
+html/  html2/
+root@debian-lab:/var/www# diff html/index.nginx-debian.html html2/index.nginx-debian.html
+4c4
+< <title>Welcome to nginx!</title>
+---
+> <title>Welcome to nginx2!</title>
+14c14
+< <h1>Welcome to nginx!</h1>
+---
+> <h1>Welcome to nginx2!</h1>
+\end{minted}
+
+When reloading the page a few times it will switch between the two versions
+
+My kramse-labs also includes some example configs, check with \verb+git pull+
+
+{\bf Solution:}\\
+When you have Nginx running load balanced, then we are good.
+
+{\bf Discussion:}\\
+Nginx is also common in cloud environments.
+
+\chapter{Nginx logging  20 min}
+\label{ex:nginx-logging}
+
+{\bf Objective:}\\
+See the common log format used by web servers.
+
+\url{https://en.wikipedia.org/wiki/Common_Log_Format}
+
+
+{\bf Purpose:}\\
+Knowing that a common format exist, allow you to choose between multiple log processors.
+
+
+{\bf Suggested method:}\\
+Run Nginx on your Debian Linux VM and then check the logs.
+
+
+\begin{alltt}
+# cd /var/log/nginx
+# ls
+# less access.log
+# less error.log
+\end{alltt}
+
+
+Produce some bad logs using Nikto or using a browser, and check \verb+error.log+
+
+
+{\bf Hints:}\\
+A lot of scanning acctivities would result in error logs, so if you observe a rise in 404 not found or similar, then maybe you are being targetted.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+I commonly recommend tools like Packetbeat and other tools from Elastic to process logs, see \link{https://www.elastic.co/beats/packetbeat}
+
+Another popular one is Matomo formerly known as Piwik\\
+\link{https://matomo.org/}.
+
+
+\chapter{Nginx filtering 40 min}
+\label{ex:nginx-filtering}
+
+{\bf Objective:}\\
+See how Nginx can filter a request easily.
+
+
+{\bf Purpose:}\\
+Running Nginx with a filtering configuration can protect some resource, or part of a web site from attacks.
+
+Example configuration:
+\begin{minted}[fontsize=\footnotesize]{shell}
+server {
+    listen       80;
+    server_name  service.dev;
+    access_log   /var/log/nginx/access.log;
+    error_log    /var/log/nginx/error.log debug;
+    # Proxy settings
+    proxy_set_header   Host $http_host;
+    proxy_redirect     off;
+    location / {
+        # Catch all
+        proxy_pass     http://127.0.0.1:81/;
+    }
+    location /admin/ {
+        # /admin/ only
+        allow 192.168.5.0/24;
+        deny  all;
+        proxy_pass     http://127.0.0.1:81/;
+    }
+}
+\end{minted}
+
+Note; this does a proxy pass to another service locally, you may need to change it. Perhaps you can use the JuiceShop example running on port 3000.
+
+As a directory to disallow, perhaps the \verb+/ftp/+ one.
+
+{\bf Suggested method:}\\
+Run the configuration from your Debian Linux VM
+
+
+{\bf Hints:}\\
+My kramse-labs also includes some example configs, check with \verb+git pull+
+
+Having a negative list is bad, better to have a positive list of allowed requests.
+
+{\bf Solution:}\\
+When you have tried above and seen Nginx block your request, you are done.
+
+{\bf Discussion:}\\
+Multiple modules exist for Nginx, Apache, PHP etc. for blocking bad requests.
+Which one is right for your setup, you must research for yourselves.
 
 \end{document}
 
@@ -1788,7 +2210,7 @@ Bonus, can we find some structs missing this?
 
 
 {\bf Objective:}\\
-Try the program Wireshark locally your workstation, or tcpdump
+Try the program Wireshark locally on your workstation, or tcpdump
 
 You can run Wireshark on your host too, if you want.
 
@@ -2030,92 +2452,6 @@ Your internet provider can see when you are home, when you start your browser et
 Example, my son uses an iPhone, but I use an Android. One user might use Windows 7, while another uses Windows 10 - traffic will be different.
 
 
-
-
-\chapter{TCP SYN flooding 30min}
-\label{ex:syn-flood}
-
-{\bf Objective:}\\
-Start a webserver attack using SYN flooding tool hping3.
-
-{\bf Purpose:}\\
-See how easy it is to produce packets on a network using hacker programs.
-
-The tool we will use is very flexible and can produce ICMP, UDP and TCP using very few options. This tool is my primary one for doing professsional DDoS testing.
-
-\begin{alltt}\footnotesize
--1 --icmp
-       ICMP  mode,  by  default  hping3  will  send  ICMP echo-request, you can set other ICMP
-       type/code using --icmptype --icmpcode options.
-
--2 --udp
-       UDP mode, by default hping3 will send udp to target host's port 0.  UDP header  tunable
-       options are the following: --baseport, --destport, --keep.
-\end{alltt}
-
-TCP mode is default, so no option needed.
-
-
-{\bf Suggested method:}\\
-Connect to the LAB network using Ethernet! Borrow a USB network card if you dont have one.
-
-Start your Kali VM in bridged mode, try a basic TCP flooding attack against the server provided by the instructor, or your own Debian server.
-
-Try doing the most common attacks TCP SYN flood using hping3:
-
-\begin{alltt}
-hping3 --flood -p 80 -S 10.0.45.12
-\end{alltt}
-
-You should see something like this:
-\begin{alltt}\footnotesize
-HPING 10.0.45.12: NO FLAGS are set, 40 headers + 0 data bytes
-hping in flood mode, no replies will be shown
-^C
---- 10.0.45.12 hping statistic ---
-352339 packets transmitted, 0 packets received, 100% packet loss
-round-trip min/avg/max = 0.0/0.0/0.0 ms
-\end{alltt}
-
-You can try different ports with TCP flooding, try port 22/tcp or HTTP(S) port 80/tcp and 443/tcp
-
-
-{\bf Hints:}\\
-The tool we use can do a lot of different things, and you can control the speed. You can measure at the server being attacked or what you are sending, commonly using ifpps or such programs can help.
-
-By changing the speed we can find out how much traffic is needed to bring down a service. This measurement can then be re-checked later and see if improvements really worked.
-
-This allows you to use the tool to test devices and find the breaking point, which is more interesting than if you can overload, because you always can.
-\begin{alltt}\footnotesize
--i --interval
-       Wait  the  specified  number  of  seconds or micro seconds between sending each packet.
-       --interval X set wait to X seconds, --interval uX set wait to X micro seconds.  The de‐
-       fault  is  to  wait one second between each packet. Using hping3 to transfer files tune
-       this option is really important in order to increase transfer rate. Even  using  hping3
-       to  perform  idle/spoofing  scanning  you should tune this option, see HPING3-HOWTO for
-       more information.
-
---fast Alias for -i u10000. Hping will send 10 packets for second.
-
---faster
-       Alias for -i u1. Faster then --fast ;) (but not as fast as your computer can send pack‐
-       ets due to the signal-driven design).
-
---flood
-       Sent  packets  as fast as possible, without taking care to show incoming replies.  This
-       is ways faster than to specify the -i u0 option.
-\end{alltt}
-
-{\bf Solution:}\\
-When your team has sent +1 million packets per second into the network, from one or two laptops - you are done.
-
-{\bf Discussion:}\\
-Gigabit Ethernet can send up to 1.4 million packets per second, pps.
-
-There is a presentation about DDoS protection with low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
-
-Receiving systems, and those en route to the service, should be checked for resources like CPU load, bandwidth, logging. Logging can also overload the logging infrastructure, so take care when configuring this in your own networks.
 
 
 \chapter{Bonus: TCP other flooding 15min}
@@ -2398,7 +2734,7 @@ Receiving systems, and those en route to the service, should be checked for reso
 \label{ex:scapy}
 
 {\bf Objective:}\\
-Try the library Scapy locally your workstation
+Try the library Scapy locally on your workstation
 
 
 {\bf Purpose:}\\
@@ -2530,7 +2866,7 @@ There are some things that can be \emph{fixed} in production, and some can't eas
 \label{ex:}
 
 {\bf Objective:}\\
-Try the program XX locally your workstation
+Try the program XX locally on your workstation
 
 
 {\bf Purpose:}\\

@@ -1,0 +1,547 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{7. Web Application Security: Defensive, Architecture, Authentication}
+{Security in Web Development Elective, KEA}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Doing defensive
+\item Authentication on the web
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Overall securing modern web applications
+\item Processes involved in creating secure web applications
+\item Vulnerability management
+\item Mitigation Strategies
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Github security features
+\item Password hashing speed
+\item Architecture exercise related to your exam project
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 1) 17. Securing Modern Web Applications 45min
+\item 2) 18. Secure Application Architecture 45min
+\item 3) OWASP Security by Design Principles 45min
+\item 4) Architecture exercise 45min
+\end{list2}
+
+
+
+\slide{Reading Summary}
+
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list1}
+\item Part III. Defense, chapters 17-18
+\item 17. Securing Modern Web Applications
+\item 18. Secure Application Architecture
+
+\item Security by Design Principles, OWASP\\
+\link{https://wiki.owasp.org/index.php/Security_by_Design_Principles}
+\end{list1}
+
+
+\slide{Design for security - more work}
+
+\hlkimage{14cm}{johnny_automatic_blueprints.png}
+\centerline{Security is cheapest and most effective when done during design phase.}
+
+
+\slide{Secure Coding starts with the design}
+
+%\hlkimage{5cm}{secure_coding.png}
+
+\vskip 2cm
+\hlkrightimage{4cm}{secure_coding.png}
+{\emph{Secure Coding: Principles and Practices} af Mark G. Graff, Kenneth R. Van Wyk 2003}
+
+
+
+\begin{list1}
+\item Architecture/design -- while you are thinking about the application
+\item Implementation -- while you are writing the application
+\item Operations -- After the application is in production
+\item Ca. 200 pages, very dense.
+\end{list1}
+
+
+
+\slide{Design vs Implementation}
+
+Software vulnerabilities can be divided into two major categories:
+\begin{list2}
+\item Design vulnerabilities
+\item Implementation vulnerabilities
+\end{list2}
+
+Even with a well-thought-out security design a program can contain implementation flaws.
+
+
+\slide{17. Securing Modern Web Applications}
+
+\begin{quote}\small
+Up to this point, we have spent a significant amount of time analyzing techniques that can be used for researching, analyzing, and breaking into web applications. These preliminary techniques are important in their own right, but also give us important insights as we move into the third and final part of this book: {\bf defense}.
+
+{\bf Today’s web applications are much more complex and distributed than their predecessors}. This opens up the surface area for attack when compared to older, monolithic web applications—in particular, those with server-side rendering and little to no user interaction. These are the reasons I structured this book to start with {\bf recon, followed by offense, and finally defense}.
+
+...
+
+All of the skills and techniques we have covered up until this point are synergistic.
+Improving your mastery of recon, offense, or defense will result in extremely efficient
+use of your time.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item Offense informs defense, we should know how attackers work
+\end{list2}
+
+
+\slide{Defending a Castle}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+Defending a web application is somewhat akin to defending a medieval castle. A castle consists of a number of buildings and walls, which represent the core application code. Outside of the castle are a number of buildings that integrate with and support the castle’s owner (usually a lord) in a way that describes an application’s dependencies and integrations. Due to the large surface area in a castle and the surrounding kingdom, in wartime it is essential for defenses to be prioritized as it would be infeasible to maximize the defensive fortifications at every potential entrance point.
+
+In the world of {\bf web application security, such prioritization and vulnerability management is often the job of security engineers in large corporations or more generalized software engineers in smaller companies}. These professionals take on the role of {\bf master defender}, using {\bf software engineering skills in combination with recon and hacking skills} to reduce the probability of a successful attack, mitigate potential damages, and then manage active or past damages.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item Vulnerability Discovery -- make it easy to report\\
+\link{https://github.blog/2021-11-02-blue-teaming-create-security-advisory-process/}
+\end{list2}
+
+
+\slide{Vulnerability Discovery}
+
+%\hlkimage{}{}
+
+\begin{list2}
+\item Bug bounty programs
+\item Internal red/blue teams
+\item Third-party penetration testers
+\item Corporate incentives for engineers to log known vulnerabilities
+\item Letting your users find the bugs, and report them ... may not be the best way
+\end{list2}
+
+\slide{Vulnerability Management}
+
+%\hlkimage{}{}
+
+\begin{quote}
+After {\bf assessing the risk of a vulnerability, and prioritizing it} based on the factors listed, a fix must be {\bf tracked through to completion}. Such fixes should be completed in a timely manner, with deadlines determined based off of the risk assessment. Furthermore, customer contracts should be analyzed in response to an assessed vulnerability to determine if any agreements have been violated.
+
+Managing vulnerabilities is an {\bf ongoing process}. Your vulnerability management process should be carefully planned out and written down so that your progress can be recorded. This should result in more accurate timelines as time goes on and time-to-fix burn rates can be averaged.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item Hint: use a bug tracker!
+\end{list2}
+
+
+
+\slide{Mitigation Strategies}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Finally, an overall best practice for any security-friendly company is to actively make
+a good effort to mitigate the risk of a vulnerability occurring in the application code‐
+base. This is a practice that happens all the way from the architecture phase to the
+regression testing phase.
+Mitigation strategies should be widespread, like a net trying to catch as many fish as possible. In crucial areas of an application, mitigation should also run deep.
+
+Mitigation comes in the form of:
+\begin{list2}
+\item secure coding best practices
+\item secure application architecture
+\item regression testing frameworks
+\item secure software development life cycle (SSDL)
+\item secure-by-default developer mindset and development frameworks.
+\end{list2}
+\end{quote}
+
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+(Bullet list created by me)
+
+\slide{Git getting started}
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.github.com/activities/hello-world/}
+
+\begin{list2}
+\item What is git
+\item Terminology
+\end{list2}
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+\slide{Github secure open source software}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+GitHub Advisory Database, vulnerable dependency alerts, and Dependabot
+One of the key elements of identifying security issues is working with a rich database of vulnerabilities. GitHub’s dependency vulnerability detection tools use a combination of data directly from GitHub Security Advisories and the National Vulnerability Database (NVD) to create a complete picture of vulnerabilities in open source. This combined dataset lives in the GitHub Advisory Database and powers Dependabot alerts and security updates. The Advisory Database is also under a Creative Commons Attribution 4.0 license, meaning it’s freely available for anyone to use as long as they attribute GitHub as the data source.
+\end{quote}
+Source: Github article
+
+Check out the things Github can provide, examples:
+\begin{list2}
+\item \link{https://resources.github.com/whitepapers/How-GitHub-secures-open-source-software/}
+\item \link{https://github.blog/2022-01-13-open-source-software-security-summit-securing-the-worlds-code-together/}
+\item \link{https://github.blog/2021-12-06-write-more-secure-code-owasp-top-10-proactive-controls/}
+\item \link{https://github.blog/2021-11-02-blue-teaming-create-security-advisory-process/}
+\end{list2}
+
+\exercise{ex:github-scanning}
+
+
+
+\slide{18. Secure Application Architecture}
+
+%\hlkimage{}{}
+
+\begin{quote}
+When building a product, a cross-functional team of software engineers and product managers usually collaborate to find a technical model that will serve a very specific business goal in an efficient manner. In {\bf software engineering, the role of an architect is to design modules at a high level and evaluate the best ways for modules to communicate with each other}. This can be extended to determining the best ways to store data, what third-party dependencies to rely on, what programming paradigm should be predominant throughout the codebase, etc.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item May be more than 100 times as costly to remove a design flaw later on!
+\item Book references NIST 30-60 times less when remove vulnerability
+\end{list2}
+
+
+\slide{Analyzing Feature Requirements}
+
+\begin{quote}
+
+In order to distribute merchandise under the new MegaMerch brand, MegaBank
+would like to set up an ecommerce application that meets the following requirements:
+\begin{list2}
+\item Users can create accounts and sign in.
+\item User accounts contain the user’s full name, address, and date of birth.
+\item Users can access the front page of the store that shows items.
+\item Users can search for specific items.
+\item Users can save credit cards and bank accounts for later use.
+\end{list2}
+\end{quote}
+
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item I find it particularly interesting to identify features that \emph{all applications} need
+\end{list2}
+
+\slide{Data storage}
+
+\begin{quote}
+A high-level analysis of these requirements tells us a few important tidbits of
+information:
+\begin{list2}
+\item We are storing credentials.
+\item We are storing personal identifier information.
+\item Users have elevated privileges compared to guests.
+\item Users can search through existing items.
+\item We are storing financial data.
+\end{list2}
+\end{quote}
+
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+Most applications today store some sensitive information.
+
+\slide{Risk in Web Applications}
+
+%\hlkimage{}{}
+
+\begin{quote}
+A few of the risk areas derived from this analysis are as follows:
+\begin{list2}
+\item Authentication and authorization: How do we handle sessions, logins, and
+cookies?
+\item Personal data: Is it handled differently than other data? Do laws affect how we
+should handle this data?
+\item Search engine: How is the search engine implemented? Does it draw from the
+primary database as its single source of truth or use a separate cached database?
+\end{list2}
+
+Each of these risks brings up many questions about implementation details, which provide surface area for a security engineer to assist in developing the application in a more secure direction.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+\slide{Goals: Data Security}
+
+\hlkimage{18cm}{anderson-nine-principles-of-data-security.png}
+
+
+Source:
+\emph{Clinical system security: Interim guidelines}, Ross Anderson, 1996
+
+\slide{Authentication and Authorization}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Because we are storing credentials and offering a different user experience to guests
+and registered users, we know we have both an authentication and an authorization
+system. This means we must allow users to log in, as well as be able to differentiate
+among different tiers of users when determining what actions these users are allowed.
+Furthermore, because we are storing credentials and support a login flow, we know
+there are going to be credentials sent over the network. These credentials must also be
+stored in a database, otherwise the authentication flow will break down.
+This means we have to consider the following risks:
+\begin{list2}
+\item How do we handle data in transit?
+\item How do we handle the storage of credentials?
+\item How do we handle various authorization levels of users?
+\end{list2}
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+Generic recommendation is NOT to build it yourselves, but for the exam project we need you to demonstrate parts. So you will realize this is quite hard to get right.
+
+
+
+
+\slide{Secure Credentials and Hashing Credentials}
+
+\begin{list2}
+\item Checking against top one thousand password list and reject popular passwords
+\item Hashing -- of course
+\item I recommend looking into \link{https://haveibeenpwned.com/} and then using their services and perhaps API for improving password security. You can even download the list of passwords, and check before allowing use of a password.\\
+\link{https://haveibeenpwned.com/Passwords}
+\item Book describes bcrypt \link{https://en.wikipedia.org/wiki/Bcrypt} and PBKDF2 \link{https://en.wikipedia.org/wiki/PBKDF2}
+
+\item See also for alternatives the Password Hashing Competition\\
+\link{https://en.wikipedia.org/wiki/Password_Hashing_Competition}
+\item Book mentions 2FA, but too short. Recommended read \link{https://en.wikipedia.org/wiki/Multi-factor_authentication}
+\end{list2}
+
+This part of the book recommend Transport Layer Security and Let's Encrypt, which I agree too.
+
+
+\slide{Attacking Authentication}
+
+Passwords are NOT chosen randomly
+
+\hlkimage{14cm}{50-most-used-passwords.png}
+
+Source:
+\link{https://wpengine.com/unmasked/}
+
+ If doing password attacks, there is a nice RockYou password list on Kali Linux
+
+\slide{Demo/exercise: hashcat or John the Ripper }
+
+\begin{alltt}\small
+user@KaliVM:~$ john --test
+Will run 4 OpenMP threads
+Benchmarking: descrypt, traditional crypt(3) [DES 256/256 AVX2]... (4xOMP) DONE
+Many salts:	32784K c/s real, 8460K c/s virtual
+Only one salt:	27082K c/s real, 6873K c/s virtual
+...
+\end{alltt}
+
+If you want to try cracking passwords yo can grab sample hashes from your local system or\\
+ \link{https://hashcat.net/wiki/doku.php?id=example_hashes}
+
+
+\exercise{ex:php-passwords}
+
+\slide{Summary: Secure Application Architecture }
+
+%\hlkimage{}{}
+
+\begin{quote}
+At the beginning of this chapter, I included the estimate from NIST that a security
+flaw found in the architecture phase of an application could cost 30 to 60 times less to
+fix than if it is found in production.
+This can be because of a combination of factors, including the following:
+...
+\begin{list2}
+\item Deep architecture-level security flaws may require rewriting a significant number
+of modules, in addition to the insecure module. For example, a complex 3D video
+game with a flawed multiplayer module may require rewriting of not only the
+networking module, but the game modules written on top of the multiplayer net‐
+working module as well. This is especially true if an underlying technology has to
+be swapped out to improve security (moving from UDP or TCP networking, for
+example).
+\end{list2}
+
+...
+
+Ultimately, the ideal phase to catch and resolve security concerns is always the archi‐
+tecture phase. Eliminating security issues in this phase will save you money in the
+long run, and eliminate potential headaches caused by external discovery or publica‐
+tion later on.
+\end{quote}
+
+\begin{list2}
+    \item\end{list2}
+
+
+
+\slide{OWASP top ten}
+
+\hlkimage{16cm}{owasp.jpg}
+
+\begin{quote}
+The OWASP Top Ten provides a minimum standard for web application
+security. The OWASP Top Ten represents a broad consensus about what
+the most critical web application security flaws are.
+\end{quote}
+
+\begin{list1}
+\item The Open Web Application Security Project (OWASP)
+\item OWASP produces lists of the most common types of errors in web applications
+\item \link{http://www.owasp.org}
+\item Create Secure Software Development Lifecycle
+\end{list1}
+
+
+
+
+\slide{Goals: Secure Software}
+
+\hlkimage{8cm}{dragon-drawing-6.jpg}
+
+Here be dragons
+\begin{list2}
+\item Software is insecure
+\item How do we improve quality
+\item Higher quality is more stable, and more secure
+\item Make sure to test specifically for security issues
+\end{list2}
+
+We talked about security design with Qmail and Postfix recently.
+
+
+
+\slide{Software Development Lifecycle}
+
+\begin{quote}
+  A full lifecycle approach is the only way to achieve secure software.\\
+  --Chris Wysopal
+\end{quote}
+
+\begin{list2}
+\item Often security testing is an afterthought
+\item Vulnerabilities emerge during design and implementation
+\item Before, during and after approach is needed
+\end{list2}
+
+\slide{Secure Software Development Lifecycle}
+
+\begin{list2}
+\item SSDL represents a structured approach toward implementing and performing secure software development
+\item Security issues evaluated and addressed early
+\item During business analysis
+\item through requirements phase
+\item during design and implementation
+\end{list2}
+
+\slide{Functional specification needs to evaluate security}
+
+\begin{list2}
+\item Completeness
+\item Consistency
+\item Feasibility
+\item Testability
+\item Priority
+\item Regulations
+\end{list2}
+
+Source: The Art of Software Security Testing Identifying Software Security Flaws
+Chris Wysopal ISBN: 9780321304865
+
+\slide{Phases of SSDL}
+
+\begin{list2}
+\item Phase 1: Security Guidelines, Rules, and Regulations
+\item Phase 2: Security requirements: attack use cases
+\item Phase 3: Architectural and design reviews/threat modelling
+\item Phase 4: Secure coding guidelines
+\item Phase 5: Black/gray/white box testing
+\item Phase 6: Determining exploitability
+\end{list2}
+
+
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+Source: Center for Internet Security CIS Controls 7.1 \verb+CIS-Controls-Version-7-1.pdf+
+
+\begin{quote}
+CIS Control 16:\\
+Application Software Security\\
+Manage the security life cycle of in-house developed, hosted,
+or acquired software to prevent, detect, and remediate security
+weaknesses before they can impact the enterprise.
+\end{quote}
+
+Source: Center for Internet Security CIS Controls v8 \verb+CIS_Controls_v8_Guide.pdf+
+
+
+
+\slide{OWASP: Security by Design Principles}
+
+\begin{quote}\small
+Security architecture
+Applications without security architecture are as bridges constructed without finite element analysis and wind tunnel testing. Sure, they look like bridges, but they will fall down at the first flutter of a butterfly’s wings. The need for application security in the form of security architecture is every bit as great as in building or bridge construction.
+
+Application architects are responsible for constructing their design to adequately cover risks from both typical usage, and from extreme attack. Bridge designers need to cope with a certain amount of cars and foot traffic but also cyclonic winds, earthquake, fire, traffic incidents, and flooding. Application designers must cope with extreme events, such as brute force or injection attacks, and fraud. The risks for application designers are well known. The days of “we didn’t know” are long gone. Security is now expected, not an expensive add-on or simply left out.
+\end{quote}
+
+We will now continue one the guide from OWASP
+
+\link{https://wiki.owasp.org/index.php/Security_by_Design_Principles}
+
+
+
+\exercise{ex:architecture-drawing}
+
+
+
+\slidenext{}
+
+\end{document}

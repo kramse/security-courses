@@ -1,0 +1,470 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{8. Web Application Security: Defensive. Code review, automation, patterns/anti-patterns}
+{Security in Web Development Elective, KEA}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Doing defensive
+\item
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item
+\end{list2}
+\item Exercises
+\begin{list2}
+\item
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 1) 19. Reviewing Code for Security 45min
+\item 2) 20. Vulnerability Discovery - tools for doing this 45min
+\item 3)  45min
+\item 4)  45min
+\end{list2}
+
+
+
+\slide{Reading Summary}
+
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list1}
+\item Part III. Defense, chapters 19-21
+\item 19. Reviewing Code for Security
+\item 20. Vulnerability Discovery
+\item 21. Vulnerability Management
+\item Use the secure coding PDF from Veracode
+\end{list1}
+
+Chapter 21. contains information you should know, when reading about CVSS scores later - but we will not go through this chapter in detail
+
+\slide{19. Reviewing Code for Security - introduction}
+
+%\hlkimage{}{}
+
+\begin{quote} {\bf
+The code review stage must always occur after the architecture stage in a security-conscious organization, and never before}.
+
+Some technology companies today uphold a “move fast and break things” mantra, but such a philosophy often is abused and used as a method of ignoring proper security processes. Even in a fast-moving company, it is imperative that application architecture is reviewed prior to shipping code. Although from a security perspective it would be ideal to review the entire feature architecture upfront, this may not be feasible in uncertain conditions. As such, {\bf at a minimum the major and well-known features should be architected and reviewed, and when new features come up they should be both architected and reviewed for security prior to development as well}.
+
+The proper time to review code for security gaps is once the architecture behind the code commit has been properly reviewed. This means code reviews should be the second step in an organization that follows secure development best practices.
+\end{quote}
+
+\begin{list2}
+\item Note: the mention of new features, architect, then review!
+\end{list2}
+
+
+\slide{How to Start a Code Review}
+
+%\hlkimage{}{}
+
+\begin{quote}
+A code security review should operate very similarly to a code functionality review.
+\end{quote}
+
+\begin{list2}
+\item[1.] Check out master with git checkout master .
+\item[2.] Fetch and merge the latest master with git pull origin master .
+\item[3.] Check out the feature branch with git checkout <username>/feature .
+\item[4.] Run a diff against the master with git diff origin/master...
+\end{list2}
+
+The git diff command should return two things:
+\begin{list2}
+\item A list of files that differ on master and the current branch
+\item A list of changes in those files between master and the current branch
+\end{list2}
+
+Being able to use Git is important for most programmers today!
+
+
+\slide{What to look for}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Archetypical Vulnerabilities Versus Custom Logic Bugs}\\
+A code functionality review checks code to ensure it meets a feature spec and does not contain usability bugs. A code security review checks for common vulnerabilities such as XSS, CSRF, injection, and so on, but more importantly checks for logic-level vulnerabilities that require deep context into the purpose of the code and cannot be easily found by automated tools or scanners.
+
+In order to find vulnerabilities that arise from logic bugs, we need to first have context in regard to the goal of the feature. This means we need to understand the users of the feature, the functionality of the feature, and the business impact of the feature.
+\end{quote}
+
+\begin{list2}
+\item We will mostly cover generic bugs, and a talk about process and tools today
+\end{list2}
+
+\slide{Where to look, first }
+
+To summarize, an effective way of determining what code to review in a security
+review of a web application is as follows:
+\begin{list2}
+\item[1.] Evaluate the client-side code to gain understanding of the business logic and
+understand what functionality users will be capable of using.
+\item[2.] Using knowledge gained from the client review, begin evaluating the API layer, in
+particular, the APIs you found via the client review. In doing this, you should be
+able to get a good understanding of what dependencies the API layer relies on to
+function.
+\item[3.] Trace the dependencies in the API layer, carefully reviewing databases, helper
+libraries, logging functions, etc. In doing this, you will get close to having covered
+the majority of user-facing functionality.
+\item [4.] Using the knowledge of the structure of the client-linked APIs, attempt to find
+any public-facing APIs that may be unintentionally exposed or intended for
+future feature releases. Review these as you find them.
+\item[5.] Continue on throughout the remainder of the codebase. This should actually be
+pretty easy because you will already be familiar with the codebase having read
+through it in an organic method versus trying to brute force an understanding of the application architecture.
+\end{list2}
+
+
+\slide{Secure-Coding Anti-Patterns: Block list}
+
+%\hlkimage{}{}
+
+\begin{quote}
+In the world of security, mitigations that are temporary should often be ignored and
+instead a permanent solution should be found, even if it takes longer.
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+const whitelist = ['https://happy-site.com', 'https://www.my-friends.com'];
+/*
+* Determine if the domain is allowed for integration.
+*/
+const isDomainAccepted = function(domain) {
+return whitelist.includes(domain);
+};
+\end{minted}
+\begin{list2}
+\item Block lists are temporary
+\item Allow lists are more secure, what to allow
+\end{list2}
+
+
+
+\slide{Boilerplate Code}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Another security anti-pattern to look for is the use of boilerplate or default framework
+code. This is a big one, and easy to miss because often frameworks and libraries
+require effort to tighten security, when they really should come with heightened secu‐
+rity right out of the box and require loosening.
+\end{quote}
+
+\begin{list2}
+\item Beware when using default examples from books, libraries etc.
+\item Use a secure by default approach instead
+\item Use firewalls always, and only open access to services when needed
+\end{list2}
+
+
+
+\slide{Chapter 20. Vulnerability Discovery}
+
+%\hlkimage{}{}
+
+\begin{quote}
+After securely architected code has been designed, written, and reviewed, a pipeline should be put in place to ensure that no vulnerabilities slip through the cracks.
+
+Typically, applications with the best architecture experience the least amount of vulnerabilities and the lowest risk vulnerabilities. After that, applications with sufficiently secure code review processes in place experience fewer vulnerabilities than those without such processes, but more than those with a secure-by-default architecture.
+\end{quote}
+
+\begin{list2}
+\item Security Automation
+\item Static Analysis
+\item
+\end{list2}
+
+
+
+\slide{Analysis}
+
+%\hlkimage{10cm}{Magnifying_Glass.png}
+\hlkimage{12  cm}{buffer-overflow-3.pdf}
+
+\centerline{Use tools for analysing code and applications}
+
+\slide{Types of analysis}
+
+\begin{list1}
+\item  {\Large static analysis}\\
+Run through the programsource  code or binary, without running it
+Can find bad functions like strcpy
+
+\item {\Large dynamic analysis }\\
+Running the program with a test-harness, monitoring system calls, memory operations etc.
+\end{list1}
+
+\slide{Static tools}
+\begin{list1}
+\item Flawfinder \link{http://www.dwheeler.com/flawfinder/}
+\item RATS Rough Auditing Tool for Security, C, C++, Perl, PHP and Python
+\item PMD static ruleset based (Java—free)
+\item Checkmarx (most major languages—paid)
+\item Bandit (Python—free)
+\item Brakeman (Ruby—free)
+
+\item {\small \link{http://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis}}
+\end{list1}
+
+\slide{PMD An extensible cross-language static code analyzer.}
+
+\begin{quote}{\bf
+About PMD}
+
+PMD is a source code analyzer. It finds common programming flaws like unused variables, empty catch blocks, unnecessary object creation, and so forth. It supports Java, JavaScript, Salesforce.com Apex and Visualforce, PLSQL, Apache Velocity, XML, XSL.
+
+Additionally it includes CPD, the copy-paste-detector. CPD finds duplicated code in Java, C, C++, C\#, Groovy, PHP, Ruby, Fortran, JavaScript, PLSQL, Apache Velocity, Scala, Objective C, Matlab, Python, Go, Swift and Salesforce.com Apex and Visualforce.
+\end{quote}
+
+\begin{list1}
+\item \link{https://pmd.github.io/}
+\end{list1}
+
+
+\exercise{ex:pmd-static}
+
+\slide{A Fool with a Tool is still a Fool}
+
+\begin{list1}
+\item 1. Run tool
+\item 2. Fix problems
+\item 3. Rinse repeat
+\end{list1}
+
+Fixing problems?\\
+\begin{minted}[fontsize=\small]{c}
+   char tmp[256]; /* Flawfinder: ignore */
+   strcpy(tmp, pScreenSize); /* Flawfinder: ignore */
+\end{minted}
+Example from \link{http://www.dwheeler.com/flawfinder/}
+
+
+\slide{Coding standards - style}
+
+\begin{quote}
+This file specifies the preferred style for kernel source files in the
+OpenBSD source tree.  It is also a guide for preferred user land code
+style.  These guidelines should be followed for all new code.  In general,
+code can be considered ``new code'' when it makes up about 50% or
+more of the file(s) involved. ...\\
+Use queue(3) macros rather than rolling your own lists, whenever possible.
+Thus, the previous example would be better written:
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+    #include <sys/queue.h>
+    struct  foo {
+    LIST_ENTRY(foo) link;  /* Queue macro glue for foo lists */
+               struct  mumble amumble; /* Comment for mumble */
+               int     bar;
+    };
+    LIST_HEAD(, foo) foohead;     /* Head of global foo list */
+\end{minted}
+
+
+OpenBSD style(9)
+
+\slide{Coding standards functions}
+
+\begin{quote}
+The following copies as many characters from input to buf as will fit and
+NUL terminates the result.  Because strncpy() does not guarantee to NUL
+terminate the string itself, it must be done by hand.
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+        char buf[BUFSIZ];
+
+        (void)strncpy(buf, input, sizeof(buf) - 1);
+        buf[sizeof(buf) - 1] = '\0';
+\end{minted}
+
+\begin{quote}
+Note that \verb+strlcpy(3)+ is a better choice for this kind of operation.  The
+equivalent using \verb+strlcpy(3)+ is simply:
+\end{quote}
+\begin{minted}[fontsize=\small]{c}
+        (void)strlcpy(buf, input, sizeof(buf));
+\end{minted}
+
+OpenBSD strcpy(9)
+
+
+
+\slide{Compiler warnings - gcc -Wall}
+
+\begin{minted}[fontsize=\small]{bash}
+# gcc -o demo demo.c
+demo.c: In function main:
+demo.c:4: warning: incompatible implicit declaration of built-in
+function strcpy
+\end{minted}
+
+\begin{minted}[fontsize=\small]{bash}
+# gcc -Wall -o demo demo.c
+demo.c:2: warning: return type defaults to int
+demo.c: In function main:
+demo.c:4: warning: implicit declaration of function strcpy
+demo.c:4: warning: incompatible implicit declaration of built-in
+function strcpy
+demo.c:5: warning: control reaches end of non-void function
+\end{minted}
+
+\vskip 15mm
+\centerline{\bf\LARGE\color{security6blue}Easy to do!}
+
+\slide{No warnings = no errors?}
+
+\begin{minted}[fontsize=\small]{c}
+# cat demo2.c
+#include <strings.h>
+int main(int argc, char **argv)
+{
+    char buf[200];
+    strcpy(buf, argv[1]);
+    return 0;
+}
+# gcc -Wall -o demo2 demo2.c
+\end{minted}
+
+\vskip 1cm
+\centerline{\bf\large\color{security6blue}This is an insecure program, but no warnings!}
+
+(cheating, some compilers actually warn today)
+
+\slide{Version control sample hooks scripts}
+
+\begin{list1}
+\item Before checking in code in version control,  pre-commit - check
+\begin{list2}
+\item case-insensitive.py
+\item check-mime-type.pl
+\item commit-access-control.pl
+\item commit-block-joke.py
+\item detect-merge-conflicts.sh
+\item enforcer
+\item log-police.py
+\item pre-commit-check.py
+\item verify-po.py
+\end{list2}
+\item \link{http://subversion.tigris.org/tools_contrib.html}
+\item \link{http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/}
+\end{list1}
+
+This references Subversion, which is not used much anymore. Just to show the concept is NOT new. Use hooks!
+
+\slide{Example Enforcer}
+
+\begin{alltt}
+In a Java project I work on, we use log4j extensively.  Use of
+System.out.println() bypasses the control that we get from log4j,
+so we would like to discourage the addition of println calls in
+our code.
+
+We want to deny any commits that add a println into the code.
+The world being full of exceptions, we do need a way to allow
+some uses of println, so we will allow it if the line of code
+that calls println ends in a comment that says it is ok:
+
+   System.out.println("No log4j here"); // (authorized)
+\end{alltt}
+
+{\small \link{http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/enforcer/enforcer}}
+
+
+\slide{Example verify-po.py}
+
+\begin{minted}[fontsize=\small]{python}
+#!/usr/bin/env python
+"""This is a pre-commit hook that checks whether the contents
+of PO files committed to the repository are encoded in UTF-8.
+"""
+\end{minted}
+
+{\small \link{http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/verify-po.py}}
+
+\slide{Design for security - more work}
+
+\hlkimage{14cm}{johnny_automatic_blueprints.png}
+\centerline{Security is cheapest and most effective when done during design phase.}
+
+
+
+\slide{Testing - more work now, less work in the long run}
+
+% noget QA relateret, måske logo fra Hudson?
+%checkmark
+\hlkimage{12cm}{testing.pdf}
+
+
+\slide{Unit testing - low level / functions}
+
+\begin{minted}[fontsize=\small]{java}
+public class TestAdder {
+    public void testSum() {
+        Adder adder = new AdderImpl();
+        assert(adder.add(1, 1) == 2);
+        assert(adder.add(1, 2) == 3);
+        assert(adder.add(2, 2) == 4);
+        assert(adder.add(0, 0) == 0);
+        assert(adder.add(-1, -2) == -3);
+        assert(adder.add(-1, 1) == 0);
+        assert(adder.add(1234, 988) == 2222);
+    }
+}
+\end{minted}
+
+\begin{list1}
+\item Test individual functions
+\item Example from \link{http://en.wikipedia.org/wiki/Unit_testing}
+\item Avoid regressions, old errors reappearing
+\end{list1}
+
+\slide{Book references Jest testing library}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The difference between a functional test and a vulnerability test is not the framework
+but the purpose for which the test was written.
+
+...
+
+Vulnerability regression tests are simple. Sometimes they are so simple, they can be written prior to a vulnerability being introduced. This can be useful for code where minor insignificant-looking changes could have a big impact. Ultimately, vulnerability regression testing is a simple and effective way of preventing vulnerabilities that have already been closed from reentering your codebase.
+
+The tests themselves should be run on commit or push hooks when possible (reject the commit or push if the tests fail). Regularly scheduled runs (daily) are the second-best choice for more complex version control environments.
+\end{quote}
+
+\exercise{ex:git-hook}
+
+
+\slidenext{}
+
+\end{document}

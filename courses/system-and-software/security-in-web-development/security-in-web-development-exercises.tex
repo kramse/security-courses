@@ -2210,6 +2210,134 @@ The authors have been very deliberate in creating these vulnerabilities.
 
 
 
+
+\chapter{Trying PMD static analysis 30 min}
+\label{ex:pmd-static}
+
+{\bf Objective:}\\
+Try the program PMD locally on your workstation
+
+
+{\bf Purpose:}\\
+Running PMD will allow you to use static analysis for code.
+
+{\bf Suggested method:}\\
+Run the program from your Debian Linux VM, this tool is free and easy to get running. It uses Java, so if you like run it on your Windows or Mac instead.
+
+Follow instructions from the Getting Started\\
+\url{https://pmd.github.io/pmd-6.43.0/pmd_userdocs_installation.html}
+
+\begin{alltt}\footnotesize
+$ sudo apt install openjdk-17-jre
+$ cd $HOME
+$ wget https://github.com/pmd/pmd/releases/download/pmd_releases/6.43.0/pmd-bin-6.43.0.zip
+$ unzip pmd-bin-6.43.0.zip
+$ alias pmd="$HOME/pmd-bin-6.43.0/bin/run.sh pmd"
+$
+\end{alltt}
+
+Note: this only creates the alias \verb+pmd+ for this session. To make this more permanent, you could add this to a profile like \verb+.bashrc+
+
+Next get some source code and run PMD:
+\begin{alltt}\footnotesize
+$ git clone --branch rel/2.17.2 https://gitbox.apache.org/repos/asf/logging-log4j2.git
+... downloads the source code for log4j
+$ pmd -d logging-log4j2 -R rulesets/java/quickstart.xml -f text
+\end{alltt}
+
+
+{\bf Hints:}\\
+PMD uses Java, so there should be a JDK/JRE on the system, I install the one from OpenJDK above.
+
+{\bf Solution:}\\
+When you have gotten a run of PMD going, you are done.
+
+{\bf Discussion:}\\
+Doing the above outputs more than 4500 lines from the PMD program!
+
+How would you proceed?
+
+There seem to be some tedious, but easy to fix, like \emph{Unused import} -- importing some library which is not really used. Things like \emph{empty method}, \emph{empty catch block} etc. may be source missing.
+
+First time use of a new tool will probably find a LOT.
+
+If you are using Maven you could also use their reporting\\
+\link{https://maven.apache.org/plugins/maven-pmd-plugin/project-reports.html}
+%If you like also check out this OWASP document about JSP and Java\\
+%\link{https://owasp.org/www-chapter-belgium/assets/2013/2013-06-06/Securing_Development_with_PMD_-_Teaching_an_Old_Dog_New_Tricks_-_OWASP.pdf}
+
+
+
+
+\chapter{Git hook 30 min}
+\label{ex:git-hook}
+
+{\bf Objective:}\\
+Try using a Git hook locally on your workstation, to prevent something.
+
+
+{\bf Purpose:}\\
+Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
+
+First read the documentation:\\
+\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
+
+
+Note: today we only use client side hooks, for better security we should add hooks on the server side.
+
+Using our existing repository:
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+user@Projects:tt$ {\bf cd kramse-labs/}
+user@Projects:kramse-labs$ {\bf cd .git/hooks}
+user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
+// Look at this file, and activate it using:
+user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
+\end{alltt}
+
+Back in the repository try adding a new file with bad name:
+
+\begin{alltt}\footnotesize
+user@Projects:kramse-labs$ {\bf }
+user@Projects:kramse-labs$ touch henrikÆØÅ
+user@Projects:kramse-labs$ git add henrikÆØÅ
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ
+> ^C
+huser@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+Error: Attempt to add a non-ASCII file name.
+This can cause problems if you want to work with people on other platforms.
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+  git config hooks.allow
+\end{alltt}
+
+
+
+{\bf Suggested method:}\\
+Run the program Git from your Debian Linux VM
+
+
+{\bf Hints:}\\
+Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
+
+{\bf Solution:}\\
+When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
+
+{\bf Discussion:}\\
+Many examples can be found on the internet.
+
+Example links:
+\begin{list2}
+\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
+\item A framework for managing and maintaining multi-language pre-commit hooks.\\
+\link{https://pre-commit.com/}
+\item Blog showing how to use this framework for checking a Kubernetes file:\\
+\link{https://www.magalix.com/blog/how-to-start-left-with-security-using-git-pre-commit-hooks}
+\end{list2}
+
+
 \end{document}
 
 

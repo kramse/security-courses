@@ -17,7 +17,7 @@
 Todays goals:
 \begin{list2}
 \item Doing defensive
-\item
+\item Try a few tool runs, PMD, Git hooks and AFL
 \end{list2}
 
 Photo by Thomas Galler on Unsplash
@@ -29,11 +29,15 @@ Photo by Thomas Galler on Unsplash
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item Process for starting code review
+\item A few patterns and anti-patterns
+
 \end{list2}
 \item Exercises
 \begin{list2}
-\item
+\item PMD static code Analysis
+\item Git hooks for preventing source entering repository
+\item Look at a fuzzer American fuzzy lop
 \end{list2}
 \end{list1}
 
@@ -41,12 +45,12 @@ Photo by Thomas Galler on Unsplash
 
 \begin{list2}
 \item 1) 19. Reviewing Code for Security 45min
-\item 2) 20. Vulnerability Discovery - tools for doing this 45min
-\item 3)  45min
-\item 4)  45min
+\item 2) 20. Vulnerability Discovery 45min
+\item 3) Running various tools, discussing tools 45min
+\item 4) Fuzzing -- try AFL fuzzer 45min
 \end{list2}
 
-
+We will not follow this to the minute, but be more flexible today.
 
 \slide{Reading Summary}
 
@@ -198,7 +202,6 @@ Typically, applications with the best architecture experience the least amount o
 \begin{list2}
 \item Security Automation
 \item Static Analysis
-\item
 \end{list2}
 
 
@@ -213,11 +216,12 @@ Typically, applications with the best architecture experience the least amount o
 \slide{Types of analysis}
 
 \begin{list1}
-\item  {\Large static analysis}\\
+\item  {\Large Static Analysis}\\
 Run through the programsource  code or binary, without running it
+
 Can find bad functions like strcpy
 
-\item {\Large dynamic analysis }\\
+\item {\Large Dynamic Analysis }\\
 Running the program with a test-harness, monitoring system calls, memory operations etc.
 \end{list1}
 
@@ -229,9 +233,9 @@ Running the program with a test-harness, monitoring system calls, memory operati
 \item Checkmarx (most major languages—paid)
 \item Bandit (Python—free)
 \item Brakeman (Ruby—free)
-
+\item ESLint JavaScript \link{https://eslint.org/}
 \item {\small \link{http://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis}}
-\end{list1}
+\end{list1}label
 
 \slide{PMD An extensible cross-language static code analyzer.}
 
@@ -463,6 +467,93 @@ The tests themselves should be run on commit or push hooks when possible (reject
 \end{quote}
 
 \exercise{ex:git-hook}
+
+
+
+\slide{Break it}
+
+
+\hlkimage{12cm}{300px-Fozziecurtain.JPG}
+
+\centerline{Use fuzzers, hackertools, improve security by breaking it}
+
+\slide{Fuzzing}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Fuzz testing or Fuzzing is a Black Box software testing technique, which basically consists in finding implementation bugs using malformed/semi-malformed data injection in an automated fashion.
+
+A trivial example
+Let’s consider an integer in a program, which stores the result of a user’s choice between 3 questions. When the user picks one, the choice will be 0, 1 or 2. Which makes three practical cases. But what if we transmit 3, or 255 ? We can, because integers are stored a static size variable. If the default switch case hasn’t been implemented securely, the program may crash and lead to “classical” security issues: (un)exploitable buffer overflows, DoS, ...
+
+History
+Fuzz testing was developed at the University of Wisconsin Madison in 1989 by Professor Barton Miller and students. Their (continued) work can be found at http://www.cs.wisc.edu/~bart/fuzz/ ; it’s mainly oriented towards command-line and UI fuzzing, and shows that modern operating systems are vulnerable to even simple fuzzing.
+\end{quote}
+Sources:  \link{https://owasp.org/www-community/Fuzzing}\\
+\link{https://owasp.org/www-project-web-security-testing-guide/v41/6-Appendix/C-Fuzz_Vectors}
+
+
+\slide{Overflow -- segmentation fault}
+
+\hlkimage{18cm}{buffer-overflow-2.pdf}
+
+
+\begin{list2}
+\item Bad function overwrites return value!
+\item Control return address
+\item Run shellcode from buffer, or from other place
+\end{list2}
+
+\slide{Simple fuzzer}
+
+\begin{alltt}
+$ for i in 10 20 30 40 50
+>> do
+>> ./demo `perl -e "print 'A'x$i"`
+>> done
+AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+\end{alltt}
+
+\centerline{Memory fault/segmentation fault - juicy!}
+
+\slide{Note about web fuzzing vs command line}
+
+%\hlkimage{}{}
+While the end goal may be to find a vulnerability that can be exploited through a web application, it is much more efficient to fuzz smaller parts independently.
+
+So better to:
+\begin{list2}
+\item Exploit a program while being able to monitor crashes
+\item Run a function with all inputs, without having to HTML encode everything first
+\item Run specific functions
+\item Run multiple instances of fuzzer in parallel directly -- faster
+\end{list2}
+
+See the crash remotely is hard, if not impossible
+
+\exercise{ex:american-fuzzy-lop}
+
+\slide{Putting it all together}
+
+\hlkimage{16cm}{securing-devops.png}
+Source:
+\emph{Securing DevOps: Security in the cloud} by Julien Vehent
+Manning 2018, 384 pages
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+    \item\end{list2}
 
 
 \slidenext{}

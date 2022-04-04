@@ -1,0 +1,455 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{8. Web Application Security: Defensive: XSS, CSRF, tokens etc.}
+{Security in Web Development Elective, KEA}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Doing defensive for protecting the session
+\item Defending Against XSS, CSRF and XXE Attacks
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Authentication
+\item anti-XSS
+\item Content Security Policies
+\item Security headers
+\item XML External Entity Prevention
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Security headers for protecting against security issues
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 1) Defending Against XSS Attacks + exercise 60-70min
+\item 2) Defending Against CSRF Attacks 45min
+\item 3) XXE and deserialization 30min
+\item 4) Researching protection 30-45min
+\end{list2}
+
+We will not follow this to the minute, but be flexible
+
+\slide{Reading Summary}
+
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list1}
+\item Part III. Defense, chapters 19-21
+\item 22. Defending Against XSS Attacks
+\item 23. Defending Against CSRF Attacks
+\item 24. Defending Against XXE
+%\item Use the secure coding PDF from Veracode
+\end{list1}
+
+
+
+\slide{22. Defending Against XSS Attacks}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Cross-Site Scripting (XSS) vulnerabilities are some of the most common vulnerabilities throughout the internet, and have appeared as a direct response to the increasing amount of user interaction in today’s web applications.
+
+At its core, an XSS attack functions by taking advantage of the fact that web applications execute scripts on users’ browsers. Any type of dynamically created script that is executed puts a web application at risk if the script being executed can be contaminated or modified in any way—in particular by an end user.
+
+XXS attacks are categorized a number of ways, with the big three being:
+\begin{list2}
+\item Stored (the code is stored on a database prior to execution)
+\item Reflected (the code is not stored in a database, but reflected by a server)
+\item DOM-based (code is both stored and executed in the browser)
+\end{list2}
+\end{quote}
+
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+\slide{Authentication and Authorization Systems}
+
+%\hlkimage{}{}
+
+\begin{quote}
+In a world where most applications consist of both clients (browsers/phones) and servers, and servers persist data originally sent from a client, systems must be in place to ensure that future access of persisted data comes from the correct user.
+
+We use the term {\bf authentication} to describe a flow that allows a system to {\bf identify a user}. In other words, authentication systems tell us that “joe123” is actually “joe123” and not “susan1988.”
+
+The term {\bf authorization} is used to describe a flow inside a system for {\bf determining what resources “joe123” has access to, as opposed to “susan1988.”} For example, “joe123” should be able to access his own uploaded private photos, and “susan1988” should be able to access hers, but they should not be able to access each other’s photos.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+    \item\end{list2}
+
+
+\slide{Authentication Systems}
+
+
+\begin{list2}
+\item HTTP Basic \\
+The header consists of a string containing \verb+Basic: <base64-encoded user name:password>+
+
+\item HTTP Digest Access Authentication\\
+cryptographic hashes instead of base64 encoding\\
+RFC 2069 \emph{An Extension to HTTP: Digest Access Authentication}
+\begin{alltt}\footnotesize
+WWW-Authenticate: Digest realm="testrealm@host.com",
+                        qop="auth,auth-int",
+                        nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093",
+                        opaque="5ccc069c403ebaf9f0171e9517f40e41"
+\end{alltt}
+\item Today we often see a mix of local schemes, independent or centralized/federated like OAUTH\\
+\link{https://en.wikipedia.org/wiki/OAuth}
+
+\item Many web sites also use multi-factor (MFA) / two-factor (2FA) authentication to prevent brute force.
+
+\end{list2}
+
+\slide{A high-level overview of Oauth 2.0 flow}
+
+\hlkimage{14cm}{oauth-Abstract-flow.png}
+Source: \url{https://en.wikipedia.org/wiki/OAuth#/media/File:Abstract-flow.png}
+
+
+\slide{Major Authentication Schemes}
+
+\hlkimage{21cm}{was-auth-schemes.png}
+
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+\slide{Anti-XSS Coding Best Practices}
+
+%\hlkimage{}{}
+
+\begin{quote}
+There is one major rule you can implement in your development team in order to dramatically mitigate the odds of running into XSS vulnerabilities: “don’t allow any user-supplied data to be passed into the DOM—except as strings.”
+
+Such a rule is not applicable to all applications, as many applications have features that incorporate users to DOM data transfer. In this case, we can make this rule more specific: “never allow any unsanitized user-supplied data to be passed into the DOM.”
+
+Allowing user-supplied data to populate the DOM should be a fallback, last-case option rather than a first option. Such functionality will accidentally lead to XSS vulnerabilities, so when other options are available, they should be chosen first.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item User input should not be scripts, escape input, validate input
+\end{list2}
+
+
+\slide{Avoid DOM APIs that convert text to DOM/text to script}
+
+%\hlkimage{}{}
+
+\begin{quote}
+A good rule of thumb for DOM APIs to be aware of in your sanitization is anything
+that converts text to DOM or text to script is a potential XSS attack vector.
+Stay away from the following APIs when possible:
+\begin{list2}
+\item element.innerHTM`L / `element.outerHTML
+\item Blob
+\item SVG
+\item document.write / document.writeln
+\item DOMParser.parseFromString
+\item document.implementation
+\end{list2}
+\end{quote}
+
+\begin{list2}
+\item I recommend using proper input sanitizing, as described -- not the tricks in the early part of the chapter.
+\end{list2}
+
+\slide{HTML Entity Encoding -- escaping characters}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Another preventative measure that can be applied is to perform HTML entity escap‐
+ing on all HTML tags present in user-supplied data. Entity encoding allows you to
+specify characters to be displayed in the browser, but in a way that they cannot be
+interpreted as JavaScript.
+The “big five” for entity encoding are shown in Table 22-1.
+
+\begin{list2}
+\item \verb+&+ \verb+&amp;+ ampersand
+\item \verb+<+ \verb+&lt;+ -- less than
+\item \verb+>+ \verb+&gt;+ -- greater than
+\item \verb+"+ \verb+&#034;+
+\item \verb+'+ \verb+&#039;+
+\end{list2}
+\end{quote}
+
+Burp has encoding/decoding built-in for checking, and abusing this.
+
+Recommend using facilities in your chosen language, like
+\link{https://www.php.net/manual/en/function.htmlspecialchars.php} and
+\link{https://www.php.net/manual/en/function.htmlentities.php}
+
+
+\slide{Content Security Policy (CSP) for XSS Prevention}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The {\bf CSP is a security configuration tool that is supported by all major browsers.} It provides settings that a developer can take advantage of to either {\bf relax or harden security rules regarding what type of code can run inside your application.}
+
+CSP protections come in several forms, including {\bf what external scripts can be loaded, where they can be loaded, and what DOM APIs are allowed to execute the script}.
+
+Let’s evaluate some CSP configurations that aid in mitigating XSS risk.
+\end{quote}
+
+\begin{list2}
+\item Very highly recommended, easy to check, quite easy to implement
+\item Tools available for you to generate even complex CSPs
+\item and lots of references:\\
+\link{https://developers.google.com/web/fundamentals/security/csp}\\
+\link{https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP}
+\end{list2}
+
+
+\slide{Implementing CSP}
+
+%\hlkimage{}{}
+
+\begin{quote}
+To enable CSP, you need to configure your web server to return the Content-Security-Policy HTTP header. (Sometimes you may see mentions of the X-Content-Security-Policy header, but that's an older version and you don't need to specify it anymore.)
+
+Alternatively, the <meta> element can be used to configure a policy, for example:
+
+\begin{alltt}
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src https://*; child-src 'none';">
+\end{alltt}
+\end{quote}
+Source: \link{https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP}
+
+\begin{list2}
+\item I usually see this as part of the headers
+\item Other headers can also be checked using Mozilla Observatory
+\end{list2}
+
+\slide{Scanning for HTTP settings}
+
+%\hlkimage{}{}
+
+Nmap can also report these settings:
+\begin{alltt}
+|     X-XSS-Protection: 1;mode=block
+|     Content-Security-Policy: script-src 'self' 'unsafe-inline' 'unsafe-eval'
+|     X-Content-Type-Options: nosniff
+\end{alltt}
+
+\begin{list2}
+\item If you have many sites, Nmap can also report this
+\item Use the documentation from Mozilla Observatory for full explainations about these settings
+\end{list2}
+
+
+
+\exercise{ex:identify-tokens}
+
+
+
+\slide{23. Defending Against CSRF Attacks}
+
+%\hlkimage{}{}
+
+\begin{quote}
+In Part II we built Cross-Site Request Forgery (CSRF) attacks that took advantage of a user’s authenticated session in order to make requests on their behalf. We built CSRF
+attacks with <a></a> links, via <img></img> tags, and even via HTTP POST using
+web forms. We saw how effective and dangerous CSRF-style attacks are against an application, because they function at both an elevated privilege level and often are undetectable by the authenticated user.
+
+In this chapter, we will learn how to defend our codebase against such attacks, and mitigate the probability that our users will be put at risk for any type of attack that targets their authenticated session.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item CSRF are often related to phishing \link{https://en.wikipedia.org/wiki/Phishing}
+\end{list2}
+
+
+\slide{Header Verification -- first check}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Because the {\bf origin of many CSRF requests is separate from your web application}, we can mitigate the risk of CSRF attacks by checking the origin of the request. In the world of HTTP, there are two headers we are interested in when checking the origin of a request: {\bf referer and origin . These headers are important because they cannot be modified programmatically with JavaScript in all major browsers}. As such, a properly implemented browser’s referer or origin header has a low chance of being spoofed.
+\end{quote}
+
+\begin{list2}
+    \item Origin header
+The origin header is only sent on HTTP POST requests. It is a simple header
+that indicates where a request originated from. Unlike referer , this header is
+247also present on HTTPS requests, in addition to HTTP requests.
+
+\item Referer header
+The referer header is set on all requests, and also indicates where a request ori‐
+ginated from. The only time this header is not present is when the referring link
+has the attribute rel=noreferer set.
+\end{list2}
+
+These headers are a first line of defense, but there is a case where they will fail.
+
+\slide{Better: CSRF Tokens}
+
+\hlkimage{16cm}{was-csrf-token.png }
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item Where do you come from, where do your browser go
+\end{list2}
+
+\slide{Anti-CRSF Coding Best Practices}
+
+%\hlkimage{}{}
+
+\begin{quote}
+There are many methods of eliminating or mitigating CRSF risk in your web applica‐
+tion that start at the code or design phase.
+Several of the most effective methods are:
+\begin{list2}
+\item Refactoring to stateless GET requests
+\item Implementation of application-wide CSRF defenses
+\item Introduction of request-checking middleware
+\end{list2}
+Implementing these simple defenses in your web application will dramatically reduce
+the risk of falling prey to CSRF-targeting hackers.
+\end{quote}
+
+
+
+\slide{Example CSRF Protection Django}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Cross Site Request Forgery protection}\\
+The CSRF middleware and template tag provides easy-to-use protection against Cross Site Request Forgeries. This type of attack occurs when a malicious website contains a link, a form button or some JavaScript that is intended to perform some action on your website, using the credentials of a logged-in user who visits the malicious site in their browser. A related type of attack, ‘login CSRF’, where an attacking site tricks a user’s browser into logging into a site with someone else’s credentials, is also covered.
+
+The {\bf first defense against CSRF attacks is to ensure that GET requests (and other ‘safe’ methods, as defined by RFC 7231\#section-4.2.1) are side effect free}. Requests via ‘unsafe’ methods, such as POST, PUT, and DELETE, can then be protected by following the steps below.
+\end{quote}
+Source: \link{https://docs.djangoproject.com/en/4.0/ref/csrf/}
+
+\begin{list2}
+\item Many existing options can help with CSRF protection, so make sure to include this in your architecture and planning
+\end{list2}
+
+\slide{Repeat exercise}
+
+\hlkimage{6cm}{exercise}
+\begin{center}
+Lets redo the exercise, but with focus on CSRF tokens
+
+{\bf\hlkbig \nameref{ex:identify-tokens}}
+
+which is number {\bf \ref{ex:identify-tokens}} in the exercise PDF.
+\end{center}
+
+
+
+
+\slide{24. Defending Against XXE}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+Generally speaking, XXE is indeed easy to defend against—simply disable external
+entities in your XML parser (see Figure 24-1). How this is done depends on the XML
+parser in question, but is typically just a single line of configuration:
+\begin{alltt}
+factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+\end{alltt}
+XXE is noted by OWASP to be particularly dangerous against Java-based XML pars‐
+ers, as many have XXE enabled by default. Depending on the language and parser
+you are relying on, it is possible that XXE is disabled by default.
+\end{quote}
+
+\begin{list2}
+\item Note: this applies to multiple applications and formats which you wouldn't consider as XML, example CVE-2020-25042\\
+\link{https://www.linkedin.com/pulse/how-exploit-bigbluebutton-file-disclosure-ssrf-pawan-jaiswal}
+\item Parsing and converting formats is dangerous
+\item \link{https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=xxe}
+\item \link{https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html}
+\item Related \link{https://github.com/QubesOS/qubes-app-linux-pdf-converter}
+\end{list2}
+
+
+\slide{Comparing XML versus JSON}
+
+%\hlkimage{}{}
+Book describes XML versus JSON,
+
+\begin{quote}\small
+JSON, on the other hand, would not be practical if your application is parsing actual
+XML, SVG, or other XML-derived file types. It would, however, be a practical solu‐
+tion if your application is sending standard hierarchical payloads that just happen to
+be in XML shape.
+\end{quote}
+
+and concluding
+\begin{quote}\small
+The comparison of the two formats could go on for an extensive amount of time, but
+you should grasp a few things right off the bat with Table 24-1:
+\begin{list2}
+\item JSON is a much more lightweight format than XML.
+\item JSON offers less rigidity, but brings with it faster and easier to work with
+payloads.
+\item JSON maps to JavaScript objects, while XML more closely maps to DOM trees
+(as the DOM is an XML-derived format).
+\end{list2}
+\end{quote}
+
+Which I think is a fair recommendation. XML is complex!
+
+\slide{Exploiting insecure deserialization vulnerabilities}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Exploiting insecure deserialization vulnerabilities
+In this section, we'll teach you how to exploit some common scenarios using examples from PHP, Ruby, and Java deserialization. We hope to demonstrate how exploiting insecure deserialization is actually much easier than many people believe. This is even the case during blackbox testing if you are able to use pre-built gadget chains.
+\end{quote}
+
+\link{https://portswigger.net/web-security/deserialization/exploiting}
+
+
+\begin{list2}
+    \item OWASP has multiple pages about these problems:\\
+    \link{https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data}
+\item Note:
+\begin{quote}{\bf
+Platform}\\
+Languages: C, C++, Java, Python, Ruby (and probably others)\\
+Operating platforms: Any
+\end{quote}
+\end{list2}
+
+\exercise{ex:research-middleware-csrf}
+
+\exercise{ex:django-intro}
+
+
+
+\slidenext{}
+
+\end{document}

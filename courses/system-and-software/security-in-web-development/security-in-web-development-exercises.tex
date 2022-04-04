@@ -2302,9 +2302,7 @@ Back in the repository try adding a new file with bad name:
 user@Projects:kramse-labs$ {\bf }
 user@Projects:kramse-labs$ touch henrikÆØÅ
 user@Projects:kramse-labs$ git add henrikÆØÅ
-user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ
-> ^C
-huser@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
 Error: Attempt to add a non-ASCII file name.
 This can cause problems if you want to work with people on other platforms.
 To be portable it is advisable to rename the file.
@@ -2371,13 +2369,164 @@ Look at the many projects which have been tested by AFL, the \emph{bug-o-rama tr
 {\bf Solution:}\\
 When afl is installed on at least one laptop on the team, you are done.
 
-It may be a bit hard to actually run a fuzzing session, so don't fight it for too long.
+It may be a bit hard to actually run a fuzzing session, so dont fight it for too long.
 
 {\bf Discussion:}\\
 For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
 
 
 
+
+\chapter{Identify Session Tokens 20 min}
+\label{ex:identify-tokens}
+
+\begin{alltt}\small
+Cookie: login=CustomerId=900180&LanguageId=9; OldBrowser=%220%22; Pool=rosalina;
+ShowNativeLogin=true; DebugCustomerId=900180; DebugPersonId=400954;
+OnboardingCompletedFeatures=h=1c744782963a2478d5db92a9981d401a&ofc_47=True&ofd_49=True;
+ASP.NET_SessionId=u0245fara4x3qmkli5refddg;...
+\end{alltt}
+
+{\bf Objective:}\\
+Look at a real application and identify session tokens.
+
+Verify session settings, like Anti-XSS and Anti-CSRF tokens, if present.
+
+Note: First, look for session tokens, later we may repeat this exercise, with focus on CSRF tokens.
+
+{\bf Purpose:}\\
+Web applications are \emph{faking sessions}, each request are independent by design of the protocol. This is done using session cookies and similar methods.
+
+Running Burp while performing a login will allow you to look into session identifiers.
+
+Running a test using Mozilla Observatory first will allow you to analyse the settings for the web site.
+
+Some things to look for
+\begin{list2}
+\item Cookie settings, Secure Flag and http-only
+\item HSTS header \url{https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security}
+\item Random -- how to check that?
+\end{list2}
+
+If you will be checking multiple sites, I can recommend installing the command line version of Mozilla Observatory
+\begin{alltt}\footnotesize
+└─$ observatory --format report kea-fronter.itslearning.com                 1 ⨯
+observatory [WARN] retrying in 1 second (attempt 1/10)
+...
+observatory [WARN] retrying in 1 second (attempt 6/10)
+
+HTTP Observatory Report: kea-fronter.itslearning.com
+
+Score Rule                     Description
+  -20 content-security-policy  Content Security Policy (CSP) implemented unsafely.
+   -5 cookies                  Cookies set without using the Secure flag,
+                               but transmission over HTTP prevented by HSTS.
+   -5 referrer-policy          Referrer-Policy header set unsafely to "origin",
+                               "origin-when-cross-origin", or "unsafe-url".
+    5 x-frame-options          X-Frame-Options (XFO) implemented via the CSP frame-ancestors directive.
+
+Score: 70
+Grade: B
+
+Full Report Url: https://observatory.mozilla.org/analyze.html?host=kea-fronter.itslearning.com
+\end{alltt}
+
+We referenced further scanners in exercise \nameref{ex:web-site-check}
+on page \pageref{ex:web-site-check}.
+
+{\bf Suggested method:}\\
+Run the Burp program from your Kali Linux VM and login to a site like Fronter.
+
+\link{https://kea-fronter.itslearning.com/}
+
+
+{\bf Hints:}\\
+Look in the header section, and look for \verb+Cookie:+. Common ones are \verb+ASP.NET_SessionId+ or \verb+PHPSESSID+
+
+{\bf Solution:}\\
+When you have identified session cookies and checked the settings using a scanner, test web site or similar you are done. It is recommended though to dive a bit into the application and how these are used.
+
+{\bf Discussion:}\\
+Most sites today have switched to using HTTPS, but some are not according to best practice. To prevent the use of credentials or cookies over insecure connections, we should not allow calls to happen over HTTP.
+
+Various tools like OWASP Zap and Burp suite can also be used for analyzing the session cookies, for randomness/entropy:\\
+\link{https://portswigger.net/burp/documentation/desktop/tools/sequencer/getting-started}
+
+
+Checkout the story of the old extension Firesheep on wikipedia, what could happen when session cookies were not protected:\\
+\link{https://en.wikipedia.org/wiki/Firesheep}
+
+
+
+\chapter{Research XSS and CSRF protection for your projects 30 min}
+\label{ex:research-middleware-csrf}
+
+{\bf Objective:}\\
+Research a few options for your own use.
+
+
+{\bf Purpose:}\\
+Creating anti-CSRF tokens are best left to existing middleware.
+
+{\bf Suggested method:}\\
+Check your programming language of choice and check if there are frameworks which already include CSRF tokens.
+
+
+{\bf Hints:}\\
+Django has a LOT of security features built-in and is a good example.
+
+{\bf Solution:}\\
+When you have checked either one you found yourself, or read the Django description on \link{https://docs.djangoproject.com/en/4.0/ref/csrf/} you are done.
+
+{\bf Discussion:}\\
+I have asked you NOT to use a full framework for your project!
+
+You are welcome to create a minimal CSRF protection in your project, and list any shortcomings your implementation may have.
+
+
+\chapter{Optional: Run parts of a Django tutorial 30min}
+\label{ex:django-intro}
+
+{\bf Objective:}\\
+Talk about web applications, how they are made.
+
+{\bf Purpose:}\\
+Know how you can get started using a framework, like Django\\ \link{https://www.djangoproject.com/}
+
+{\bf Suggested method:}\\
+We will visit a Django tutorial and talk about the benefits from using existing frameworks.
+
+{\bf Hints:}\\
+Input validation is a problem most applications face. Using Django a lot of functionality is available for input validation.
+
+Take a look at Form and field validation:\\
+\link{https://docs.djangoproject.com/en/4.0/ref/forms/validation/}
+
+You can also write your own validators, and should centralize validation in your own applications.
+
+\begin{minted}[fontsize=\small]{python}
+
+  from django.core.exceptions import ValidationError
+  from django.utils.translation import gettext_lazy as _
+
+  def validate_even(value):
+      if value % 2 != 0:
+          raise ValidationError(
+              _('%(value)s is not an even number'),
+              params={'value': value},
+          )
+\end{minted}
+
+Example from:
+\link{https://docs.djangoproject.com/en/4.0/ref/validators/}
+
+{\bf Solution:}\\
+When we have covered basics of what Django is, what frameworks provide and seen examples, we are done.
+
+{\bf Discussion:}\\
+Django is only an example, other languages and projects exist.
+
+Django includes a LOT already built-in, including security features.
 
 
 

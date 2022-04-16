@@ -1,5 +1,5 @@
 \documentclass[a4paper,11pt,notitlepage]{report}
-% Henrik Lund Kramshoej, February 2001
+% Henrik Kramselund Jereminsen, February 2001
 % hlk@security6.net,
 % My standard packages
 \usepackage{zencurity-network-exercises}
@@ -32,7 +32,7 @@
 \markboth{Preface}{}
 
 This material is prepared for use in \emph{\kursus} and was prepared by
-Henrik Lund Kramshoej, \link{http://www.zencurity.com} .
+Henrik Kramselund Jereminsen, \link{http://www.zencurity.com} .
 It describes the networking setup and
 applications for trainings and workshops where hands-on exercises are needed.
 
@@ -419,12 +419,12 @@ see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 
 
 
-\chapter{Bonus: Use Ansible to install programs}
+\chapter{Bonus: Use Ansible to install Elastic Stack}
 \label{ex:basicansible}
 
 
 {\bf Objective:}\\
-Run Elasticsearch
+Install and run Elasticsearch with additional programs -- the elastic stack. Previously named ELK stack after Elasticsearch, Logstash and Kibana.
 
 {\bf Purpose:}\\
 See an example tool used for many projects, Elasticsearch from the Elastic Stack
@@ -459,7 +459,7 @@ Then it should be easy to run Ansible playbooks, like this: (again as root, most
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 cd kramse-labs/suricatazeek
-ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml 4-configuration.yml
 \end{minted}
 
 Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
@@ -495,6 +495,79 @@ When you have a updated VM and Ansible running, then we are good.
 
 {\bf Discussion:}\\
 Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+\chapter{Bonus: Configure Elasticsearch Security}
+\label{ex:xpack-security}
+
+{\bf Objective:}\\
+Configure the security settings for Elastic stack -- mainly Kibana and Elasticsearch communication.
+
+{\bf Purpose:}\\
+Getting access to dashboards and logging data should only be allowed for security administrators.
+
+{\bf Suggested method:}\\
+When starting Kibana there is a small popup which guide you to the minimal setup. There are multiple steps and require some Linux/unix knowledge to perform them all. There is no requirement to perform this, if you are new to Unix and Elasticsearch, but make a mental note that it is available.
+
+Currently:\\
+\link{https://www.elastic.co/guide/en/elasticsearch/reference/7.17/security-minimal-setup.html}
+
+{\bf Two settings are needed for elasticsearch}\\
+On every node in your cluster, add the xpack.security.enabled setting to the
+\verb+/etc/elasticsearch/elasticsearch.yml+ file and set the value to true, change from false to true:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+xpack.security.enabled: true
+\end{minted}
+
+and at the bottom add:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+discovery.type: single-node
+\end{minted}
+
+Then restart the elasticsearch service using \verb+service elasticsearch restart+
+
+Afterwards generate random passwords using:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+/usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto
+\end{minted}
+
+This will print a number of passwords, which should be saved in a text file!
+
+
+{\bf Two actions are needed for kibana}\\
+Add the elasticsearch.username setting to the file \verb+/etc/kibana/kibana.yml+ and set the value to the \verb+kibana_system+ user:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+elasticsearch.username: "kibana_system"
+\end{minted}
+
+
+
+
+Add the password for the \verb+kibana_system+ user to the Kibana keystore:
+\begin{minted}[fontsize=\footnotesize]{shell}
+# /usr/share/kibana/bin/kibana-keystore create
+# /usr/share/kibana/bin/kibana-keystore add elasticsearch.password
+\end{minted}
+Then restart the kibana service using \verb+service kibana restart+
+
+Log in to Kibana as the elastic user.
+
+
+Congratulate yourself if this works, good job.\\
+You enabled password protection for your local cluster to prevent unauthorized access. You can log in to Kibana securely as the elastic user and create additional users and roles.
+
+
+{\bf Hints:}\\
+You should be able to change a few lines of configuration using an editor, but for production use it is recommended to use Ansible or some other configuration management.
+
+{\bf Solution:}\\
+When you have read the instructions, and understood that Elastic stack includes some security settings, available and highly recommended for production use, you are done.
+
+{\bf Discussion:}\\
+We could have added these settings and commands to Ansible playbooks, but since it is something that must be done differently in production clusters I considered it a good exercise.
 
 
 \chapter{Wireshark and Tcpdump 15 min}

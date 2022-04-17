@@ -1,0 +1,333 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{security-in-web-development-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{10. Web Application Security: Defensive: Defensive Injection and DoS}
+{Security in Web Development Elective, KEA}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Doing defensive for protecting the backend system
+\item Defending Against Injection and DoS Attacks
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item
+\end{list2}
+\item Exercises
+\begin{list2}
+\item SQLMap
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 1) 45min
+\item 2) 45min
+\item 3) 30min
+\item 4) 30-45min
+\end{list2}
+
+We will not follow this to the minute, but be flexible
+
+\slide{Reading Summary}
+
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list1}
+\item Part III. Defense, chapters 19-21
+\item 25. Defending Against Injection
+\item 26. Defending Against DoS
+
+%\item Use the secure coding PDF from Veracode
+\end{list1}
+
+
+
+\slide{ 25. Defending Against Injection}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Previously we discussed the risk that injection-style attacks bring against web applications. These attacks are still common (although more common in the past), typically as a result of improper attention on the part of the developer writing any type of automation involving a CLI and user-submitted data.
+
+Injection attacks also cover a wide surface area. Injection can be used against CLIs or any other isolated interpreter running on the server (when it hits the OS level, it becomes command injection instead). As a result, when considering how we will defend against injection-style attacks, it is easier to break such defensive measures up into a few categories.
+\end{quote}
+
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+\slide{Attacking Injection Summary -- Which database}
+
+%\hlkimage{}{}
+
+\begin{quote}
+SQL databases are still the most popular general-purpose database on the market. SQL query language is strict, but reliably fast and easy to learn. SQL can be used for anything from storage of user credentials to managing JSON objects or small image blobs. The largest of these are PostgreSQL, Microsoft SQL Server, MySQL, and SQLite.
+\end{quote}
+Source: \emph{Web Application Security} page 49
+
+\begin{list2}
+\item Identify the framework, operating system, dependencies
+\item Any error messages help an attacker
+\item Different methods for attacking MySQL versus Microsoft SQL Server
+\end{list2}
+
+
+
+\slide{Attacking Injection Summary -- Identifying Databases}
+
+%\hlkimage{}{}
+
+\begin{quote}
+If database error messages are sent to the client directly, a similar technique to the one for detecting server packages can be used to determine the database. Often this is not the case, so you must find an alternative discovery route.
+...
+One technique that can be used is primary key scanning. Most databases support the notion of a “primary key,” which refers to a key in a table (SQL) or document (NoSQL) that is generated automatically upon object creation and used for rapidly performing lookups in the database.
+\end{quote}
+Source: \emph{Web Application Security} page 95
+
+\begin{list2}
+\item Then book goes on to describe MongoDB \verb+_id+ hexadecimal-compatible field of length 12
+\end{list2}
+
+
+
+
+\slide{Attacking Injection Summary -- SQL Injection and PHP}
+
+%\hlkimage{}{}
+
+\begin{quote}
+One of the most commonly known types of attacks against a web application is SQL injection. SQL injection is a type of injection attack that specifically targets SQL databases, allowing a malicious user to either provide their own parameters to an existing SQL query, or to escape an SQL query and provide their own query. {\bf Naturally, this typically results in a compromised database because of the escalated permissions the SQL interpreter is given by default.}
+...
+
+Old-school PHP developers would interweave a combination of
+SQL, HTML, and PHP into their PHP files—an organizational model supported by
+PHP that would be misused, resulting in an enormous amount of vulnerable PHP
+code.
+...
+
+In more recent years, PHP coding standards have become much more strict and the
+language has implemented tools to reduce the odds of SQL injection occurring.
+\end{quote}
+Source: \emph{Web Application Security} page 147-148
+
+
+
+
+\slide{Attacking Injection Summary -- SQL Injection and Other languages}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The result of these developments is that there is less SQL injection across the entire web. In fact, injection vulnerabilities have decreased from nearly 5\% of all vulnerabilities in 2010 to less than 1\% of all vulnerabilities found today, according to the National Vulnerability Database.
+
+The security lessons learned from PHP have lived on in other languages, and it is much more difficult to find SQL injection vulnerabilities in today’s web applications.
+
+It is still possible, however, and still common in applications that do not make use of secure coding best practices.
+\end{quote}
+Source: \emph{Web Application Security} page 149
+
+\begin{list2}
+\item
+\end{list2}
+
+
+
+
+
+\slide{Defend with Defense in Depth}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+Quote from Matt Bishop, Computer Security
+
+
+\slide{Defend with Least Privilege}
+
+\hlkimage{19cm}{was-least-authority.png}
+Source: \emph{Web Application Security} page 264
+
+\begin{list1}
+\item
+\end{list1}
+
+
+
+\slide{Role-based Access Control (RBAC)}
+
+\begin{quote}
+In computer systems security, {\bf role-based access control (RBAC)}[1][2] or role-based security[3] is an approach to restricting system access to unauthorized users. It is used by the majority of enterprises with more than 500 employees,[4] and can implement mandatory access control (MAC) or discretionary access control (DAC).
+
+Role-based access control (RBAC) is a policy-neutral access-control mechanism defined around {\bf roles and privileges}. The components of RBAC such as role-permissions, user-role and role-role relationships make it simple to perform user assignments. A study by NIST has demonstrated that RBAC addresses many needs of commercial and government organizations[citation needed]. RBAC can be used to facilitate administration of security in large organizations with hundreds of users and thousands of permissions. Although RBAC is different from MAC and DAC access control frameworks, it can enforce these policies without any complication.
+\end{quote}
+Quote from \url{https://en.wikipedia.org/wiki/Role-based_access_control}
+
+
+
+\slide{Example role based system: PostgreSQL security}
+\hlkimage{15cm}{postgresql-security.png}
+
+Feature overview security features in PostgreSQL\\
+\url{https://www.postgresql.org/about/featurematrix/#security}
+
+
+
+\slide{Security by Design}
+
+\begin{list2}
+\item Doing the above should result in applications which are secure by design
+\item Adhering to the best security principles
+\item Implementing security from design to deployment ensure good security
+\end{list2}
+
+
+
+
+\slide{Prepared Statements -- what it is}
+
+\begin{quote}
+One development that most SQL implementations have begun to support is prepared statements. Prepared statements reduce a significant amount of risk when using user-supplied data in an SQL query. Beyond this, prepared statements are very easy to learn and make debugging SQL queries much easier.
+
+Prepared statements work by compiling the query first, with placeholder values for variables. These are known as bind variables, but are often just referred to as placeholder variables. After compiling the query, the placeholders are replaced with the values provided by the developer. As a result of this two-step process, the intention of the query is set before any user-submitted data is considered.
+\end{quote}
+Source: \emph{Web Application Security} page 261
+
+\begin{list2}
+\item Doing the above should result in applications which are secure by design
+\item Adhering to the best security principles
+\item Implementing security from design to deployment ensure good security
+\end{list2}
+
+\slide{Prepared Statements -- what it provides and how to use}
+
+In MySQL, prepared statements are quite simple:
+\begin{minted}[fontsize=\small]{sql}
+PREPARE q FROM 'SELECT name, barCode from products WHERE price <= ?';
+SET @price = 12;
+EXECUTE q USING @price;
+DEALLOCATE PREPARE q;
+\end{minted}
+
+\begin{quote}
+With a prepared statement, because the intention is set in stone prior to the user-submitted data being presented to the SQL interpreter, the query itself cannot change. {\bf This means that a SELECT operation against users cannot be escaped and modified into a DELETE operation by any means.} An {\bf additional query cannot occur after the SELECT operation} if the user escapes the original query and begins a new one. {\bf Prepared statements eliminate most SQL injection risk} and are supported by almost every major SQL database: MySQL, Oracle, PostgreSQL, Microsoft SQL Server, etc.
+\end{quote}
+Source: \emph{Web Application Security} page 262
+
+
+
+
+\slide{Use ORM}
+
+%\hlkimage{}{}
+
+\begin{quote}
+\end{quote}
+Source: \emph{},
+
+\begin{list2}
+\item
+\end{list2}
+
+
+
+
+\exercise{ex:}
+
+
+
+
+\slide{26. Defending Against DoS}
+
+%\hlkimage{}{}
+
+\begin{quote}
+In Part II we built attacks ...
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item
+\end{list2}
+
+
+
+\exercise{ex:}
+
+\exercise{ex:}
+
+
+
+
+
+\slide{Privacy by Design}
+
+\begin{quote}
+Objectives of the report\\
+This report shall promote the discussion on how privacy by design can be implemented with the help
+of engineering methods. It provides a basis for better understanding of the current state of the art
+concerning privacy by design with a focus on the technological side.
+
+“Personal data” means any information relating to an identified or identifiable natural person—for a
+detailed discussion see [19]. This is related to the term personally identifiable information (PII), as e.g.
+used in the privacy framework standardised by ISO/IEC [125].
+\end{quote}
+Source:
+Privacy and Data Protection by Design
+– from policy to engineering\\
+{\footnotesize\url{https://www.enisa.europa.eu/publications/privacy-and-data-protection-by-design}}
+\begin{list2}
+\item Next, if the application is secure, what about handling and protecting personal data
+\item As a rule, do not collect, store, process unnecessary data
+\end{list2}
+
+\slide{ENISA: List of Recommendations}
+
+\begin{list2}
+\item {\small Policy makers need to support the development of new incentive mechanisms for privacy-friendly services and need to promote them.}
+\item {\small The research community needs to further investigate in privacy engineering, especially with a
+multidisciplinary approach. This process should be supported by research funding agencies.
+The results of research need to be promoted by policy makers and media.}
+\item {\small Providers of software development tools and the research community need to offer tools that
+enable the intuitive implementation of privacy properties.}
+\item {\small Especially in publicly co-founded infrastructure projects, privacy-supporting components,
+such as key servers and anonymising relays, should be included.}
+\item {\small Data protection authorities should play an important role providing independent guidance
+and assessing modules and tools for privacy engineering.}
+\item {\small Legislators need to promote privacy and data protection in their norms.}
+\item {\small Standardisation bodies need to include privacy considerations in the standardisation process.}
+\item {\small Standards for interoperability of privacy features should be provided by standardization bodies.}
+\end{list2}
+
+Source:
+ENISA Privacy and Data Protection by Design
+– from policy to engineering
+
+
+
+
+\slidenext{}
+
+\end{document}

@@ -2484,52 +2484,288 @@ I have asked you NOT to use a full framework for your project!
 You are welcome to create a minimal CSRF protection in your project, and list any shortcomings your implementation may have.
 
 
-\chapter{Optional: Run parts of a Django tutorial 30min}
-\label{ex:django-intro}
-
-{\bf Objective:}\\
-Talk about web applications, how they are made.
-
-{\bf Purpose:}\\
-Know how you can get started using a framework, like Django\\ \link{https://www.djangoproject.com/}
-
-{\bf Suggested method:}\\
-We will visit a Django tutorial and talk about the benefits from using existing frameworks.
-
-{\bf Hints:}\\
-Input validation is a problem most applications face. Using Django a lot of functionality is available for input validation.
-
-Take a look at Form and field validation:\\
-\link{https://docs.djangoproject.com/en/4.0/ref/forms/validation/}
-
-You can also write your own validators, and should centralize validation in your own applications.
+\chapter{Django ORM 20 min}
+\label{ex:django-orm}
 
 \begin{minted}[fontsize=\small]{python}
+from django.db import models
 
-  from django.core.exceptions import ValidationError
-  from django.utils.translation import gettext_lazy as _
-
-  def validate_even(value):
-      if value % 2 != 0:
-          raise ValidationError(
-              _('%(value)s is not an even number'),
-              params={'value': value},
-          )
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
 \end{minted}
 
-Example from:
-\link{https://docs.djangoproject.com/en/4.0/ref/validators/}
+\begin{minted}[fontsize=\small]{sql}
+CREATE TABLE myapp_person (
+    "id" serial NOT NULL PRIMARY KEY,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL
+);
+\end{minted}
+
+{\bf Objective:}\\
+See how a mapping model, Object–relational mapping (ORM) can help reduce complexity for you.
+
+
+{\bf Purpose:}\\
+Using an ORM frees you from a lot of low level detail, and keeps your application more portable between database systems.
+
+
+{\bf Suggested method:}\\
+Read about the Django  Object–relational mapping (ORM) at:
+
+\begin{list2}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/models/}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/queries/}
+\end{list2}
+
+{\bf Hints:}\\
+Many programming languages use ORM and have similar functions.
 
 {\bf Solution:}\\
-When we have covered basics of what Django is, what frameworks provide and seen examples, we are done.
+When you have read about either the Django model, or a similar method in another framework or programming language you are done.
 
 {\bf Discussion:}\\
-Django is only an example, other languages and projects exist.
+I have myself used Grails,
+\emph{A powerful Groovy-based web application framework for the JVM built on top of Spring Boot}
 
-Django includes a LOT already built-in, including security features.
+\link{https://grails.org/}
 
 
 
+
+\chapter{Packetbeat monitoring 15 min}
+\label{ex:packetbeat}
+
+\hlkimage{12cm}{packetbeat-mysql-performance.jpg}
+
+{\bf Objective:}\\
+Get introduced to a small generic monitoring system, Packetbeat from Elastic.
+
+
+{\bf Purpose:}\\
+Running packetbeat will allow you to analyse a few network protocols.
+
+It can monitor multiple application protocols, namely DNS and MySQL may be of interest today.
+
+It requires access to data at the network level, may be hard to do for cloud setups.
+
+{\bf Suggested method:}\\
+Read about Packetbeat at:\\
+\link{https://www.elastic.co/beats/packetbeat}
+
+{\bf Hints:}\\
+This specific tool works with MySQL. Do a similar tool exist for other databases?
+
+
+{\bf Solution:}\\
+When you have gone through the list of protocols, and have a reasonable understanding of the available functions, you are done.
+
+{\bf Discussion:}\\
+What are your preferred monitoring systems?
+
+Prometheus is getting quite popular.
+\link{https://prometheus.io/}
+
+
+
+\chapter{THC SSL DoS 20 min}
+\label{ex:thc-ssl-dos}
+
+{\bf Objective:}\\
+Try the program thc-ssl-dos locally on your workstation.
+
+
+{\bf Purpose:}\\
+Running testing tools will allow you to analyse your robustness against various attack types. Best case you will find the bottle-necks before the attackers.
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM against my server, as shown below.
+
+\begin{alltt}\footnotesize
+$ host www.kramse.org                                                                255 ⨯
+www.kramse.org has address 185.129.60.130
+www.kramse.org has IPv6 address 2a06:d380:0:101::80
+
+┌──(hkj㉿cornerstone01)-[~]
+└─$ thc-ssl-dos --accept 185.129.60.130 443
+     ______________ ___  _________
+     \__    ___/   |   \ \_   ___ \
+       |    | /    ~    \/    \  \/
+       |    | \    Y    /\     \____
+       |____|  \___|_  /  \______  /
+                     \/          \/
+            http://www.thc.org
+
+          Twitter @hackerschoice
+
+Greetingz: the french underground
+
+Waiting for script kiddies to piss off................
+The force is with those who read the source...
+Handshakes 0 [0.00 h/s], 1 Conn, 0 Err
+thc-ssl-dos.c:392 SSL_renegotiate() failed
+thc-ssl-dos.c:392 SSL_renegotiate() failed
+Handshakes 0 [0.00 h/s], 273 Conn, 9 Err
+\end{alltt}
+
+{\bf Hints:}\\
+There is a description on the kali.org homepage:
+\link{https://www.kali.org/tools/thc-ssl-dos/}
+
+
+
+{\bf Solution:}\\
+When you have tried running the tool, you are done.
+
+Discuss with nearby students, would this be a tool you would perhaps use, why or why not.
+
+{\bf Discussion:}\\
+THC The Hackers Choice has been producing tools since 1995, their home page is at: \link{https://www.thc.org/}
+
+
+
+
+
+\chapter{Django String Handling 20min}
+\label{ex:django-string}
+
+Recommendations for handling strings, how does Python help, how does Django handle strings, and input validation
+
+{\bf Objective:}\\
+Look into string handling in Django framework
+
+{\bf Purpose:}\\
+See that Python3 and Django includes functions for conversion, so you dont need to write these yourself.
+
+{\bf Suggested method:}\\
+First look into Python3 string handling, for example by looking at\\
+\url{https://docs.python.org/3.7/library/text.html}
+
+Note: There may be a newer version, feel free to check multiple versions.
+
+Then look at Django string and unicode handling:
+\begin{list2}
+\item Look for string, url, encode, decode in\\ \url{https://docs.djangoproject.com/en/1.1/ref/utils/}
+\item \url{https://docs.djangoproject.com/en/3.1/ref/unicode/}
+\end{list2}
+
+{\bf Hints:}\\
+Follow the URLs above, or more updated versions.
+
+{\bf Solution:}\\
+When you have looked up and seen the names of a few relevant functions like these below, you are done:
+
+\begin{alltt}
+django.utils.html escape(text)
+django.utils.safestring
+django.utils.dateparse
+\end{alltt}
+
+Note the links after where you can see the source implementation, for example:\\
+\url{https://docs.djangoproject.com/en/2.2/_modules/django/utils/html/#escape}
+
+
+{\bf Discussion:}\\
+Are strings easy to work with?
+
+
+
+
+\chapter{JuiceShop Login 15 min}
+\label{ex:juice-shop-login}
+
+\begin{minted}[fontsize=\footnotesize]{sql}
+models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
+{ model: models.User, plain: true })
+\end{minted}
+
+{\bf Objective:}\\
+Try to find the JuiceShop login box implementation, we know it is vulnerable to SQL injection.
+
+
+{\bf Purpose:}\\
+Seeing bad code is a design pattern -- anti-pattern.
+
+
+{\bf Suggested method:}\\
+Find the source code, look for the database lookups.
+
+
+{\bf Hints:}\\
+The JuiceShop software is open source, and available at github:\\
+\link{https://github.com/juice-shop/juice-shop}
+
+Git clone and searching locally might give the best results.
+
+In this case we can search for \verb+SELECT * FROM+, using a simple tool like grep:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:juice-shop$ grep -ril SELECT | egrep -v "test|frontend|static"
+...
+REFERENCES.md
+routes/vulnCodeFixes.ts
+routes/search.ts
+routes/login.ts // oohhhh looks interesting
+routes/countryMapping.ts
+routes/vulnCodeSnippet.ts
+config/oss.yml
+config/mozilla.yml
+config/default.yml
+README.md
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have found examples of the database lookups, you are done. See also discussion below though.
+
+
+{\bf Discussion:}\\
+Think about how this could be changed. How much would it require to change this into prepared statements.
+Also having good source code tools help a lot! Finding problems, getting an overview of code etc.
+
+
+
+\chapter{Django email validation 30 min}
+\label{ex:django-email}
+
+
+
+{\bf Objective:}\\
+Find a mature implementation for validating email, a common requirement in modern applications.
+
+We will use Django as an example.
+
+{\bf Purpose:}\\
+See if we can find an implementation that will suit our own projects, even if not using Django.
+
+{\bf Suggested method:}\\
+Find the Django email validation -- how is the validation done, can it be copied and reused somewhere else.
+
+{\bf Hints:}\\
+The Django software is open source, and available at github:\\
+\link{https://github.com/django/django}
+
+Git clone and searching locally might give the best results.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ pwd
+/home/user/projects/github/django
+user@Projects:django$ grep -ril email | less
+\end{minted}
+
+One file includes \verb+class EmailValidator:+ which sounds promising.
+
+
+{\bf Solution:}\\
+When you have found the files implementing the actual email validation, not all related files, only the one doing the validation -- you are done.
+
+{\bf Discussion:}\\
+Email addresses are notoriously hard to validate, since the standard is very complex. Often we can do with less, say if we want to use it as a user-id. Then we might decide NOT to support comments and things like \verb?hlk+kea@kramse.org?
+
+Which other validators would be nice to have, in your own library?
 \end{document}
 
 

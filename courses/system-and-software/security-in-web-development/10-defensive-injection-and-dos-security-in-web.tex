@@ -48,7 +48,7 @@ Photo by Thomas Galler on Unsplash
 \begin{list2}
 \item 1) SQL injection protection 45min
 \item 2) DoS/DDoS 45min
-\item 3) Program Building blocks 30min
+\item 3) Program Building blocks 45min
 \item 4) Actual code -- JuiceShop and Django 45min
 \end{list2}
 
@@ -60,534 +60,79 @@ As always we will not follow this to the minute, but be flexible
 
 \begin{list1}
 \item Part III. Defense, chapters 19-21
-\item 25. Defending Against Injection
-\item 26. Defending Against DoS
-
+\item 27. Securing Third-Party Dependencies
 %\item Use the secure coding PDF from Veracode
 \end{list1}
 
+How did you like the book?
 
+What was the good and the bad? Offensive first and then defensive, did it work for you?
 
-\slide{ 25. Defending Against Injection}
+Did you expect more coding in this class?
+
+A lot of security is about processes, operations and running things \emph{securely} -- whatever that means
+
+\slide{ 27. Securing Third-Party Dependencies}
 
 %\hlkimage{}{}
 
 \begin{quote}
-Previously we discussed the risk that injection-style attacks bring against web applications. These attacks are still common (although more common in the past), typically as a result of improper attention on the part of the developer writing any type of automation involving a CLI and user-submitted data.
 
-Injection attacks also cover a wide surface area. Injection can be used against CLIs or any other isolated interpreter running on the server (when it hits the OS level, it becomes command injection instead). As a result, when considering how we will defend against injection-style attacks, it is easier to break such defensive measures up into a few categories.
 \end{quote}
 
 Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
 
-\slide{PHP shell escapes}
-
-\begin{list1}
-\item PHP in the old days was horrible insecure. It was possible to include files from HTTP urls, file URL open etc. Often user input was copied directly into a shell, which is why we also spend some time talking about shells and Linux/Unix
-\end{list1}
-\begin{alltt}
-<pre>
-<?php passthru("{\bf netstat -an && ifconfig -a}"); ?>
-</pre>
-\end{alltt}
-\begin{list1}
-\item Other tools have similar shell escapes:
-\begin{list2}
-\item Perl: \verb+print `/usr/bin/finger $input{'command'}`;+
-\item UNIX shell: \verb+`echo hello`+
-\item Microsoft SQL: \verb+exec master..xp_cmdshell 'net user test testpass /ADD'+
-\end{list2}
-\end{list1}
-%$
-
-\vskip 1 cm
-
-\centerline{\bf Result: web server send back data through HTTP/HTTPS}
 
 
-\slide{Attacking Injection Summary -- Which database}
+
+
+
+\slide{security.txt}
 
 %\hlkimage{}{}
 
 \begin{quote}
-SQL databases are still the most popular general-purpose database on the market. SQL query language is strict, but reliably fast and easy to learn. SQL can be used for anything from storage of user credentials to managing JSON objects or small image blobs. The largest of these are PostgreSQL, Microsoft SQL Server, MySQL, and SQLite.
+Summary
+“When security risks in web services are discovered by independent security researchers who understand the severity of the risk, they often lack the channels to disclose them properly. As a result, security issues may be left unreported. security.txt defines a standard to help organizations define the process for security researchers to disclose security vulnerabilities securely.”
+
+
+security.txt files have been implemented by Google, Facebook, GitHub, the UK government, and many other organisations. In addition, the UK’s Ministry of Justice, the Cybersecurity and Infrastructure Security Agency (US), the French government, the Italian government, and the Australian Cyber Security Centre endorse the use of security.txt files.
 \end{quote}
-Source: \emph{Web Application Security} page 49
+
+Source: \link{https://securitytxt.org/}
 
 \begin{list2}
-\item Identify the framework, operating system, dependencies
-\item Any error messages help an attacker
-\item Different methods for attacking MySQL versus Microsoft SQL Server
+\item In the old days we always had abuse@domain.tld webmaster@domain.tld postmaster@domain.tld - still highly recommended!
 \end{list2}
 
+\slide{E-mail best current practice}
 
-
-\slide{Attacking Injection Summary -- Identifying Databases}
-
-%\hlkimage{}{}
-
-\begin{quote}
-If database error messages are sent to the client directly, a similar technique to the one for detecting server packages can be used to determine the database. Often this is not the case, so you must find an alternative discovery route.
+\begin{alltt}\small
+MAILBOX       AREA                USAGE
+-----------   ----------------    ---------------------------
+ABUSE         Customer Relations  Inappropriate public behaviour
+NOC           Network Operations  Network infrastructure
+SECURITY      Network Security    Security bulletins or queries
 ...
-One technique that can be used is primary key scanning. Most databases support the notion of a “primary key,” which refers to a key in a table (SQL) or document (NoSQL) that is generated automatically upon object creation and used for rapidly performing lookups in the database.
-\end{quote}
-Source: \emph{Web Application Security} page 95
-
-\begin{list2}
-\item Then book goes on to describe MongoDB \verb+_id+ hexadecimal-compatible field of length 12
-\end{list2}
-
-
-
-
-\slide{Attacking Injection Summary -- SQL Injection and PHP}
-
-%\hlkimage{}{}
-
-\begin{quote}
-One of the most commonly known types of attacks against a web application is SQL injection. SQL injection is a type of injection attack that specifically targets SQL databases, allowing a malicious user to either provide their own parameters to an existing SQL query, or to escape an SQL query and provide their own query. {\bf Naturally, this typically results in a compromised database because of the escalated permissions the SQL interpreter is given by default.}
-...
-
-Old-school PHP developers would interweave a combination of
-SQL, HTML, and PHP into their PHP files—an organizational model supported by
-PHP that would be misused, resulting in an enormous amount of vulnerable PHP
-code.
-...
-
-In more recent years, PHP coding standards have become much more strict and the
-language has implemented tools to reduce the odds of SQL injection occurring.
-\end{quote}
-Source: \emph{Web Application Security} page 147-148
-
-
-
-
-\slide{Attacking Injection Summary -- SQL Injection and Other languages}
-
-%\hlkimage{}{}
-
-\begin{quote}
-The result of these developments is that there is less SQL injection across the entire web. In fact, injection vulnerabilities have decreased from nearly 5\% of all vulnerabilities in 2010 to less than 1\% of all vulnerabilities found today, according to the National Vulnerability Database.
-
-The security lessons learned from PHP have lived on in other languages, and it is much more difficult to find SQL injection vulnerabilities in today’s web applications.
-
-It is still possible, however, and still common in applications that do not make use of secure coding best practices.
-\end{quote}
-Source: \emph{Web Application Security} page 149
-
-
-
-
-
-\slide{Defend with Defense in Depth}
-
-\begin{list1}
-\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
-\item Also drop privileges when not needed anymore, relinquish rights immediately
-\item Example, need to read a document - but not write.
-\item Database systems can often provide very fine grained access to data
-\end{list1}
-
-Quote from Matt Bishop, Computer Security
-
-
-\slide{Defend with Least Privilege}
-
-\hlkimage{19cm}{was-least-authority.png}
-Source: \emph{Web Application Security} page 264
-
-
-\slide{Role-based Access Control (RBAC)}
-
-\begin{quote}
-In computer systems security, {\bf role-based access control (RBAC)}[1][2] or role-based security[3] is an approach to restricting system access to unauthorized users. It is used by the majority of enterprises with more than 500 employees,[4] and can implement mandatory access control (MAC) or discretionary access control (DAC).
-
-Role-based access control (RBAC) is a policy-neutral access-control mechanism defined around {\bf roles and privileges}. The components of RBAC such as role-permissions, user-role and role-role relationships make it simple to perform user assignments. A study by NIST has demonstrated that RBAC addresses many needs of commercial and government organizations[citation needed]. RBAC can be used to facilitate administration of security in large organizations with hundreds of users and thousands of permissions. Although RBAC is different from MAC and DAC access control frameworks, it can enforce these policies without any complication.
-\end{quote}
-Quote from \url{https://en.wikipedia.org/wiki/Role-based_access_control}
-
-
-
-\slide{Example role based system: PostgreSQL security}
-\hlkimage{15cm}{postgresql-security.png}
-
-Feature overview security features in PostgreSQL\\
-\url{https://www.postgresql.org/about/featurematrix/#security}
-
-
-
-\slide{Security by Design}
-
-\begin{list2}
-\item Doing the above should result in applications which are secure by design
-\item Adhering to the best security principles
-\item Implementing security from design to deployment ensure good security
-\end{list2}
-
-
-
-
-\slide{Prepared Statements -- what it is}
-
-\begin{quote}
-One development that most SQL implementations have begun to support is prepared statements. Prepared statements reduce a significant amount of risk when using user-supplied data in an SQL query. Beyond this, prepared statements are very easy to learn and make debugging SQL queries much easier.
-
-Prepared statements work by compiling the query first, with placeholder values for variables. These are known as bind variables, but are often just referred to as placeholder variables. After compiling the query, the placeholders are replaced with the values provided by the developer. As a result of this two-step process, the intention of the query is set before any user-submitted data is considered.
-\end{quote}
-Source: \emph{Web Application Security} page 261
-
-\begin{list2}
-\item Doing the above should result in applications which are secure by design
-\item Adhering to the best security principles
-\item Implementing security from design to deployment ensure good security
-\end{list2}
-
-\slide{Prepared Statements -- what it provides and how to use}
-
-In MySQL, prepared statements are quite simple:
-\begin{minted}[fontsize=\small]{sql}
-PREPARE q FROM 'SELECT name, barCode from products WHERE price <= ?';
-SET @price = 12;
-EXECUTE q USING @price;
-DEALLOCATE PREPARE q;
-\end{minted}
-
-\begin{quote}
-With a prepared statement, because the intention is set in stone prior to the user-submitted data being presented to the SQL interpreter, the query itself cannot change. {\bf This means that a SELECT operation against users cannot be escaped and modified into a DELETE operation by any means.} An {\bf additional query cannot occur after the SELECT operation} if the user escapes the original query and begins a new one. {\bf Prepared statements eliminate most SQL injection risk} and are supported by almost every major SQL database: MySQL, Oracle, PostgreSQL, Microsoft SQL Server, etc.
-\end{quote}
-Source: \emph{Web Application Security} page 262
-
-
-
-
-\slide{Use Object–relational mapping (ORM)}
-
-%\hlkimage{}{}
-
-\begin{quote}
-Object–relational mapping (ORM, O/RM, and O/R mapping tool) in computer science is a programming technique for converting data between type systems using object-oriented programming languages. This creates, in effect, a "virtual object database" that can be used from within the programming language. There are both free and commercial packages available that perfor object–relational mapping, although some programmers opt to construct their own ORM tools.
-\end{quote}
-Source: \url{https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping}
-
-\begin{list2}
-\item Many complexities and problems can be avoided by the use of ORM
-\item I often recommend against writing SQL by hand nowadays, especially when protoyping
-\end{list2}
-
-\slide{Example Django ORM}
-
-%\hlkimage{}{}
-
-\begin{minted}[fontsize=\small]{python}
-from django.db import models
-
-class Person(models.Model):
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-\end{minted}
-
-\begin{minted}[fontsize=\small]{sql}
-CREATE TABLE myapp_person (
-    "id" serial NOT NULL PRIMARY KEY,
-    "first_name" varchar(30) NOT NULL,
-    "last_name" varchar(30) NOT NULL
-);
-\end{minted}
-
-
-Source: \link{https://docs.djangoproject.com/en/4.0/topics/db/models/}
-\begin{list2}
-\item First create a data model, then let Django do the hard part
-\item Search for your favourite language
-\end{list2}
-
-
-\slide{Django SQL injection protection}
-
-%\hlkimage{}{}
-
-\begin{quote}
-SQL injection protection¶
-SQL injection is a type of attack where a malicious user is able to execute arbitrary SQL code on a database. This can result in records being deleted or data leakage.
-
-Django’s querysets are protected from SQL injection since their queries are constructed using query parameterization. A query’s SQL code is defined separately from the query’s parameters. Since parameters may be user-provided and therefore unsafe, they are escaped by the underlying database driver.
-
-Django also gives developers power to write raw queries or execute custom sql. These capabilities should be used sparingly and you should always be careful to properly escape any parameters that the user can control. In addition, you should exercise caution when using extra() and RawSQL.
-\end{quote}
-Source: \link{https://docs.djangoproject.com/en/4.0/topics/security/}
-
-\begin{list2}
-\item Django was released in July 2005 -- so many years of maturing
-\end{list2}
-
-
-\exercise{ex:django-orm}
-
-
-
-
-
-\slide{26. Defending Against DoS}
-
-%\hlkimage{}{}
-
-\begin{quote}
-DoS attacks usually involve the {\bf use of system resources}, which can make detecting
-them a bit difficult without robust server logging. It can be {\bf difficult to detect a DoS
-attack that occurred in the past} if it came through legitimate channels (such as an API
-endpoint).
-As such, a first measure against DoS-style attacks should be {\bf building up a comprehensive enough logging system} in your server that all requests are logged alongside their time to respond. You should also manually log the performance of any type of async “job"-style functions, such as a backup that is called through your API but runs in the background and does not generate a response once it completes. Doing this will allow you to find any attempts (accidental or malicious) at exploiting a DoS vulnerability (server side) that would have otherwise been difficult and time-consuming.
-\end{quote}
-Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
-
-\begin{list2}
-\item Denial of service can be the result of any resource running out, CPU, memory, bandwidth, interrupt handling, session table, open files, open TCP connections, database connection, running out of random bits for keys, running out of file nodes in the file system, ...
-\end{list2}
-
-
-\slide{Protecting Against Regex DoS}
-
-%\hlkimage{}{}
-
-\begin{quote}
-Regex DoS attacks are likely the easiest form of DoS to defend against, but require prior knowledge of how the attacks are structured (as shown in Part II of this book). With a proper code review process, you can prevent regex DoS sinks (evil or malicious regex) from ever entering your codebase.
-...
-
-The second step is to make sure there are no places in your application where a {\bf user-supplied regex is utilized}. Allowing user-uploaded regular expressions is like walking through a minefield and hoping you memorized the safe-route map correctly. It will take a huge coordinated effort to maintain such a system, and it is generally an all-around bad idea from a security perspective.
-\end{quote}
-
-\begin{list2}
-\item Have a timeout for all potentially long running tasks, shut them down
-\item Measure time taken for requests, mark those taking too long -- prevent them from running again, too often
-\item Any search form can be a trigger!
-\end{list2}
-
-
-\slide{Protecting Against Logical DoS}
-
-%\hlkimage{}{}
-
-\begin{quote}
-Logical DoS is much more difficult to detect and prevent than regex DoS. Much like regex DoS, logical DoS is not exploitable under most circumstances unless your developers accidentally introduce a segment of logic that can be abused to eat up system resources.
-...
-
-In order to protect against logical DoS, we need to identify the areas of our codebase in which critical system resources are utilized.
-\end{quote}
-
-\begin{list2}
-\item I think client attacks in this category should include mining various cryptocoins
-\end{list2}
-
-
-
-\slide{Protecting Against DDoS}
-
-%\hlkimage{}{}
-
-\begin{quote}
-Distributed denial of service attacks (DDoS) are much more difficult to defend
-against than DoS attacks that originate from a single attacker. While single-target DoS
-attacks often target a bug in application code (like an improperly written regex, or a
-resource-hogging API call), DDoS attacks are usually much simpler by nature.
-Most DDoS attacks on the web originate from multiple sources, but are controlled by
-a centralized source. This is orchestrated via a single attacker or group of attackers
-who distribute malware by some channel.
-\end{quote}
-
-\begin{list2}
-\item I have multiple presentations about this area, in general, it is hard to protect your site
-\item Many sites use cloudflare and similar services
-\end{list2}
-
-
-
-\slide{Elastic stack Kibana}
-
-\hlkimage{10cm}{illustrated-screenshot-hero-kibana.png}
-
-Screenshot from \url{https://www.elastic.co/kibana}
-
-Elasticsearch is a search engine and ocument store used in a lot of different systems, allowing cross application integration.
-
-\slide{Getting started with Elastic Stack}
-
-Easy to get started using the tutorial \emph{Getting started with the Elastic Stack} :\\
-{\footnotesize\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
-
-Today Elastic Stack contains lots of different parts.
-
-\begin{list2}
-\item Elasticsearch - the core engine
-\item Logstash - a tool for parsing logs and other data.\\
-\url{https://www.elastic.co/logstash}
-\begin{quote}
-"Logstash dynamically ingests, transforms, and ships your data regardless of format or complexity. Derive structure from unstructured data with grok, decipher geo coordinates from IP addresses, anonymize or exclude sensitive fields, and ease overall processing."
-\end{quote}
-\item Kibana - a web application for accessing and working with data in Elasticsearch\\
-\url{https://www.elastic.co/kibana}
-\end{list2}
-
-\slide{Designing and Standardizing HTTP Response Codes}
-
-\begin{list2}
-\item 100-199 are informational codes used as low-level signaling mechanisms, such as a confirmation of a request to change protocols
-\item 200-299 are general success codes used to describe various kinds of success conditions
-\item 300-399 are redirection codes used to request that the consumer retry a request to a different resource identifier, or via a different intermediary
-\item 400-499 represent consumer-side error codes that indicate that the consumer has produced a request that is invalid for some reason, example 404 file not found
-\item 500-599 represent service-side error codes that indicate that the consumer’s request may have been valid but that the service has been unable to process it for internal reasElasticsearch exposes REST APIs that are used by the UI components and can be called directly to configure and access Elasticsearch features.ons.
-\end{list2}
-Source: {\footnotesize\\
-\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
-
-
-\exercise{ex:packetbeat}
-
-
-
-
-
-\slide{Common DDoS attack types}
-
-A list of the most common DDoS attack types are:
-
-\begin{list2}
-\item TCP SYN flooding
-\item TCP other flooding
-\item UDP flooding NTP, etc.
-\item ICMP flooding
-\item Misc - stranger attacks and illegal combinations of flags etc.
-\end{list2}
-
-These can affect your services, directly on the servers or perhaps DNS, domains or other dependencies.
-
-Multiple tools for producing packets exist, hping3 and some configurations for protecting - PF rules, switch rules, server firewall rules.
-
-
-
-\slide{hping3 packet generator}
-
-\begin{alltt}\footnotesize
-usage: hping3 host [options]
-  -i  --interval  wait (uX for X microseconds, for example -i u1000)
-      --fast      alias for -i u10000 (10 packets for second)
-      --faster    alias for -i u1000 (100 packets for second)
-      --flood      sent packets as fast as possible. Don't show replies.
-...
-hping3 is fully scriptable using the TCL language, and packets
-can be received and sent via a binary or string representation
-describing the packets.
+MAILBOX       SERVICE             SPECIFICATIONS
+-----------   ----------------    ---------------------------
+POSTMASTER    SMTP                [RFC821], [RFC822]
+HOSTMASTER    DNS                 [RFC1033-RFC1035]
+USENET        NNTP                [RFC977]
+NEWS          NNTP                Synonym for USENET
+WEBMASTER     HTTP                [RFC 2068]
+WWW           HTTP                Synonym for WEBMASTER
+UUCP          UUCP                [RFC976]
+FTP           FTP                 [RFC959]
 \end{alltt}
 
-\begin{list2}
-\item Hping3 packet generator is a very flexible tool to produce simulated DDoS traffic with specific charateristics
-\item Home page: \link{http://www.hping.org/hping3.html}
-\item Source repository \link{https://github.com/antirez/hping}
-\end{list2}
-
-\centerline{My primary DDoS testing tool, easy to get specific rate pps}
-
-
-
-\slide{Various DoS tools}
-
-%\hlkimage{}{}
-
-Small list of DoS/DDoS tools available on Kali Linux
-\begin{quote}
-GoldenEye
-Slowloris
-LOIC (Low Orbit Ion Cannon)
-HOIC (High Orbit Ion Cannon)
-THC-SSL-DoS
-HULK (http Unbearable Load King)
-Pyloris
-TOR's Hammer
-XOIC
-RUDY (R U Dead Yet ?)
-DAVOSET
-OWASP HTTP POST
-\end{quote}
-
-\begin{list2}
-\item Slowloris -- keep sessions open, refresh just before timeout\\
-\link{https://en.wikipedia.org/wiki/Slowloris_(computer_security)}
-\item THC-SSL-DoS
-\emph{Establishing a secure SSL connection requires 15x more processing power on the server than on the client. THC-SSL-DOS exploits this asymmetric property by overloading the server and knocking it off the Internet.}
-\end{list2}
-
-\slide{Rocky Horror Picture Show - 1}
-
-\hlkimage{20cm}{smokeping-1.png}
-
-\centerline{Why test? Results from small 50.000 pps SYN attack?}
-
-\slide{Rocky Horror Picture Show - 2}
-
-\hlkimage{20cm}{smokeping-2.png}
-
-\centerline{Oh no 500.000 pps UDP attacks work?}
-
-\slide{Rocky Horror Picture Show - 3}
-
-\hlkimage{20cm}{smokeping-3.png}
-
-\centerline{Oh no spoofing attacks work?}
-
-\exercise{ex:syn-flood}
-
-\exercise{ex:thc-ssl-dos}
-
-
-
-
-\slide{Remember: Overview of Software Security}
-
-\begin{list2}
-\item Security Testing Versus Traditional Software Testing
-\item Functional testing does not prevent security issues!
-\item SQL Injection example, injecting commands into database
-\item Attackers try to break the application, server, operating system, etc.
-\item Use methods like user input, memory corruption / buffer overflow, poor exception handling, broken authentication, ...
-\end{list2}
-
-\vskip 2cm
-\centerline{\LARGE Where to start?}
-
-\slide{OWASP top ten}
-
-\hlkimage{16cm}{owasp.jpg}
-
-\begin{quote}
-The OWASP Top Ten provides a minimum standard for web application
-security. The OWASP Top Ten represents a broad consensus about what
-the most critical web application security flaws are.
-\end{quote}
-
-\begin{list1}
-\item The Open Web Application Security Project (OWASP)
-\item OWASP produces lists of the most common types of errors in web applications
-\item \link{http://www.owasp.org}
-\item Create Secure Software Development Lifecycle
-\end{list1}
-
-
-
-
-\slide{CWE Common Weakness Enumeration}
-
-\hlkimage{18cm}{cwe-mitre-org.png}
-\link{http://cwe.mitre.org/}
-
-\slide{CWE/SANS Monster mitigations}
-
-\hlkimage{13cm}{cwe-monster-mitigations.png}
-
 Source:
-\link{http://cwe.mitre.org/top25/index.html}
+\emph{RFC-2142 Mailbox Names for Common Services, Roles and Functions} D.
+Crocker. May 1997
 
 
 
-\slide{Program Building Blocks -- Using Components}
+\slide{Reporting Security Issues}
 
 %\hlkimage{}{}
 
@@ -596,94 +141,12 @@ Source:
 \end{quote}
 
 \begin{list2}
-\item Do not try to develop everything yourself
-\item Even if you succeed in creating it, you must maintain it!
-\end{list2}
-
-\slide{Design Patterns}
-
-\begin{list2}
-\item \emph{Design Patterns: Elements of Reusable Object-Oriented Software} (1994), Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides
-\item The book describes 23 classic software design patterns
-\item \url{https://en.wikipedia.org/wiki/Design_Patterns}
-\item Ideas of patterns precede this book, but became a more popular subject
-\end{list2}
-
-
-\slide{Common constructs}
-
-\begin{list2}
-\item Programs exhibit the same patterns, some examples:
-\item Solve problems in the same domains
-\item Need to store lists of strings / characters etc.
-\item Data structures becomes useful in other programs
-\item Sorting routines needed in many programs
+    \item
 \end{list2}
 
 
 
-\exercise{ex:django-string}
-
-
-\slide{Actual code – JuiceShop and Django 4}
-
-\hlkimage{3cm}{JuiceShop_Logo_100px.png}
-\hlkimage{5cm}{django-logo-positive.png}
-
-Lets look at some code, some may be useful for the exam project:
-\begin{list2}
-\item JuiceShop source code -- how is the login box implemented, can it be improved
-\item Django email validation -- how is the validation done, can it be copied
-\end{list2}
-
-
-\exercise{ex:juice-shop-login}
-\exercise{ex:django-email}
-
-\slide{Privacy by Design}
-
-\begin{quote}
-Objectives of the report\\
-This report shall promote the discussion on how privacy by design can be implemented with the help
-of engineering methods. It provides a basis for better understanding of the current state of the art
-concerning privacy by design with a focus on the technological side.
-
-“Personal data” means any information relating to an identified or identifiable natural person—for a
-detailed discussion see [19]. This is related to the term personally identifiable information (PII), as e.g.
-used in the privacy framework standardised by ISO/IEC [125].
-\end{quote}
-Source:
-Privacy and Data Protection by Design
-– from policy to engineering\\
-{\footnotesize\url{https://www.enisa.europa.eu/publications/privacy-and-data-protection-by-design}}
-\begin{list2}
-\item Next, if the application is secure, what about handling and protecting personal data
-\item As a rule, do not collect, store, process unnecessary data
-\end{list2}
-
-\slide{ENISA: List of Recommendations}
-
-\begin{list2}
-\item {\small Policy makers need to support the development of new incentive mechanisms for privacy-friendly services and need to promote them.}
-\item {\small The research community needs to further investigate in privacy engineering, especially with a
-multidisciplinary approach. This process should be supported by research funding agencies.
-The results of research need to be promoted by policy makers and media.}
-\item {\small Providers of software development tools and the research community need to offer tools that
-enable the intuitive implementation of privacy properties.}
-\item {\small Especially in publicly co-founded infrastructure projects, privacy-supporting components,
-such as key servers and anonymising relays, should be included.}
-\item {\small Data protection authorities should play an important role providing independent guidance
-and assessing modules and tools for privacy engineering.}
-\item {\small Legislators need to promote privacy and data protection in their norms.}
-\item {\small Standardisation bodies need to include privacy considerations in the standardisation process.}
-\item {\small Standards for interoperability of privacy features should be provided by standardization bodies.}
-\end{list2}
-
-Source:
-ENISA Privacy and Data Protection by Design
-– from policy to engineering
-
-
+\exercise{ex:}
 
 \slidenext{}
 

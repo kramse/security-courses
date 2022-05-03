@@ -1833,8 +1833,301 @@ When you can run and understand what the tool does, you are done.
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
 
 
+\chapter{Internet scanners 15 min}
+\label{ex:web-site-check}
 
-\chapter{Burp app and proxy - up to 30min}
+{\bf Objective:}\\
+Try the Online scanners \link{https://internet.nl/} and a few more.
+
+{\bf Purpose:}\\
+Learn how to efficiently check settings on remote services.
+
+{\bf Suggested method:}\\
+There are multiple portals and testing services which allow you to checck a domain,
+mail settings or web site.
+
+Run tools against a couple of sites of your choice.
+\begin{itemize}
+\item \url{https://internet.nl/} Generic checker
+\item \url{https://www.hardenize.com/} Generic checker
+\item \url{https://www.wormly.com/test_ssl} Test TLS
+\item \url{https://observatory.mozilla.org/} Web site headers check
+\item \url{https://dnsviz.net/} DNS zone check
+\item \url{https://rpki.cloudflare.com/} Check RPKI - route validator enter
+IP address\\
+More information about this: \url{https://labs.ripe.net/author/nathalie_nathalie/rpki-test/}
+\end{itemize}
+
+Others exist, feel free to suggest some.
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+When you can run and understand what at least one tool does, you are done.
+
+{\bf Discussion:}\\
+Which settings are most important, which settings are your responsebility?
+
+
+\chapter{Nginx as a Transport Layer Security (TLS) endpoint 20 min}
+\label{ex:nginx-tls}
+
+{\bf Objective:}\\
+Try configuring Nginx with TLS locally on your workstation
+
+
+{\bf Purpose:}\\
+Web services with TLS is a requirement in many circumstances. Unfortunately having TLS enabled requires both certificates, settings and large software packages like OpenSSL. A lot of vulnerabilities have been found in these and updating them may prove hard.
+
+Having a centralized entry where TLS is served to the internet may help you.
+
+{\bf Suggested method:}\\
+Run the programs from your Debian Linux VM, use \verb+apt install nginx+ if not already installed.
+
+Follow a guide like the one from Nginx:\\
+\url{http://nginx.org/en/docs/http/configuring_https_servers.html}
+
+Check using sslscan if your site is working, and configured according to best current practice.
+
+{\bf Hints:}\\
+Note: above link does NOT show how to generate certificates and keys, so you need to find this yourself. A good place would be at certificate providers, search for Nginx CSR Certificate Signing Request -- just dont order certificates.
+
+A full blown tutorial from Digital Ocean:\\
+\link{https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-on-debian-10}
+
+My kramse-labs also includes some example configs, check with \verb+git pull+
+
+{\bf Solution:}\\
+When you have configured an instance of Nginx you are done.
+
+{\bf Discussion:}\\
+A great document about Transport Layer Security (TLS) is available from the web site of NCSC in the Netherlands:\\
+{\scriptsize\url{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+Dont forget to add the recommended HTTP Strict Transport Security header to your configuration, if your site is in production.
+
+{\footnotesize\url{https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html}}
+
+A regular production site could also benefit from Lets Encrypt certificates updated automatically using one of the many clients available. Try searching for Lets Encrypt and Nginx.
+
+\chapter{Run Nginx as a load balancer - 15min}
+\label{ex:nginx-loadbalancer}
+
+
+{\bf Objective:}\\
+Run Nginx in a load balancing configuration.
+
+{\bf Purpose:}\\
+See an example load balancing tool used for many integration projects, Nginx
+
+{\bf Suggested method:}\\
+Running Nginx as a load balancer does not require a lot of configuration.
+
+First goal: Make Nginx listen on two ports by changing the default configuration.
+
+\begin{list2}
+\item Start by installing Nginx in your Debian, see it works - open localhost port 80 in browser\\
+\verb+apt install nginx+
+\item Copy the configuration file! Keep this backup,\\
+\verb+cd /etc/nginx/;cp nginx.conf nginx.conf.orig+
+\item Add / copy the section for the port 80 server, see below
+\item Change \emph{sites} to use port 81 and port 82
+\end{list2}
+
+
+Creating a new site, based on the default site found on Nginx in Debian:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/etc/nginx# cd /etc/nginx/sites-enabled/
+root@debian-lab:/etc/nginx/sites-enabled# cp default default2
+root@debian-lab:/etc/nginx/sites-enabled# cd /var/www/
+root@debian-lab:/var/www# cp -r html html2
+\end{minted}
+
+Then edit files \verb+default+ to use port 81/tcp and \verb+default2+ to use port 82/tcp
+
+- also make sure \verb+default2+ uses \verb+root /var/www/html2+
+
+Configuration changes made.
+
+These are the changes you should make:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/etc/nginx/sites-enabled# diff default default2
+22,23c22,23
+< 	listen 81 default_server;
+< 	listen [::]:81 default_server;
+---
+> 	listen 82 default_server;
+> 	listen [::]:82 default_server;
+41c41
+< 	root /var/www/html;
+---
+> 	root /var/www/html2;
+\end{minted}
+
+
+
+Config test and restart of Nginx can be done using stop and start commands:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:/var/www# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+root@debian-lab:/var/www# service nginx stop
+root@debian-lab:/var/www# service nginx start
+\end{minted}
+
+You can now visit \url{http://127.0.0.1:81} and \url{http://127.0.0.1:82}\\
+ - which show the same text, but you can change the files in \\
+ \verb+/var/www/html+ and \verb+/var/www/html2+
+
+NOTE: also verify that port 80 does \emph{not work} anymore!
+
+Adding the loadbalancer in nginx.conf.
+
+We can now add the two \emph{servers} running into a single loadbalancer with a little configuration:
+
+Add this into \verb+/etc/nginx/nginx.conf+ - inside the section \verb+http { ... }+
+\begin{minted}[fontsize=\footnotesize]{shell}
+upstream myapp1 {
+        server localhost:81;
+        server localhost:82;
+}
+server {
+        listen 80;
+        location / {
+                proxy_pass http://myapp1;
+        }
+}
+\end{minted}
+
+And test using \url{http://127.0.0.1:80}
+
+
+
+{\bf Hints:}\\
+Make changes to the two sets of HTML files
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:~# cd /var/www/
+root@debian-lab:/var/www# diff html
+html/  html2/
+root@debian-lab:/var/www# diff html/index.nginx-debian.html html2/index.nginx-debian.html
+4c4
+< <title>Welcome to nginx!</title>
+---
+> <title>Welcome to nginx2!</title>
+14c14
+< <h1>Welcome to nginx!</h1>
+---
+> <h1>Welcome to nginx2!</h1>
+\end{minted}
+
+When reloading the page a few times it will switch between the two versions
+
+My kramse-labs also includes some example configs, check with \verb+git pull+
+
+{\bf Solution:}\\
+When you have Nginx running load balanced, then we are good.
+
+{\bf Discussion:}\\
+Nginx is also common in cloud environments.
+
+\chapter{Nginx logging  20 min}
+\label{ex:nginx-logging}
+
+{\bf Objective:}\\
+See the common log format used by web servers.
+
+\url{https://en.wikipedia.org/wiki/Common_Log_Format}
+
+
+{\bf Purpose:}\\
+Knowing that a common format exist, allow you to choose between multiple log processors.
+
+
+{\bf Suggested method:}\\
+Run Nginx on your Debian Linux VM and then check the logs.
+
+
+\begin{alltt}
+# cd /var/log/nginx
+# ls
+# less access.log
+# less error.log
+\end{alltt}
+
+
+Produce some bad logs using Nikto or using a browser, and check \verb+error.log+
+
+
+{\bf Hints:}\\
+A lot of scanning acctivities would result in error logs, so if you observe a rise in 404 not found or similar, then maybe you are being targetted.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\
+I commonly recommend tools like Packetbeat and other tools from Elastic to process logs, see \link{https://www.elastic.co/beats/packetbeat}
+
+Another popular one is Matomo formerly known as Piwik\\
+\link{https://matomo.org/}.
+
+
+\chapter{Nginx filtering 40 min}
+\label{ex:nginx-filtering}
+
+{\bf Objective:}\\
+See how Nginx can filter a request easily.
+
+
+{\bf Purpose:}\\
+Running Nginx with a filtering configuration can protect some resource, or part of a web site from attacks.
+
+Example configuration:
+\begin{minted}[fontsize=\footnotesize]{shell}
+server {
+    listen       80;
+    server_name  service.dev;
+    access_log   /var/log/nginx/access.log;
+    error_log    /var/log/nginx/error.log debug;
+    # Proxy settings
+    proxy_set_header   Host $http_host;
+    proxy_redirect     off;
+    location / {
+        # Catch all
+        proxy_pass     http://127.0.0.1:81/;
+    }
+    location /admin/ {
+        # /admin/ only
+        allow 192.168.5.0/24;
+        deny  all;
+        proxy_pass     http://127.0.0.1:81/;
+    }
+}
+\end{minted}
+
+Note; this does a proxy pass to another service locally, you may need to change it. Perhaps you can use the JuiceShop example running on port 3000.
+
+As a directory to disallow, perhaps the \verb+/ftp/+ one.
+
+{\bf Suggested method:}\\
+Run the configuration from your Debian Linux VM
+
+
+{\bf Hints:}\\
+My kramse-labs also includes some example configs, check with \verb+git pull+
+
+Having a negative list is bad, better to have a positive list of allowed requests.
+
+{\bf Solution:}\\
+When you have tried above and seen Nginx block your request, you are done.
+
+{\bf Discussion:}\\
+Multiple modules exist for Nginx, Apache, PHP etc. for blocking bad requests.
+Which one is right for your setup, you must research for yourselves.
+
+
+\chapter{Bonus: Burp app and proxy - up to 30min}
 \label{ex:burp-basic}
 
 {\bf Objective:}\\
@@ -1887,7 +2180,7 @@ java -jar -Xmx6g $BURP &
 \end{alltt}
 
 
-\chapter{Burp intercept TLS - 15min}
+\chapter{Bonus: Burp intercept TLS - 15min}
 \label{ex:burp-tls}
 
 {\bf Objective:}\\

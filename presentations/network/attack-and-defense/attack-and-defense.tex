@@ -1,0 +1,372 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+%  Almindelige netværksangreb og forsvar
+% Hvordan kan sund fornuft og best practice mindske skader fra angreb?
+
+% Hvordan kan sund fornuft, allerede kendte foranstaltninger, best practice og andre ting, som du allerede burde have gjort, mindske skaderne fra exploits og angreb?
+
+% Vi bruger input fra almindelige exploits brugt i 2021 og Mitre ATT&CK, og ser på hvordan de matcher mod Defense in Depth, firewalling, filtrering, kendte sikkerhedsmekanismer m.v. Du behøver ikke bruge millioner på nyeste AI værktøj. Vi bruger erfaringer og viden opsamlet gennem 30 år, men anvendt på moderne angreb og exploits, incident response, til at skabe indsigt og detektering af angreb.
+
+% Målgruppe er alle, som er interesserede i at holde systemer og netværk sikre. Nøgleord:
+
+% Firewalls, Network segmentation, hardening. Materialer på engelsk men præsenteres på dansk.Open Source materials på Github: github.com/kramse/security-courses/
+
+% Underviser
+% Henrik Kramselund (@kramse) er internet samurai, netværks- og sikkerhedskonsulent. Har arbejdet med sikkerhed siden midten af 1990’erne.
+
+% Dato: Mandag 9. maj kl. 17.00-21.00
+% Sted: Online. Direkte link sendes på dagen pr. mail
+
+
+
+% Husk de efterhånden mange eksempler fra rigtige netværk:
+% HP ILO - KVM generelt
+% Switche admin interfaces set med HP, Ubnt, m.fl.
+% Administrative interfaces Tomcat deploy via HTML, Couchbase Sync Gateway admin REST direkte på Internet osv.
+
+\begin{document}
+\selectlanguage{english}
+\mytitlepage{Attack and Defense}
+{2022}
+
+
+\slide{Introduction: Attack overview}
+
+\hlkimage{20cm}{sicherheitstacho.png}
+Source: \link{http://www.sicherheitstacho.eu/}
+
+
+
+
+\slide{DDoS Attacks Still a Problem}
+
+\hlkimage{13cm}{DDos_Attack_in_2021_arbor.png}
+
+Security attacks and DDoS is very much in the media\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
+
+\slide{DDoS Attacks are HUGE}
+
+
+\hlkimage{13cm}{DDos_Attack_in_2021_size_arbor.png}
+
+Extremely hard to protect against from a small network\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
+
+
+\slide{Ransomware Attacks are Common}
+
+
+\hlkimage{13cm}{ransomware_arbor.png}
+
+Make sure to backup your data! Test your backups!\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
+
+
+
+\slide{2021}
+
+Serious vulns in 2021, high CVSS
+
+
+
+\slide{What can we do? -- Good security}
+
+\hlkimage{15cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\item Good security comes from structured work
+\end{list1}
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+
+\slide{Work together}
+
+\hlkimage{10cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+
+
+\slide{Risk management defined}
+
+\hlkimage{20cm}{shon-harris-risk-management.png}
+
+Source: Shon Harris \emph{CISSP All-in-One Exam Guide}
+
+
+
+\slide{Security Controls and Frameworks}
+
+\begin{list1}
+\item Multiple exist
+\vskip 1cm
+\begin{list2}
+\item CIS controls Center for Internet Security (CIS) \link{https://www.cisecurity.org}
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019
+\item NIST Cybersecurity Framework (CSF)\\
+Framework for Improving
+Critical Infrastructure Cybersecurity\\ \link{https://www.nist.gov/cyberframework}\\
+\link{http://csrc.nist.gov/publications/PubsSPs.html}
+\item National Security Agency (NSA)\\ \link{http://www.nsa.gov/research/publications/index.shtml}
+\item NSA security configuration guides\\ \link{http://www.nsa.gov/ia/guidance/security_configuration_guides/index.shtml}
+\item Information Systems Audit and Control Association (ISACA)\\
+\link{http://www.isaca.org/Knowledge-Center/Risk-IT-IT-Risk-Management/Pages/default.aspx}
+\end{list2}
+\end{list1}
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+
+\slide{Kom igang med CIS}
+
+\begin{quote}
+CIS-kontrollerne består af 20 praktiske, pragmatiske kontroller, som er målbare og med direkte henvisning til, hvordan de implementeres samt forslag til, hvilke KPI’er der bør opstilles for målinger.
+
+Forskellen på CIS-kontrollerne og fx ISO27001 er, at du ikke kan blive certificeret efter CIS, men til gengæld opdateres CIS-kontrollerne løbende, og de indeholder prioriterede lister af, hvad du i praksis skal gøre for din cybersikkerhed. Det australske forsvar har fx vist, at hvis man implementerer de første fire kontroller fuldt ud, kan man mitigere op mod 90+\% af alt malware.
+\end{quote}
+
+Dansk artikel fra Deloitte, version 7 men version 8 er ude
+\link{https://www2.deloitte.com/dk/da/pages/risk/articles/vi-stiller-skarpt-pa-cis-kontroller.html}
+
+\slide{Inventory and Control of Hardware Assets}
+
+CIS controls 1-6 are Basic, everyone must do them.
+
+
+\begin{quote}
+CIS Control 1:\\
+Inventory and Control of Hardware Assets\\
+Actively manage (inventory, track, and correct) all hardware devices on the network so that only authorized devices are given access, and unauthorized and unmanaged devices are found and prevented from gaining access.
+\end{quote}
+
+\begin{list1}
+\item What is connected to our networks?
+\item What firmware do we need to install on hardware?
+\item Where IS the hardware we own?
+\item What hardware is still supported by vendor?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What licenses do we have? Paying too much?
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item What software do our employees need to support?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Controlled Use of Administrative Privileges}
+
+\begin{quote}
+CIS Control 4:\\
+Controlled Use of Administrative Privileges\\
+The processes and tools used to track/control/prevent/correct the use, assignment, and configuration of administrative privileges on computers, networks, and applications.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Secure Configuration for Hardware and Software}
+
+\begin{quote}
+CIS Control 5:\\
+Secure Configuration for Hardware and Software on Mobile Devices, Laptops, Workstations and Servers\\
+Establish, implement, and actively manage (track, report on, correct) the security configuration of mobile devices, laptops, servers, and workstations using a rigorous configuration management and change control process in order to prevent attackers from exploiting vulnerable services and settings.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Maintenance, Monitoring and Analysis of Audit Logs}
+
+\begin{quote}
+CIS Control 6:\\
+Maintenance, Monitoring and Analysis of Audit Logs\\
+Collect, manage, and analyze audit logs of events that could help detect, understand, or recover from an attack.
+\end{quote}
+
+\begin{list1}
+\item ... and present it, use it daily, report it to management!
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{13cm}{observium-screenshot.png}
+
+
+\slide{Graphs and Dashboards!}
+
+\hlkimage{13cm}{Logstash1.png}
+
+\vskip 2cm
+\begin{list2}
+\item Screenshot from Peter Manev, OISF
+\item Shown are Suricata IDS alerts processed by Logstash and Kibana
+\end{list2}
+
+
+\slide{Networks today}
+\hlkimage{14cm}{overview-routing-customer-2015.pdf}
+
+
+
+\slide{Defense in depth - multiple layers of security}
+
+\hlkimage{14cm}{network-layers-1.pdf}
+
+\slide{ Netflow NFSen}
+
+\hlkimage{14cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+\slide{DDoS traffic before filtering}
+\hlkimage{14cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{14cm}{ddos-after-filtering}
+\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
+
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{12cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\end{list1}
+
+
+
+% Workshop
+% CIS controls
+
+% Workshop
+% Select and implement security
+% Create a security policy
+% Every 10minutes interrupt with "vuln attack"
+
+
+
+
+\slide{Next steps}
+
+In our network we are always improving things:
+\begin{list1}
+\item Suricata IDS \link{http://www.openinfosecfoundation.org/}
+\item More graphs, with {\bf automatic identification} of IPs under attack
+\item Identification of {\bf short sessions without data} - spoofed addresses
+\item Alerting from {\bf existing} devices
+\item Dashboards with key measurements
+\end{list1}
+
+\vskip 2cm
+\centerline{\bf\Large Conclusion: Combine tools!}
+
+
+\myquestionspage
+
+\hlkprofiluk
+
+\end{document}

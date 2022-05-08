@@ -907,13 +907,25 @@ Create filtering, logging, restrictions on these Unbound DNS servers\\
 
 Allow lists are better than block list, even if it takes some time to do it
 
+\slide{Capture data and logs!}
+
+
+\begin{list2}
+\item Run DNS query logs -- when client1 is infected with malware from domain malwareexample.com, then search for more clients infected
+\item Run Zeek and gather information about all HTTPS sessions -- captures certificates by default, and we can again search for certificate related to malwareexample.com
+\item Run network logging -- session logs in enterprise networks are GREAT \\
+(country wide illegal logging is of course NOT)
+\end{list2}
+
+Make sure to check with employees, inform them!
+
 \slide{Default permit}
 
 %\hlkimage{}{}
 
 One of the early implementers of firewalls Marcus J. Ranum summarized in 2005 The Six Dumbest Ideas in Computer Security \link{https://www.ranum.com/security/computer_security/editorials/dumb/} which includes the always appropriate discussion about default permit versus default deny.
 
-\begin{quote}{\bf
+\begin{quote}\small {\bf
 \#1) Default Permit}\\
 This dumb idea crops up in a lot of different forms; it’s incredibly persistent and difficult to eradicate. Why? Because it’s so attractive. Systems based on ”Default Permit” are the computer security equivalent of empty calories: tasty, yet fattening.
 
@@ -922,7 +934,9 @@ The most recognizable form in which the ”Default Permit” dumb idea manifests
 
 
 \begin{list2}
-    \item
+\item Allow all current networks today on all ports for all protocols \emph{is} an allow list \\
+Which tomorrow can be split into one for TCP, UDP and remaining, and measured upon
+\item Measure, improve, repeat
 \end{list2}
 
 
@@ -935,7 +949,7 @@ We cannot block SMTP from internal networks, since we do not know for sure if ve
 
 Cool, then we can do an allow list starting today on our border firewall:
 \begin{alltt}
-table <smtp-exchange> { $exchange1 $exchange2 $exchange3}
+table <smtp-exchange> \{ $exchange1 $exchange2 $exchange3 \}
 table <smtp-unknown> persist file "/firewall/mail/smtp-internal-unknown.txt"
 # Regular use, allowed
 pass out on egress inet proto tcp from smtp-echange to any port 25/tcp
@@ -943,7 +957,7 @@ pass out on egress inet proto tcp from smtp-echange to any port 25/tcp
 pass out on egress inet proto tcp from smtp-internal to any port 25/tcp
 \end{alltt}
 
-Year 0 the unknown list may be 100\% of all internal networks, but new networks added to infrastructure are NOT added, so list will shrink
+Year 0 the unknown list may be 100\% of all internal networks, but new networks added to infrastructure are NOT added, so list will shrink -- evaluate the list, and compare to network logs, did networks send ANY SMTP for 1,2,3 years?
 
 
 \slide{DROP SOME TRAFFIC NOW}
@@ -965,17 +979,7 @@ If you get hacked by Windows RPC in 2022, you probably deserve it, sorry for bei
 
 Best would be to analyze traffic and create allow lists, some internal networks to not need internet at all
 
-\slide{Capture data and logs!}
 
-
-\begin{list2}
-\item Run DNS query logs -- when client1 is infected with malware from domain malwareexample.com, then search for more clients infected
-\item Run Zeek and gather information about all HTTPS sessions -- captures certificates by default, and we can again search for certificate related to malwareexample.com
-\item Run network logging -- session logs in enterprise networks are GREAT \\
-(country wide illegal logging is of course NOT)
-\end{list2}
-
-Make sure to check with employees, inform them!
 
 \slide{Roundtable}
 

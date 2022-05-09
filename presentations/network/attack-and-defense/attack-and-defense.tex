@@ -30,6 +30,7 @@
 \mytitlepage{Attack and Defense}
 {2022}
 
+\hlkprofiluk
 
 \slide{Time schedule}
 
@@ -81,6 +82,24 @@ Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
 Make sure to backup your data! Test your backups!\\
 Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
 
+\slide{MITRE -- Common Vulnerabilities and Exposure (CVE)}
+
+\hlkimage{13cm}{cve-vulns-year.png}
+
+\begin{quote}
+The mission of the CVE® Program is to identify, define, and catalog publicly disclosed cybersecurity vulnerabilities.
+\end{quote}
+
+20 years and one of the most critical projects for internet and information security, in my opinion
+
+\slide{OMG CVE}
+
+\hlkimage{15cm}{reservedCVEIDsAllYearsQ3CY2021.png}
+Source: \link{https://www.cve.org/Media/News/item/blog/2021/11/16/CVE-Program-Report-for-Q3}
+
+\begin{list2}
+\item How many can you handle per day? How many are relevant for your organisation?
+\end{list2}
 
 \slide{Konklusion: IT-sikkerhed og IT-drift er præget af kaos og panik}
 
@@ -462,9 +481,6 @@ All lecture plans for my courses are freely available at:
 \end{list2}
 
 
-
-
-
 \slide{View data efficiently}
 
 \hlkimage{12cm}{logstash-search.png}
@@ -475,22 +491,13 @@ All lecture plans for my courses are freely available at:
 \end{list1}
 
 
-
-
 \slide{Networks today}
 \hlkimage{14cm}{overview-routing-customer-2015.pdf}
-
 
 
 \slide{Defense in depth - multiple layers of security}
 
 \hlkimage{14cm}{network-layers-1.pdf}
-
-\slide{ Netflow NFSen}
-
-\hlkimage{14cm}{nfsen-udp-flood.png}
-
-\centerline{An extra 100k packets per second from this netflow source (source is a router)}
 
 
 \slide{DDoS traffic before filtering}
@@ -526,6 +533,76 @@ All lecture plans for my courses are freely available at:
 \end{list1}
 
 Sounds easy, but is complex in practice
+
+
+
+\slide{Netflow}
+
+\begin{list2}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{list2}
+
+\centerline{Netflow is often from routers, we dont have any here}
+
+Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
+
+
+\slide{Collect Network Evidence from the network}
+
+\begin{list1}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\item today Netflow version 9 or IPFIX
+\end{list1}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
+
+
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+\slide{Netflow processing from the web interface}
+
+\hlkimage{12cm}{images/nfsen-processing-1.png}
+
+\centerline{Bringing the power of the command line forward}
+
+\slide{ElastiFlow -- Elasticsearch based}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+
+
 
 \slide{Hændelseslog og Økonomi}
 
@@ -739,6 +816,178 @@ Great resource for attack categorization
 \item Attack trees, picture from Bruce Schneier Attack Trees article December 1999:\\ {\footnotesize\link{https://www.schneier.com/academic/archives/1999/12/attack_trees.html}}
 \end{list2}
 
+
+\slide{Common Networks -- spans multiple locations, regions, user bases}
+
+\hlkimage{17cm}{wan-network.pdf}
+\centerline{Fysisk er der en begrænsing for hvor lange ledningerne må være}
+
+
+\slide{Address Resolution Protocol (ARP)}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
+\end{center}
+
+
+
+\slide{Person in the middle attacks}
+
+\begin{list1}
+\item ARP spoofing, ICMP redirects, the classics
+\item Used to be called Man in The Middle MiTM
+\begin{list2}
+\item ICMP redirect
+\item ARP spoofing
+\item Wireless listening and spoofing higher levels like  airpwn-ng \link{https://github.com/ICSec/airpwn-ng}
+\end{list2}
+\item Usually aimed at unencrypted protocols
+\item Today we only talk about getting the data, not how to perform higher level attacks
+\end{list1}
+
+
+\slide{Hvordan virker ARP spoofing?}
+
+\hlkimage{10cm}{images/arp-spoof.pdf}
+
+\begin{list1}
+\item Hackeren sender forfalskede ARP pakker til de to parter
+\item De sender derefter pakkerne ud på Ethernet med hackerens MAC
+  adresse som modtager - som får alle pakkerne
+\end{list1}
+
+\slide{Forsvar mod ARP spoofing}
+
+\begin{list1}
+\item Hvad kan man gøre?
+\item låse MAC adresser til porte på switche
+\item låse MAC adresser til bestemte IP adresser
+\item Efterfølgende administration!
+\vskip 1 cm
+\item Adskilte netværk - brug IEEE 802.1q VLANs
+\item {\bfseries arpwatch er et godt bud} - overvåger ARP
+\item bruge protokoller som ikke er sårbare overfor opsamling
+\end{list1}
+
+
+
+
+\slide{Security problems in the TCP/IP Suite}
+
+The title of a nice paper, and the rest of today
+\begin{quote}
+The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
+lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
+\end{quote}
+
+\begin{list1}
+\item Problems described in the original:
+\begin{list2}
+\item sequence number spoofing
+\item routing attacks,
+\item source address spoofing
+\item authentication attacks
+\end{list2}
+\end{list1}
+
+\slide{TCP sequence number prediction}
+
+\vskip 5mm
+\begin{quote}
+TCP SEQUENCE NUMBER PREDICTION
+One of the more fascinating security holes was first described by Morris [7] . Briefly, he used TCP
+sequence number prediction to construct a TCP packet sequence without ever receiving any responses
+from the server. This allowed him to spoof a trusted host on a local network.
+\end{quote}
+
+\begin{list1}
+\item tidligere baserede man login/adgange på source IP adresser, address based authentication
+\item Er ikke en pålidelig autentifikationsmekanisme
+\item Mest kendt er nok Shimomura der blev hacket på den måde, \\
+måske af Kevin D Mitnick eller en kompagnon
+\item I praksis vil det være svært at udføre på moderne operativsystemer
+\item Se evt. \link{http://www.takedown.com/} (filmen er ikke så god ;-) )
+\item Det er naturligvis fint med filtre så man kun kan tilgå services FRA bestemte IP
+\end{list1}
+
+\slide{Routing attacks}
+
+\begin{list1}
+\item Problems described in the original from 1989:
+\begin{list2}
+\item IP Source routing attacks - angiv en rute for pakkerne\\
+Knapt så brugbar idag
+\item Routing Information Protocol Attacks\\
+The Routing Information Protocol [15] (RIP) - denne bruges ikke mere, outdated
+\item BGPv4 som bruges idag har kæmpe problemer, kludetæppe af kludges
+\end{list2}
+\item Vi kommer til at snakke om \link{https://github.com/tomac/yersinia}
+\end{list1}
+
+\slide{Solutions to TCP/IP security problems}
+
+\begin{list1}
+\item Solutions:
+\begin{list2}
+\item Use RANDOM TCP sequence numbers, Win/Mac/Linux - DO,but IoT?
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item Routers and routing protocols must be more skeptical\\
+Routing filtre everywhere, auth på OSPF/BGP etc.
+\end{list2}
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\end{list1}
+
+\slide{DNS problems}
+
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, see DNS flag day\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\end{list2}
+\end{list1}
+
+\slide{SNMP problems}
+
+\begin{quote}
+5.5 Simple Network Management Protocol
+The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network
+management. Clearly, access to such a resource must be heavily protected. The RFC states this, but
+also allows for a null authentication service; this is a bad idea. Even a ‘‘read-only’’ mode is dangerous;
+it may expose the target host to netstat-type attacks if the particular Management Information Base
+(MIB) [38] used includes sequence numbers. (T
+\end{quote}
+
+True, and we will talk more about SNMP later in this course.
+
+\slide{local networks}
+
+\begin{quote}
+6.1 Vulnerability of the Local Network
+Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and
+host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise
+to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel,
+unless authentication servers are used.
+If the local network uses the Address Resolution Protocol (ARP) [42] more subtle forms of host-spoofing
+are possible. In particular, it becomes trivial to intercept, modify, and forward packets, rather than just
+taking over the host’s role or simply spying on all traffic.
+\end{quote}
+
+Today we can send VXLAN spoofed packets across the internet layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...
+
+A Look Back at “Security Problems in the TCP/IP Protocol Suite”
+about 1989 + 15 years = 2004
+
+
 \slide{Exposure, Attack surfaces, and reducing them}
 
 \begin{list2}
@@ -803,6 +1052,92 @@ Source:
 \item Programs like \emph{su} and \emph{sudo} often requires specific group membership and password
 \end{list1}
 
+
+\slide{Firewallrollen idag}
+
+\begin{list1}
+\item Idag skal en firewall være med til at:
+\begin{list2}
+\item Forhindre angribere i at komme ind
+\item Forhindre angribere i at sende traffik ud
+\item Forhindre virus og orme i at sprede sig i netværk
+\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
+  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
+\end{list2}
+\item Det kræver overblik!
+\end{list1}
+
+
+
+\slide{Sample rules from OpenBSD PF Firewall}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="217.157.20.129"
+webserver="217.157.20.131"
+homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
+wlan="10.0.42.0/24"
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+# default block anything
+block in all }
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Nogle switche tillader at man opdeler portene
+\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
+\item Port 1-4 er et LAN
+\item De resterende er et andet LAN
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\end{list1}
+
+\slide{IEEE 802.1q -- virtual LAN}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Med 802.1q tillades VLAN tagging på Ethernet niveau
+\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\end{list1}
+
+
+\slide{Network Access Control -- Connecting clients more securely}
+
+IEEE 802.1x  Port Based Network Access Control
+
+\hlkimage{7cm}{802.1X_wired_protocols.png}
+
+\begin{list1}
+\item Denne protokol sikrer at man valideres før der gives adgang til porten
+\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
+\item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
+\item Bruges til Wi-Fi netværk
+\end{list1}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
 \slide{Fokus \the\year}
 
 \begin{list2}
@@ -818,8 +1153,7 @@ Source:
 \item Incident Response og reaktion
 \end{list2}
 
-Check eventuelt IT sikkerhedsupdate 2019 præsentationen:\\
-{\small\link{https://github.com/kramse/security-courses/tree/master/presentations/misc/it-sikkerhedsupdate-2019}}
+Brug bogen \emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}
 
 \slide{Design a robust network Isolation and segmentation}
 
@@ -845,49 +1179,6 @@ Check eventuelt IT sikkerhedsupdate 2019 præsentationen:\\
 \item Du bør isolere farlige services i jails og chroots
 \item Brug port security til at sikre basale services DHCP, Spanning Tree osv.
 \end{list1}
-
-
-\slide{Example incident response procedures}
-
-\begin{quote}
-  5.4  Handling an Incident
-
-     Certain steps are necessary to take during the handling of an
-     incident.  In all security related activities, the most important
-     point to be made is that all sites should have policies in place.
-     Without defined policies and goals, activities undertaken will remain
-     without focus. The goals should be defined by management and legal
-     counsel in advance.
-\end{quote}
-
-\begin{list2}
-\item \emph{Incident Handler's Handbook}
-  by Patrick Kral, SANS Information Security Reading Room\\
-  {\footnotesize \link{https://www.sans.org/reading-room/whitepapers/incident/paper/33901}}
-  \item \emph{Computer Security
-Incident Handling Guide}, NIST Paul Cichonski,
-Tom Millar,
-TimGrance,
-Karen Scarfone\\ {\footnotesize\link{https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf}}
-\item Quote from RFC2196 \emph{Site Security Handbook} September 1997, IETF\\
-{\footnotesize\url{https://tools.ietf.org/html/rfc2196#section-5.4}}
-\item \link{https://cloud.google.com/security/incident-response/}
-\item Microsoft Azure
-\link{https://medium.com/@cloudyforensics/azure-forensics-and-incident-response-c13098a14d8d}
-\end{list2}
-
-
-\slide{Incident Handling Checklist from NIST.SP.800-61r2.pdf}
-
-\hlkimage{12cm}{incident-handling-checklist.png}
-
-
-
-% Vi bruger input fra almindelige exploits brugt i 2021 og Mitre ATT&CK, og ser på hvordan de matcher mod Defense in Depth, firewalling, filtrering, kendte sikkerhedsmekanismer m.v. Du behøver ikke bruge millioner på nyeste AI værktøj. Vi bruger erfaringer og viden opsamlet gennem 30 år, men anvendt på moderne angreb og exploits, incident response, til at skabe indsigt og detektering af angreb.
-
-% Målgruppe er alle, som er interesserede i at holde systemer og netværk sikre. Nøgleord:
-
-% Firewalls, Network segmentation, hardening. Materialer på engelsk men præsenteres på dansk.Open Source materials på Github: github.com/kramse/security-courses/
 
 
 
@@ -918,6 +1209,43 @@ Allow lists are better than block list, even if it takes some time to do it
 \end{list2}
 
 Make sure to check with employees, inform them!
+
+\slide{Indicators of Compromise and Signatures}
+
+\begin{quote}
+An IOC is any piece of information that can be used to objectively describe a
+network intrusion, expressed in a platform-independent manner. This could include a simple indicator such as the IP address of a command and control (C2) server or a complex set of behaviors that indicate that a mail server is being used as a malicious SMTP relay.
+
+When an IOC is taken and used in a platform-specific language or format, such as a Snort Rule or a Bro-formatted file, it becomes part of a signature. A signature can contain one or more IOCs.
+\end{quote}
+
+Source: Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders
+
+
+\slide{Zeek is a framework and platform}
+
+\hlkimage{12cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+Does useful things out of the box using more than 10.000 script lines
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+Suricata, Zeek og DNS Capture -- it a nice world, use it!\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
 
 \slide{Default permit}
 
@@ -980,6 +1308,40 @@ If you get hacked by Windows RPC in 2022, you probably deserve it, sorry for bei
 Best would be to analyze traffic and create allow lists, some internal networks to not need internet at all
 
 
+\slide{Example incident response procedures}
+
+\begin{quote}
+  5.4  Handling an Incident
+
+     Certain steps are necessary to take during the handling of an
+     incident.  In all security related activities, the most important
+     point to be made is that all sites should have policies in place.
+     Without defined policies and goals, activities undertaken will remain
+     without focus. The goals should be defined by management and legal
+     counsel in advance.
+\end{quote}
+
+\begin{list2}
+\item Quote from RFC2196 \emph{Site Security Handbook} September 1997, IETF\\
+{\footnotesize\url{https://tools.ietf.org/html/rfc2196#section-5.4}}
+\item \emph{Incident Handler's Handbook}
+  by Patrick Kral, SANS Information Security Reading Room\\
+  {\footnotesize \link{https://www.sans.org/reading-room/whitepapers/incident/paper/33901}}
+  \item \emph{Computer Security
+Incident Handling Guide}, NIST Paul Cichonski,
+Tom Millar,
+TimGrance,
+Karen Scarfone\\ {\footnotesize\link{https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf}}
+\item \link{https://cloud.google.com/security/incident-response/}
+\item Microsoft Azure
+\link{https://medium.com/@cloudyforensics/azure-forensics-and-incident-response-c13098a14d8d}
+\end{list2}
+
+
+\slide{Incident Handling Checklist from NIST.SP.800-61r2.pdf}
+
+\hlkimage{12cm}{incident-handling-checklist.png}
+
 
 \slide{Roundtable}
 
@@ -992,6 +1354,6 @@ Best would be to analyze traffic and create allow lists, some internal networks 
 
 Open mike night
 
-\hlkprofiluk
+
 
 \end{document}

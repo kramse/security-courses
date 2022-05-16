@@ -2644,16 +2644,20 @@ Zeek Network Security Monitor is an old/mature tool, but can still be hard to ge
 
 The tool was renamed in 2018 from Bro to Zeek. Some commands and files still reference the old names.
 
-Also Zeek uses a broctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/etc/bro+ :
+Also Zeek uses a zeekctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/opt/zeek/etc+ :
 
+This is from the Debian 11 package, checked May 2022
+
+\verb+/opt/zeek/etc+:
 \begin{alltt}
-root@NMS-VM:/etc/bro# ls -la
-drwxr-xr-x   3 root root  4096 Oct  8 08:36 .
-drwxr-xr-x 138 root root 12288 Oct  8 08:36 ..
--rw-r--r--   1 root root  2606 Oct 30  2015 broctl.cfg
--rw-r--r--   1 root root   225 Oct 30  2015 networks.cfg
--rw-r--r--   1 root root   644 Oct 30  2015 node.cfg
-drwxr-xr-x   2 root root  4096 Oct  8 08:35 site
+root@debian-lab-11:/opt/zeek/etc# ls -la
+total 24
+drwxrwsr-x  3 root zeek 4096 Apr 16 20:03 .
+drwxr-xr-x 10 root root 4096 Apr 16 20:03 ..
+-rw-rw-r--  1 root zeek  262 Jan 28  2015 networks.cfg
+-rw-rw-r--  1 root zeek  651 Jan 28  2015 node.cfg
+-rw-rw-r--  1 root zeek 3052 Jan 28  2015 zeekctl.cfg
+drwxr-xr-x  2 root zeek 4096 Apr 16 20:03 zkg
 \end{alltt}
 
 \chapter{Zeek DNS capturing domain names 10min}
@@ -2692,21 +2696,22 @@ Use :n to jump to the next file in less, go through all of them.
 Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
 
 \begin{alltt}
-root@NMS-VM:/etc/bro# cat node.cfg
-# Example BroControl node configuration.
+root@debian-lab-11:/opt/zeek/etc# cat node.cfg
+# Example ZeekControl node configuration.
 #
 # This example has a standalone node ready to go except for possibly changing
 # the sniffing interface.
 
 # This is a complete standalone configuration.  Most likely you will
 # only need to change the interface.
-[bro]
+[zeek]
 type=standalone
 host=localhost
 interface=eth0
 ...
 \end{alltt}
 
+The interface may need to be configured differently for your installation!
 
 {\bf Hints:}\\
 There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
@@ -2716,53 +2721,73 @@ Note: if your system has a dedicated interface for capturing, you need to turn i
 When you either run Zeek using a packet capture or using live traffic
 
 Running with a capture can be done using a command line such as:
-\verb+bro -r traffic.pcap+
+\verb+zeek -r traffic.pcap+
 
-Using broctl to start it would be like this:
+Using zeekctl to start it would be like this:
 \begin{alltt}\small
-// install bro first
-kunoichi:~ root# broctl
-Hint: Run the broctl "deploy" command to get started.
+// install Zeek files first
+kunoichi:~ root# zeekctl
+Hint: Run the zeekctl "deploy" command to get started.
 
-Welcome to BroControl 1.5
+Welcome to ZeekControl 1.5
 Type "help" for help.
 
-[BroControl] > install
+[ZeekControl] > install
+removing old policies in /opt/zeek/spool/installed-scripts-do-not-touch/site ...
+removing old policies in /opt/zeek/spool/installed-scripts-do-not-touch/auto ...
 creating policy directories ...
 installing site policies ...
-generating standalone-layout.bro ...
-generating local-networks.bro ...
-generating broctl-config.bro ...
-generating broctl-config.sh ...
+generating standalone-layout.zeek ...
+generating local-networks.zeek ...
+generating zeekctl-config.zeek ...
+generating zeekctl-config.sh ...
 ...
 \end{alltt}
 
 \begin{alltt}\small
-// back to Broctl and start it
-[BroControl] > start
-starting bro
-// and then
-kunoichi:bro root# cd /var/spool/bro/bro
-kunoichi:bro root# tail -f dns.log
+// back to zeekctl and start it
+[ZeekControl] > start
+starting zeek
+// and then go find the logs ... one is called dns.log
+
+root@debian-lab-11:/opt/zeek/spool/zeek# ls -l
+total 100
+-rw-r--r-- 1 root zeek   106 May 16 10:53 capture_loss.log
+-rw-r--r-- 1 root zeek  7281 May 16 10:58 conn.log
+-rw-r--r-- 1 root zeek  4998 May 16 10:54 dns.log
+-rw-r--r-- 1 root zeek   491 May 16 10:54 files.log
+-rw-r--r-- 1 root zeek   625 May 16 10:58 http.log
+-rw-r--r-- 1 root zeek    96 May 16 10:52 known_services.log
+-rw-r--r-- 1 root zeek 35370 May 16 10:52 loaded_scripts.log
+-rw-r--r-- 1 root zeek   200 May 16 10:53 notice.log
+-rw-r--r-- 1 root zeek    90 May 16 10:52 packet_filter.log
+-rw-r--r-- 1 root zeek   541 May 16 10:52 reporter.log
+-rw-r--r-- 1 root zeek   269 May 16 10:58 ssl.log
+-rw-r--r-- 1 root zeek   968 May 16 10:57 stats.log
+-rw-r--r-- 1 root zeek    19 May 16 10:52 stderr.log
+-rw-r--r-- 1 root zeek   204 May 16 10:52 stdout.log
+-rw-r--r-- 1 root zeek  1270 May 16 10:58 weird.log
+root@debian-lab-11:/opt/zeek/spool/zeek#
 \end{alltt}
 
-You should be able to spot entries like this:
+You should be able to spot entries like this in the file \verb+dns.log+:
 \begin{alltt}\small
 #fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id        rtt
      query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA      TC      RD      RA      Z       answers TTLs    rejected
 1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
 \end{alltt}
 
-Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program zeek-cut which can select specific fields:
 
 \begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+root@debian-lab-11:/opt/zeek/spool/zeek# cat dns.log | zeek-cut -d ts query answers | grep dr.dk
 2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
 \end{alltt}
 
 {\bf Discussion:}\\
 Why is DNS interesting?
 
+If your Zeek installation is configured to use JSON, your output will be in JSON. What are the benefits of the original format, compared to JSON?
 
 \chapter{Zeek TLS capturing certificates 10min}
 \label{ex:zeektlsbasic}
@@ -2781,10 +2806,10 @@ Run Zeek capturing live traffic, start https towards some sites. A lot of common
 
 
 {\bf Hints:}\\
-use broctl start and watch the output directory
+use zeekctl start and watch the output directory
 
 \begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# ls *.log
+root@debian-lab-11:/opt/zeek/spool/zeek# ls *.log
 communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
 stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
 stderr.log weird.log
@@ -2793,7 +2818,7 @@ stderr.log weird.log
 We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
 
 \begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# grep dr.dk ssl.log
+root@debian-lab-11:/opt/zeek/spool/zeek# grep dr.dk ssl.log
 1538983060.546122	CtKYZ625cq3m3jUz9k	10.xxx.0.145	49932	2.17.212.93	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	www.dr.dk	F	-	h2	T	FzmZCt3o9EYcmNaxIi,FKXcmxQHT3znDDMSj	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
 1538983060.674217	CLjZo51fzuTcvPT0lg	200xxxxb:89b0:5cbf	49933	2a02:26f0:2400:2a1::3f46	443	TLSv12	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384	secp256r1	asset.dr.dk	F	-	h2	TFEpW9a1IFe6NTUZNpb,FwV50B4CHIwF1CPlul	(empty)	CN=*.dr.dk,O=DR,L=Copenhagen S,ST=Copenhagen,C=DK	CN=GlobalSign Organization Validation CA - SHA256 - G2,O=GlobalSign nv-sa,C=BE	-	-	ok
 \end{alltt}
@@ -2970,7 +2995,7 @@ Whenever there is a new internet wide security incident there are people providi
 
 Note: we haven't mentioned it, but the config files for both Zeek and Suricata allows one to specify your home network.
 
-Checkout the files: Zeek configuration in \verb+/etc/bro/networks.cfg+ and Suricata main config \verb+/etc/suricata/suricata.yaml+
+Checkout the files: Zeek configuration in \verb+/opt/zeek/etc/networks.cfg+ and Suricata main config \verb+/etc/suricata/suricata.yaml+
 
 
 \begin{alltt}\small
@@ -3465,7 +3490,7 @@ which includes only a single line:
 redef LogAscii::use_json=T;
 \end{alltt}
 
-Note: The files may be called local.bro and json-logs.bro depending on the platform.
+Note: The files may be called local.zeek and json-logs.zeek depending on the platform.
 
 This is not enough, so read the next hint.
 

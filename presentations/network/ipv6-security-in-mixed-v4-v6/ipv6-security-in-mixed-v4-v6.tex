@@ -1,0 +1,1069 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% Sikkerhed i en blandet IPv4 og IPv6 verden
+% Gennemgang af de basale protokoller, der bruges på internettet i dag – med fokus på sikkerheden
+
+% Få en gennemgang af de basale protokoller, der bruges på internettet i dag – med fokus på sikkerheden. Vi vil starte gennemgang fra lav niveau protokoller som ARP/NDP, med tilhørende port security funktioner i switches. Derefter vil vi bevæge os op gennem protokol stakkene IPv4 og IPv6, til vi har dækket et minimum af protokoller for at have et fungerende og nogenlunde sikkert netværk. Undervejs vil der være eksempel konfiguration og værktøjer fra egne netværk og et demo netværk.
+
+% Vi prøver at anbefale funktioner som allerede er tilgængelige, samt viser pentest-værktøjer som kan demonstrere problemerne. Der vil være netværkspakker vist i Wireshark og mange detaljer. Du får desuden information om eksisterende features som burde være tilgængelige i det meste enterprise-udstyr, hardware og software. Målgruppen er alle der er interesserede i netværk og netværkssikkerhed.
+
+% Nøgleord: Ethernet, IPv4, IPv6, subnets, CIDR, APR/NDP, DHCP, DNS, Wireshark, tcpdump, switch port security, network filtering and segmentation.
+
+
+
+
+% Resources
+% https://theinternetprotocolblog.wordpress.com/2020/11/28/ipv6-security-best-practices/
+
+% https://mobile.twitter.com/enno_insinuator/status/1285681172719316992 links to
+% https://insinuator.net/2019/02/ipv6-security-in-an-ipv4-only-environment/
+
+
+% https://twitter.com/Enno_Insinuator/status/1224147916022898689 links to
+% https://www.caida.org/catalog/papers/2016_dont_forget_lock/dont_forget_lock.pdf
+
+
+% https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf
+% Classic with example of something locked down on IPv4 but not on IPv6
+
+% Found similar on management network for a large network myself, if you came from a specific source port, you could connect to management on all core routers around the network
+
+
+% https://www.cisco.com/web/SG/learning/ipv6_seminar/files/02Eric_Vyncke_Security_Best_Practices.pdf
+% Updated? Advanced https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2020/pdf/BRKSEC-3200.pdf
+
+
+% Mixed resources, maybe not useful
+% https://www.varonis.com/blog/ipv6-security - Apply IPv4 best practices when applicable ... and IPv6 Security is not distinct from IPv4 security
+% https://www.hpc.mil/images/hpcdocs/ipv6/infoblox-best-practices-for-ipv6-security-excerpt.pdf routing security and stuff
+% https://www.nist.gov/publications/guidelines-secure-deployment-ipv6 from 2010 , but maybe some good advice
+
+% IPv6 and IPv4 Threat Comparison and BestPractice Evaluation (v1.0)
+% Sean Convery (sean@cisco.com)
+% Darrin Miller (dmiller@cisco.com)
+% https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.85.7165&rep=rep1&type=pdf 43 pages
+
+% RIPE April 2021, new! 191 pages!
+% https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf
+
+% ISOC 2019
+% https://www.internetsociety.org/deploy360/ipv6/security/faq/?gclid=EAIaIQobChMI6PDtp4r99wIVF4xoCR1X5Q_eEAAYASAAEgK0PfD_BwE
+
+% APNIC 2019
+% https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/
+
+% August 2020
+% https://www.etsi.org/images/files/ETSIWhitePapers/etsi_WP35_IPv6_Best_Practices_Benefits_Transition_Challenges_and_the_Way_Forward.pdf
+
+% May 2022 Apple Platform security guide, includes IPv6
+% https://help.apple.com/pdf/security/en_US/apple-platform-security-guide.pdf
+
+% JANET IPv6 Technical Guide, IPv4 security equivalence page 49
+% https://repository.jisc.ac.uk/8349/1/janet-ipv6-technical-guide.pdf
+
+% Network Reconnaissance in IPv6 Networks
+% https://www.rfc-editor.org/rfc/rfc7707.txt
+
+
+
+% https://datatracker.ietf.org/doc/html/rfc6092 2011
+%               Recommended Simple Security Capabilities in
+%                 Customer Premises Equipment (CPE) for
+%              Providing Residential IPv6 Internet Service
+
+
+% Dont forget input from:
+% Old troopers I didnt hold Modern firewalls
+% Privacy for users
+% Hacking tools packages THC IPv6, MoonGen
+
+
+\newcommand{\myalert}{\color{red}\faFlag}
+
+
+\begin{document}
+
+\selectlanguage{english}
+\mytitlepage{Security in a Mixed IPv4 and IPv6 World}{PROSA}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15  Introduction and basics\\
+
+\item 30min break  Eat and mingle, hang around, get coffee/tea\\
+
+\item 18:45 - 19:30 45min Walking through the stack\\
+
+\item 15min break\\
+
+\item 19:45 -20:30 45min Protection, building secure and robust networks\\
+
+\item 20:30 - 21:00 playtime, questions, demo, discussion
+\end{list2}
+
+\hlkprofiluk
+
+
+
+\slide{}
+
+\hlkimage{10cm}{ipv6actnow.png}
+
+\centerline{THANK you all of the IPv6 Community!}
+
+\begin{list2}
+\item I have used many references over the years, I have used open source since forever
+\item I have read papers since the early nineties, so grateful for information sharing
+\item Note: this presentation is open source! You may remix, re-use, steal and copy
+\item I have deliberately included names and references which are part of this community, like RIPE NCC and APNIC
+\item Many companies also share information about IPv6 security, Cisco, Juniper, ERNW and others
+\item This presentation available at kramse@Github \jobname.tex in the repo security-courses
+\end{list2}
+
+\slide{Goals for today}
+\vskip 1 cm
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+\item Network security in a mixed IPv4 and IPv6 environment, the title says so \smiley
+\item Introduce security problems that have haunted us in 35 years
+\item Suggest methods and ways to reduce problems, longer lasting than patching
+\item Create an understanding of a more paranoid mindset -- take control of your networks
+\item Network configuration of existing equipment, mostly enterprise networks
+\item Taking control includes configuring IPv6 security, and any IPv4 security you forgot {\myalert}
+\end{list2}
+{\small Red flags are considered check points, actions, something I think you should investigate}
+
+\slide{Networks are trouble}
+
+\hlkimage{12cm}{dragon-drawing-6.jpg}
+
+\begin{list2}
+\item Networks are constantly evolving
+\item Threats are constantly increasing
+\item Vulnerabilities are found daily
+\item Even more vulnerabilities are \emph{developed} and \emph{installed}\\
+Sorry developers, but some of you don't care, and it shows!
+\end{list2}
+
+
+\slide{Internet Today}
+
+\hlkimage{10cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers, roots in the academic world
+\item Protocols are old, some where implemented on the internet around 1983
+\item Not everything is encrypted, mostly HTTPS
+\end{list1}
+
+
+
+\slide{TCP/IP Protocol Suite}
+
+\hlkimage{13cm}{ipext-security-problems.png}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item
+\emph{Security problems in the TCP/IP protocol suite}, S. M. Bellovin April 1989, \url{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
+\item \emph{A Look Back at “Security Problems in the TCP/IP Protocol Suite”} 2004, \url{https://www.cs.columbia.edu/~smb/papers/acsac-ipext.pdf}
+\end{list2}
+
+
+\slide{Security problems in the TCP/IP Suite}
+
+\begin{quote}
+The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
+lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
+\end{quote}
+
+\begin{list1}
+\item Some problems described in the original:
+\begin{list2}
+\item sequence number spoofing
+\item routing attacks,
+\item source address spoofing
+\item authentication attacks
+\end{list2}
+\end{list1}
+
+\slide{TCP sequence number prediction}
+
+\vskip 5mm
+\begin{quote}
+TCP SEQUENCE NUMBER PREDICTION
+One of the more fascinating security holes was first described by Morris [7] . Briefly, he used TCP
+sequence number prediction to construct a TCP packet sequence without ever receiving any responses
+from the server. This allowed him to spoof a trusted host on a local network.
+\end{quote}
+
+\begin{list1}
+\item Previously address based authentication was used for many things
+\item Not a realiable security mechanism
+\item Not a problem for generic operating systems, but Internet of Things are a problem again
+\item Better to use real authentication -- encryption used for confidentiality and authentication
+\item Additionally using IP filters for restricting access is of course also great
+\end{list1}
+
+\slide{Routing attacks}
+
+\begin{list1}
+\item Problems described in the original from 1989:
+\begin{list2}
+\item IP Source routing attacks - use a specific source\\
+Usually not a problem today, ICMP redirect not used much, but layer 2 with ARP spoofing IS a problem
+\item Routing Information Protocol Attacks\\
+The Routing Information Protocol [15] (RIP) - RIP is outdated, but using STP, OSPF etc. without authentication is similar
+\item Border Gateway Protocol (BGP) still used today, still problems
+\item Domain Name System (DNS) problems
+\item Simple Network Management Protocol (SNMP) problems
+\end{list2}
+\vskip 1cm
+\item Fun packets with Yersinia could still break a lot of networks \link{https://github.com/tomac/yersinia}
+\end{list1}
+
+\slide{Solutions to TCP/IP security problems}
+
+\begin{list1}
+\item Solutions:
+\begin{list2}
+\item Use RANDOM TCP sequence numbers, Win/Mac/Linux - DO,but IoT?
+\item Filtering, ingress / egress:\\
+"reject external packets that claim to be from the local net" BCP38
+\item Routers and routing protocols must be more skeptical\\
+Routing filters everywhere, auth routing OSPF/BGP etc.
+\end{list2}
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\end{list1}
+
+\slide{DNS problems}
+
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, see DNS flag day\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\end{list2}
+\end{list1}
+
+\slide{SNMP problems}
+
+\begin{quote}
+5.5 Simple Network Management Protocol
+The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network
+management. Clearly, access to such a resource must be heavily protected. The RFC states this, but
+also allows for a null authentication service; this is a bad idea. Even a ‘‘read-only’’ mode is dangerous;
+it may expose the target host to netstat-type attacks if the particular Management Information Base
+(MIB) [38] used includes sequence numbers. (T
+\end{quote}
+
+True, and still a problem as people turn on devices, but never configure them
+
+\slide{local networks}
+
+\begin{quote}
+6.1 Vulnerability of the Local Network
+Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and
+host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise
+to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel,
+unless authentication servers are used.
+If the local network uses the Address Resolution Protocol (ARP) [42] more subtle forms of host-spoofing
+are possible. In particular, it becomes trivial to intercept, modify, and forward packets, rather than just
+taking over the host’s role or simply spying on all traffic.
+\end{quote}
+
+Today we can send VXLAN spoofed packets across the internet layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...
+
+A Look Back at “Security Problems in the TCP/IP Protocol Suite” -- about 1989 + 15 years = 2004
+
+
+\slide{IPv6 is more/less secure than IPv4}
+
+%\hlkimage{}{}
+
+There are two big misconceptions about IPv6 security:
+
+\begin{quote}
+\begin{list2}
+\item IPv6 is more secure than IPv4
+\item IPv6 is less secure than IPv4
+\end{list2}
+
+\emph{Neither} are true. Both assume that comparing IPv6 security with IPv4 security is meaningful. It is not.
+\end{quote}
+Source: David Holder at, \link{https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/}
+
+
+\slide{IPv6 is already in your network!}
+
+\hlkimage{20cm}{ipv6_puzzle.png}
+Picture from the IPv6 Act Now web site, RIPE NCC
+
+\begin{list2}
+\item You have both, you will keep on having both
+\item Unless you have very strict control and turn one or the other OFF always, you have both IPv4 and IPv6 in your network!
+\item My suggestion, realize IPv6 is here, take control
+\end{list2}
+
+
+\slide{}
+
+\hlkimage{16cm}{metasploit-blog-ipv6.png}
+Source: Metasploit -- NOTE THE DATE 2012!\\
+Even 10 years ago we had IPv6 enabled systems lying and communicating in our IPv4 networks
+
+
+
+
+
+
+\slide{Networks are Built from Components}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+    \item
+\end{list2}
+
+
+
+\slide{Protocols: OSI and Internet model}
+
+\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{Topologier og Spanning Tree Protocol}
+
+\hlkimage{10cm}{switch-STP.pdf}
+
+Se more about Ethernet and networks in the classic\\
+Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
+
+\slide{Core, Distribution og Access net}
+
+\hlkimage{17cm}{core-dist.pdf}
+
+\centerline{May seem old, and today multiple designs are pushed by vendors}
+
+\slide{Bridges and routers}
+
+\hlkimage{17cm}{wan-network.pdf}
+
+
+\slide{Best Current Practice }
+
+%\hlkimage{}{}
+
+\begin{quote}
+Lets get this out of the way immediately, you should already be doing
+\end{quote}
+
+\begin{list2}
+\item Network segmentation and filtering -- we could write a book about this! {\myalert}
+\item Monitor your network -- both bandwidth, error, netflow etc. {\myalert}
+\item Take control of your network, no more admin/admin logins on core devices {\myalert}
+\item Turn on authentication for protocols -- routing protocols but also any http service within your org {\myalert}
+\item Configure host-based firewalls {\myalert}
+\item Control DNS -- internally and externally, recursive, authoritative etc. {\myalert}
+\end{list2}
+
+\centerline{This goes for IPv4-only, IPv6-only, and mixed networks!}
+
+
+
+
+\slide{Walking through the stack}
+
+\hlkimage{10cm}{kelly-sikkema-YK0HPwWDJ1I-unsplash.jpg}
+
+\begin{list2}
+\item Lets try to do this in a more structured way
+\end{list2}
+\hfill Photo by Kelly Sikkema on Unsplash
+
+\slide{ IPv6 Neighbor Discovery Protocol (NDP)}
+
+\hlkimage{18cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item Address Resolution Protocol (ARP) is replaced
+\item NDP expands on the ARP concept, similar command \verb+arp -an+ compared to \verb+ndp -an+
+\item Can do some things we knew from DHCPv4 still DHCPv6 exist
+\item {\bf NB: note ICMPv6 often need to be added to firewall rules for NDP!}
+\end{list1}
+
+\slide{ARP vs NDP}
+
+\begin{alltt}
+\small
+hlk@bigfoot:basic-ipv6-new$ arp -an
+? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+hlk@bigfoot:basic-ipv6-new$ ndp -an
+Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
+::1                           (incomplete)         lo0 permanent R
+2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
+fe80::1%lo0                   (incomplete)         lo0 permanent R
+fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
+fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+\end{alltt}
+
+
+
+
+
+
+\slide{Secure Neighbor Discovery Protocol}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The Secure Neighbor Discovery (SEND) protocol is a security extension of the Neighbor Discovery Protocol (NDP) in IPv6 defined in RFC 3971 and updated by RFC 6494.
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Secure_Neighbor_Discovery}
+
+\begin{list2}
+\item SEND Secure NDP is available, but quite complex ... who uses it?
+\item Cisco IPv6 Secure Neighbor Discovery\\
+\link{https://www.cisco.com/en/US/docs/ios-xml/ios/sec_data_acl/configuration/15-2mt/ip6-send.html}
+\item Juniper Secure IPv6 Neighbor Discovery\\{\footnotesize
+\link{https://www.juniper.net/documentation/us/en/software/junos/neighbor-discovery/topics/topic-map/ipv6-secure-neighbor.html}}
+\end{list2}
+
+\link{https://en.wikipedia.org/wiki/Secure_Neighbor_Discovery}
+
+
+\slide{Sample Network}
+
+\hlkimage{5cm}{sample-network.png}
+
+\begin{list1}
+\item Our network will be similar to regular networks, as found in enterprises
+\item We have an isolated network, allowing us to sniff and mess with hacking tools.
+\end{list1}
+
+% Demo
+% Normal network traffic, chatty as hell!
+
+\slide{Tcpdump and Wireshark demo}
+
+\hlkimage{14cm}{kali-linux.png}
+
+\centerline{“The quieter you become, the more you are able to hear”.}
+Source: Kali Linux
+
+\begin{list2}
+\item Lets try to listen a bit
+\end{list2}
+
+
+\slide{Attacking IPv6}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+Example toolkits:
+\begin{list2}
+\item Nmap supports IPv6 \link{https://nmap.org}
+\item THC-IPV6-ATTACK-TOOLKIT \link{https://github.com/vanhauser-thc/thc-ipv6}\\
+\item SI6 Networks’ IPv6 toolkit is a set of IPv6 security assessment and trouble-shooting tools\\
+\link{https://www.si6networks.com/research/tools/ipv6toolkit/}
+
+\item Chiron is an IPv6 Security Assessment Framework, written in Python and employing Scapy\\
+\link{https://github.com/aatlasis/Chiron}
+
+\item Cool little script and concept found recently \link{https://github.com/milo2012/ipv4Bypass}
+\end{list2}
+
+\slide{Scanning for IPv6 hosts}
+
+\begin{list2}
+\item Yes, naive bruteforce may not work when subnets in IPv6 are /64s
+\item Using tools like Scan6 with predictable patterns work because humans
+\item If on local network we can wait for NDP traffic, hosts communicating
+\end{list2}
+
+
+\slide{Similarities between IPv4 and IPv6 security}
+
+
+\begin{list2}
+\item Rogue DHCP servers can be done in both, plus false router advertisements in IPv6
+\item MAC address overflow can be done in both
+\item Unfiltered access can be abused
+\item DNS spoofing can be abused
+\item Sniffing unencrypted traffic is the same
+\end{list2}
+
+\slide{Disparities between IPv4 and IPv6 security}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The functionality provided by IPv6's Type 0 Routing Header can be exploited in order to achieve traffic amplification over a remote path for the purposes of generating denial-of-service traffic.  This document updates the IPv6 specification to deprecate the use of IPv6 Type 0 Routing Headers, in light of this security concern.
+\end{quote}
+Source RFC5095
+
+
+\begin{list2}
+\item Routing headers -- flexible, but hard to filter\\
+Updated RFC8200 \emph{Internet Protocol, Version 6 (IPv6) Specification} recommend order for those
+\item IPv6 Type 0 routing header, fixed\\
+Deprecated officially in RFC 5095 \link{https://www.rfc-editor.org/rfc/rfc5095.txt}
+\end{list2}
+
+We are relying on vendors to create updated software, but must install those updates
+
+
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{12cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
+
+\slide{Internet Network Knowledge}
+
+To work with network security the following protocols are the bare minimum to know about.
+
+\begin{list2}
+\item ARP Address Resolution Protocol for IPv4
+\item NDP Neighbor Discovery Protocol for IPv6
+\item IPv4 \& IPv6 -- the basic packet fields source, destination,
+\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list2}
+
+These protocols are part of the Internet Protocol suite, or TCP/IP for short.
+
+
+\slide{Operational Security Considerations for IPv6 Networks}
+
+%\hlkimage{}{}
+
+\begin{alltt}\small
+Internet Engineering Task Force (IETF)                         É. Vyncke
+Request for Comments: 9099                                         Cisco
+Category: Informational                                  K. Chittimaneni
+ISSN: 2070-1721
+                                                                 M. Kaeo
+                                                    Double Shot Security
+                                                                  E. Rey
+                                                                    ERNW
+                                                             August 2021
+
+
+         Operational Security Considerations for IPv6 Networks
+\end{alltt}
+Source: \link{https://www.rfc-editor.org/rfc/rfc9099.txt}
+
+\begin{list2}
+\item Fantastic reference
+\item Another from RIPE NCC, 191 slides! IPv6 Security Training Course April 2021,\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+\end{list2}
+
+
+\slide{Get IPv6 prefix! }
+
+%\hlkimage{}{}
+
+\begin{quote}
+You can ask RIPE NCC for an IPv6 provider independent prefix
+\end{quote}
+
+\begin{list2}
+\item YOU can't request directly, but need to find a RIPE NCC member to request it\\
+Hint: Zencurity Aps is a member
+\item It will cost you about EUR 100 per year and you will get minimum /48
+\item You can move this space from provider to provider\\
+more easily than migrating from their IP space to some new providers space
+\item You can have this announced via multiple providers -- redundancy
+\item Read more about this at:\\
+\link{https://www.ripe.net/manage-ips-and-asns/ipv6/request-ipv6/how-to-request-an-ipv6-pi-assignment}
+\end{list2}
+
+
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+IPv6 address allocations and overall architecture are important parts
+   of securing IPv6.  Initial designs, even if intended to be temporary,
+   tend to last much longer than expected.  Although IPv6 was initially
+   thought to make renumbering easy, in practice, it may be extremely
+   difficult to renumber without a proper IP Address Management (IPAM)
+   system.  [RFC7010] introduces the mechanisms that could be utilized
+   for IPv6 site renumbering and tries to cover most of the explicit
+   issues and requirements associated with IPv6 renumbering.
+
+   A key task for a successful IPv6 deployment is to prepare an
+   addressing plan.  Because an abundance of address space is available,
+   structuring an address plan around both services and geographic
+   locations allows address space to become a basis for more structured
+   security policies to permit or deny services between geographic
+   regions.  [RFC6177] documents some operational considerations of
+   using different prefix sizes for address assignments at end sites.
+\end{quote}
+Source: RFC 9099
+
+\begin{list2}
+\item You have space, use it!
+\end{list2}
+
+
+\slide{Network Architecture and Address planning }
+
+\hlkimage{10cm}{ipv6-linked-to-ipv4.png}
+
+\begin{quote}
+Take the opportunity to re-design your network!
+\end{quote}
+
+\begin{list2}
+\item Create a design, consider it green field, work towards it!
+\item Use /127 for point-to-point links
+\item Use loopback addresses on routers, allows filtering of access to management
+\item You can also make parts IPv6-only, Veronika McKillop at TROOPERS19 \emph{Microsoft IT (secure) journey to IPv6-only}\\
+\link{https://troopers.de/troopers19/agenda/h7sv7v/}
+\end{list2}
+
+
+\slide{Enable More Packet filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering can be done one single packets -- stateless filtering
+\item We can save information about direction and ongoing traffic -- stateful filtering/firewalling
+\end{list1}
+
+\slide{Recommend host based firewalls too!}
+
+Example UFW Uncomplicated Firewall
+\begin{alltt}\footnotesize
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+
+
+
+\slide{Together with Firewalls - VLAN Virtual LAN}
+
+\hlkimage{6cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Some ports belong in groups together -- cannot communicate between groups
+\item Port 1-4 are a single LAN -- virtual LAN
+\item Remaining ports are another VLAN
+\item A router or firewall is needed to transfer packets between VLANs -- with filters
+\end{list1}
+
+\slide{IEEE 802.1q -- virtual LAN}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Standard is named IEEE 802.1q VLAN tagging  on Ethernet frames
+\item VLAN trunking allows multiple VLANs to use the same ports, between switches
+\end{list1}
+
+
+\slide{Config example: SNMP}
+
+\begin{alltt}
+snmp \{
+    description "SW-CPH-01";
+    location "Interxion, Ballerup, Denmark";
+    contact "noc@zencurity.com";
+    community yourcommunitynotmine \{
+        authorization read-only;
+        clients \{
+            10.1.1.1/32;
+            10.1.2.2/32;
+        \}
+    \}
+\}
+\end{alltt}
+
+If you must use SNMPv2 then at least put it into separate VLAN!
+
+\slide{Port Security}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Snooping on the network ports, and only allow what is needed
+\end{quote}
+
+Ideas
+\begin{list2}
+\item Only allow 0x0800 IPv6 on some ports?
+\item Only allow 0x86DD IPv6 on some ports?
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Helpful functions are available }
+
+%\hlkimage{}{}
+
+First hop security Cisco
+\begin{alltt}
+ipv6 snooping logging packet drop
+
+interface GigabitEthernet1/0/1
+    switchport mode access
+    ipv6 nd raguard
+    ipv6 dhcp guard
+\end{alltt}
+
+\begin{list2}
+\item IPv6 snooping
+\item RA Guard
+\item DHCPv6 guard
+\item Source/Prefix guard
+\end{list2}
+
+Wait a minute, have you turned on these for IPv4? Many have NOT!
+
+\slide{Example port security}
+
+\begin{alltt}\small
+[edit ethernet-switching-options secure-access-port]
+set interface ge-0/0/1 mac-limit 4
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:80
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:81
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:83
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:85
+set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:88
+set interface ge-0/0/2 mac-limit 4
+set interface ge-0/0/1 persistent-learning
+set interface ge-0/0/8 dhcp-trusted
+set vlan employee-vlan arp-inspection
+set vlan employee-vlan examine-dhcp
+set vlan employee-vlan mac-move-limit 5
+\end{alltt}
+
+Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
+
+
+
+
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a sample, better to use BGP flowspec and RTBH */
+inactive: term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+...
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers also have extensive Class-of-Service (CoS) tools today, and in general rate limiting stuff is nice
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \} then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            109.238.xx.0/xx; \}
+        protocol-except icmp;  \}
+    then \{ count some-server-block; discard;
+    \}
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{uRPF unicast Reverse Path Forwarding}
+
+\begin{quote}
+Reverse path forwarding (RPF) is a technique used in modern routers for the purposes of ensuring loop-free forwarding of multicast packets in multicast routing and to help prevent IP address spoofing in unicast routing.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
+
+%\slide{Juniper RPF check}
+
+%\begin{quote}
+%{\bf Understanding Unicast Reverse Path Forwarding}\\
+%IP spoofing can occur during a denial-of-service (DoS) attack. IP spoofing allows an intruder to pass IP packets to a destination as genuine traffic, when in fact the packets are not actually meant for the destination. This type of spoofing is harmful because it consumes the destination's resources.
+
+%A unicast reverse-path-forwarding (RPF) check is a tool to reduce forwarding of IP packets that might be spoofing an address. A unicast RPF check performs a route table lookup on an IP packet's source address, and checks the incoming interface.
+%\end{quote}
+
+%Source:\\ {\footnotesize\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/topic-map/unicast-rpf.html}\\
+%\link{http://www.juniper.net/techpubs/en_US/junos13.1/topics/usage-guidelines/interfaces-configuring-unicast-rpf.html}}
+
+
+\slide{Strict vs loose mode RPF}
+
+\hlkimage{24cm}{uRPF-check-1.pdf}
+
+\slide{Strict mode RPF}
+
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
+\end{quote}
+
+
+\slide{uRPF Junos config with loose mode}
+
+\begin{alltt}\footnotesize
+xe-5/1/1 \{
+    description "Transit: Blah (AS65512)";
+    unit 0 \{
+        family inet \{
+            rpf-check \{
+                mode loose;
+            \}
+            filter \{
+                input all;
+                output all;
+            \}
+            address xx.yy.xx.yy/30;
+        \}
+        family inet6 \{
+            rpf-check \{
+                mode loose;
+            \}
+            address 2001:xx:yy/126;
+\} \} \}
+\end{alltt}
+
+See also: {\small\link{http://www.version2.dk/blog/den-danske-internettrafik-og-bgp-49401}}
+
+
+\slide{Routing Security}
+
+
+{\myalert}
+\begin{list2}
+\item Use MD5 passwords or better authentication for routing protocols {\myalert}
+\item TTL Security -- avoid routed packets
+\item Max prefix -- of course, only allow expected networks
+\item Prefix filtering -- only parts of IPv6 space is used
+\item TCP Authentication Option [RFC 5925] replaces TCP MD5 [RFC 2385]
+\item Turn ON RPKI for both IPv4 and IPv6 prefixes, {\myalert} \\
+\link{https://nlnetlabs.nl/projects/rpki/about/}
+\item Drop bogons on IPv4 and IPv6, article with multiple references YMMV\\
+\link{https://theinternetprotocolblog.wordpress.com/2020/01/15/some-notes-on-ipv6-bogon-filtering/}
+\end{list2}
+
+
+\slide{MANRS }
+
+%\hlkimage{}{}
+
+\begin{quote}
+You should all ask your internet providers if they know about MANRS, and follow it
+
+We should ask our government and institutions to support and follow MANRS
+\end{quote}
+
+\begin{list2}
+    \item
+\end{list2}
+
+
+
+
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+Additionally routers and firewalls
+
+\begin{list2}
+\item
+\item Reverse Path Forwarding --only allow forwarding of packets from the right source IP, on this interface
+\end{list2}
+
+
+
+\slide{Wi-Fi Security and IPv6}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\link{https://theinternetprotocolblog.wordpress.com/2022/01/05/ipv6-in-enterprise-wi-fi-networks/}
+\begin{list2}
+    \item
+\end{list2}
+
+
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+    \item
+\end{list2}
+
+White Paper (Draft)
+[Project Description] Secure IPv6-Only Implementation in the Enterprise
+\link{https://csrc.nist.gov/publications/detail/white-paper/2021/12/09/secure-ipv6-only-implementation-in-the-enterprise/draft}
+
+
+
+\slide{Conclusion}
+
+% \hlkrightimage{15cm}{network-layers-1.png}
+
+\begin{list1}
+\item
+\end{list1}
+
+\centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
+
+\vskip 1cm
+Thank you for coming. I'll be around until friday.
+
+\myquestionspage
+
+\slide{Further literature}
+
+Primary literature used in my Communication and Network Security Class
+are these three books:
+\begin{list2}
+\item \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, 2014 Chris Sanders \\
+ISBN: 9780124172081 - shortened ANSM
+\item \emph{Practical Packet Analysis - Using Wireshark to Solve Real-World Network Problems}, 3rd edition 2017, \\
+Chris Sanders ISBN: 9781593278021 - shortened PPA
+\item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
+\end{list2}
+
+
+
+
+\end{document}

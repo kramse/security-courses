@@ -84,14 +84,3 @@ DNS over Transport Layer Security (TLS) (DoT), RFC 7858
 DNS Queries over HTTPS (DoH) RFC 8484
 Phishing, sphear phishing, malware
 Example programs: sslscan
-
-# 10. Honeypots, Anomaly detection og visualisering
-Honeypots low interaction and high interaction
-ANSM: 11. Anomaly-Based Detection with Statistical Data
-ANSM: 12. Using Canary Honeypots for Detection
-Project honeynet, Evening with Berferd
-Example programs: Honeypot Platforms
-Honeyd, Kippo/Cowrie SSH Honeypot, Tom’s Honeypot
-Honeypots compared to IDS/IPS
-Visualisation
-Zeek

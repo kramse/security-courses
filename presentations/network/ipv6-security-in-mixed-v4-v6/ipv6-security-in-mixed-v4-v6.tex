@@ -559,7 +559,7 @@ Austin Murdock, Frank Li, Paul Bramsen, Zakir Durumeric, Vern Paxson
 \item Sniffing unencrypted traffic is the same
 \item MITM Attacks are the same {\myalert}
 \item Application attacks are the same! Example Web attack over IPv4/IPv6 - often address family doesn't matter {\myalert}
-\item Flooding attacks are possible at various places 
+\item Flooding attacks are possible at various places
 \end{list2}
 
 \slide{Disparities between IPv4 and IPv6 security, example}
@@ -767,6 +767,87 @@ Status: active
 \item VLAN trunking allows multiple VLANs to use the same ports, between switches
 \end{list1}
 
+\slide{Take control of your core network services}
+
+\hlkimage{15cm}{nsrc-core-network-services.png}
+
+Source:\\{\footnotesize
+\link{https://nsrc.org/workshops/2018/tenet-nsrc-cndo/networking/cndo/en/presentations/Campus_Operations_BCP.pdf}}
+
+\slide{Unbound and NSD}
+
+\begin{quote}
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
+\end{quote}
+
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
+
+My preferred local DNS server. We will now stop and look at this configuration file and function.
+
+Also check out uncensored DNS and his DNS over TLS setup!\\
+Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
+
+
+\slide{Perform Network Management}
+
+\begin{quote}
+Network management is the process of administering and managing computer networks. Services provided by this discipline include fault analysis, performance management, provisioning of networks and maintaining the quality of service. Software that enables network administrators to perform their functions is called network management software.\\
+\end{quote}
+
+Source:\\{\footnotesize
+\link{https://en.wikipedia.org/wiki/Network_management}}
+
+\slide{Step 1: configure devices properly}
+
+\begin{slidelist}
+\item You should always configure your devices properly
+\item Turn on SNMP, probably SNMPv2
+\item Turn on LLDP Link Layer Discovery Protocol -- vendor-neutral\\
+{\small\link{http://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol}}
+\item Centralized syslog and SNMP traps
+\item Router protection filters, in general on devices allow only management from specific prefixes/sources
+\vskip 1 cm
+\item And updated firmware, HTTPS and SSH only etc. the usual stuff
+
+\end{slidelist}
+
+\slide{Centralized management SSH, Jump hosts}
+
+\begin{quote}
+A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Jump_server}
+
+
+\slide{OpenSSH client config with jump host}
+
+My recommended SSH client settings, put in \verb+$HOME/.ssh/config+:
+\begin{alltt}\footnotesize
+Host *
+    ServerAliveInterval=30
+    ServerAliveCountMax=30
+    NoHostAuthenticationForLocalhost yes
+    HashKnownHosts yes
+    UseRoaming no
+
+Host jump-01
+  Hostname 10.1.2.3
+  Port 12345678
+
+Host fw-site-01 10.1.2.5
+  User hlk
+  Port 34
+  Hostname 10.1.2.5
+  ProxyCommand ssh -q -a -x jump-01 -W %h:%p
+\end{alltt}
+
+I configure fw using both hostname and IP,\\
+then I can use name, and any program using IP get this config too
+
+
 
 \slide{Config example: SNMP}
 
@@ -787,6 +868,16 @@ snmp \{
 
 If you must use SNMPv2 then at least put it into separate VLAN! {\myalert}
 
+\slide{Rogue DHCP servers and devices}
+
+\begin{list1}
+\item Common problem in networks is people connecting devices with DHCPD servers
+\item In general make sure to segment networks
+\item Start to use port security on switches, including DHCP snooping\\
+\link{https://en.wikipedia.org/wiki/DHCP_snooping}
+\end{list1}
+
+
 \slide{Port Security}
 
 %\hlkimage{}{}
@@ -799,6 +890,7 @@ Ideas
 \begin{list2}
 \item Only allow 0x0800 IPv4 on some ports?
 \item Only allow 0x86DD IPv6 on some ports?
+\item Which types SHOULD we allow?
 \end{list2}
 
 
@@ -906,13 +998,13 @@ user@switch# set  neighbor-discovery-inspection
 
 NOTE: DHCPv6 snooping is enabled automatically when neighbor discovery inspection is configured. There is no explicit configuration required for DHCPv6 snooping.
 \end{quote}
-Source: \link{https://www.juniper.net/documentation/us/en/software/junos/security-services/topics/concept/port-security-nd-inspection.html}
+Source: \\ {\footnotesize\link{https://www.juniper.net/documentation/us/en/software/junos/security-services/topics/concept/port-security-nd-inspection.html}}
 
 
 \slide{Allowing services to function, eliminate threats from rogue devices}
 
 \hlkimage{12cm}{juniper-dhcpv6-snooping.png}
-Source: Picture from Juniper {\small
+Source: Picture from Juniper\\ {\footnotesize
 \link{https://www.juniper.net/documentation/us/en/software/junos/security-services/topics/example/port-security-protect-from-ipv6-spoofing.html}}
 
 \begin{list2}
@@ -1105,8 +1197,9 @@ You should all ask your internet providers if they know about MANRS, and follow 
 \item Implement IPv6 -- take control
 \item Read the Fine manuals -- your devices already has a lot to offer
 \item Make incremental changes, configure security for new parts and VLANs in the network\\
-Over time the older ones will be phased out, and replaced
+Over time the older ones will be phased out, replaced or can have the same configuration applied with little trouble
 \item Start from the bottom and from client ports, or from server ports if you like
+\item Learn some Linux and use open source projects, really, will save you thosands of USD/EUR/DKK
 \end{list2}
 
 \myquestionspage
@@ -1130,17 +1223,16 @@ Long list of various references follow, YMMV. I have found these useful in some 
 \begin{list2}
 \item \link{https://theinternetprotocolblog.wordpress.com/2020/11/28/ipv6-security-best-practices/}
 
-\item \link{https://mobile.twitter.com/enno_insinuator/status/1285681172719316992} links to\\
-\link{https://insinuator.net/2019/02/ipv6-security-in-an-ipv4-only-environment/}
+\item \link{https://insinuator.net/2019/02/ipv6-security-in-an-ipv4-only-environment/}\\
+via \link{https://mobile.twitter.com/enno_insinuator/status/1285681172719316992}
 
 
-\item \link{https://twitter.com/Enno_Insinuator/status/1224147916022898689} links to\\
-\link{https://www.caida.org/catalog/papers/2016_dont_forget_lock/dont_forget_lock.pdf}
+\item  \link{https://www.caida.org/catalog/papers/2016_dont_forget_lock/dont_forget_lock.pdf}\\
+via \link{https://twitter.com/Enno_Insinuator/status/1224147916022898689}
 
 
-\item \link{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}
+\item \link{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}\\
 Classic with example of something locked down on IPv4 but not on IPv6\\
-
 I have found similar on management interfaces for a large network myself, if you came from a specific source port, you could connect to management on all core routers around the network. Router protection filter for IPv6 was not secure.
 \end{list2}
 
@@ -1157,7 +1249,7 @@ Updated? Advanced \link{https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/20
 
 
 \item Mixed resources, maybe not useful
-\item link{https://www.varonis.com/blog/ipv6-security} - Apply IPv4 best practices when applicable ... and IPv6 Security is not distinct from IPv4 security
+\item \link{https://www.varonis.com/blog/ipv6-security} - Apply IPv4 best practices when applicable ... and IPv6 Security is not distinct from IPv4 security
 \item \link{https://www.hpc.mil/images/hpcdocs/ipv6/infoblox-best-practices-for-ipv6-security-excerpt.pdf} routing security and stuff
 \item \link{https://www.nist.gov/publications/guidelines-secure-deployment-ipv6} from 2010, but maybe some good advice - and goes to show IPv6 security advise has been around for some time
 
@@ -1165,11 +1257,9 @@ Updated? Advanced \link{https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/20
 
 \slide{Resources LIRs and others}
 
-So grateful to be part of communities such as these!
-
-Tried finding the most recent references, but much more can be found across their sites:
+Grateful to be part of such communities! Tried finding recent references, more can be found across their sites:
 \begin{list2}
-\item RIPE April 2021, new! 191 pages!\\
+\item RIPE April 2021, 191 pages!\\
 \link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
 
 \item ISOC 2019
@@ -1178,21 +1268,18 @@ Tried finding the most recent references, but much more can be found across thei
 \item APNIC 2019
 \link{https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/}
 
-\item August 2020 \link{https://www.etsi.org/images/files/ETSIWhitePapers/etsi_WP35_IPv6_Best_Practices_Benefits_Transition_Challenges_and_the_Way_Forward.pdf}
+%\item August 2020 \link{https://www.etsi.org/images/files/ETSIWhitePapers/etsi_WP35_IPv6_Best_Practices_Benefits_Transition_Challenges_and_the_Way_Forward.pdf}
 
-\item May 2022 \emph{Apple Platform security guide}, includes IPv6
+\item May 2022 \emph{Apple Platform security guide}, includes IPv6\\
 \link{https://help.apple.com/pdf/security/en_US/apple-platform-security-guide.pdf}
 
-\item \emph{JANET IPv6 Technical Guide}, IPv4 security equivalence page 49
+\item \emph{JANET IPv6 Technical Guide}, IPv4 security equivalence page 49\\
 \link{https://repository.jisc.ac.uk/8349/1/janet-ipv6-technical-guide.pdf}
-
 
 \item \emph{Network Reconnaissance in IPv6 Networks} \link{https://www.rfc-editor.org/rfc/rfc7707.txt}
 
-
-
-\item \link{https://datatracker.ietf.org/doc/html/rfc6092} 2011\\
-\emph{Recommended Simple Security Capabilities in Customer Premises Equipment (CPE) for Providing Residential IPv6 Internet Service}
+\item RFC6092 2011 \emph{Recommended Simple Security Capabilities in Customer Premises Equipment (CPE) for Providing Residential IPv6 Internet Service}\\
+ \link{https://datatracker.ietf.org/doc/html/rfc6092}
 \end{list2}
 
 

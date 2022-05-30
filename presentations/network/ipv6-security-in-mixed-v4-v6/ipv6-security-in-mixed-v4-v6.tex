@@ -112,7 +112,8 @@
 
 \hlkimage{10cm}{ipv6actnow.png}
 
-\centerline{THANK you all of the IPv6 Community!}
+\vskip 5mm
+\centerline{{\color{red}\faHeart} THANK you all of the IPv6 Community! {\color{red}\faHeart}}
 
 \begin{list2}
 \item I have used many references over the years, I have used open source since forever
@@ -122,6 +123,8 @@
 \item Many companies also share information about IPv6 security, Cisco, Juniper, ERNW and others
 \item This presentation available at kramse@Github \jobname.tex in the repo security-courses
 \end{list2}
+
+I have included a small list of resources on \pageref{resources}
 
 \slide{Goals for today}
 \vskip 1 cm
@@ -189,12 +192,10 @@ lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
 
 \begin{list1}
 \item Some problems described in the original:
-\begin{list2}
 \item sequence number spoofing
 \item routing attacks,
 \item source address spoofing
 \item authentication attacks
-\end{list2}
 \end{list1}
 
 \slide{TCP sequence number prediction}
@@ -325,11 +326,11 @@ Picture from the IPv6 Act Now web site, RIPE NCC
 \end{list2}
 
 
-\slide{}
+\slide{Hacking IPv6}
 
 \hlkimage{16cm}{metasploit-blog-ipv6.png}
 Source: Metasploit -- NOTE THE DATE 2012!\\
-Even 10 years ago we had IPv6 enabled systems lying and communicating in our IPv4 networks
+Even 10 years ago we had IPv6 enabled systems running and communicating in our IPv4 networks
 
 
 
@@ -349,7 +350,7 @@ Even 10 years ago we had IPv6 enabled systems lying and communicating in our IPv
 \hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
 
 
-\slide{Topologier og Spanning Tree Protocol}
+\slide{Topologies og Spanning Tree Protocol}
 
 \hlkimage{10cm}{switch-STP.pdf}
 
@@ -387,8 +388,6 @@ Lets get this out of the way immediately, you should already be doing
 \centerline{This goes for IPv4-only, IPv6-only, and mixed networks!}
 
 
-
-
 \slide{Walking through the stack}
 
 \hlkimage{10cm}{kelly-sikkema-YK0HPwWDJ1I-unsplash.jpg}
@@ -397,6 +396,40 @@ Lets get this out of the way immediately, you should already be doing
 \item Lets try to do this in a more structured way
 \end{list2}
 \hfill Photo by Kelly Sikkema on Unsplash
+
+
+\slide{Sample Network}
+
+\hlkimage{5cm}{sample-network.png}
+
+\begin{list1}
+\item Our network will be similar to regular networks, as found in enterprises
+\item I have an isolated network, allowing us to sniff and mess with hacking tools
+\item Will use a mix of my portable Wi-Fi using provider 3.dk WITH IPv6 and my internet in a box, portable infrastructure
+\end{list1}
+
+% Demo
+% Normal network traffic, chatty as hell!
+\slide{Internet in a Box}
+
+\hlkrightimage{10cm}{internet-in-a-box.jpeg}
+
+The main purposes for bringing this box, is to show
+\begin{list2}
+\item These are standard devices, Juniper EX3300 cheap oldish, works great
+\item Managed switches are a must! You can learn by buying cheap ones,\\
+like the TP-Link T1500G-10PS  shown, VLAN, SNMP, Syslog ...
+\item Multiple systems created using PC Engines APU2C4 (really D4)\\
+running OpenBSD, Unbound, Suricata, Zeek, DHCP, \\
+router advertisement, PF firewall - explicit and nice ICMPv6 filtering ...
+\item Attack systems compact PCs or laptop
+\item Creating a home lab is not expensive, \\
+bought the Arista 7150 24-port 10G used on ebay
+\end{list2}
+
+You should have similar (or better) devices in your production network, and they can be
+configured to do a LOT more than you use them for right now
+
 
 \slide{ IPv6 Neighbor Discovery Protocol (NDP)}
 
@@ -411,11 +444,14 @@ Lets get this out of the way immediately, you should already be doing
 
 \slide{ARP vs NDP}
 
+So at the low level, near the hardware we have protocols connecting IP addreses with MAC addresses, Ethernet and Wi-Fi are commonly found
+
 \begin{alltt}
 \small
 hlk@bigfoot:basic-ipv6-new$ arp -an
 ? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
 ? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+
 hlk@bigfoot:basic-ipv6-new$ ndp -an
 Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
 ::1                           (incomplete)         lo0 permanent R
@@ -425,6 +461,17 @@ fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
 fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
 \end{alltt}
 
+\slide{ARP and NDP problems}
+
+\begin{list2}
+\item This mapping is used in your operating system, keep a dynamic ARP/neighbor cache -- a table
+\item Switches map devices to ports -- tables
+\item Routers remember your IP, so it can send responses back -- tables
+\item A table has a maximum size! This can cause problems {\myalert}
+\item This is all done without ANY security -- you can lie, attackers can lie
+\item See ARP spoofing and a sample tool \link{https://en.wikipedia.org/wiki/ARP_spoofing} \\
+and \link{https://en.wikipedia.org/wiki/DSniff}
+\end{list2}
 
 
 \slide{Secure Neighbor Discovery Protocol}
@@ -448,18 +495,6 @@ Source: \link{https://en.wikipedia.org/wiki/Secure_Neighbor_Discovery}
 
 \link{https://en.wikipedia.org/wiki/Secure_Neighbor_Discovery}
 
-
-\slide{Sample Network}
-
-\hlkimage{5cm}{sample-network.png}
-
-\begin{list1}
-\item Our network will be similar to regular networks, as found in enterprises
-\item We have an isolated network, allowing us to sniff and mess with hacking tools.
-\end{list1}
-
-% Demo
-% Normal network traffic, chatty as hell!
 
 \slide{Tcpdump and Wireshark demo}
 
@@ -500,8 +535,18 @@ Example toolkits:
 \item Yes, naive bruteforce may not work when subnets in IPv6 are /64s
 \item Using tools like Scan6 with predictable patterns work because humans
 \item If on local network we can wait for NDP traffic, hosts communicating
+\item In other cases we can lure people to our DNS server, NTP server (Shodan did this), etc.
 \end{list2}
 
+Interesting talk about this, applying statistical methods:\\
+TROOPERS19: \emph{IPv666 – Address of the Beast} slides not there, but video is\\
+\link{https://troopers.de/troopers19/agenda/ymwjsm/}\\
+Tool at \link{https://github.com/lavalamp-/ipv666}
+
+
+References this: \emph{Target Generation for Internet-wide IPv6 Scanning}
+Austin Murdock, Frank Li, Paul Bramsen, Zakir Durumeric, Vern Paxson
+\link{https://austinmurdock.com/6Gen.pdf}
 
 \slide{Similarities between IPv4 and IPv6 security}
 
@@ -512,9 +557,12 @@ Example toolkits:
 \item Unfiltered access can be abused
 \item DNS spoofing can be abused
 \item Sniffing unencrypted traffic is the same
+\item MITM Attacks are the same {\myalert}
+\item Application attacks are the same! Example Web attack over IPv4/IPv6 - often address family doesn't matter {\myalert}
+\item Flooding attacks are possible at various places 
 \end{list2}
 
-\slide{Disparities between IPv4 and IPv6 security}
+\slide{Disparities between IPv4 and IPv6 security, example}
 
 %\hlkimage{}{}
 
@@ -529,7 +577,7 @@ Source RFC5095
 Updated RFC8200 \emph{Internet Protocol, Version 6 (IPv6) Specification} recommend order for those
 \item IPv6 Type 0 routing header, fixed\\
 Deprecated officially in RFC 5095 \link{https://www.rfc-editor.org/rfc/rfc5095.txt}
-\item Other stuff better specified, like RFC5722
+\item Other stuff better specified, like RFC5722 -- see later
 \end{list2}
 
 We are relying on vendors to create updated software, but must install those updates
@@ -1030,7 +1078,7 @@ In strict mode, unicast RPF checks whether the incoming packet has a source addr
 
 \slide{Mutually Agreed Norms for Routing Security (MANRS)}
 
-\hlkimage{2cm}{MANRS_square.png}
+%\hlkimage{2cm}{MANRS_square.png}
 
 \begin{quote}
   Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
@@ -1054,10 +1102,11 @@ You should all ask your internet providers if they know about MANRS, and follow 
 % \hlkrightimage{15cm}{network-layers-1.png}
 
 \begin{list2}
-\item Implement IPv6 take control
+\item Implement IPv6 -- take control
 \item Read the Fine manuals -- your devices already has a lot to offer
 \item Make incremental changes, configure security for new parts and VLANs in the network\\
 Over time the older ones will be phased out, and replaced
+\item Start from the bottom and from client ports, or from server ports if you like
 \end{list2}
 
 \myquestionspage
@@ -1074,6 +1123,77 @@ Chris Sanders ISBN: 9781593278021 - shortened PPA
 \item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
 \end{list2}
 
+\slide{Resources}
+\label{resources}
+Long list of various references follow, YMMV. I have found these useful in some way
+
+\begin{list2}
+\item \link{https://theinternetprotocolblog.wordpress.com/2020/11/28/ipv6-security-best-practices/}
+
+\item \link{https://mobile.twitter.com/enno_insinuator/status/1285681172719316992} links to\\
+\link{https://insinuator.net/2019/02/ipv6-security-in-an-ipv4-only-environment/}
+
+
+\item \link{https://twitter.com/Enno_Insinuator/status/1224147916022898689} links to\\
+\link{https://www.caida.org/catalog/papers/2016_dont_forget_lock/dont_forget_lock.pdf}
+
+
+\item \link{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}
+Classic with example of something locked down on IPv4 but not on IPv6\\
+
+I have found similar on management interfaces for a large network myself, if you came from a specific source port, you could connect to management on all core routers around the network. Router protection filter for IPv6 was not secure.
+\end{list2}
+
+\slide{Further resources}
+
+\begin{list2}
+\item \emph{IPv6 and IPv4 Threat Comparison and BestPractice Evaluation (v1.0)}
+Sean Convery (sean@cisco.com)
+Darrin Miller (dmiller@cisco.com)
+\link{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.85.7165&rep=rep1&type=pdf} 43 pages short enough, nicely structured
+
+\item \link{https://www.cisco.com/web/SG/learning/ipv6_seminar/files/02Eric_Vyncke_Security_Best_Practices.pdf}
+Updated? Advanced \link{https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2020/pdf/BRKSEC-3200.pdf}
+
+
+\item Mixed resources, maybe not useful
+\item link{https://www.varonis.com/blog/ipv6-security} - Apply IPv4 best practices when applicable ... and IPv6 Security is not distinct from IPv4 security
+\item \link{https://www.hpc.mil/images/hpcdocs/ipv6/infoblox-best-practices-for-ipv6-security-excerpt.pdf} routing security and stuff
+\item \link{https://www.nist.gov/publications/guidelines-secure-deployment-ipv6} from 2010, but maybe some good advice - and goes to show IPv6 security advise has been around for some time
+
+\end{list2}
+
+\slide{Resources LIRs and others}
+
+So grateful to be part of communities such as these!
+
+Tried finding the most recent references, but much more can be found across their sites:
+\begin{list2}
+\item RIPE April 2021, new! 191 pages!\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+
+\item ISOC 2019
+\link{https://www.internetsociety.org/deploy360/ipv6/security/faq/}
+
+\item APNIC 2019
+\link{https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/}
+
+\item August 2020 \link{https://www.etsi.org/images/files/ETSIWhitePapers/etsi_WP35_IPv6_Best_Practices_Benefits_Transition_Challenges_and_the_Way_Forward.pdf}
+
+\item May 2022 \emph{Apple Platform security guide}, includes IPv6
+\link{https://help.apple.com/pdf/security/en_US/apple-platform-security-guide.pdf}
+
+\item \emph{JANET IPv6 Technical Guide}, IPv4 security equivalence page 49
+\link{https://repository.jisc.ac.uk/8349/1/janet-ipv6-technical-guide.pdf}
+
+
+\item \emph{Network Reconnaissance in IPv6 Networks} \link{https://www.rfc-editor.org/rfc/rfc7707.txt}
+
+
+
+\item \link{https://datatracker.ietf.org/doc/html/rfc6092} 2011\\
+\emph{Recommended Simple Security Capabilities in Customer Premises Equipment (CPE) for Providing Residential IPv6 Internet Service}
+\end{list2}
 
 
 

@@ -88,31 +88,8 @@ Exercises
 \end{list2}
 
 \vskip 1cm
-\centerline{\Large\bf If we all wait a bit, and not click links immediately}
-
-\vskip 1cm
 Hackers try to create "urgency", click this or loose money
 
-
-
-\slide{DNS introduction}
-
-\slide{Well-known port numbers}
-
-\hlkimage{6cm}{iana1.jpg}
-
-\begin{list1}
-\item IANA vedligeholder en liste over magiske konstanter i IP
-\item De har lister med hvilke protokoller har hvilke protokol ID m.v.
-\item En liste af interesse er port numre, hvor et par eksempler er:
-\begin{list2}
-\item Port 25 SMTP Simple Mail Transfer Protocol
-\item Port 53 DNS Domain Name System
-\item Port 80 HTTP Hyper Text Transfer Protocol over TLS/SSL
-\item Port 443 HTTP over TLS/SSL
-\end{list2}
-\item Se flere på \link{http://www.iana.org}
-\end{list1}
 
 \slide{Domain Name System}
 
@@ -205,6 +182,97 @@ nameserver 2a01:3a0:53:53::
 \end{list1}
 
 
+
+\slide{DNS problems}
+
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, see DNS flag day\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\item DNS is unencrypted
+\end{list2}
+\end{list1}
+
+
+
+\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
+
+\begin{list2}
+\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
+\item Today we have competing standards:
+\item
+\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
+\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
+
+\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
+
+\item How to cofigure DoT \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
+\end{list2}
+
+\slide{DNS attacks, Your registrar}
+
+\hlkimage{10cm}{krebs-lenovo-google-dns-hack.png}
+\begin{list1}
+%\item DNS is the Domain Name System, \link{https://en.wikipedia.org/wiki/Dns}
+\item DNS insecurity has huge impact on your security!
+\item Most are denial of service, by may create Mitm or confidentiality concerns
+\item Select DNS providers with care
+\end{list1}
+
+
+Sources:\\
+{\tiny
+\link{https://krebsonsecurity.com/2015/02/webnic-registrar-blamed-for-hijack-of-lenovo-google-domains/}\\
+\link{http://www.version2.dk/artikel/google-og-lenovo-defaced-som-foelge-af-overset-sikkerhedsproblemstilling-91295}}
+
+
+\slide{DNSSEC get started now}
+
+\hlkimage{12cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+
+\slide{DNSSEC and DANE}
+
+\begin{quote}
+"Objective:
+
+Specify mechanisms and techniques that allow Internet applications to
+establish cryptographically secured communications by using information
+distributed through DNSSEC for discovering and authenticating public
+keys which are associated with a service located at a domain name."
+\end{quote}
+
+\begin{list1}
+\item DNS-based Authentication of Named Entities (dane)
+\end{list1}
+
+\slide{Email security \the\year - Goals}
+
+\begin{list2}
+\item SPF Sender Policy Framework\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+\item DKIM DomainKeys Identified Mail\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}
+\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}
+\item Brug allesammen, check efter ændringer!
+\end{list2}
+
+
+
+
 \slide{Hvordan bruger man IPv6}
 
 \begin{center}
@@ -285,6 +353,34 @@ Even has pinning information available:\\ {\small\link{https://blog.censurfridns
 
 \exercise{ex:dns-server-test}
 
+
+
+\slide{DNSSEC DNS integrity}
+
+\hlkimage{9cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+DNSSEC is something you should enable ASAP where possible
+
+\slide{DNSSEC}
+
+\hlkimage{20cm}{wwwdnsseckeys_02.png}
+
+\centerline{DNSSEC - nu også i Danmark}
+
+Du kan sikre dit domæne med DNSSEC - wooohooo!
+
+Det betyder en tillid til DNS som muliggør alskens services.
+
+Kilde:\\
+\link{https://www.dk-hostmaster.dk/english/tech-notes/dnssec/}
+
+
+
+
 \slide{SMTP Simple Mail Transfer Protocol}
 
 \begin{alltt}\tiny
@@ -310,6 +406,7 @@ QUIT
 \item RFC-821 SMTP Simple Mail Transfer Protocol fra 1982
 \item \link{http://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
 \end{list2}
+
 
 
 \slide{e-mail servere}
@@ -381,179 +478,6 @@ Idag benyttes ofte en stjålet brugerkonto med brugernavn og kodeord til at send
 
 
 
-
-\slide{Postservere til klienter}
-
-\begin{list1}
-\item SMTP som vi har gennemgået er til at sende mail mellem servere
-\item Når vi skal hente post sker det typisk med POP3 eller IMAP
-\begin{list2}
-\item POP3 Post Office Protocol version 3 RFC-1939
-\item Internet Message Access Protocol (typisk IMAPv4) RFC-3501
-\end{list2}
-\item Forskellen mellem de to er at man typisk med POP3 henter posten, hvor man med IMAP lader den ligge på serveren
-\item POP3 er bedst hvis kun en klient skal hente
-\item IMAP er bedst hvis du vil tilgå din post fra flere systemer
-\item Jeg bruger selv IMAPS, IMAP over SSL kryptering - idet kodeord ellers sendes i klartekst
-\end{list1}
-
-
-\slide{POP3 i Danmark}
-
-\hlkimage{12cm}{images/pop3-1.pdf}
-
-\begin{list1}
-\item Man har tillid til sin ISP - der administrerer såvel net som server
-\end{list1}
-
-\slide{POP3 i Danmark - trådløst}
-
-\hlkimage{9cm}{images/pop3-wlan.pdf}
-\begin{list1}
-\item Har man tillid til andre ISP'er? Alle ISP'er?
-\item Deler man et netværksmedium med andre?
-\item {\color{security6blue}Brug de rigtige protokoller!} IMAPS SMTPTLS
-\end{list1}
-
-
-\slide{SMTP TLS}
-
-\begin{quote}
-The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade header.
-\end{quote}
-
-\begin{list1}
-\item SMTP was extended with support for Transport Layer Security TLS
-\item Also called {\bf Opportunistic TLS}, where the quote is also from:\\ \link{https://en.wikipedia.org/wiki/Opportunistic_TLS}
-\end{list1}
-
-
-
-\slide{DNSSEC DNS integrity}
-
-\hlkimage{9cm}{cz-nic-dnssec-tlsa-validator.png}
-
-\begin{quote}
-"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
-\end{quote}
-
-DNSSEC is something you should enable ASAP where possible
-
-\slide{DNSSEC}
-
-\hlkimage{20cm}{wwwdnsseckeys_02.png}
-
-\centerline{DNSSEC - nu ogs<E5> i Danmark}
-
-Du kan sikre dit domæne med DNSSEC - wooohooo!
-
-Det betyder en tillid til DNS som muliggør alskens services.
-
-Kilde:\\
-\link{https://www.dk-hostmaster.dk/english/tech-notes/dnssec/}
-
-
-\slide{DNSSEC trigger}
-
-\hlkimage{7cm}{dnssec-trigger.png}
-
-Der findes mange DNSSEC programmer, blandt andet DNSSEC-trigger som er en navneserver til din lokale PC
-
-\begin{list2}
-\item DNSSEC Validator for firefox\\ \link{https://addons.mozilla.org/en-us/firefox/addon/dnssec-validator/}
-\item OARC tools \link{https://www.dns-oarc.net/oarc/services/odvr}
-\item \link{http://www.nlnetlabs.nl/projects/dnssec-trigger/}
-\end{list2}
-
-
-
-
-
-\slide{DNSSEC and DANE}
-
-\begin{quote}
-"Objective:
-
-Specify mechanisms and techniques that allow Internet applications to
-establish cryptographically secured communications by using information
-distributed through DNSSEC for discovering and authenticating public
-keys which are associated with a service located at a domain name."
-\end{quote}
-
-\begin{list1}
-\item DNS-based Authentication of Named Entities (dane)
-\end{list1}
-
-
-
-\slide{SPF, DKIM, DMARC}
-
-\begin{list2}
-\item SPF Sender Policy Framework - which IPs can send for my domain\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
-\item DKIM DomainKeys Identified Mail - when sending we use these keys\\
-{\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
-\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
-{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}\\
-Who tried sending spam which does not match our SPF and DKIM, tell us!
-\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}\\
-Put everything in DNS and secure it with DNSSEC
-\item Brug allesammen, check efter ændringer!
-\end{list2}
-
-\vskip 1cm
-\centerline{\hlkbig Email security \the\year - Goals}
-
-\slide{DNS problems}
-
-\begin{quote}
-The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
-addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
-attacks, including denial of service and password collection. There are a number of vulnerabilities.
-\end{quote}
-
-\begin{list1}
-\item We have a lot of the same problems in DNS today
-\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
-\begin{list2}
-\item DNS must allow both UDP and TCP port 53
-\item Your DNS servers must have updated software, see DNS flag day\\ https://dnsflagday.net/ after which kludges will be REMOVED!
-\item DNS is unencrypted
-\end{list2}
-\end{list1}
-
-
-\slide{DNS attacks, Your registrar}
-
-\hlkimage{10cm}{krebs-lenovo-google-dns-hack.png}
-\begin{list1}
-%\item DNS is the Domain Name System, \link{https://en.wikipedia.org/wiki/Dns}
-\item DNS insecurity has huge impact on your security!
-\item Most are denial of service, by may create Mitm or confidentiality concerns
-\item Select DNS providers with care
-\end{list1}
-
-Sources:\\
-{\tiny
-\link{https://krebsonsecurity.com/2015/02/webnic-registrar-blamed-for-hijack-of-lenovo-google-domains/}\\
-\link{http://www.version2.dk/artikel/google-og-lenovo-defaced-som-foelge-af-overset-sikkerhedsproblemstilling-91295}}
-
-
-
-\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
-
-\begin{list2}
-\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
-\item Today we have competing standards:
-\item
-\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
-\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
-
-\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
-
-\item How to cofigure DoT \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
-\end{list2}
-
-
 \slide{sslscan - can do STARTTLS with SMTP too}
 
 \begin{alltt}\footnotesize
@@ -581,6 +505,75 @@ Not valid after:  Jun 22 15:05:20 2020 GMT
 Source:
 Originally sslscan from http://www.titania.co.uk
  but use the version on Kali
+
+
+\slide{Postservere til klienter}
+
+\begin{list1}
+\item SMTP som vi har gennemgået er til at sende mail mellem servere
+\item Når vi skal hente post sker det typisk med POP3 eller IMAP
+\begin{list2}
+\item POP3 Post Office Protocol version 3 RFC-1939
+\item Internet Message Access Protocol (typisk IMAPv4) RFC-3501
+\end{list2}
+\item Forskellen mellem de to er at man typisk med POP3 henter posten, hvor man med IMAP lader den ligge på serveren
+\item POP3 er bedst hvis kun en klient skal hente
+\item IMAP er bedst hvis du vil tilgå din post fra flere systemer
+\item Jeg bruger selv IMAPS, IMAP over SSL/TLS kryptering - idet kodeord ellers sendes i klartekst
+\end{list1}
+
+
+\slide{IMAP/POP3 i Danmark}
+
+\hlkimage{12cm}{images/pop3-1.pdf}
+
+\begin{list1}
+\item Man har tillid til sin ISP - der administrerer såvel net som server
+\end{list1}
+
+\slide{IMAP/POP3 i Danmark - trådløst}
+
+\hlkimage{9cm}{images/pop3-wlan.pdf}
+\begin{list1}
+\item Har man tillid til andre ISP'er? Alle ISP'er?
+\item Deler man et netværksmedium med andre?
+\item {\color{security6blue}Brug de rigtige protokoller!} POP3S, IMAPS, SMTPTLS, ...
+\end{list1}
+
+Meget lig File Transfer Protocol (FTP)
+
+\slide{SMTP TLS}
+
+\begin{quote}
+The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade header.
+\end{quote}
+
+\begin{list1}
+\item SMTP was extended with support for Transport Layer Security TLS
+\item Also called {\bf Opportunistic TLS}, where the quote is also from:\\ \link{https://en.wikipedia.org/wiki/Opportunistic_TLS}
+\end{list1}
+
+
+
+
+\slide{SPF, DKIM, DMARC}
+
+\begin{list2}
+\item SPF Sender Policy Framework - which IPs can send for my domain\\ {\footnotesize\link{https://en.wikipedia.org/wiki/Sender_Policy_Framework}}
+\item DKIM DomainKeys Identified Mail - when sending we use these keys\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DomainKeys_Identified_Mail}}
+\item DMARC Domain-based Message Authentication, Reporting and Conformance\\
+{\footnotesize\link{https://en.wikipedia.org/wiki/DMARC}}\\
+Who tried sending spam which does not match our SPF and DKIM, tell us!
+\item DANE DNS-based Authentication of Named Entities\\ {\footnotesize\link{https://en.wikipedia.org/wiki/DNS-based_Authentication_of_Named_Entities}}\\
+Put everything in DNS and secure it with DNSSEC
+\item Brug allesammen, check efter ændringer!
+\end{list2}
+
+\vskip 1cm
+\centerline{\hlkbig Email security \the\year - Goals}
+
+
 
 
 \slidenext

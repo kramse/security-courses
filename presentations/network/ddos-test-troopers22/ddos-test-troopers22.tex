@@ -1,0 +1,287 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides-troopers}
+
+% Abstract
+% When connecting to the Internet we immediately receive traffic from unknown sources. We should consider testing our infrastructure using active pentest methods, to verify robustness. This talk will be about doing port scans for discovery of infrastructures and detailed advice how to perform active DDoS simulation to find bottlenecks in the network. The attack tools will be already known tools like Nmap and Hping3 with IPv6 patches. The focus is on the process and experiences doing this over many years.
+
+
+% Description
+% Networks are insecure, and often not as robust as we wish. There is a high risk that networks are vulnerable to one or more DDoS attack vectors, if not tested and verified. When setting up networks we often ignore the built-in features available, and we often have to select which features to enable on specific devices. The vendors tell us they can do everything in every box, but the truth is that attackers can often use more resources than we have available.
+
+% This presentation will take a holistic view on networking infrastructure, but due to time limits focus on hosting web services and providing services to the Internet. The process and advice would transfer to other services and can thus be applied by a practitioner afterwards on their own.
+
+% The main content in this presentation is about performing structured DDoS testing, what to attack, what to expect, how to reduce the number of vulnerable scenarios -- with existing infrastucture devices. The presentation will provide some specific configurations and recommendations using example devices found in normal networks.
+
+
+% Notes
+% I have over the years done multiple workshops with this content. Examples, https://ripe72.ripe.net/wp-content/uploads/presentations/32-simulated-ddos-ripe.pdf and https://bornhack.dk/bornhack-2021/program/simulating-ddos-packets/
+
+% I would prefer this is "just" a presentation, and interested parties contact me afterwards - will be on-site all week.
+
+% Note: I asked Kerstin for an academic voucher, but after realized that I could submit this.
+
+% Why is your material different, innovative, and/or significant?
+% My material is not very innovative, but significant based on real-life experiences building, testing and configuring networks over many year. This presentation does provide innovation, in providing a simple patch set for the Hping3 tool enabling the use of IPv6. It seems there are very few DDoS testing tools that work with IPv6, so it might count as innovation.
+
+% I find it significant that very few people perform structured testing, and only consider enabling existing features when under attack. This prolongs the reaction time, as opposed to performing structured testing and hardening of devices BEFORE DDoS attacks.
+
+% We have seen actual networks being able to handle much larger attacks by themselves, by tuning existing devices.
+
+% What technical requirements are there for this talk?
+% There will be a lot of networking terms used, port, port scan, IP address, rate limit, router, firewall, SYN flood. So a basic understanding of networking and having heard of DDoS SYN flooding will be beneficial.
+
+% The main attendees would be firewall administrators, network administrators, but anyone with responsibility for a network will benefit - as they can afterwards hand over the information to others that perform the actual tuning of networks.
+
+
+% Dont forget input from:
+% Old troopers I didnt hold
+% Modern firewalls
+
+
+
+% Test Lab
+
+% Penguin01 Dell 3240 with Dual 10G Intel card 10.0.45.69
+% Available via apu2c4 10.0.42.74
+% Projects VM: ssh penguin01
+
+\addbibresource{/home/user/projects/books/firewall-publications/texfiles/firewall-refs.bib}
+
+\begin{document}
+
+%\rm
+\selectlanguage{english}
+\mytitlepage{DDoS Testing Your Infrastructure,\\ including IPv6 SYN floods}{TROOPERS22}
+
+{\small
+Note: My main contribution is about performing structured DDoS testing, many great tools exist already}
+
+\slide{What is this presentation about}
+
+You will learn:
+\begin{list2}
+\item
+\end{list2}
+
+
+
+Plan
+
+\slide{DDoS is trouble}
+
+\slide{DDoS has become extremely large}
+
+Netscout screen shots
+
+\slide{Don't give up!}
+
+We can do a lot to improve our infrastucture
+
+\slide{Definitions}
+
+
+Multiple definitions for firewalls exist, below are a few examples to illustrate some of the variations that exist.
+
+The first book about firewalls used this definition:
+
+\begin{quote}
+We define a firewall as a collection of components placed between two networks that collectively have
+the following properties:
+\begin{list2}
+\item All traffic from inside to outside, and vice-versa, must pass through the firewall.
+\item Only authorized traffic, as defined by the local security policy, will be allowed to pass.
+\item The firewall itself is immune to penetration.
+\end{list2}
+We should note that these are design goals; a failure in one aspect does not mean that the collection
+is not a firewall, simply that it is not a very good one.
+\end{quote}
+
+Source: \citetitle{Cheswick94} by \citeauthor{Cheswick94} \citeyear{Cheswick94}
+
+We will consider this a firewall, but we know today that both inside and outside at meaningless, since we have multiple networks inside, we have partner network connections etc.
+
+Another short definition that encapsulates this is found on Wikipedia, and may suffice in many situations. Again there will typically be multiple networks, zones or areas of the networks with varying degrees of trust.
+\begin{quote}
+In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted network and an untrusted network, such as the Internet.[2]
+\end{quote}
+Source: Wikipedia
+ \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+
+ \begin{list2}
+ \item {\bf Firewall Technology:} \emph{Mechanism to help enforce access policies about communication traffic entering or leaving networks.}
+\end{list2}
+
+Source: \citetitle{lyles} by \citeauthor{lyles} \citeyear{lyles}
+
+
+
+
+\slide{A firewall}
+
+Single line in firewall - single line out
+
+\slide{Another definition}
+I am also fond of this longer and technical definition from RFC4949:
+\begin{quote}
+\$ firewall
+
+      1. (I) {\bf An internetwork gateway that restricts data communication
+      traffic to and from one of the connected networks} (the one said to
+      be "inside" the firewall) and thus protects that network's system
+      resources against threats from the other network (the one that is
+      said to be "outside" the firewall). (See: guard, security
+      gateway.)
+
+      2. (O) {\bf A device or system that controls the flow of traffic
+      between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41,
+      January 2002.
+
+      Tutorial: A firewall typically protects a smaller, secure network
+      (such as a corporate LAN, or even just one host) from a larger
+      network (such as the Internet). The firewall is installed at the
+      point where the networks connect, and the firewall applies policy
+      rules to control traffic that flows in and out of the protected
+      network.
+\end{quote}
+
+\slide{Another definition}
+
+\begin{quote}
+\$ firewall, continued
+
+      {\bf A firewall is not always a single computer.} For example, a
+      firewall may consist of a pair of filtering routers and one or
+      more proxy servers running on one or more bastion hosts, all
+      connected to a small, dedicated LAN (see: buffer zone) between the
+      two routers.
+
+      The external router blocks attacks that use IP to
+      break security (IP address spoofing, source routing, packet
+      fragments), while proxy servers block attacks that would exploit a
+      vulnerability in a higher-layer protocol or service. The internal
+      router blocks traffic from leaving the protected network except
+      through the proxy servers.
+
+      The difficult part is defining criteria by which packets are denied passage through the firewall, because
+      a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic
+      pass both in and out.
+\end{quote}
+
+\slide{The Modern Firewall Infrastructure}
+
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7, transform shape]
+\input{firewall-problems-mindmap.tikz}
+\end{tikzpicture}
+\end{center}
+
+Your infrastructure is based on multiple components
+
+
+Even though some vendors suggest they can do everything in a single box, dont believe them!
+
+
+\slide{Bottlenecks exist, but where}
+
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
+
+\begin{list2}
+\item Transport Layer Attacks TCP SYN flood TCP sequence numbers
+\item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
+\end{list2}
+
+\slide{Availability and Network flooding attacks}
+
+\begin{list2}
+\item SYN flood is the most basic and very common on the internet towards 80/tcp and 443/tcp
+\item ICMP and UDP flooding are the next popular targets
+\item Special packets
+\item All of them try to use up some resources
+\begin{list2}
+\item Memory space in specific sections of the kernel, TCP state, firewalls state, number of concurrent sessions/connections
+\item Interrupt processing of packets - packets per second
+\item CPU processing in firewalls, pps
+\item CPU processing in server software
+\item Bandwidth - megabits per second mbps
+\item And amplification attacks abusing devices on the Internet
+\end{list2}
+\end{list2}
+
+
+
+
+\slide{Defense in depth Requires an overview}
+
+\hlkimage{15cm}{medieval-clipart-5}
+
+%\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{DDoS protection and flooding}
+
+
+\hlkimage{15cm}{network-layers-1.png}
+
+
+\slide{Make incremental changes}
+
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',scale=0.9, transform shape]
+\newlength{\boxwidth}
+\setlength{\boxwidth}{0.21\paperwidth}
+\newlength{\boxheight}
+\setlength{\boxheight}{0.25\paperheight}
+\newlength{\boxspace}
+\setlength{\boxspace}{10cm}
+\input{incremental-changes-flowchart.tikz}
+\end{tikzpicture}
+\end{center}
+
+
+
+
+
+
+
+
+\slide{Conclusion DDoS and network attacks}
+
+\hlkrightimage{15cm}{network-layers-1.png}
+.
+\begin{list1}
+\item You really should try testing
+\item Investigate your existing devices\\
+all of them, RTFM, upgrade firmware
+\item Choose which devices does which\\
+part - discard early to free resources\\
+for later devices to dig deeper
+\end{list1}
+
+\centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
+
+\vskip 1cm
+Thank you for coming. I'll be around until friday.
+
+\myquestionspage
+
+
+\slide{Further reading}
+
+I have a lot of older presentations, which are open source, copy and find inspiration\\
+\url{https://github.com/kramse/security-courses}
+
+\begin{list2}
+\item HLK DDoS presentations, advice for configuring routers in front of the networks\\
+Multiple exercises described for performing testing with Nmap, hping3 and t50
+\item TROOPERS19 HLK VXLAN recommendations about VXLAN, consider your tunnelled protocols for inspection!
+\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
+\end{list2}
+
+Network Warrior, recommends designing and working toward a goal, also the GAD maxims
+
+
+
+\end{document}

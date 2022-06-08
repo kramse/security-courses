@@ -29,9 +29,7 @@ IEEE 802.1x
 Example Elastiflow
 
 # 3. Encrypting the network
-Go through Lorenas presentation too
 symmetric key, public key,
-
 AES, DES, 3DES
 TLS, VPN, IPsec
 

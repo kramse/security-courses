@@ -57,22 +57,28 @@ Note: My main contribution is about performing structured DDoS testing, many gre
 
 \slide{What is this presentation about}
 
+\begin{quote}
+When connecting to the Internet we immediately receive traffic from unknown sources. We should consider testing our infrastructure using active pentest methods, to verify robustness.
+\end{quote}
+
+
 You will learn:
 \begin{list2}
-\item
+\item This talk will be about firewall infrastructures -- what is a firewall really, short
+\item Doing port scans for discovery of infrastructures followed by detailed advice how to perform active DDoS simulation
 \end{list2}
 
+Note: The attack tools will be already known tools, but with a lot of focus on the process and experiences
 
 
 Plan
 
-\slide{DDoS is trouble}
+\slide{The Internet and DDoS is trouble}
 
-\slide{DDoS has become extremely large}
+DDoS has become extremely large
 
-Netscout screen shots
 
-\slide{Don't give up!}
+\centerline{Don't give up!}
 
 We can do a lot to improve our infrastucture
 
@@ -117,21 +123,59 @@ Source: \citetitle{lyles} by \citeauthor{lyles} \citeyear{lyles}
 
 \slide{A firewall -- in the vendor eyes}
 
-Single line in firewall - single line out
+% Single line in firewall - single line out
+% With text device under test, as caption
+\hlkimage{17cm}{Firewall-vendor.pdf}
 
-With text device under test, as caption
+
+\begin{quote}
+{\bf Can your firewall flex in the face of change?}\\
+Does it harmonize your network, workload, and application security? Does it protect apps and employees in your hybrid or multicloud environment? Make sure you're covered.
+\end{quote}
+Source: not shown to protect the audience from further marketing speak
+
+
+
+
 
 \slide{A firewall -- in the enterprise mindset }
 
-Single line in firewall,
-
-cloud with at-sign Internet on the left,\\
-cloud with at-sign LAN on the right
-
-Your infrastructure is based on multiple components
+% Single line in firewall,
+% cloud with at-sign Internet on the left,\\
+% cloud with at-sign LAN on the right
+\hlkimage{17cm}{Firewall-enterprise.pdf}
 
 
-Even though some vendors suggest they can do everything in a single box, dont believe them!
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Even though some vendors suggest they can do everything in a single box, dont believe them!
+\item Truth -- yes, we can do almost anything in software
+\item Realization {\bf Your infrastructure is based on multiple components and or devices}
+\end{list2}
+
+
+
+\slide{Packet processing in firewalls -- detailed view}
+
+% Picture with pipeline from Juniper SRX
+\hlkimage{20cm}{srx-firewall-flow-based-processing.png}
+Example from Juniper SRX\\ {\footnotesize
+\link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
 
 
 
@@ -140,15 +184,6 @@ Even though some vendors suggest they can do everything in a single box, dont be
 \hlkimage{15cm}{network-layers-2022.pdf}
 
 
-
-
-
-
-\slide{Detailed view of firewalls }
-
-Packet processing in firewalls
-
-Picture with pipeline from Juniper SRX?
 
 
 \slide{Another definition}
@@ -239,13 +274,43 @@ I am also fond of this longer and technical definition from RFC4949:
 
 
 
+\slide{Testing network the legal issues}
 
-\slide{Defense in depth Requires an overview}
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem. }
 
-\hlkimage{15cm}{medieval-clipart-5}
+\begin{list2}
+\item Danish law about hacking -- check in your own country/area!
+\item Please check with your legal department, and/or be careful
+\item We {\bf always} contact network between us and the network to be tested
+\item Be good netizens
+\end{list2}
 
-%\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+Hint: use a variable to keep the target address, carefull enter it and avoid mystyping it later
+\begin{alltt}
+\small
+# export CUST_NET="192.0.2.0/24"
+# nmap -p 1-65535 -A -oA full-scan $CUST_NET
+# export CUST_IP=192.0.2.1
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+\end{alltt}
 
+
+
+
+
+
+\slide{DDoS traffic before filtering}
+\hlkimage{20cm}{ddos-before-filtering}
+
+\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
+
+\slide{DDoS traffic after filtering}
+\hlkimage{20cm}{ddos-after-filtering}
+
+\begin{list1}
+\item Link toward server (next level firewall actually) about ~350Mbit outgoing
+\item Knowing what it going on, is half the battle
+\end{list1}
 
 
 \slide{Make incremental changes}
@@ -278,6 +343,7 @@ I am also fond of this longer and technical definition from RFC4949:
 all of them, RTFM, upgrade firmware
 \item Choose which devices does which
 part - discard early to free resources for later devices to dig deeper
+\item This is just one small part of your security posture, extra slides has my take on enterprise network security
 \end{list2}
 
 \myquestionspage
@@ -297,8 +363,125 @@ Multiple exercises described for performing testing with Nmap, hping3 and t50
 \item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
 \end{list2}
 
-Network Warrior, recommends designing and working toward a goal, also the GAD maxims
+One of my favourite books \emph{Network Warrior} by Gary A. Donahue, recommends designing your network without restrictions and then working toward this goal.\\
+{\footnotesize \emph{Network Warrior}, 2nd Edition
+by Gary A. Donahue, May 2011, O'Reilly Media, ISBN: 9781449387860
 
+
+\slide{Concrete advise for enterprise networks}
+
+
+\begin{list2}
+\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LA
+N, WAN, Mail, web, ...
+\item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
+do not allow traffic to and from any new TLD
+\item Use only your own DNS servers, create a pair of Unbound servers, \\
+point your internal DNS running on Windows to these\\
+Create filtering, logging, restrictions on these Unbound DNS servers\\
+\link{https://www.nlnetlabs.nl/projects/unbound/about/} and also \link{https://pi-hole.net/}
+\item Only allow SMTP via your own mail servers, create a simple forwarder if you must
+\end{list2}
+
+Allow lists are better than block list, even if it takes some time to do it
+
+\slide{Capture data and logs!}
+
+
+\begin{list2}
+\item Run DNS query logs -- when client1 is infected with malware from domain malwareexample.com, then search for more clients i
+nfected
+\item Run Zeek and gather information about all HTTPS sessions -- captures certificates by default, and we can again search for
+certificate related to malwareexample.com
+\item Run network logging -- session logs in enterprise networks are GREAT \\
+(country wide illegal logging is of course NOT)
+\end{list2}
+
+Make sure to check with employees, inform them!
+
+\slide{DROP SOME TRAFFIC NOW}
+
+\begin{list2}
+\item Drop some traffic on the border of everything
+\item Seriously do NOT allow Windows RPC across borders
+\item Border here may be from regional country office back to HQ
+\item Border may be from internet to internal networks
+\item Block Windows RPC ports, 135, 137, 139, 445
+\item Block DNS directly to internet, do not allow clients to use any DNS, fake 8.8.8.8 if you must internally
+\item Block SMTP directly to internet
+\item Create allow list for internal networks, client networks should not contact other client networks but only relevant server networks
+\end{list2}
+
+You DONT need to allow direct DNS towards internet, except from your own recursive DNS servers
+
+If you get hacked by Windows RPC in 2022, you probably deserve it, sorry for being blunt
+
+Best would be to analyze traffic and create allow lists, some internal networks to not need internet at all
+
+
+\slide{Default permit}
+
+%\hlkimage{}{}
+
+One of the early implementers of firewalls Marcus J. Ranum summarized in 2005 The Six Dumbest Ideas in Computer Security \link{https://www.ranum.com/security/computer_security/editorials/dumb/} which includes the always appropriate discussion about default permit versus default deny.
+
+\begin{quote}\small {\bf
+\#1) Default Permit}\\
+This dumb idea crops up in a lot of different forms; it’s incredibly persistent and difficult to eradicate. Why? Because it’s so attractive. Systems based on ”Default Permit” are the computer security equivalent of empty calories: tasty, yet fattening.
+
+The most recognizable form in which the ”Default Permit” dumb idea manifests itself is in firewall rules. Back in the very early days of computer security, network managers would set up an internet connection and decide to secure it by turning off incoming telnet, incoming rlogin, and incoming FTP. Everything else was allowed through, hence the name ”Default Permit.” This put the security practitioner in an endless arms-race with the hackers.
+\end{quote}
+
+
+\begin{list2}
+\item Allow all current networks today on all ports for all protocols \emph{is} an allow list \\
+Which tomorrow can be split into one for TCP, UDP and remaining, and measured upon
+\item Measure, improve, repeat
+\end{list2}
+
+
+
+\slide{We cannot do X}
+
+\begin{quote}
+We cannot block SMTP from internal networks, since we do not know for sure if vendor X equipment needs to send the MOST important email alert at some unspecific time in the future
+\end{quote}
+
+Cool, then we can do an allow list starting today on our border firewall:
+\begin{alltt}
+table <smtp-exchange> \{ $exchange1 $exchange2 $exchange3 \}
+table <smtp-unknown> persist file "/firewall/mail/smtp-internal-unknown.txt"
+# Regular use, allowed
+pass out on egress inet proto tcp from smtp-echange to any port 25/tcp
+# Unknown, remove when phased out
+pass out on egress inet proto tcp from smtp-internal to any port 25/tcp
+\end{alltt}
+
+Year 0 the unknown list may be 100\% of all internal networks, but new networks added to infrastructure are NOT added, so list will shrink -- evaluate the list, and compare to network logs, did networks send ANY SMTP for 1,2,3 years?
+
+\slide{Zeek is a framework and platform}
+
+\hlkimage{12cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+Does useful things out of the box using more than 10.000 script lines
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+Suricata, Zeek og DNS Capture -- it a nice world, use it!\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
 
 
 \end{document}

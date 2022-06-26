@@ -79,10 +79,11 @@ You will learn:
 \begin{list2}
 \item This talk will be about firewall infrastructures -- what is a firewall really, short
 \item Doing port scans for discovery of infrastructures ...
-\item followed by detailed advice how to perform active DDoS simulation
+\item Followed by detailed advice how to perform active DDoS simulation
+\item My advice for protection using your existing devices
 \end{list2}
 
-Note: The attack tools will be already known tools, but with a lot of focus on the process and experiences
+Note: The attack tools will be already developed and possibly known tools, but with a lot of focus on the process and experiences. I also have some opinions and experiences to share.
 
 
 \slide{The Internet and DDoS is trouble}
@@ -128,7 +129,7 @@ In computing, a firewall is a {\bf network security system that monitors and con
 Source: Wikipedia
  \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
 
-{\Large TL;DR Not necessarily a single device}
+{\bf TL;DR Not necessarily a single device}
 
 
 
@@ -136,15 +137,15 @@ Source: Wikipedia
 
 % Single line in firewall - single line out
 % With text device under test, as caption
-\hlkimage{17cm}{Firewall-vendor.pdf}
+\hlkimage{19cm}{Firewall-vendor.pdf}
 
 
 \begin{quote}
-{\bf Can your firewall flex in the face of change?}\\
-Does it harmonize your network, workload, and application security? Does it protect apps and employees in your hybrid or multicloud environment? Make sure you're covered.
+"{\bf Can your firewall flex in the face of change?}\\
+Does it harmonize your network, workload, and application security? Does it protect apps and employees in your hybrid or multicloud environment? Make sure you're covered."
 \end{quote}
 Source: not shown to protect the audience from further marketing speak
-
+% Source is Cisco.com
 
 
 
@@ -154,10 +155,10 @@ Source: not shown to protect the audience from further marketing speak
 % Single line in firewall,
 % cloud with at-sign Internet on the left,\\
 % cloud with at-sign LAN on the right
-\hlkimage{17cm}{Firewall-enterprise.pdf}
+\hlkimage{19cm}{Firewall-enterprise.pdf}
 
 \begin{list2}
-\item Even though some vendors suggest they can do everything in a single box, dont believe them!
+\item Even though some vendors suggest they can do everything in a single box, I don't believe them!
 \item Truth -- yes, we can do almost anything in software
 \item Realization {\bf Your infrastructure is based on multiple components and or devices}
 \end{list2}
@@ -169,19 +170,13 @@ Source: not shown to protect the audience from further marketing speak
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
 
 
+%\slide{The Modern Firewall Infrastructure}
 
-
-
-\slide{The Modern Firewall Infrastructure}
-
-
-\begin{center}
-\begin{tikzpicture}[scale=0.6, transform shape]
-\input{firewall-problems-mindmap.tikz}
-\end{tikzpicture}
-\end{center}
-
-
+%\begin{center}
+%\begin{tikzpicture}[scale=0.6, transform shape]
+%\input{firewall-problems-mindmap.tikz}
+%\end{tikzpicture}
+%\end{center}
 
 
 \slide{Bottlenecks exist, but where}
@@ -190,24 +185,26 @@ Source: not shown to protect the audience from further marketing speak
 \hlkimage{12cm}{overview-routing-customer-2015.pdf}
 
 \begin{list2}
-\item Transport Layer Attacks TCP SYN flood TCP sequence numbers
-\item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
+\item Lower layer attacks Transport Layer Attacks TCP SYN flood -- packet based
+\item Higher layer attacks like Slowloris and web attacks -- keep sessions running
+\item Protect everything without loosing functionality or creating administrative nightmare
 \end{list2}
 
 \slide{Availability and Network flooding attacks}
 
+The attacks we are discussing today are:
 \begin{list2}
-\item SYN flood is the most basic and very common on the internet towards 80/tcp and 443/tcp
-\item ICMP and UDP flooding are the next popular targets
-\item Special packets
+\item {\bf SYN flood} is the most basic and very common on the internet towards 80/tcp and 443/tcp
+\item {\bf ICMP and UDP flooding} are the next popular targets -- more similar ones exist
+\item Special packets and protocols -- anything that can create \emph{load on systems} work
 \item All of them try to use up some resources
 \begin{list2}
-\item Memory space in specific sections of the kernel, TCP state, firewalls state, number of concurrent sessions/connections
-\item Interrupt processing of packets - packets per second
-\item CPU processing in firewalls, pps
+\item {\bf Memory space} in specific sections of the {\bf kernel, TCP state, firewalls state, number of concurrent sessions/connections}
+\item {\bf Interrupt processing} of packets - packets per second (pps)
+\item {\bf CPU processing} in firewalls, pps
 \item CPU processing in server software
-\item Bandwidth - megabits per second mbps
-\item And amplification attacks abusing devices on the Internet
+\item {\bf Bandwidth} - megabits per second (mbps)
+\item Typically source is spoofed or amplification attacks abusing devices on the Internet
 \end{list2}
 \end{list2}
 
@@ -218,39 +215,24 @@ Source: not shown to protect the audience from further marketing speak
 \slide{Packet processing in firewalls -- detailed view}
 
 % Picture with pipeline from Juniper SRX
-\hlkimage{20cm}{srx-firewall-flow-based-processing.png}
-Example from Juniper SRX\\ {\footnotesize
+\hlkimage{21cm}{srx-firewall-flow-based-processing.png}
+\emph{Traffic Processing on SRX Series Devices Overview}\\ {\scriptsize
 \link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
 
 
 
-\slide{My idea of a firewall -- multiple devices!}
 
-\hlkimage{15cm}{network-layers-2022.pdf}
-
-\slide{Scanning and Attacking}
-
-\begin{quote}
-\item
-\end{quote}
-
-\begin{list2}
-\item
-\end{list2}
-
-
-
-\slide{Pressure Points and Scope}
+\slide{Scanning and Attacking -- \bf Pressure Points and Scope}
 
 % Drawing showing "network"
-\begin{quote}
-\item
-\end{quote}
+
+\hlkimage{21cm}{generic-network-pressure-points.pdf}
 
 \begin{list2}
-\item Scope for me is everything that could adversely affect the network
+\item In scope for me is everything that could adversely affect the network
 \item Common scope IPv4: Link network /28 or /26 and a customer network /24
-\item Common scope IPv6: Link network and a customer network /48
+\item Common scope IPv6: Link network /64 (bad) or /127 (RFC9099) and a customer network /48 with subnets
+%\item Domain Name Service outside of the network is ofc also attack vector, ignored today
 \end{list2}
 
 
@@ -282,28 +264,41 @@ Best case would be to have:
 \item Agree on a day or night for testing, inform participants and system owners
 \end{list2}
 
+\slide{Before testing: Smokeping}
+
+\hlkimage{17cm}{smokeping-before-testing.png}
+
+\centerline{Before DDoS testing  use Smokeping software}
+
+\slide{Before testing: Pingdom}
+
+\hlkimage{17cm}{forside-pingdom.png}
+
+\centerline{Another external monitoring from Pingdom.com}
 
 
 
-\slide{IPv6 Testing}
 
-My favourite tools have not supported IPV6, which is a shame.
 
-Two options, modify tools or use newer tools
 
-I truly love Hping3, this tools is very flexible and powerful,
-
+\slide{Performing the DDoS test }
 
 \begin{list2}
-\item Fortunately these tools are open source, and I modified Hping to suit my needs, search and replace for inet to inet6, so I could have an IPv6 DDoS testing tool\\
-\link{https://github.com/kramse/hping-2018} Hping-2018, raw support for IPv6 packets
-\item Today I would recommend using MoonGen -- which support IPv6 already\\
-\link{https://github.com/emmericp/MoonGen}
+\item  Like Nmap and others, how do you perform this task then?
+
+\item Listing options show multiple pages ...\\
+Running \verb+man nmap | enscript -o test.ps+ result in 54 pages \smiley
+
+\item So lets break this task down into:
+\begin{enumerate}
+\item Use Nmap to port scan the network
+\item Setup monitoring -- not shown here
+\item Run \verb+hping3+ and \verb+t50+
+\end{enumerate}
+
+\vskip 1cm
+\item BTW we usually schedule this for night time! There WILL be interruptions
 \end{list2}
-
-\slide{Performing a DDoS test }
-BUT like Nmap and others, how do you perform some task? Listing options show multiple pages ...
-
 
 % Slides from courses about Hping3
 
@@ -314,7 +309,7 @@ Hint: use a variable to keep the target address, carefull enter it and avoid mys
 \small
 # export CUST_NET4="192.0.2.0/24"
 # export CUST_NET6="192.0.2.0/24"
-# nmap -p 1-65535 -A -oA full-scan $CUST_NET4
+# nmap -p 1-65535 -Pn -A -oA full-scan $CUST_NET4
 # export CUST_IP=192.0.2.138
 # date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
 \end{alltt}
@@ -336,7 +331,15 @@ root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv4 
 root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv6 $LINK_NET6}
 \end{alltt}
 
-I always use:
+Goal is to enumerate the ports that are allowed through the network.
+
+Note: These commands are pretty harmless, if something dies, then it is\\
+\emph{vulnerable to normal traffic} - and should be fixed!
+
+
+\slide{Nmap options }
+
+I always use these:
 \begin{list2}
 \item -Pn -- Scan all IPs, dont use ping or TCP ping to check alive
 \item -A advanced -- perform full TCP connection and grab banner
@@ -344,10 +347,6 @@ I always use:
 \item -oA filename -- Saves output in "all formats" normal, XML, and grepable formats
 \end{list2}
 
-Goal is to enumerate the ports that are allowed through the network.
-
-Note: This command is pretty harmless, if something dies, then it is\\
-\emph{vulnerable to normal traffic} - and should be fixed!
 
 
 
@@ -404,8 +403,8 @@ describing the packets.
 
 \begin{list2}
 \item Hping3 packet generator is a very flexible tool to produce simulated DDoS traffic with specific charateristics
-\item Home page: \link{http://www.hping.org/hping3.html}
-\item Source repository \link{https://github.com/antirez/hping}
+\item Home page: \link{http://www.hping.org/hping3.html} Source repository \link{https://github.com/antirez/hping}
+\item My fork with IPv6 and VXLAN branches added \link{https://github.com/kramse/hping-2018}
 \end{list2}
 
 \centerline{My primary DDoS testing tool, easy to get specific rate pps}
@@ -441,8 +440,6 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 \slide{Process: monitor, attack, break, repeat}
 
 \begin{list2}
-\item Pre-test: Monitoring setup - from multiple points
-\item Pre-test: Perform full Nmap scan of network and ports
 \item Start small, run with delays between packets
 \item Turn up until it breaks, decrease delay - until using \verb+--flood+
 \item Monitor speed of attack on your router interface pps/bandwidth
@@ -457,13 +454,13 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 \slide{Running Attacks with hping3}
 
 \begin{alltt}\small
-# export CUST_IP=192.0.2.1
-# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+# export CUST_IP=192.0.2.138
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &
  \end{alltt}
 
 \begin{alltt}\small
-# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
-Thu Jan 21 22:37:06 CET 2016
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &
+Thu Jan 21 22:37:06 CET 2022
 HPING 192.0.2.1 (eth0 192.0.2.1): S set, 40 headers + 0 data bytes
 
 --- 192.0.2.1 hping statistic ---
@@ -478,59 +475,333 @@ sys     0m5.444s
 \vskip 1cm
 \centerline{Dont forget to do a killall hping3 when done \smiley }
 
+
+
 \slide{Recommendations During Test}
 
-\begin{list1}
+\begin{list2}
 \item Run each test for at least 5 minutes, or even 15 minutes\\
 Some attacks require some build-up before resource run out
 \item Take note of any change in response, higher latency, lost probes
 \item If you see a change, then re-test using the same parameters, or a little less first
 \item We want to know the approximate level where it breaks
-\item If you want to change environment, then wait until all scenarios tested
+\item {\bf If you want to change environment, then wait until all scenarios are tested}
+\item Keep a log handy, write notes and start the session with \verb+script ddos-date-customer.log+
+\item Check once in a while if you have some process running, using \verb+ps auxw | grep hping3+
+\item Run multiple instances of the tools. One process might generate 800.000 pps, while two may double it. Though 10 processes might not be 10 times exactly
+\end{list2}
+
+
+
+\slide{Running the tools}
+
+A basic test would be:
+\begin{list2}
+\item TCP SYN flooding
+\item TCP other flags, PUSH-ACK, RST, ACK, FIN
+\item ICMP flooding
+\item UDP flooding
+\item Spoofed packets src=dst=target \smiley
+\item Small fragments
+\item Bad fragment offset
+\item Bad checksum
+\item Be creative
+\item Mixed packets - like \verb+t50 --protocol T50+
+\item Perhaps esoteric or unused protocols, GRE, IPSec
+\end{list2}
+
+\slide{Test-cases / Scenarios}
+
+The minimal run contains at least these:
+\begin{list2}
+\item SYN flood: \verb+hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &+
+\item SYN+ACK: \verb+hping3 -q -c 1000000  -i u60 -S -A -p 80  $CUST_IP &+
+\item ICMP flood: \verb+hping3 -q -c 1000000 --flood -1 $CUST_IP &+
+\item UDP flood: \verb+hping3 -q -c 1000000 --flood -2 $CUST_IP &+
+\end{list2}
+
+\slide{Tuning the testing}
+
+
+Further hints:
+\begin{list2}
+\item Vary the speed using the packet interval \verb+-i u60+ up/down
+\item Add more processes and monitor change in responses
+\item Use flooding with caution, runs max speeeeeeeeeeeed \smiley
+\item TCP testing use a port which is allowed through the network, often 80/443
+\item Focus on attacks which are hard to block, example TCP SYN must be allowed in
+\item Also if you found devices like routers in front of environment\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 22 $ROUTER_IP+\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+
+\end{list2}
+
+I start using a single test-case at a time, but later run multiple in parallel
+
+\slide{Note about IPv6 Testing}
+
+My favourite tools have not always supported IPv6, which is a shame
+
+Two options, modify tools or use newer tools
+
+\begin{list2}
+\item Fortunately these tools are open source,
+
+\item I truly love Hping3, this tools is very flexible and powerful, so I modified Hping to suit my needs, basically search and replace for inet to inet6, so I could have an IPv6 DDoS testing tool\\
+\link{https://github.com/kramse/hping-2018} Hping-2018, raw support for IPv6 packets
+\item Today I would recommend using MoonGen -- which support IPv6 already\\
+\link{https://github.com/emmericp/MoonGen}
+\end{list2}
+
+
+\slide{Test-cases / Scenarios, continued Spoof Source}
+
+Spoofed packets src=dst=target \smiley
+
+Flooding with spoofed packet source, within customer range
+
+\begin{alltt}\small
+
+-a --spoof hostname
+    Use this option in order to set a fake IP  source  address,  this
+    option ensures that target will not gain your real address.
+\end{alltt}
+
+\verb+hping3 -q --flood -p 80 -S -a $CUST_IP $CUST_IP+
+
+Preferably using a test-case you know fails, to see effect
+
+Still amazed how often this works
+
+
+
+\slide{Test-cases / Scenarios, continued Small Fragments}
+
+Using the built-in option -f for hping
+
+\begin{alltt}\small
+-f --frag
+    Split  packets  in more fragments, this may be useful in order to test IP
+    stacks fragmentation performance and to test if some packet filter is  so
+    weak  that  can  be  passed using tiny fragments (anachronistic). Default
+    {\bf 'virtual mtu' is 16 bytes}. see also --mtu option.
+\end{alltt}
+
+\begin{list1}
+\item \verb+hping3 -q --flood -p 80 -S -f $CUST_IP+
+\item Similar process with bad checksum and Bad fragment offset
 \end{list1}
 
+\slide{Rocky Horror Picture Show - 1}
+
+\hlkimage{20cm}{smokeping-1.png}
+
+\centerline{Really does it break from 50.000 pps SYN attack?}
+
+\slide{Rocky Horror Picture Show - 2}
+
+\hlkimage{20cm}{smokeping-2.png}
+
+\centerline{Oh no 500.000 pps UDP attacks work?}
+
+\slide{Rocky Horror Picture Show - 3}
+
+\centerline{Oh no spoofing attacks work?}
+
+\hlkimage{20cm}{smokeping-3.png}
 
 
-\slide{Before testing: Smokeping}
 
-\hlkimage{15cm}{smokeping-before-testing.png}
+\slide{Comparable to real DDoS?}
 
-\centerline{Before DDoS testing  use Smokeping software}
-
-\slide{Before testing: Pingdom}
-
-\hlkimage{18cm}{forside-pingdom.png}
-
-\centerline{Another external monitoring from Pingdom.com}
-
-
-\slide{}
-
-\begin{quote}
-\item
-\end{quote}
+Tools are simple and widely available but are they actually producing same result as high-powered and advanced criminal botnets. We can confirm that the attack delivered in this test is, in fact, producing the traffic patterns very close to criminal attacks in real-life scenarios.
 
 \begin{list2}
-\item
+\item We can also monitor logs when running a single test-case
+\item Gain knowledge about supporting infrastructure
+\item Can your syslog infrastructure handle 800.000 events in $<$ 1 hour?
+\end{list2}
+
+Main difference are that attackers are free to switch attack types and mix them. While we try specifically to keep using one type, to see the worst and which ones that hurt the most.
+
+I also start at the bottom, and work my way up -- while an attacker may begin attacking HTTP/HTTPS directly.
+
+\slide{Protection -- configure your firewall}
+
+\hlkimage{17cm}{network-layers-2022.pdf}
+
+% My idea of a firewall -- unroll into multiple devices!
+
+
+
+\slide{Enable More Packet filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list2}
+\item Packet filtering can be done one single packets -- stateless filtering
+\item We can save information about direction and ongoing traffic -- stateful filtering/firewalling
+\item \emph{Filtering} can also be setting a maximum number if packets for a protocol -- rate limit by protocol
+\end{list2}
+
+
+\slide{Designing the protection}
+
+\begin{tabularx}{\textwidth-5cm}{|p{3cm}|p{7cm}|X|} \hline
+{\bf Address family} & {\bf Services and ports} & {\bf Prefix}\\\hline
+TCP & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
+UDP & 53 & 192.0.2.128/25 \\\hline
+\end{tabularx}
+
+\begin{tabularx}{\textwidth-5cm}{|p{3cm}|p{7cm}|X|} \hline
+{\bf Protocol} & {\bf Mbps} & {\bf Prefix}\\\hline
+TCP & Up to full bandwidth 10Gbps & 192.0.2.0/25 \\\hline
+UDP & Less than 1Gbps & 192.0.2.128/25 \\\hline
+ICMP & Less than 10Mbps & 192.0.2.0/24 \\\hline
+\end{tabularx}
+
+\begin{list2}
+\item Create an address plan for your services
+\item Monitor your traffic -- how much UDP and TCP do you have, roughly
 \end{list2}
 
 
 
+\slide{Config example: SNMP}
 
-\slide{Protection}
+\begin{alltt}\footnotesize
+snmp \{
+    description "Router-CPH-01";
+    location "Copenhagen, Denmark";
+    contact "noc@zencurity.com";
+    community yourcommunitynotmine \{
+        authorization read-only;
+        {\bf clients \{
+               10.1.1.1/32;
+               10.1.2.2/32;
+        \}    }
+    \}
+\}
+\end{alltt}
+
+If you must use SNMPv2 then at least put it into separate VLAN! {\myalert}
+
+
+
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a sample, better to use BGP flowspec or BGP based RTBH */
+term edgeblocker \{
+    from \{
+        source-address \{
+            84.xx.xxx.173/32;
+...
+            87.xx.xxx.171/32;
+        \}
+        destination-address \{
+            192.0.2.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers also have extensive Class-of-Service (CoS) tools today, and in general rate limiting stuff is nice
+
+\slide{Strict filtering for some servers, still stateless!}
+
+\begin{alltt}\footnotesize
+term some-server-allow \{
+    from \{
+        destination-address \{
+            192.0.2.0/24;
+        \}
+        protocol tcp;
+        destination-port [ 80 443 ];
+    \} then accept;
+\}
+term some-server-block-unneeded \{
+    from \{
+        destination-address \{
+            192.0.2.0/24; \}
+        protocol-except icmp;  \}
+    then \{ count some-server-block; discard;
+    \}
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+
+\slide{uRPF unicast Reverse Path Forwarding}
 
 \begin{quote}
-\item
+Reverse path forwarding (RPF) is a technique used in modern routers for the purposes of ensuring loop-free forwarding of multicast packets in multicast routing and to help prevent IP address spoofing in unicast routing.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
+
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
 \end{quote}
 
-\begin{list2}
-\item
-\end{list2}
+
+\slide{Strict vs loose mode RPF}
+
+\hlkimage{24cm}{uRPF-check-1.pdf}
 
 
 
 
-\slide{DDoS traffic before filtering}
+
+\slide{Results from implementing -- DDoS traffic before filtering}
 \hlkimage{20cm}{ddos-before-filtering}
 
 \centerline{Only two links shown, at least 3Gbit incoming for this single IP}
@@ -559,6 +830,23 @@ Some attacks require some build-up before resource run out
 \end{center}
 
 
+
+
+\slide{Improvements seen after testing}
+
+\begin{list1}
+\item Turning off unneeded features - free up resources
+\item Tuning sesions, max sessions src / dst
+\item Tuning firewalls, max sessions in half-open state, enabling services
+\item Tuning network, drop spoofed src from inside net \smiley
+\item Tuning network, can follow logs, manage network during attacks
+\item ...
+\item And organisation has better understanding of DDoS challenges
+\item Including vendors, firewall consultants, ISPs etc.
+\end{list1}
+
+\vskip 1cm
+\centerline{After tuning of {\bf existing devices/network} improves results 10-100 times}
 
 
 \slide{Interesting findings}
@@ -785,6 +1073,41 @@ I am also fond of this longer and technical definition from RFC4949:
       pass both in and out.
 \end{quote}
 
+
+\slide{Routing Security}
+
+
+\begin{list2}
+\item Use MD5 passwords or better authentication for routing protocols {\myalert}
+\item TTL Security -- avoid routed packets
+\item Max prefix -- of course, only allow expected networks
+\item Prefix filtering -- only parts of IPv6 space is used
+\item TCP Authentication Option [RFC 5925] replaces TCP MD5 [RFC 2385]
+\item Turn ON RPKI for both IPv4 and IPv6 prefixes, {\myalert} \\
+\link{https://nlnetlabs.nl/projects/rpki/about/}
+\item Drop bogons on IPv4 and IPv6, article with multiple references YMMV\\
+\link{https://theinternetprotocolblog.wordpress.com/2020/01/15/some-notes-on-ipv6-bogon-filtering/}
+\end{list2}
+
+
+\slide{Mutually Agreed Norms for Routing Security (MANRS)}
+
+%\hlkimage{2cm}{MANRS_square.png}
+
+\begin{quote}
+  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
+\end{quote}
+Source: {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+
+\begin{list2}
+\item Problems related to incorrect routing information
+\item Problems related to traffic with spoofed source IP addresses
+\item Problems related to coordination and collaboration between network operators
+\item Also BCP38 RFC2827 \emph{Network Ingress Filtering: Defeating Denial of Service Attacks
+which employ IP Source Address Spoofing}
+\end{list2}
+
+You should all ask your internet providers if they know about MANRS, and follow it. We should ask our government and institutions to support and follow MANRS and good practices for network on the Internet
 
 
 \end{document}

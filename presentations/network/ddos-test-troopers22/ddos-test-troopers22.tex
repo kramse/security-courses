@@ -55,6 +55,19 @@
 {\small
 Note: My main contribution is about performing structured DDoS testing, many great tools exist already}
 
+
+\slide{Testing network the legal issues}
+
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem. }
+
+\begin{list2}
+\item Danish law about hacking -- check in your own country/area!
+\item Please check with your legal department, and/or be careful
+\item We {\bf always} contact network between us and the network to be tested
+\item Be good netizens
+\end{list2}
+
+
 \slide{What is this presentation about}
 
 \begin{quote}
@@ -65,59 +78,57 @@ When connecting to the Internet we immediately receive traffic from unknown sour
 You will learn:
 \begin{list2}
 \item This talk will be about firewall infrastructures -- what is a firewall really, short
-\item Doing port scans for discovery of infrastructures followed by detailed advice how to perform active DDoS simulation
+\item Doing port scans for discovery of infrastructures ...
+\item followed by detailed advice how to perform active DDoS simulation
 \end{list2}
 
 Note: The attack tools will be already known tools, but with a lot of focus on the process and experiences
 
 
-Plan
-
 \slide{The Internet and DDoS is trouble}
 
-DDoS has become extremely large
+\hlkimage{13cm}{DDos_Attack_in_2021_arbor.png}
 
+Security attacks and DDoS is very much in the media\\
+Source: \link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
 
-\centerline{Don't give up!}
+\slide{DDoS Attacks are HUGE}
 
-We can do a lot to improve our infrastucture
+\hlkimage{10cm}{DDos_Attack_in_2021_size_arbor.png}
 
-\slide{Definitions}
+Extremely hard to protect against from a small network\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
 
+We can do a lot to improve our infrastucture -- Don't give up!
 
-Multiple definitions for firewalls exist, below are a few examples to illustrate some of the variations that exist.
-
-The first book about firewalls used this definition:
+\slide{Definition of firewalls -- multiple definitions exist}
 
 \begin{quote}
-We define a firewall as a collection of components placed between two networks that collectively have
+We define a firewall as {\bf a collection of components} placed between two networks that collectively have
 the following properties:
 \begin{list2}
 \item All traffic from inside to outside, and vice-versa, must pass through the firewall.
-\item Only authorized traffic, as defined by the local security policy, will be allowed to pass.
+\item Only authorized traffic, as defined by the {\bf local security policy}, will be allowed to pass.
 \item The firewall itself is immune to penetration.
 \end{list2}
 We should note that these are design goals; a failure in one aspect does not mean that the collection
 is not a firewall, simply that it is not a very good one.
 \end{quote}
 
+We will consider this a firewall, but we know today that {\bf both inside and outside at meaningless}, since we have {\bf multiple networks inside, we have partner network connections etc.}
+
 Source: \citetitle{Cheswick94} by \citeauthor{Cheswick94} \citeyear{Cheswick94}
 
-We will consider this a firewall, but we know today that both inside and outside at meaningless, since we have multiple networks inside, we have partner network connections etc.
+\slide{Definition of firewalls -- Wikipedia}
 
 Another short definition that encapsulates this is found on Wikipedia, and may suffice in many situations. Again there will typically be multiple networks, zones or areas of the networks with varying degrees of trust.
 \begin{quote}
-In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted network and an untrusted network, such as the Internet.[2]
+In computing, a firewall is a {\bf network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules}.[1] A firewall typically establishes a barrier between a trusted network and an untrusted network, such as the Internet.[2]
 \end{quote}
 Source: Wikipedia
  \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
 
- \begin{list2}
- \item {\bf Firewall Technology:} \emph{Mechanism to help enforce access policies about communication traffic entering or leaving networks.}
-\end{list2}
-
-Source: \citetitle{lyles} by \citeauthor{lyles} \citeyear{lyles}
-
+{\Large TL;DR Not necessarily a single device}
 
 
 
@@ -145,30 +156,11 @@ Source: not shown to protect the audience from further marketing speak
 % cloud with at-sign LAN on the right
 \hlkimage{17cm}{Firewall-enterprise.pdf}
 
-
-\slide{}
-
-%\hlkimage{}{}
-
-\begin{quote}
-
-\end{quote}
-
 \begin{list2}
 \item Even though some vendors suggest they can do everything in a single box, dont believe them!
 \item Truth -- yes, we can do almost anything in software
 \item Realization {\bf Your infrastructure is based on multiple components and or devices}
 \end{list2}
-
-
-
-\slide{Packet processing in firewalls -- detailed view}
-
-% Picture with pipeline from Juniper SRX
-\hlkimage{20cm}{srx-firewall-flow-based-processing.png}
-Example from Juniper SRX\\ {\footnotesize
-\link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
-
 
 \slide{Defense in depth}
 
@@ -179,59 +171,6 @@ Example from Juniper SRX\\ {\footnotesize
 
 
 
-\slide{My idea of a firewall -- multiple devices!}
-
-\hlkimage{15cm}{network-layers-2022.pdf}
-
-
-
-
-\slide{Another definition}
-I am also fond of this longer and technical definition from RFC4949:
-\begin{quote}
-\$ firewall
-
-      1. (I) {\bf An internetwork gateway that restricts data communication
-      traffic to and from one of the connected networks} (the one said to
-      be "inside" the firewall) and thus protects that network's system
-      resources against threats from the other network (the one that is
-      said to be "outside" the firewall). (See: guard, security
-      gateway.)
-
-      2. (O) {\bf A device or system that controls the flow of traffic
-      between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41,
-      January 2002.
-
-      Tutorial: A firewall typically protects a smaller, secure network
-      (such as a corporate LAN, or even just one host) from a larger
-      network (such as the Internet). The firewall is installed at the
-      point where the networks connect, and the firewall applies policy
-      rules to control traffic that flows in and out of the protected
-      network.
-\end{quote}
-
-\slide{Another definition}
-
-\begin{quote}
-\$ firewall, continued
-
-      {\bf A firewall is not always a single computer.} For example, a
-      firewall may consist of a pair of filtering routers and one or
-      more proxy servers running on one or more bastion hosts, all
-      connected to a small, dedicated LAN (see: buffer zone) between the
-      two routers.
-
-      The external router blocks attacks that use IP to
-      break security (IP address spoofing, source routing, packet
-      fragments), while proxy servers block attacks that would exploit a
-      vulnerability in a higher-layer protocol or service. The internal
-      router blocks traffic from leaving the protected network except
-      through the proxy servers.
-
-      The difficult part is defining criteria by which packets are denied passage through the firewall, because
-      a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic
-      pass both in and out.
-\end{quote}
 
 \slide{The Modern Firewall Infrastructure}
 
@@ -274,27 +213,319 @@ I am also fond of this longer and technical definition from RFC4949:
 
 
 
-\slide{Testing network the legal issues}
 
-{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem. }
+
+\slide{Packet processing in firewalls -- detailed view}
+
+% Picture with pipeline from Juniper SRX
+\hlkimage{20cm}{srx-firewall-flow-based-processing.png}
+Example from Juniper SRX\\ {\footnotesize
+\link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
+
+
+
+\slide{My idea of a firewall -- multiple devices!}
+
+\hlkimage{15cm}{network-layers-2022.pdf}
+
+\slide{Scanning and Attacking}
+
+\begin{quote}
+\item
+\end{quote}
 
 \begin{list2}
-\item Danish law about hacking -- check in your own country/area!
-\item Please check with your legal department, and/or be careful
-\item We {\bf always} contact network between us and the network to be tested
-\item Be good netizens
+\item
 \end{list2}
+
+
+
+\slide{Pressure Points and Scope}
+
+% Drawing showing "network"
+\begin{quote}
+\item
+\end{quote}
+
+\begin{list2}
+\item Scope for me is everything that could adversely affect the network
+\item Common scope IPv4: Link network /28 or /26 and a customer network /24
+\item Common scope IPv6: Link network and a customer network /48
+\end{list2}
+
+
+
+\slide{Prepare for the testing}
+
+\begin{alltt}
+\item
+\end{alltt}
+
+\begin{list2}
+\item Portscan the whole customer range in IPv4
+\item Ask about IPv6 ranges in use, specific subnets and IPv6 addresses\\
+We can guess from traceroute, Nmap test first 100 addresses in each subnet etc. but easier to ask
+\item Portscan the whole linknet - identify provider devices, customer devices, type of device router/firewall
+\end{list2}
+
+
+\slide{Detailed Scope and Plan}
+
+Select a few targets for monitoring and attacks, from the port scans
+
+Best case would be to have:
+\begin{list2}
+\item Ping ICMP allowed to a provider router and customer firewall -- is the connection alive
+\item TCP port with service checks, HTTP being attacked and one not being attacked
+\item UDP port with service check, DNS is a favourite -- ask for localhost/127.0.0.1
+\item Put monitoring on these, a week before testing is nice
+\item Agree on a day or night for testing, inform participants and system owners
+\end{list2}
+
+
+
+
+\slide{IPv6 Testing}
+
+My favourite tools have not supported IPV6, which is a shame.
+
+Two options, modify tools or use newer tools
+
+I truly love Hping3, this tools is very flexible and powerful,
+
+
+\begin{list2}
+\item Fortunately these tools are open source, and I modified Hping to suit my needs, search and replace for inet to inet6, so I could have an IPv6 DDoS testing tool\\
+\link{https://github.com/kramse/hping-2018} Hping-2018, raw support for IPv6 packets
+\item Today I would recommend using MoonGen -- which support IPv6 already\\
+\link{https://github.com/emmericp/MoonGen}
+\end{list2}
+
+\slide{Performing a DDoS test }
+BUT like Nmap and others, how do you perform some task? Listing options show multiple pages ...
+
+
+% Slides from courses about Hping3
+
+\slide{Hint: Save the scope in variables}
 
 Hint: use a variable to keep the target address, carefull enter it and avoid mystyping it later
 \begin{alltt}
 \small
-# export CUST_NET="192.0.2.0/24"
-# nmap -p 1-65535 -A -oA full-scan $CUST_NET
-# export CUST_IP=192.0.2.1
+# export CUST_NET4="192.0.2.0/24"
+# export CUST_NET6="192.0.2.0/24"
+# nmap -p 1-65535 -A -oA full-scan $CUST_NET4
+# export CUST_IP=192.0.2.138
 # date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
 \end{alltt}
 
+Better yet, script it all -- but most likely you will want to repeat specific steps.
 
+\slide{Nmap port sweep for TCP services, full TCP scan }
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-customer-ipv4 $CUST_NET4}
+...
+Nmap scan report for 192.0.2.138
+Host is up (0.00012s latency).
+PORT    STATE  SERVICE
+{\color{darkgreen}80/tcp  open   http}
+443/tcp closed https
+root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-customer-ipv6 $CUST_NET6}
+root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv4 $LINK_NET4}
+root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv6 $LINK_NET6}
+\end{alltt}
+
+I always use:
+\begin{list2}
+\item -Pn -- Scan all IPs, dont use ping or TCP ping to check alive
+\item -A advanced -- perform full TCP connection and grab banner
+\item -p 1-65535 -- full portscan all ports
+\item -oA filename -- Saves output in "all formats" normal, XML, and grepable formats
+\end{list2}
+
+Goal is to enumerate the ports that are allowed through the network.
+
+Note: This command is pretty harmless, if something dies, then it is\\
+\emph{vulnerable to normal traffic} - and should be fixed!
+
+
+
+
+\slide{Nmap port sweep for SNMP port 161/UDP}
+
+Perform some UDP scanning, cannot do full scan, but often SNMP is there, example:
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries nmap -A -sU -p 161 --script "snmp-info" -oA snmp-scan $LINK_NET4}
+Starting Nmap 7.91 ( https://nmap.org ) at 2021-10-26 20:20 CEST
+Nmap scan report for 193.111.162.0
+Host is up (0.00082s latency).
+
+PORT    STATE SERVICE VERSION
+161/udp open  snmp    Cisco SNMP service; ciscoSystems SNMPv3 server
+| snmp-info:
+|   enterprise: ciscoSystems
+|   engineIDFormat: mac
+|   engineIDData: 00:08:4f:xx:yy:zz
+|   snmpEngineBoots: 4
+|_  snmpEngineTime: {\bf 732d07h09m04s}
+Too many fingerprints match this host to give specific OS details
+Network Distance: 6 hops
+\end{alltt}
+
+\vskip 5mm
+\centerline{More reliable to use Nmap script with probes like --script=snmp-info}
+
+\slide{Common DDoS attack types}
+
+A prioritized list of common attack types, like:
+
+\begin{list2}
+\item TCP SYN flooding
+\item TCP other flooding
+\item UDP flooding NTP, etc.
+\item ICMP flooding
+\item Misc - stranger attacks and illegal combinations of flags etc.
+\end{list2}
+
+\slide{hping3 packet generator}
+
+\begin{alltt}\footnotesize
+usage: hping3 host [options]
+  -i  --interval  wait (uX for X microseconds, for example -i u1000)
+      --fast      alias for -i u10000 (10 packets for second)
+      --faster    alias for -i u1000 (100 packets for second)
+      --flood      sent packets as fast as possible. Don't show replies.
+...
+hping3 is fully scriptable using the TCL language, and packets
+can be received and sent via a binary or string representation
+describing the packets.
+\end{alltt}
+
+\begin{list2}
+\item Hping3 packet generator is a very flexible tool to produce simulated DDoS traffic with specific charateristics
+\item Home page: \link{http://www.hping.org/hping3.html}
+\item Source repository \link{https://github.com/antirez/hping}
+\end{list2}
+
+\centerline{My primary DDoS testing tool, easy to get specific rate pps}
+
+\slide{t50 packet generator}
+
+
+\begin{alltt}\footnotesize
+root@cornerstone03:~# t50 -?
+T50 Experimental Mixed Packet Injector Tool 5.4.1
+Originally created by Nelson Brito <nbrito@sekure.org>
+Maintained by Fernando Mercês <fernando@mentebinaria.com.br>
+
+Usage: T50 <host> [/CIDR] [options]
+
+Common Options:
+    --threshold NUM        Threshold of packets to send     (default 1000)
+    --flood                This option supersedes the 'threshold'
+...
+6. Running T50 with '--protocol T50' option, sends ALL protocols sequentially.
+root@cornerstone03:~# t50 -? | wc -l
+264
+\end{alltt}
+
+\begin{list2}
+\item T50 packet generator, another high speed packet generator
+can easily overload most firewalls by producing a randomized traffic with multiple protocols like IPsec, GRE, MIX \\
+home page: \link{http://t50.sourceforge.net/resources.html}
+\end{list2}
+
+\centerline{Extremely fast and breaks most firewalls when flooding, easy 800k pps/400Mbps}
+
+\slide{Process: monitor, attack, break, repeat}
+
+\begin{list2}
+\item Pre-test: Monitoring setup - from multiple points
+\item Pre-test: Perform full Nmap scan of network and ports
+\item Start small, run with delays between packets
+\item Turn up until it breaks, decrease delay - until using \verb+--flood+
+\item Monitor speed of attack on your router interface pps/bandwidth
+\item Give it maximum speed\\
+ \verb+hping3 --flood -1+ and \verb+hping3 --flood -2+
+\item Have a common chat with network operators/customer to talk about symptoms and things observed
+\item Any information resulting from testing is good information
+\end{list2}
+
+
+
+\slide{Running Attacks with hping3}
+
+\begin{alltt}\small
+# export CUST_IP=192.0.2.1
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+ \end{alltt}
+
+\begin{alltt}\small
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+Thu Jan 21 22:37:06 CET 2016
+HPING 192.0.2.1 (eth0 192.0.2.1): S set, 40 headers + 0 data bytes
+
+--- 192.0.2.1 hping statistic ---
+1000000 packets transmitted, 999996 packets received, 1% packet loss
+round-trip min/avg/max = 0.9/7.0/1005.5 ms
+
+real    1m7.438s
+user    0m1.200s
+sys     0m5.444s
+\end{alltt}
+
+\vskip 1cm
+\centerline{Dont forget to do a killall hping3 when done \smiley }
+
+\slide{Recommendations During Test}
+
+\begin{list1}
+\item Run each test for at least 5 minutes, or even 15 minutes\\
+Some attacks require some build-up before resource run out
+\item Take note of any change in response, higher latency, lost probes
+\item If you see a change, then re-test using the same parameters, or a little less first
+\item We want to know the approximate level where it breaks
+\item If you want to change environment, then wait until all scenarios tested
+\end{list1}
+
+
+
+\slide{Before testing: Smokeping}
+
+\hlkimage{15cm}{smokeping-before-testing.png}
+
+\centerline{Before DDoS testing  use Smokeping software}
+
+\slide{Before testing: Pingdom}
+
+\hlkimage{18cm}{forside-pingdom.png}
+
+\centerline{Another external monitoring from Pingdom.com}
+
+
+\slide{}
+
+\begin{quote}
+\item
+\end{quote}
+
+\begin{list2}
+\item
+\end{list2}
+
+
+
+
+\slide{Protection}
+
+\begin{quote}
+\item
+\end{quote}
+
+\begin{list2}
+\item
+\end{list2}
 
 
 
@@ -330,7 +561,24 @@ Hint: use a variable to keep the target address, carefull enter it and avoid mys
 
 
 
+\slide{Interesting findings}
 
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Customers have ISPs which have routers with 1800 days uptime\\
+Seen using SNMP -- so missing critical updates, and we can affect performance
+\item Even big companies still have 1Gbit internet connections, recommend getting 10Gbps
+\item Most customers fail at least 3 scenarios which can be countered \emph{without loss of functionality}\\
+Example we used a stateless filter to only allow TCP traffic towards a /24 with web services\\
+(which don't need or want 10Gbps ICMP/UDP)
+
+\item Ohh we lost our VPN into the environment, ohh the fw console is dead
+\end{list2}
 
 
 
@@ -351,6 +599,9 @@ part - discard early to free resources for later devices to dig deeper
 
 Thank you for coming. I'll be around until friday.
 
+There are multiple resources about DDoS protection with more low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+
 \slide{Further reading}
 
 I have a lot of older presentations, which are open source, copy and find inspiration\\
@@ -365,7 +616,7 @@ Multiple exercises described for performing testing with Nmap, hping3 and t50
 
 One of my favourite books \emph{Network Warrior} by Gary A. Donahue, recommends designing your network without restrictions and then working toward this goal.\\
 {\footnotesize \emph{Network Warrior}, 2nd Edition
-by Gary A. Donahue, May 2011, O'Reilly Media, ISBN: 9781449387860
+by Gary A. Donahue, May 2011, O'Reilly Media, ISBN: 9781449387860}
 
 
 \slide{Concrete advise for enterprise networks}
@@ -482,6 +733,58 @@ Suricata is a high performance Network IDS, IPS and Network Security Monitoring 
 
 Suricata, Zeek og DNS Capture -- it a nice world, use it!\\
 {\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+
+
+\slide{Another definition}
+
+% Remove?
+I am also fond of this longer and technical definition from RFC4949:
+\begin{quote}
+\$ firewall
+
+      1. (I) {\bf An internetwork gateway that restricts data communication
+      traffic to and from one of the connected networks} (the one said to
+      be "inside" the firewall) and thus protects that network's system
+      resources against threats from the other network (the one that is
+      said to be "outside" the firewall). (See: guard, security
+      gateway.)
+
+      2. (O) {\bf A device or system that controls the flow of traffic
+      between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41,
+      January 2002.
+
+      Tutorial: A firewall typically protects a smaller, secure network
+      (such as a corporate LAN, or even just one host) from a larger
+      network (such as the Internet). The firewall is installed at the
+      point where the networks connect, and the firewall applies policy
+      rules to control traffic that flows in and out of the protected
+      network.
+\end{quote}
+
+\slide{Another definition}
+% Remove?
+\begin{quote}
+\$ firewall, continued
+
+      {\bf A firewall is not always a single computer.} For example, a
+      firewall may consist of a pair of filtering routers and one or
+      more proxy servers running on one or more bastion hosts, all
+      connected to a small, dedicated LAN (see: buffer zone) between the
+      two routers.
+
+      The external router blocks attacks that use IP to
+      break security (IP address spoofing, source routing, packet
+      fragments), while proxy servers block attacks that would exploit a
+      vulnerability in a higher-layer protocol or service. The internal
+      router blocks traffic from leaving the protected network except
+      through the proxy servers.
+
+      The difficult part is defining criteria by which packets are denied passage through the firewall, because
+      a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic
+      pass both in and out.
+\end{quote}
+
 
 
 \end{document}

@@ -60,7 +60,7 @@ Note: My main contribution is about performing structured DDoS testing, many gre
 \hlkprofiluk
 
 
-\slide{Testing network the legal issues}
+\slide{Testing networks the legal issues}
 
 {\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem. }
 
@@ -243,15 +243,15 @@ The attacks we are discussing today are:
 
 \slide{Prepare for the testing}
 
-\begin{alltt}
-\item
-\end{alltt}
+
+\hlkimage{6cm}{nmap-logo.png}
 
 \begin{list2}
-\item Portscan the whole hosting range in IPv4
+\item Portscan the whole linknet and hosting range in IPv4
 \item Ask about IPv6 ranges in use, specific subnets and IPv6 addresses\\
 We can guess from traceroute, Nmap test first 100 addresses in each subnet etc. but easier to ask
 \item Portscan the whole linknet - identify provider devices, hosting network devices, type of device router/firewall
+\item Also Thank you Fyodor (Gordon Lyon) and contributors for Nmap!
 \end{list2}
 
 
@@ -299,7 +299,7 @@ Running \verb+man nmap | enscript -o test.ps+ result in 54 pages \smiley
 \item Setup monitoring -- not shown here
 \item Run \verb+hping3+ and \verb+t50+
 \end{enumerate}
-
+\item Expect things to break, investigate, repeat failed scenarios
 \vskip 1cm
 \item BTW we usually schedule this for night time! There WILL be interruptions
 \end{list2}
@@ -323,16 +323,16 @@ Better yet, script it all -- but most likely you will want to repeat specific st
 \slide{Nmap port sweep for TCP services, full TCP scan }
 
 \begin{alltt}\small
-root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-customer-ipv4 $CUST_NET4}
+#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-customer-ipv4 $CUST_NET4}
 ...
 Nmap scan report for 192.0.2.138
 Host is up (0.00012s latency).
 PORT    STATE  SERVICE
 {\color{darkgreen}80/tcp  open   http}
 443/tcp closed https
-root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-customer-ipv6 $CUST_NET6}
-root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv4 $LINK_NET4}
-root@cornerstone:~#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv6 $LINK_NET6}
+#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-customer-ipv6 $CUST_NET6}
+#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv4 $LINK_NET4}
+#{\bfseries  nmap -Pn -A -p 1-65535 -oA full-tcp-linknet-ipv6 $LINK_NET6}
 \end{alltt}
 
 Goal is to enumerate the ports that are allowed through the network.
@@ -359,7 +359,7 @@ I always use these:
 
 Perform some UDP scanning, cannot do full scan, but often SNMP is there, example:
 \begin{alltt}\small
-root@cornerstone:~#{\bfseries nmap -A -sU -p 161 --script "snmp-info" -oA snmp-scan $LINK_NET4}
+#{\bfseries nmap -A -sU -p 161 --script "snmp-info" -oA snmp-scan $LINK_NET4}
 Starting Nmap 7.91 ( https://nmap.org ) at 2021-10-26 20:20 CEST
 Nmap scan report for 193.111.162.0
 Host is up (0.00082s latency).
@@ -417,7 +417,7 @@ describing the packets.
 
 
 \begin{alltt}\footnotesize
-root@cornerstone03:~# t50 -?
+# {\bf t50 -?}
 T50 Experimental Mixed Packet Injector Tool 5.4.1
 Originally created by Nelson Brito <nbrito@sekure.org>
 Maintained by Fernando Mercês <fernando@mentebinaria.com.br>
@@ -429,7 +429,7 @@ Common Options:
     --flood                This option supersedes the 'threshold'
 ...
 6. Running T50 with '--protocol T50' option, sends ALL protocols sequentially.
-root@cornerstone03:~# t50 -? | wc -l
+# {\bf t50 -? | wc -l}
 264
 \end{alltt}
 
@@ -724,21 +724,14 @@ ICMP & Less than 10Mbps & 192.0.2.0/24 \\\hline
 \item Above is a simplified example -- dig deeper into your traffic
 \end{list2}
 
-\slide{Designing the protection -- address families}
+\slide{Designing the protection -- address families \& protocols }
 
-\begin{tabularx}{\textwidth-5cm}{|p{5cm}|p{7cm}|X|} \hline
-{\bf Protocol} & {\bf Services and ports} & {\bf Prefix}\\\hline
-TCP & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
-UDP & 53 & 192.0.2.128/25 \\\hline
-\end{tabularx}
-
-or
-
-\begin{tabularx}{\textwidth-5cm}{|p{5cm}|p{7cm}|X|} \hline
-{\bf Address family} & {\bf Services and ports} & {\bf Prefix}\\\hline
-IPv4 & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
-IPv6 & 53  & 2001:DB8:ABCD:0053::/60 \\\hline
-IPv6 & 80 443 & 2001:DB8:ABCD:1000::/56 \\\hline
+\begin{tabularx}{\textwidth-5cm}{|p{2cm}|p{2cm}|p{7cm}|X|} \hline
+{\bf Address family} & {\bf Protocol} & {\bf Services and ports} & {\bf Prefix}\\\hline
+IPv4 & TCP & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
+IPv4 & UDP & 53 & 192.0.2.128/25 \\\hline
+IPv6 & UDP & 53  & 2001:DB8:ABCD:0053::/60 \\\hline
+IPv6 & TCP & 80 443 & 2001:DB8:ABCD:1000::/56 \\\hline
 \end{tabularx}
 
 \begin{list2}
@@ -961,23 +954,13 @@ Thank you for coming. I'll be around until friday. I will try to gather this on 
 
 
 
-\slide{Further reading}
 
-I have a lot of older presentations, which are open source, copy and find inspiration\\
-Multiple about DDoS protection with more low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
-
-\begin{list2}
-\item HLK DDoS presentations, advice for configuring routers in front of the networks\\
-Multiple exercises described for performing testing with Nmap, hping3 and t50
-\item TROOPERS19 HLK VXLAN recommendations about VXLAN, consider your tunnelled protocols for inspection!
-\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
-\end{list2}
 
 \slide{Concrete advice for enterprise networks}
 
 
 \begin{list2}
+\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
 \item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LAN, WAN, Mail, web, ...
 \item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
 do not allow traffic to and from any new TLD

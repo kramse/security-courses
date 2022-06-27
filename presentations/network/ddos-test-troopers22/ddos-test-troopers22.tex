@@ -644,18 +644,55 @@ I currently use a few cheap Dell devices Precision 3640 Tower / Precision 3240 C
 
 \slide{Running MoonGen}
 
-\begin{alltt}
-
+\begin{alltt}\footnotesize
+root@penguin01:~/projects/MoonGen# export LD_LIBRARY_PATH=/.../MoonGen/build/libmoon/tbb_...
+root@penguin01:~/projects/MoonGen# {\bf ./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -d 192.0.2.138}
+[INFO]  Initializing DPDK. This will take a few seconds...
+EAL: Detected 16 lcore(s)
+[INFO]  Found 1 usable devices:
+   Device 0: 00:25:90:32:9F:F3 (Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection)
+PMD: ixgbe_dev_link_status_print():  Port 0: Link Down
+[INFO]  Device 0 (00:25:90:32:9F:F3) is up: 10000 MBit/s
+[INFO]  Detected an IPv4 address.
+...
+[Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (9999 Mbit/s with framing)
+[Device: id=0] TX: 14.48 Mpps, 7414 Mbit/s (9730 Mbit/s with framing)
+[Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (10000 Mbit/s with framing)
+[Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (10000 Mbit/s with framing)
 \end{alltt}
 
 \begin{list2}
 \item Installing Debian Linux went \emph{okay} -- little bit of disable secure boot, RAID/AHCI settings, ...
 \item After install -- tuning and enabling Hugepages
 \item Then adding a cable between the two ports on a dual card
-\item Clone the repository \link{https://github.com/emmericp/MoonGen}
+\item Clone the repository \link{https://github.com/emmericp/MoonGen} build and run
+\item {\bf Note: the full 14.8Mpps is done using a single core!}
 \end{list2}
 
+\slide{Turn down as you please}
 
+\begin{alltt}\footnotesize
+root@penguin01:~/projects/MoonGen# ./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -r 5000 -d 192.0.2.138
+[INFO]  Initializing DPDK. This will take a few seconds...
+EAL: Detected 16 lcore(s)
+[INFO]  Found 1 usable devices:
+   Device 0: 00:25:90:32:9F:F3 (Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection)
+PMD: ixgbe_dev_link_status_print():  Port 0: Link Down
+[INFO]  Device 0 (00:25:90:32:9F:F3) is up: 10000 MBit/s
+[INFO]  Detected an IPv4 address.
+
+[Device: id=0] TX: 9.77 Mpps, 5000 Mbit/s (6562 Mbit/s with framing)
+[Device: id=0] TX: 9.68 Mpps, 4955 Mbit/s (6504 Mbit/s with framing)
+[Device: id=0] TX: 9.77 Mpps, 5000 Mbit/s (6562 Mbit/s with framing)
+[Device: id=0] TX: 9.77 Mpps, 5000 Mbit/s (6562 Mbit/s with framing)
+\end{alltt}
+
+IPv6 and UDP, replace tcp with udp in example:
+\begin{alltt}\footnotesize
+./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -r 5000 -d 2001:DB8:ABCD:0053::138 -i 2001:DB8:ABCD:0053::1
+
+./build/MoonGen ./examples/l3-udp-flood-hlk.lua 0 -r 5000 -d 2001:DB8:ABCD:0053::138 -i 2001:DB8:ABCD:0053::1
+\end{alltt}
 
 
 \slide{Comparable to real DDoS?}

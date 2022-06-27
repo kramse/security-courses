@@ -311,7 +311,7 @@ Hint: use a variable to keep the target address, carefull enter it and avoid mys
 # export CUST_NET6="192.0.2.0/24"
 # nmap -p 1-65535 -Pn -A -oA full-scan $CUST_NET4
 # export CUST_IP=192.0.2.138
-# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP
 \end{alltt}
 
 Better yet, script it all -- but most likely you will want to repeat specific steps.
@@ -455,11 +455,11 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 
 \begin{alltt}\small
 # export CUST_IP=192.0.2.138
-# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP &
  \end{alltt}
 
 \begin{alltt}\small
-# date;time hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &
+# date;time hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP &
 Thu Jan 21 22:37:06 CET 2022
 HPING 192.0.2.1 (eth0 192.0.2.1): S set, 40 headers + 0 data bytes
 
@@ -514,11 +514,14 @@ A basic test would be:
 
 The minimal run contains at least these:
 \begin{list2}
-\item SYN flood: \verb+hping3 -q -c 1000000  -i u60 -S -p 80  $CUST_IP &+
-\item SYN+ACK: \verb+hping3 -q -c 1000000  -i u60 -S -A -p 80  $CUST_IP &+
+\item SYN flood: \verb+hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP &+
+\item SYN+ACK: \verb+hping3 -q -c 1000000  -i u60 -S -A -p 80 $CUST_IP &+
 \item ICMP flood: \verb+hping3 -q -c 1000000 --flood -1 $CUST_IP &+
 \item UDP flood: \verb+hping3 -q -c 1000000 --flood -2 $CUST_IP &+
+\item Near end of test we also throw in the joker to kill firewalls -- \verb+t50 --flood --protocol T50 $CUST_IP+
 \end{list2}
+
+While testing I use the tool \verb+ifpps+ tool from the Netsniff-ng package \link{http://netsniff-ng.org/} to monitor sending speed, or you can use your router/switch -- Junos \verb+monitor interface+
 
 \slide{Tuning the testing}
 
@@ -608,6 +611,46 @@ Using the built-in option -f for hping
 \centerline{Oh no spoofing attacks work?}
 
 \hlkimage{20cm}{smokeping-3.png}
+
+\slide{Advanced and High Performance Testing}
+
+\begin{list2}
+\item Hping is not the fastest tool, which is fine when we don't want full speed
+\item I can produce millions of packets, but it requires multiple CPU cores with Hping
+\item We DO want to test maximum speed at some point, full 10Gbit and 14.8Million pps (Mpps)
+\item Modern CPUs (for many years) support methods for sending and receiving high speed
+\item Data Plane Development Kit (DPDK) is an open source software project which is very popular in this space \\
+\link{https://en.wikipedia.org/wiki/Data_Plane_Development_Kit}
+\end{list2}
+
+
+\slide{Enter MoonGen and Dedicated Hardware}
+
+\hlkimage{6cm}{dell-precision-3240-compact.jpg}
+
+\begin{list2}
+\item Modern computer with modern CPU and PCI x8 or better --
+I currently use a Dell 3240 Compact
+\item Supported card - I am using the old Intel 82599 based 10Gbit cards
+\item DPDK and software -- I use MoonGen \link{https://github.com/emmericp/MoonGen}
+\item A huge thanks to Paul Emmerich emmericp for programming and publishing his works!
+\item Maybe the easiest way to use DPDK currently -- "Craft all packets in user-controller Lua scripts"
+\end{list2}
+
+
+\slide{Running MoonGen}
+
+\begin{alltt}
+
+\end{alltt}
+
+\begin{list2}
+\item Installing Debian Linux went \emph{okay} -- little bit of disable secure boot, RAID/AHCI settings, ...
+\item After install -- tuning and enabling Hugepages
+\item Then adding a cable between the two ports on a dual card
+\item Clone the repository \link{https://github.com/emmericp/MoonGen}
+\end{list2}
+
 
 
 
@@ -888,13 +931,13 @@ part - discard early to free resources for later devices to dig deeper
 
 Thank you for coming. I'll be around until friday.
 
-There are multiple resources about DDoS protection with more low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+
 
 \slide{Further reading}
 
 I have a lot of older presentations, which are open source, copy and find inspiration\\
-\url{https://github.com/kramse/security-courses}
+Multiple about DDoS protection with more low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
 
 \begin{list2}
 \item HLK DDoS presentations, advice for configuring routers in front of the networks\\
@@ -903,17 +946,11 @@ Multiple exercises described for performing testing with Nmap, hping3 and t50
 \item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
 \end{list2}
 
-One of my favourite books \emph{Network Warrior} by Gary A. Donahue, recommends designing your network without restrictions and then working toward this goal.\\
-{\footnotesize \emph{Network Warrior}, 2nd Edition
-by Gary A. Donahue, May 2011, O'Reilly Media, ISBN: 9781449387860}
-
-
-\slide{Concrete advise for enterprise networks}
+\slide{Concrete advice for enterprise networks}
 
 
 \begin{list2}
-\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LA
-N, WAN, Mail, web, ...
+\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LAN, WAN, Mail, web, ...
 \item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
 do not allow traffic to and from any new TLD
 \item Use only your own DNS servers, create a pair of Unbound servers, \\

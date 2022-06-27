@@ -1,6 +1,8 @@
 \documentclass[Screen16to9,17pt]{foils}
 %\documentclass[16pt,landscape,a4paper,footrule]{foils}
-\usepackage{zencurity-slides-troopers}
+%\usepackage{zencurity-slides-troopers}
+\usepackage{zencurity-slides}
+
 
 % Abstract
 % When connecting to the Internet we immediately receive traffic from unknown sources. We should consider testing our infrastructure using active pentest methods, to verify robustness. This talk will be about doing port scans for discovery of infrastructures and detailed advice how to perform active DDoS simulation to find bottlenecks in the network. The attack tools will be already known tools like Nmap and Hping3 with IPv6 patches. The focus is on the process and experiences doing this over many years.
@@ -54,6 +56,8 @@
 
 {\small
 Note: My main contribution is about performing structured DDoS testing, many great tools exist already}
+
+\hlkprofiluk
 
 
 \slide{Testing network the legal issues}
@@ -629,7 +633,7 @@ Using the built-in option -f for hping
 \hlkimage{6cm}{dell-precision-3240-compact.jpg}
 
 \begin{list2}
-\item Modern computer with modern CPU and PCI x8 or better\\
+\item Modern computer with modern CPU and PCIe x8 or better\\
 I currently use a few cheap Dell devices Precision 3640 Tower / Precision 3240 Compact (not a recommendation)
 \item Supported card - I am using the old Intel 82599 based 10Gbit cards
 \item DPDK and software -- I use MoonGen \link{https://github.com/emmericp/MoonGen}
@@ -703,25 +707,45 @@ I also start at the bottom, and work my way up -- while an attacker may begin at
 \end{list2}
 
 
-\slide{Designing the protection}
+\slide{Designing the protection -- bandwidth and rate limit}
 
-\begin{tabularx}{\textwidth-5cm}{|p{3cm}|p{7cm}|X|} \hline
-{\bf Address family} & {\bf Services and ports} & {\bf Prefix}\\\hline
-TCP & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
-UDP & 53 & 192.0.2.128/25 \\\hline
-\end{tabularx}
-
-\begin{tabularx}{\textwidth-5cm}{|p{3cm}|p{7cm}|X|} \hline
+\begin{tabularx}{\textwidth-5cm}{|p{5cm}|p{7cm}|X|} \hline
 {\bf Protocol} & {\bf Mbps} & {\bf Prefix}\\\hline
 TCP & Up to full bandwidth 10Gbps & 192.0.2.0/25 \\\hline
 UDP & Less than 1Gbps & 192.0.2.128/25 \\\hline
 ICMP & Less than 10Mbps & 192.0.2.0/24 \\\hline
 \end{tabularx}
 
+
 \begin{list2}
 \item Create an address plan for your services
 \item Monitor your traffic -- how much UDP and TCP do you have, roughly
+
+\item Above is a simplified example -- dig deeper into your traffic
+\end{list2}
+
+\slide{Designing the protection -- address families}
+
+\begin{tabularx}{\textwidth-5cm}{|p{5cm}|p{7cm}|X|} \hline
+{\bf Protocol} & {\bf Services and ports} & {\bf Prefix}\\\hline
+TCP & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
+UDP & 53 & 192.0.2.128/25 \\\hline
+\end{tabularx}
+
+or
+
+\begin{tabularx}{\textwidth-5cm}{|p{5cm}|p{7cm}|X|} \hline
+{\bf Address family} & {\bf Services and ports} & {\bf Prefix}\\\hline
+IPv4 & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
+IPv6 & 53  & 2001:DB8:ABCD:0053::/60 \\\hline
+IPv6 & 80 443 & 2001:DB8:ABCD:1000::/56 \\\hline
+\end{tabularx}
+
+\begin{list2}
 \item Direction is also very important -- servers that never initiate connections have fewer requirements
+\item How much traffic do you have that uses IPv6 yet? Should an IPv6 DDoS take up all resources?
+\item Maybe let IPv4 only use a part, so at least some customers can visit using IPv6?
+\item Maybe you can do an allow list for allocated networks, since not all is used yet
 \end{list2}
 
 
@@ -925,16 +949,15 @@ Example we used a stateless filter to only allow TCP traffic towards a /24 with 
 ~
 \begin{list2}
 \item You really should try testing, and investigate your existing devices
-all of them, RTFM, upgrade firmware
-\item Choose which devices does which
-part - discard early to free resources for later devices to dig deeper
+all of them
+\item Choose which devices does which part -- discard early to free resources for later devices to dig deeper
 \item This is just one small part of your security posture, extra slides has my take on enterprise network security
 \end{list2}
 
 \myquestionspage
 
 
-Thank you for coming. I'll be around until friday.
+Thank you for coming. I'll be around until friday. I will try to gather this on a project web site \link{https://penguinping.org/}
 
 
 
@@ -1067,7 +1090,7 @@ Suricata, Zeek og DNS Capture -- it a nice world, use it!\\
 
 
 
-\slide{Another definition}
+\slide{Firewall -- Another definition}
 
 % Remove?
 I am also fond of this longer and technical definition from RFC4949:
@@ -1093,7 +1116,7 @@ I am also fond of this longer and technical definition from RFC4949:
       network.
 \end{quote}
 
-\slide{Another definition}
+\slide{Firewall -- Another definition}
 % Remove?
 \begin{quote}
 \$ firewall, continued

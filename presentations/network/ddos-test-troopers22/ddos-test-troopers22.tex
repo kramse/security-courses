@@ -308,11 +308,11 @@ Running \verb+man nmap | enscript -o test.ps+ result in 54 pages \smiley
 
 \slide{Hint: Save the scope in variables}
 
-Hint: use a variable to keep the target address, carefull enter it and avoid mystyping it later
+Hint: use a variable to keep the target address, carefully enter it and avoid mystyping it later
 \begin{alltt}
 \small
 # export CUST_NET4="192.0.2.0/24"
-# export CUST_NET6="192.0.2.0/24"
+# export CUST_NET6="2001:DB8:ABCD:1000::/64"
 # nmap -p 1-65535 -Pn -A -oA full-scan $CUST_NET4
 # export CUST_IP=192.0.2.138
 # date;time hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP
@@ -460,10 +460,6 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 \begin{alltt}\small
 # export CUST_IP=192.0.2.138
 # date;time hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP &
- \end{alltt}
-
-\begin{alltt}\small
-# date;time hping3 -q -c 1000000  -i u60 -S -p 80 $CUST_IP &
 Thu Jan 21 22:37:06 CET 2022
 HPING 192.0.2.1 (eth0 192.0.2.1): S set, 40 headers + 0 data bytes
 
@@ -485,10 +481,10 @@ sys     0m5.444s
 
 \begin{list2}
 \item Run each test for at least 5 minutes, or even 15 minutes\\
-Some attacks require some build-up before resource run out
+{\bf Some attacks require some build-up before resource run out}
 \item Take note of any change in response, higher latency, lost probes
-\item If you see a change, then re-test using the same parameters, or a little less first
-\item We want to know the approximate level where it breaks
+\item If you see a change, then {\bf re-test using the same parameters}, or a little less first
+\item We want to know the {\bf approximate level where it breaks}
 \item {\bf If you want to change environment, then wait until all scenarios are tested}
 \item Keep a log handy, write notes and start the session with \verb+script ddos-date.log+
 \item Check once in a while if you have some process running, using \verb+ps auxw | grep hping3+
@@ -538,8 +534,9 @@ Further hints:
 \item TCP testing use a port which is allowed through the network, often 80/443
 \item Focus on attacks which are hard to block, example TCP SYN must be allowed in
 \item Also if you found devices like routers in front of environment\\
-\verb+hping3 -q -c 1000000  -i u60 -S -p 22 $ROUTER_IP+\\
-\verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+
+\verb+hping3 -q -c 1000000  -i u60 -S -p 22 $ROUTER_IP+ Secure Shell\\
+\verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+ BGP routing protocol\\
+(Hint: routers should use router protection filters!)
 \end{list2}
 
 I start using a single test-case at a time, but later run multiple in parallel
@@ -553,8 +550,10 @@ Two options, modify tools or use newer tools
 \begin{list2}
 \item Fortunately these tools are open source,
 
-\item I truly love Hping3, this tools is very flexible and powerful, so I modified Hping to suit my needs, basically search and replace for inet to inet6, so I could have an IPv6 DDoS testing tool\\
-\link{https://github.com/kramse/hping-2018} Hping-2018, rough support for IPv6 packets
+\item I truly love Hping, this tools is very flexible and powerful, so I modified it to suit my needs, basically search and replace for inet to inet6, so I could have an IPv6 DDoS testing tool\\
+\link{https://github.com/kramse/hping-2018} Hping-2018, rough support for IPv6 packets\\
+\verb+sudo ./hping3 --inet6 -I eth0 -D -c 1 -p 80 www.kramse.org+
+
 \item Today I would recommend using MoonGen -- which support IPv6 already\\
 \link{https://github.com/emmericp/MoonGen}
 \end{list2}
@@ -564,7 +563,8 @@ Two options, modify tools or use newer tools
 
 Spoofed packets src=dst=target \smiley
 
-Flooding with spoofed packet source, within hosting range
+Flooding with spoofed packet source, within hosting range, \\
+may result in your {\bf single packet} returning answer to another inside network + ARP traffic
 
 \begin{alltt}\small
 
@@ -645,7 +645,6 @@ I currently use a few cheap Dell devices Precision 3640 Tower / Precision 3240 C
 \slide{Running MoonGen}
 
 \begin{alltt}\footnotesize
-root@penguin01:~/projects/MoonGen# export LD_LIBRARY_PATH=/.../MoonGen/build/libmoon/tbb_...
 root@penguin01:~/projects/MoonGen# {\bf ./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -d 192.0.2.138}
 [INFO]  Initializing DPDK. This will take a few seconds...
 EAL: Detected 16 lcore(s)
@@ -657,7 +656,6 @@ PMD: ixgbe_dev_link_status_print():  Port 0: Link Down
 ...
 [Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (9999 Mbit/s with framing)
 [Device: id=0] TX: 14.48 Mpps, 7414 Mbit/s (9730 Mbit/s with framing)
-[Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (10000 Mbit/s with framing)
 [Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (10000 Mbit/s with framing)
 \end{alltt}
 

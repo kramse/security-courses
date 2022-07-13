@@ -1,0 +1,72 @@
+
+% http://texample.net/tikz/examples/epc-flow-charts/
+
+% https://www.overleaf.com/learn/latex/LaTeX_Graphics_using_TikZ:_A_Tutorial_for_Beginners_(Part_3)%E2%80%94Creating_Flowcharts
+
+ % Use previously defined 'state' as layout (see above)
+ % use tabular for content to get columns/rows
+ % parbox to limit width of the listing
+ \node[state,text width=\boxwidth,minimum height=\boxheight] (MEASURE)
+ {\begin{tabular}{l}
+ {\bf Measure}\\
+    Enable logging\\
+   Setup graphs\\
+   Service monitoring
+ \end{tabular}};
+
+ %
+ \node[state,    	% layout (defined above)
+  text width=\boxwidth, 	% max text width
+  minimum height=\boxheight,
+  %yshift=2cm, 		% move 2cm in y
+  right of=MEASURE, 	% Position is to the right of QUERY
+  node distance=\boxspace, 	% distance to First node
+  anchor=center] (STRATEGY) 	% posistion relative to the center of the 'box'
+ {%
+ \begin{tabular}{l}
+ {\bf Strategy}\\
+ Dependencies\\
+ Implementation plan\\
+ Inform others
+ \end{tabular}};
+
+ % STATE QUERYREP
+ \node[state,
+  below of=STRATEGY,
+  yshift=-\boxheight,
+  anchor=center,
+  minimum height=\boxheight,
+  text width=\boxwidth] (EXECUTE)
+ {%
+ \begin{tabular}{l}
+ {\bf Execute}\\
+  Make Changes\\
+  Revert bad changes\\
+  Timestamp changes
+ \end{tabular}
+ };
+
+ % STATE EPC
+ \node[state,
+  right of=STRATEGY,
+  text width=\boxwidth, 	% max text width
+  minimum height=\boxheight,
+  node distance=\boxspace,
+  anchor=center] (SUCCESS)
+ {%
+ \begin{tabular}{l}
+ {\bf Verify Success}\\
+  Report to others\\
+  Policy Compliance\\
+  Result achieved?
+ \end{tabular}
+ };
+
+ % draw the paths and and print some Text below/above the graph
+ \path
+ (MEASURE) 	edge node[anchor=north,above]{Identify} (STRATEGY)
+ (MEASURE) 	edge node[anchor=south,below]{problems} (STRATEGY)
+ (STRATEGY) edge node[anchor=north,above]{Review }   (SUCCESS)
+ (STRATEGY) edge  node[anchor=right,left]{Planning} (EXECUTE)
+ (EXECUTE)  edge[loop right]    node[anchor=right,left,text width=27mm]{multiple phases} (EXECUTE)
+ (SUCCESS)   edge[bend left=110] node[anchor=south,below]{Improve Efficiency}  (MEASURE);

@@ -10,9 +10,8 @@
 {13. Running a Modern Network}
 {Communication and Network Security \the\year}
 
+
 \slide{Plan for today}
-
-
 
 \begin{list1}
 \item Subjects
@@ -38,7 +37,7 @@
 
 \begin{list1}
 \item Browse\\
-\link{https://www.manrs.org/}\\
+{\small\link{https://www.manrs.org/}}\\
 and read this\\ {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
 \item Browse / skim this:\\
 {\small\link{https://tools.ietf.org/pdf/bcp38.pdf}}\\
@@ -77,13 +76,12 @@ anti-patterns for networking
 \begin{list1}
 \item Hvad kan man gøre for at få bedre netværkssikkerhed?
 \begin{list2}
-\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Bruge switche -- managed switche med monitorering, logning og administration
 \item Opdele med firewall til flere DMZ zoner for at holde
       udsatte servere adskilt fra hinanden, det interne netværk og
       Internet
 \item Overvåge, læse logs og reagere på hændelser
 \end{list2}
-\item Husk du skal også kunne opdatere dine servere
 \end{list1}
 
 \slide{Basic Network Security Pattern Isolate in VLANs}
@@ -153,12 +151,12 @@ anti-patterns for networking
 \item Lav nogle simple rapporter til at starte med
 \end{list2}
 \item Gør netværket mere sikkert før du lytter på hele netværket
-\item Brug tcpdump/Ethereal til at se på trafik, lær IP pakker at
+\item Brug tcpdump/Wireshark til at se på trafik, lær IP pakker at
   kende
-\item Brug Suricata og Zeek til at evaluere
+\item Brug Suricata og Zeek til at opsamle og evaluere trafikken -- baseline af netværket
 \begin{list2}
 \item Husk at man kan starte med vilkårligt værktøj og senere skifte til andre
-produkter
+produkter, evt. kommercielle
 \item Praktisk erfaring med eget netværk er nødvendigt og værdifuldt
 \end{list2}
 \end{list1}
@@ -241,21 +239,6 @@ produkter
 \end{list1}
 
 
-\slide{TFTP Trivial File Transfer Protocol}
-
-\begin{list1}
-\item Trivial File Transfer Protocol - uautentificerede filoverførsler
-\item De bruges især til:
-  \begin{list2}
-\item TFTP bruges til boot af netværksklienter uden egen harddisk
-\item TFTP benytter UDP og er derfor ikke garanteret at data overføres korrekt
-  \end{list2}
-\item TFTP sender alt i klartekst, hverken password \\
-{\bfseries USER brugernavn} eller \\
-{\bfseries PASS hemmeligt-kodeord}!
-\end{list1}
-Still used for configuration files and firmwares
-
 \slide{FTP File Transfer Protocol}
 
 \begin{list1}
@@ -301,16 +284,10 @@ ud på internet.
         $fwcmd6 add pass ipv6-icmp from any to any icmptypes 135,136}
 \end{alltt}
 
-<<<<<<< HEAD
-\begin{list1}
-\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net
-\end{list1}
-=======
 \begin{list2}
 \item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net
 \item Eksemplet viser ICMPv6 -- hvor nogle NDP pakker er kritiske at have tilladte
 \end{list2}
->>>>>>> a6631f0b42a16ae3df36e2a2f63070d5e3bae453
 
 \slide{ICMPv4 beskedtyper}
 
@@ -365,11 +342,12 @@ Brug en caching nameserver, således at det kun er den som kan lave DNS opslag u
 
 \slide{Anti-pattern WLAN forbundet direkte til LAN}
 
-\hlkimage{10cm}{images/wlan-accesspoint-2.pdf}
+\hlkimage{8cm}{images/wlan-accesspoint-2.pdf}
 
 \begin{list1}
 \item WLAN AP'er forbundet direkte til LAN giver risiko for at sikkerheden brydes, fordi AP falder tilbage på den usikre standardkonfiguration
 \item Ved at sætte WLAN direkte på LAN risikerer man at eksterne får direkte adgang
+\item Tegningen skal forstås som den logiske kobliung. Typisk placeres APs ofte i eget VLAN, og dermed adskilt fra LAN
 \end{list1}
 
 
@@ -380,7 +358,7 @@ Brug en caching nameserver, således at det kun er den som kan lave DNS opslag u
 \begin{list1}
 \item Mange systemer administreres fejlagtigt ved brug af
   root-login eller andet delt administrator login
-\item Undgå direkte root-login
+\item Undgå direkte root-login eller administrator
 \item Insister på \verb+sudo+ eller \verb+su+
 \item Hvorfor?
 \begin{list2}
@@ -393,11 +371,12 @@ Brug en caching nameserver, således at det kun er den som kan lave DNS opslag u
 
 \slide{Centralized management SSH, Jump hosts}
 
+\hlkimage{7cm}{images/soekris-siig-4S-3.jpg}
+
 \begin{quote}
 A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
 \end{quote}
-
-\link{https://en.wikipedia.org/wiki/Jump_server}
+Source: \link{https://en.wikipedia.org/wiki/Jump_server}
 
 
 
@@ -420,11 +399,12 @@ A jump server, jump host or jumpbox is a computer on a network used to access an
 
 \slide{Hosting og internet-udbydere}
 
-\hlkimage{17cm}{network-bgp-asn.png}
+\hlkimage{15cm}{network-bgp-asn.png}
 
 \begin{list2}
 \item Data krydser mange internetudbydere
 \item Det er stadig muligt at spoofe mange steder fra
+\item Din sikkerhed er afhængig af andres sikkerhed
 \end{list2}
 
 \slide{Expected Actions in MANRS for Network Operators}
@@ -532,8 +512,22 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 
 \slide{Testing security, evaluating and reporting}
 
+Make incremental changes
 
-\slide{DDoS protection and flooding}
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',scale=0.9, transform shape]
+\newlength{\boxwidth}
+\setlength{\boxwidth}{0.21\paperwidth}
+\newlength{\boxheight}
+\setlength{\boxheight}{0.25\paperheight}
+\newlength{\boxspace}
+\setlength{\boxspace}{10cm}
+\input{incremental-changes-flowchart.tikz}
+\end{tikzpicture}
+\end{center}
+
+
+\slide{Example: DDoS protection and flooding}
 
 \hlkimage{12cm}{overview-routing-customer-2015.pdf}
 

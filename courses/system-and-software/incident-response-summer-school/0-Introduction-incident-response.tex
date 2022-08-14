@@ -1,0 +1,572 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{introduction-incident-response-exercises}
+\selectlanguage{english}
+
+% KEA Summer School in Cyber Security 2022
+% Intro to Incident Response - Track B
+%13:00-16:00
+% Introduction to incident response. what is an incident and a log? We will discuss what happens when someone visits your network. Starting from initial compromise we will demonstrate how we can identify, process and handle incidents in networks. Using example tools from the Elastic stack we will present deep dives into network data, DNS, introduce computer forensics and how preparation and a structured method will enable companies to handle incidents more effeciently.
+
+% From email to Birger 2022-05-16
+
+
+\begin{document}
+
+\mytitlepage
+{Intro to Incident Response - Track B}
+{Summer School in Cyber Security 2022}
+
+\hlkprofiluk
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{quote}
+Introduction to incident response. what is an incident and a log? We will discuss what happens when someone visits your network. Starting from initial compromise we will demonstrate how we can identify, process and handle incidents in networks. Using example tools from the Elastic stack we will present deep dives into network data, DNS, introduce computer forensics and how preparation and a structured method will enable companies to handle incidents more effeciently.
+\end{quote}
+
+Photo by Thomas Galler on Unsplash
+
+\slide{Plan for today}
+
+\begin{list1}
+\item 13:00 - 13:45 Introduction and basics
+\item 13:45 - 14:00 -- 15 min do exercises / break
+\item 14:00 - 14:45
+\item 14:45 - 14:00 -- 15 min do exercises / break
+\item 15:00 - 15:30
+\item 15:30 - 15:45 -- Last exercise
+\item 15:45 - 16:00 -- Summary and conclusions
+\end{list1}
+
+All slides are in english, exercises in Danish!
+
+{\bf Hint: Don't panic if the plan breaks!}
+
+\slide{Introduction: Attack overview}
+
+\hlkimage{20cm}{sicherheitstacho.png}
+Source: \link{http://www.sicherheitstacho.eu/}
+
+
+\slide{DDoS Attacks Still a Problem}
+
+\hlkimage{13cm}{DDos_Attack_in_2021_arbor.png}
+
+Security attacks and DDoS is very much in the media\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
+
+\slide{Ransomware Attacks are Common}
+
+
+\hlkimage{13cm}{ransomware_arbor.png}
+
+Make sure to backup your data! Test your backups!\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
+
+\slide{What can we do? -- Good security}
+
+\hlkimage{12cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\item Good security comes from structured work
+\end{list1}
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+
+\slide{Work together}
+
+\hlkimage{10cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+\slide{My daily job -- Security engineering a job role}
+
+\begin{alltt}\footnotesize
+On any given day, you may be challenged to:
+        Create new ways to solve existing production security issues
+        Configure and install firewalls and intrusion detection systems
+        Perform vulnerability testing, risk analyses and security assessments
+        Develop automation scripts to handle and track incidents
+        Investigate intrusion incidents, conduct forensic investigations and incident responses
+        Collaborate with colleagues on authentication, authorization and encryption solutions
+        Evaluate new technologies and processes that enhance security capabilities
+        Test security solutions using industry standard analysis criteria
+        Deliver technical reports and formal papers on test findings
+        Respond to information security issues during each stage of a project’s lifecycle
+        Supervise changes in software, hardware, facilities, telecommunications and user needs
+        Define, implement and maintain corporate security policies
+        Analyze and advise on new security technologies and program conformance
+        Recommend modifications in legal, technical and regulatory areas that affect IT security
+\end{alltt}
+
+Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
+also
+\url{https://en.wikipedia.org/wiki/Security_engineering}
+
+
+
+
+\slide{Risk management defined}
+
+\hlkimage{20cm}{shon-harris-risk-management.png}
+
+Source: Shon Harris \emph{CISSP All-in-One Exam Guide}
+
+
+
+\slide{Security Controls and Frameworks}
+
+\begin{list1}
+\item Multiple exist
+\vskip 1cm
+\begin{list2}
+\item CIS controls Center for Internet Security (CIS) \link{https://www.cisecurity.org}
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019
+\item NIST Cybersecurity Framework (CSF)\\
+Framework for Improving
+Critical Infrastructure Cybersecurity\\ \link{https://www.nist.gov/cyberframework}\\
+\link{https://csrc.nist.gov/publications/sp800} - SP800 series
+\item National Security Agency (NSA)\\
+\link{https://www.nsa.gov/Research/}
+\item NSA security configuration guides\\
+\link{https://apps.nsa.gov/iaarchive/library/ia-guidance/security-configuration/}
+\item Information Systems Audit and Control Association (ISACA)\\
+\link{http://www.isaca.org/Knowledge-Center/}
+\end{list2}
+\end{list1}
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  ― Antoine de Saint-Exupéry
+\end{quote}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+\slide{Kom igang med CIS}
+
+\begin{quote}
+CIS-kontrollerne består af 20 praktiske, pragmatiske kontroller, som er målbare og med direkte henvisning til, hvordan de implementeres samt forslag til, hvilke KPI’er der bør opstilles for målinger.
+
+Forskellen på CIS-kontrollerne og fx ISO27001 er, at du ikke kan blive certificeret efter CIS, men til gengæld opdateres CIS-kontrollerne løbende, og de indeholder prioriterede lister af, hvad du i praksis skal gøre for din cybersikkerhed. Det australske forsvar har fx vist, at hvis man implementerer de første fire kontroller fuldt ud, kan man mitigere op mod 90+\% af alt malware.
+\end{quote}
+
+Dansk artikel fra Deloitte, version 7 men version 8 er ude
+\link{https://www2.deloitte.com/dk/da/pages/risk/articles/vi-stiller-skarpt-pa-cis-kontroller.html}
+
+
+\slide{Overview Diploma in IT-security}
+
+\hlkimage{14cm}{kea-diplom-oversigt.png}
+
+Some of this comes from courses in Diploma in IT-Security / professionsbachelor i IT-Sikkerhed (Pba ITS)
+\slide{Course Data}
+
+\hlkimage{12cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+
+Specifically the courses\\
+{\Large\bf Course: SIEM and Log Analysis (5 ECTS)}
+
+
+\slide{Course Description}
+
+From: STUDIEORDNING Diplomuddannelse i it-sikkerhed August 2018\\
+VF4 SIEM og log analyse (5 ECTS)
+
+Indhold\\
+Den studerende lærer om Security information and event management (SIEM), herunder
+hvordan man kan indsamle, administrere, og søge i sikkerhedshændelsesdata i et større it
+system (komplekse systemer, IOT deployments, corporate IT).
+
+{\bf Læringsmål:}
+Viden -- Den studerende har viden om og forståelse for:
+\begin{list2}
+\item Typiske SIEM arkitekturer
+\item Standard logformater og logtyper for standard systemer og komponenter
+\item Typiske SIEM produkter
+\item Juridiske krav til logning og bevarelse af data ifb. forensic analyse
+\end{list2}
+
+{\bf Færdigheder -- Den studerende kan:}
+\begin{list2}
+\item Lave en baseline-analyse af en infrastruktur
+\item Bruge log-data til at identificere infrastrukturkomponenter
+\item Bruge et værktøj til at analysere system log-data og netværkstrafik til at finde sikkerhedshændelser
+\item Udvikle "dashboards" og alarmer der viser tegn på hændelser
+\end{list2}
+
+{\bf Kompetencer -- Den studerende kan:}
+\begin{list2}
+\item Designe og implementere en SIEM løsning på tværs af diverse produkter
+\item Træffe beslutninger om hvilke data der skal indsamles i en givne situation
+\item Identificerer fejl i logopsamlingen
+\item Deltage i drøftelser på et praktisk og strategisk niveau i forhold til implementering af
+logmanagement/SIEM
+\end{list2}
+
+Final word is the Studieordning which can be downloaded from\\
+{\footnotesize \link{https://kompetence.kea.dk/uddannelser/it-digitalt/diplom-i-it-sikkerhed}\\
+\link{Studieordning_for_Diplomuddannelsen_i_IT-sikkerhed_Aug_2018.pdf}}
+
+
+\slide{Some keywords relating to this course}
+
+%\hlkimage{}{}
+
+\begin{quote}\large
+    Incident Response Logs Events
+
+Analysis Visualization Dashboards Data-driven Security
+
+SIEM architectures frameworks acquire process Zeek
+
+log formats data types databases JSON XML Security Operations Center
+
+(Incident Response) Intelligence R and Python fundamentals
+
+Practical application Building Infosec \hskip 1cm Ansible Playbooks
+
+Collect, mine, organize, and analyze relevant data sources
+
+Sort data create reporting and monitoring
+
+IP-address Netflow nfdump Elasticsearch real-world knowledge
+\end{quote}
+
+\begin{list2}
+\item Lots of new terms, technologies and tools
+\end{list2}
+
+
+\slide{Primary literature}
+
+\hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
+Primary literature -- used in courses:
+\begin{list2}
+\item \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+\item \emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405 - short CIP
+\item \emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts ISBN: 9781491934944 - short IDI
+\item \emph{Security Operations Center: Building, Operating, and Maintaining your SOC}\\
+ISBN: 9780134052014 Joseph Muniz - short SOC
+\end{list2}
+
+
+\slide{Data-Driven Security: Analysis, Visualization and Dashboards}
+
+\hlkimage{6cm}{book-data-driven-security.jpg}
+\emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+Our main book for this course. We will read a lot from this one.
+
+\slide{Crafting the InfoSec Playbook}
+
+\hlkimage{6cm}{book-crafting-infosec-playbook.jpg}
+
+\emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405 - short CIP
+
+
+\slide{Intelligence-Driven Incident Response}
+
+\hlkimage{6cm}{book-intelligence-driven-incident-response.jpg}
+
+\emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts ISBN: 9781491934944 - short IDI
+
+
+
+\slide{Security Operations Center}
+
+\hlkimage{6cm}{ book-security-operations-center-cisco.jpg}
+
+\emph{Security Operations Center: Building, Operating, and Maintaining your SOC}\\
+ISBN: 9780134052014 Joseph Muniz - short SOC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Summary and conclusion
+
+
+\slide{Konklusion: Kaos og panik}
+
+\hlkimage{5cm}{dont-panic.png}
+\begin{list2}
+\item Vi startede godt, struktureret arbejde!
+\item Vi blev afbrudt ... og det sker tit
+\item Vi blev ikke færdige! Det bliver man sjældent i virkeligheden
+\item Microsoft alene frigiver opdateringer for mere end 100 sårbarheder om måneden
+\item Al software har sikkerhedsproblemer, og skal opdateres!
+\end{list2}
+
+
+\slide{Hændelseslog og Økonomi}
+
+Tag et stykke papir eller en computer
+\begin{list2}
+\item Vi er blevet afbrudt i vores vigtige arbejde med CIS kontroller
+\item Vi skal udfylde en Hændelseslog og der er nogle økonomiske aspekter
+\item Når der sker en sikkerhedshændelse skal den helst håndteres effektivt
+\item Hvis man ikke har sikkerhedsprocedurer på plads bliver det typisk længerevarende og dyrere
+\end{list2}
+
+\slide{March 2021: ProxyLogon/ProxyShell CVE-2021-26855 CVSS:3.0 9.1 / 8.4}
+\begin{quote}
+In March 2021, both Microsoft and IT Professionals had a major headache in the form of an Exchange zero-day commonly known as ProxyLogon. The vulnerability, widely considered the {\bf most critical to ever hit Microsoft Exchange}, was quickly exploited in the wild by suspected state-sponsored threat actors, with US government and military systems identified as the most targeted sectors. {\bf Ransomware variants such as DoejoCrypt were soon actively exploiting unpatched Exchange instances}, attempting to monetise the vulnerability.
+
+A follow-up exploit, dubbed ProxyShell, was evolutionary in nature and targeted on-premise Client Access Servers (CAS) in {\bf all supported versions of Exchange Server.} Due to the {\bf remotely accessible nature of Exchange CAS, any unpatched instances would be vulnerable to Remote Code Execution. High profile victims included the European Banking Authority and the Norwegian Parliament.}
+\end{quote}
+Source - for this description:\\
+\link{https://chessict.co.uk/resources/blog/posts/2022/january/2021-top-security-vulnerabilities/}
+
+
+\slide{ProxyLogon CVE-2021-26855 CVSS:3.0 9.1 / 8.4}
+
+\begin{quote}
+ProxyLogon is the formally generic name for CVE-2021-26855, a vulnerability on Microsoft Exchange Server that allows an attacker bypassing the authentication and impersonating as the admin. We have also chained this bug with another post-auth arbitrary-file-write vulnerability, CVE-2021-27065, to get code execution. All affected components are vulnerable by default!
+
+As a result, {\bf an unauthenticated attacker can execute arbitrary commands on Microsoft Exchange Server through an only opened 443 port!}
+\end{quote}
+
+Sources: \link{https://proxylogon.com/}\\
+\link{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-26855}
+
+
+
+\slide{Incident Handling: ProxyLogon}
+
+Hvis jeres gruppe har implementeret CIS Control 2: Inventory and Control of Software Assets, noter følgende:
+\begin{list2}
+\item Hændelseslog: Marts Proxylogin - nem oprydning, ingen nedetid
+\item Økonomi: Marts Proxylogin oprydning EUR 3.000
+\end{list2}
+
+
+Hvis jeres gruppe *IKKE* har implementeret CIS Control 2: Inventory and Control of Software Assets, noter følgende:
+\begin{list2}
+\item Hændelseslog: Marts Proxylogin -- mailservere inficeret 3 steder, ekstern hjælp nødvendig, nedetid 2 dage
+\item Økonomi: Marts Proxylogin oprydning EUR 3.000
+\item Økonomi: Marts ProxyLogon hændelseshåndtering ekstern hjælp EUR 10.000
+\end{list2}
+
+
+
+\slide{June 2021: PrintNightmare CVE-2021-34527 CVSS:3.0 8.8 / 8.2}
+\begin{quote} \small
+In June, Microsoft released a critical security update to address weaknesses in the Printer Spooler service on Windows desktop and server platforms. Unfortunately, it was released out-of-band outside of the standard patch Tuesdays due to the severity. Microsoft even released patches for Windows 7, an supported operating system that does not normally receive updates.
+
+Initially categorised by Microsoft as a local privilege escalation on Windows, security researchers subsequently identified an additional {\bf Remote Code Execution (RCE)} vector resulting in an updated advisory from Microsoft. As ever, the ability to test and deploy patches in a time-sensitive manner is key to minimising the impact of such vulnerabilities.
+
+Additionally, PrintNightmare had the additional horror factor of dropping during the {\bf summer holiday season in the northern hemisphere}. Our consultants continue to see systems vulnerable to PrintNightmare on client engagements, which can be trivially leveraged to obtain privilege escalation on unpatched Windows systems.
+\end{quote}
+
+Source - for this description:\\
+\link{https://chessict.co.uk/resources/blog/posts/2022/january/2021-top-security-vulnerabilities/}
+
+See also \link{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34527}
+
+
+\slide{Incident Handling: PrintNightmare}
+
+Hvis jeres gruppe har implementeret CIS Control 2: Inventory and Control of Software Assets, noter følgende:
+\begin{list2}
+\item Hændelseslog: Juni PrintNightmare - nem oprydning, ingen nedetid
+\item Økonomi: Juni PrintNightmare oprydning EUR 3.000
+\end{list2}
+
+
+Hvis jeres gruppe *IKKE* har implementeret CIS Control 2: Inventory and Control of Software Assets, noter følgende:
+\begin{list2}
+\item Hændelseslog: Juni PrintNightmare -- servere inficeret, geninstallation nødvendig, nedetid 3 dage
+\item Økonomi: Juni PrintNightmare oprydning EUR 3.000
+\item Økonomi: Juni PrintNightmare hændelseshåndtering ekstern hjælp EUR 10.000
+\end{list2}
+
+Da denne skete i ferien er der desværre også brugt mere tid på at håndtere sagen, alle sætter ekstra EUR 3.000 på listen med teksten "Grundet ferie og manglende ressourcer 3.000"
+
+
+
+\slide{September 2021: ForcedEntry}
+\begin{quote}\small
+{\bf Apple didn’t escape the wrath of critical zero-day vulnerabilities in 2021}, with ForcedEntry made public in September. The concern was not just that it could escape in-built sandbox controls and be leveraged against {\bf almost all iOS versions at the time}, but also that it was in the form of a {\bf one-click exploit meaning that no user interaction was needed}. A threat actor would simply require the target victim’s phone number or email address to send a weaponised GIF. {\bf Furthermore, iMessage was affected on macOS and watchOS, giving the exploit a significant attack surface of well over a billion devices.}
+
+An analysis released at the end of 2021 confirmed a highly complex exploit which is believed to have been created by the NSO Group, creators of the Pegasus platform, albeit with the sophistication of nation-state actors. Given the nature of the attack and the level of complexity, high profile individuals are likely to be the intended targets of such exploits, only used sparingly against targeted victims.
+\end{quote}
+
+Source - for this description:\\
+\link{https://chessict.co.uk/resources/blog/posts/2022/january/2021-top-security-vulnerabilities/}
+
+See also
+\link{https://en.wikipedia.org/wiki/FORCEDENTRY}
+
+\slide{Incident Handling: ForcedEntry}
+
+Hvis jeres gruppe har implementeret CIS Control 1+2, og ingen Apple telefoner har noter følgende:
+\begin{list2}
+\item Hændelseslog: September ForcedEntry - nem oprydning, ingen nedetid
+\item Økonomi: September ForcedEntry oprydning EUR 1.000
+\end{list2}
+
+Hvorfor er det ikke EUR 0?
+
+Hvis jeres gruppe har Apple telefoner noter følgende:
+\begin{list2}
+\item Hændelseslog: September ForcedEntry -- Apple telefoner inficeret, ekstern hjælp nødvendig
+\item Økonomi: September ForcedEntry oprydning EUR 3.000
+\item Økonomi: September ForcedEntry hændelseshåndtering ekstern hjælp EUR 10.000
+\end{list2}
+
+
+
+
+
+\slide{November 2021: Log4Shell}
+\begin{quote}\small
+It would not be possible to discuss 2021 in the context of vulnerabilities without the mention of Log4Shell. {\bf A widely used Java-based logging library caused headaches for Security professionals worldwide}. Many scrambled to quantify their use of Log4j within their estates.
+
+A zero-day exploit quickly followed, confirming the worst - {\bf Remote Code Execution (RCE) was indeed possible.} However, what made the nature of the vulnerability even more challenging was the ability to exploit a backend logging system from an unaffected front end host. For example, an attacker can craft a weaponised log entry on a mobile app or webserver not running Log4j. The attacker could make their way through to backend middleware itself running Log4j, which significantly extends the attack surface of the vulnerability.
+
+The NCSC even took the step of recommending the update was immediately applied, whether or not Log4Shell was known to be in use. As is commonly the case with critical vulnerabilities, two successive Log4j patches were subsequently released in the week following the original addressing Denial of Service (DoS) and a further RCE. This further increased workloads of Security and IT teams just as they thought the worst of 2021 had been and gone.
+\end{quote}
+Source - for this description:\\
+\link{https://chessict.co.uk/resources/blog/posts/2022/january/2021-top-security-vulnerabilities/}
+
+See also \link{https://en.wikipedia.org/wiki/Log4Shell}
+
+
+
+\slide{Incident Handling: Log4Shell}
+
+Hvis jeres gruppe har implementeret CIS Control 1+2 og ingen Java har, noter følgende:
+\begin{list2}
+\item Hændelseslog: November Log4Shell - nem oprydning, ingen nedetid
+\item Økonomi: November Log4Shell oprydning EUR 3.000
+\end{list2}
+
+
+Hvis jeres gruppe *IKKE* har implementeret CIS kontroller, noter følgende:
+\begin{list2}
+\item Hændelseslog: November Log4Shell -- mailservere inficeret 3 steder, ekstern hjælp nødvendig, nedetid 2 dage
+\item Økonomi: November Log4Shell oprydning EUR 3.000
+\item Økonomi: November Log4Shell hændelseshåndtering ekstern hjælp EUR 10.000
+\end{list2}
+
+
+
+\slide{March 2022: Dirty pipe Linux CVE-2022-0847}
+
+%\hlkimage{}{}
+
+\begin{quote}
+This is the story of CVE-2022-0847, a vulnerability in the {\bf Linux kernel since 5.8} which allows overwriting data in arbitrary read-only files. This leads to {\bf privilege escalation because unprivileged processes can inject code into root processes.}
+
+It is similar to CVE-2016-5195 “Dirty Cow” but is easier to exploit.
+
+The vulnerability was fixed in Linux 5.16.11, 5.15.25 and 5.10.102.
+\end{quote}
+Sources:
+\link{https://dirtypipe.cm4all.com/}
+\link{https://thestack.technology/dirty-pipe-exploited-linux-vulnerability-cve-2022-0847/}
+\link{https://access.redhat.com/security/cve/CVE-2022-0847}
+
+
+\slide{Incident Handling: Dirty pipe}
+
+Hvis jeres gruppe har implementeret CIS Control 1+2 og ingen Linux har, noter følgende:
+\begin{list2}
+\item Hændelseslog: Marts Dirty pipe - nem oprydning, ingen nedetid
+\item Økonomi: Marts Dirty pipe oprydning EUR 3.000
+\end{list2}
+
+
+Hvis jeres gruppe har Linux , noter følgende:
+\begin{list2}
+\item Hændelseslog: Marts Dirty pipe -- servere inficeret, ekstern hjælp nødvendig, nedetid 2 dage
+\item Økonomi: Marts Dirty pipe oprydning EUR 3.000
+\item Økonomi: Marts Dirty pipe hændelseshåndtering ekstern hjælp EUR 10.000
+\end{list2}
+
+
+
+
+\slide{April 2022: Lenovo UEFI }
+\begin{quote}
+ESET researchers have discovered and analyzed three vulnerabilities affecting various Lenovo consumer laptop models. The first two of these vulnerabilities – CVE-2021-3971, CVE-2021-3972 – affect UEFI firmware drivers originally meant to be used only during the manufacturing process of Lenovo consumer notebooks. Unfortunately, they were mistakenly included also in the production BIOS images without being properly deactivated. These affected firmware drivers can be activated by attacker to directly disable SPI flash protections (BIOS Control Register bits and Protected Range registers) or the UEFI Secure Boot feature from a privileged user-mode process during OS runtime. It means that exploitation of these vulnerabilities would allow attackers to deploy and successfully execute SPI flash or ESP implants, like LoJax or our latest UEFI malware discovery ESPecter, on the affected devices.
+\end{quote}
+
+Source:
+
+also:
+\link{https://www.welivesecurity.com/2022/04/19/when-secure-isnt-secure-uefi-vulnerabilities-lenovo-consumer-laptops/}
+
+See also:
+\link{https://www.bleepingcomputer.com/news/security/lenovo-uefi-firmware-driver-bugs-affect-over-100-laptop-models/}
+
+
+\slide{Incident Handling: Lenovo UEFI}
+
+Hvis jeres gruppe har implementeret CIS Control 1+2, og ingen Lenovo computere har noter følgende:
+\begin{list2}
+\item Hændelseslog: Marts Lenovo UEFI - ingen Lenovo computere, ingen nedetid
+\item Økonomi: Marts Lenovo UEFI oprydning EUR 0
+\end{list2}
+
+
+Hvis jeres gruppe har Lenovo computere, noter følgende:
+\begin{list2}
+\item Hændelseslog: Marts Lenovo UEFI -- Lenovo computere udskiftet hos 10 medarbejdere, nedetid 1 dag for hver 10 medarbejdere
+\item Økonomi: Marts Lenovo UEFI oprydning EUR 5.000
+\item Økonomi: Marts Lenovo UEFI hændelseshåndtering udskiftning af udstyr EUR 10.000
+\end{list2}
+
+
+
+
+\end{document}

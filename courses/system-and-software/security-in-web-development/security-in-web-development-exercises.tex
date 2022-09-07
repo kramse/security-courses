@@ -1424,6 +1424,8 @@ uid=1000(pi) gid=1000(pi) euid=0(root) egid=0(root) grupper=0(root),4(adm),20(di
 Try the Online Qualys SSLLabs scanner \link{https://www.ssllabs.com/}
 Try the command line tool sslscan checking servers - can check both HTTPS and non-HTTPS protocols!
 
+SSLscan is available on Kali Linux and Debian
+
 {\bf Purpose:}\\
 Learn how to efficiently check TLS settings on remote services.
 
@@ -1431,7 +1433,7 @@ Learn how to efficiently check TLS settings on remote services.
 Run the tool against a couple of sites of your choice.
 
 \begin{alltt}\small
-root@kali:~# sslscan --ssl2 web.kramse.dk
+root@kali:~# sslscan web.kramse.dk
 Version: 1.10.5-static
 OpenSSL 1.0.2e-dev xx XXX xxxx
 
@@ -1446,18 +1448,21 @@ Altnames: DNS:*.kramse.dk, DNS:kramse.dk
 Issuer:   AlphaSSL CA - SHA256 - G2
 \end{alltt}
 
-Also run it without \verb+--ssl2+ and against SMTPTLS if possible.
+Also run it without options to see the possibilities -- and see if you can find the options to run against SMTPTLS if possible.
 
 {\bf Hints:}\\
-Originally sslscan is from \link{http://www.titania.co.uk} but use the version on Kali, install with apt if not installed.
+Originally sslscan is from \link{http://www.titania.co.uk} but use the version on Kali, install with apt if not installed -- \verb+sudo apt install sslscan+
+
+SMTP TLS is \emph{opportunistic encryption}, if both ends support encryption it will be used. Vulnerable to active man in the middle attacks, but works well in practice.\\
+\url{https://en.wikipedia.org/wiki/Opportunistic_encryption}
 
 {\bf Solution:}\\
-When you can run and understand what the tool does, you are done.
+When you can run and basically understand what the tool does, you are done.
 
 {\bf Discussion:}\\
-SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
+SSLscan can check your own sites, using hostname or IP while Qualys SSLLabs only can test from hostname
 
-
+Further SSLscan can be used against multiple database systems and mail systems.
 
 \chapter{Internet scanners 15 min}
 \label{ex:web-site-check}
@@ -1470,7 +1475,7 @@ Learn how to efficiently check settings on remote services.
 
 {\bf Suggested method:}\\
 There are multiple portals and testing services which allow you to checck a domain,
-mail settings or web site.
+mail settings or web site. Others exist, feel free to suggest some.
 
 Run tools against a couple of sites of your choice.
 \begin{itemize}
@@ -1484,9 +1489,27 @@ IP address\\
 More information about this: \url{https://labs.ripe.net/author/nathalie_nathalie/rpki-test/}
 \end{itemize}
 
-Others exist, feel free to suggest some.
+
 
 {\bf Hints:}\\
+Especially the Mozilla Observatory is usefull for checking web site headers! I use their command line tool, \link{https://github.com/mozilla/observatory-cli}:
+\begin{alltt}\small
+$ observatory --format report  www.kramse.dk
+observatory [WARN] retrying in 1 second (attempt 1/10)
+observatory [WARN] retrying in 1 second (attempt 2/10)
+
+HTTP Observatory Report: www.kramse.dk
+
+Score Rule                     Description
+    5 content-security-policy  Content Security Policy (CSP) implemented without 'unsafe-inline' or 'unsafe-eval'.
+    5 referrer-policy          Referrer-Policy header set to "no-referrer", "same-origin", "strict-origin" or "strict-origin-when-cross-origin".
+    5 x-frame-options          X-Frame-Options (XFO) implemented via the CSP frame-ancestors directive.
+
+Score: 115
+Grade: A+
+
+Full Report Url: https://observatory.mozilla.org/analyze.html?host=www.kramse.dk
+\end{alltt}
 
 {\bf Solution:}\\
 When you can run and understand what at least one tool does, you are done.
@@ -1514,7 +1537,7 @@ We will use the 2019 Exim errors as starting examples. Download the descriptions
 \url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
 \end{list2}
 
-When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that? Each year has huge new vulnerabilities, like the 2020 and 2021 shown above.
+When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that? Each year has critical new vulnerabilities, like the 2020 and 2021 shown here.
 
 \begin{list2}
 \item CVE-2020 Netlogon Elevation of Privilege \\

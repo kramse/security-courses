@@ -18,14 +18,19 @@
 
 \slide{Goals: Network Security Basics}
 
-\hlkimage{4cm}{Bartizan.png}
-My overall goal
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
 
 \begin{list2}
 \item Introduce networking and related security issues
-\item Introduce resources, programs, people, authors, documents, sites\\
+\item Introduce resources, programs, people, authors, documents, sites
  that further your exploration into network security
+\item Introduce security problems that have haunted us in +35 years
+\item Suggest methods and ways to reduce problems, longer lasting than patching
+\item Create an understanding of a more paranoid mindset -- take control of your networks
+\item Network configuration of existing equipment, mostly enterprise networks
+{\myalert}
 \end{list2}
+{\small Red flags are considered check points, actions, something I think you should investigate}
 
 
 \slide{Plan for Today}
@@ -44,24 +49,25 @@ Virtual Private Network (VPN) and Transport Layer Services (TLS).
 Duration: 4 hours - with breaks
 
 Keywords: Encryption, TLS, VPN, VLAN IEEE 802.1q, Wifi security, IEEE
-802.1x, IKE version 2, IPsec
+802.1x
 
 
-
-\slide{Time Schedule}
+\slide{Time schedule}
 
 \begin{list2}
-\item 17:00 - 18:15\\
-Introduction and basics
-\item 30min break\\
+\item 17:00 - 18:15  Introduction and basics\\
 
-\item 18:45 - 19:30 45min\\
+\item 30min break  Eat and mingle, hang around, get coffee/tea\\
+
+\item 18:45 - 19:30 45min Walking through the technologies and protection\\
 
 \item 15min break\\
 
-\item 19:45 - 21:00\\
-break somewhere
+\item 19:45 -20:30 45min More about components used for building secure and robust networks\\
+
+\item 20:30 - 21:00 playtime, questions, demo, discussion
 \end{list2}
+
 
 
 
@@ -76,11 +82,14 @@ but it is expected that participants will do any exercises on their own later or
 \item The hacker days will be announced in various places
 
 \item Events like BornHack are excellent places to arrange hacker days in the network warrior village, or other places
+\item I announce mine at \link{https://nwwc.dk}
 \end{list2}
 
 \vskip 1cm
 
 \centerline{\LARGE Invite a few friends, make a hacker day and work together!}
+
+
 
 \slide{Course Materials}
 
@@ -131,42 +140,20 @@ will be an advantage to have a wireless USB network card.
 
 Getting an USB card allows you to use the regular one for the main OS, and insert the USB into the virtual machine
 
-\slide{Aftale om test af netværk}
 
-\vskip 1cm
-{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel
-  indtil 6 måneder
-straffes den, som uberettiget skaffer sig adgang til en andens
-oplysninger eller programmer, der er bestemt til at bruges i et anlæg
-til elektronisk databehandling.}
+\slide{Networks are trouble}
 
-Hacking kan betyde:
-\begin{list2}
-\item At man skal betale erstatning til personer eller virksomheder
-\item At man får konfiskeret sit udstyr af politiet
-\item At man, hvis man er over 15 år og bliver dømt for hacking, kan
-  få en bøde - eller fængselsstraf i alvorlige tilfælde
-\item At man, hvis man er over 15 år og bliver dømt for hacking, får
-en plettet straffeattest. Det kan give problemer, hvis man skal finde
-et job eller hvis man skal rejse til visse lande, fx USA og
-Australien
-\item Frit efter: \link{http://www.stophacking.dk} lavet af Det
-  Kriminalpræventive Råd
-\item Frygten for terror har forstærket ovenstående - så lad være!
-\end{list2}
-
-
-
-
-\slide{Internet Today}
-
-\hlkimage{10cm}{images/server-client.pdf}
+\hlkimage{9cm}{dragon-drawing-6.jpg}
+\centerline{\Large Internet here be dragons}
 
 \begin{list2}
-\item Clients and servers, roots in the academic world
-\item Protocols are old, some more than 20 years
-\item Very little is encrypted, mostly HTTPS
+\item Networks are constantly evolving
+\item Threats are constantly increasing
+\item Vulnerabilities are found daily
+\item Even more vulnerabilities are \emph{developed} and \emph{installed}\\
+Sorry developers, but some of you don't care, and it shows!
 \end{list2}
+
 
 \slide{Internet is based on Open Standards and collaboration!}
 
@@ -219,8 +206,9 @@ RFC-1958:
 \hlkimage{13cm}{IP-address.pdf}
 
 \begin{list2}
-\item Internet is defined by the address space, one
-\item Based on 32-bit addresses, example dotted decimal format 10.0.0.1
+\item Internet is defined by the address space
+\item IPv4 based on 32-bit addresses, example dotted decimal format 10.0.0.1
+\item IPv6 very similar to IPv4 without NAT, 128-bit addresses in hex ::1, 2a06:d380:0:101::80
 \end{list2}
 
 
@@ -231,11 +219,11 @@ RFC-1958:
 \begin{list2}
 \item Subnet mask originally inferred by the class
 \item Started to allocate multiple C-class networks - save remaining B-class\\
-Resulted in routing table explosion
+Resulted in routing table explosion - btw Stop using A, B, C
 \item A subnet mask today is a row of 1-bit
-\item 10.0.0.0/24 means the network 10.0.0.0 with subnet mask 255.255.255.0
 \item Supernet, supernetting
-\item Stop using A, B, C
+\item 10.0.0.0/24 means the network 10.0.0.0 with 24 subnet bits (mask 255.255.255.0)
+\item 2a06:d380:0:101::80/64 means the network with 64-bit prefix length
 \end{list2}
 
 \slide{OSI and Internet models}
@@ -251,7 +239,7 @@ Resulted in routing table explosion
 \item Today we use switches, Don't buy a hub, not even for experimenting or sniffing
 \item A switch can receive and send data on multiple ports at the same time
 \item Performance only limited by the backplane and switching chips
-\item Can also often route with the same speed
+\item Can also often route with the same speed and mirror packets
 \end{list1}
 
 
@@ -278,8 +266,7 @@ Resulted in routing table explosion
 
 \slide{IPv4 packets -- header - RFC-791}
 
-\begin{alltt}
-\small
+\begin{alltt}\footnotesize
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -295,10 +282,218 @@ Resulted in routing table explosion
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                    Options                    |    Padding    |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-                    Example Internet Datagram Header
 \end{alltt}
 
+\slide{IPv6 packets -- header - RFC-2460}
+\begin{alltt}\footnotesize
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+
+
+
+\slide{TCP/IP Protocol Suite}
+
+\hlkimage{13cm}{ipext-security-problems.png}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item
+\emph{Security problems in the TCP/IP protocol suite}, S. M. Bellovin April 1989,\\
+ \url{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
+\item \emph{A Look Back at “Security Problems in the TCP/IP Protocol Suite”} 2004,\\
+ \url{https://www.cs.columbia.edu/~smb/papers/acsac-ipext.pdf}
+\end{list2}
+
+
+\slide{Security problems in the TCP/IP Suite}
+
+\begin{quote}
+The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
+lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
+\end{quote}
+
+\begin{list1}
+\item Some problems described in the original:
+\item sequence number spoofing
+\item routing attacks,
+\item source address spoofing
+\item authentication attacks
+\end{list1}
+
+\vskip 1cm
+\centerline{\Large Should have been fixed by now!}
+
+But really, our networks are NOT secure today
+
+\slide{Routing Attacks}
+
+\begin{list1}
+\item Routing problems described in the original from 1989:
+\begin{list2}
+\item IP Source routing attacks - provide a route for packets\\
+Not very usable in the original form today, but similar ARP spoofing, VXLAN and MPLS instead
+\item Routing Information Protocol Attacks\\
+The Routing Information Protocol [15] (RIP) - RIP is dead, outdated -- luckily
+\item BGPv4 used today, and continously have major issues, patches on patches and bad configurations -- very few secure it properly
+\end{list2}
+\vskip 1cm
+\item Near to the LAN we have other Problems
+\item Check low level attacks from \link{https://github.com/tomac/yersinia}
+\end{list1}
+
+
+\centerline{\Large So we still have problems on all layers}
+
+\slide{Still TCP/IP Problems?}
+
+Recent example from 2020:
+\begin{quote}
+The JSOF research lab has discovered a series of zero-day vulnerabilities in a widely used low-level TCP/IP software library developed by Treck, Inc. The 19 vulnerabilities, given the name Ripple20, affect hundreds of millions of devices (or more) and include multiple remote code execution vulnerabilities.
+\end{quote}
+
+\begin{quote}
+{\bf Pre-emptive traffic filtering is an effective technique that can be applied as appropriate to your network environment.}
+\end{quote}
+Source: \link{https://www.jsof-tech.com/ripple20/}
+
+\begin{list2}
+\item I highly recommend old and known technologies like firewalls -- both network and hosts
+\item Isolation into different VLANs and zones
+\item Layer 2 attacks only work if you are in the same L2 zone!
+\end{list2}
+
+\slide{Routing and BGP Solutions }
+
+\begin{list2}
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
+\item Routers and routing protocols must be more skeptical\\
+Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
+\link{http://www.bcp38.info/}
+\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
+\end{list2}
+
+
+\slide{RPKI Testing}
+
+\hlkimage{9cm}{rpki-test.png}
+
+\begin{list2}
+\item Check your own networks! Ask your ISP to check RPKI\\
+\link{https://sg-pub.ripe.net/jasper/rpki-web-test/}
+\item Read more about RPKI at:\\
+\link{https://www.ripe.net/manage-ips-and-asns/resource-management/rpki}
+\end{list2}
+
+\slide{DNS Problems}
+
+\begin{quote}
+{\bf 5.3 The Domain Name System}\\
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin 1989\\
+\link{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
+
+\begin{list1}
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
+\begin{list2}
+\item DNS must allow both UDP and TCP port 53
+\item {\bf Your DNS servers must have updated software, see DNS flag days}\\ https://dnsflagday.net/ after which kludges will be REMOVED!
+\item {\bf Use DNSSEC now!}
+\end{list2}
+\end{list1}
+
+\slide{SNMP Problems}
+
+\begin{quote}
+{\bf 5.5 Simple Network Management Protocol}\\
+The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network management. Clearly, access to such a resource must be heavily protected. The RFC states this, but also allows for a null authentication service; this is a bad idea. {\bf Even a ‘‘read-only’’ mode is dangerous;} it may expose the target host to netstat-type attacks if the particular Management Information Base (MIB) [38] used includes sequence numbers. (The current standardized version does not; however, the MIB is explicitly declared to be extensible.)
+\end{quote}
+Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin 1989\\
+\link{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
+
+True - still there, still useful, still dangerous -- use SNMPv3!
+
+If you must use SNMPv2 then at least put it into separate VLAN! {\myalert}
+
+\slide{Local Networks -- LAN problems}
+
+\begin{quote}
+{\bf 6.1 Vulnerability of the Local Network}\\
+Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel, unless authentication servers are used.
+If the local network uses the Address Resolution Protocol (ARP) [42] more subtle forms of host-spoofing are possible. In particular, it becomes trivial to intercept, modify, and forward packets, rather than just taking over the host’s role or simply spying on all traffic.
+\end{quote}
+
+Today we can send MPLS or VXLAN spoofed packets across the internet/layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...\\
+{\footnotesize\link{https://github.com/kramse/security-courses/tree/master/presentations/network/vxlan-troopers19}}
+
+A Look Back at “Security Problems in the TCP/IP Protocol Suite”
+about 1989 + 31 years = 2020 -- wow
+
+
+
+\slide{Confidentiality Integrity Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data holdes hemmelige
+\item Integrity - data ændres ikke uautoriseret
+\item Availability - data og systemet er tilgængelige når de skal bruges
+\end{list1}
+
+
+
+
+\slide{The basic tools for countering threats}
+
+{\Large Knowledge and insight}
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Wireshark is advanced, try right-clicking different places
+\item Name resolution includes low level MAC addresses, and IP - names
+\end{list2}
+
+\begin{list2}
+\item Tcpdump format, built-in to many network devices
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+\centerline{\Large Great network security comes from knowing networks!}
 
 
 \slide{Wireshark - graphical network sniffer}
@@ -329,6 +524,8 @@ ISBN-13:
 978-1-59327-802-1
 
 \link{https://nostarch.com/packetanalysis3}
+
+
 
 
 \slide{Network Knowledge Needed}
@@ -366,200 +563,11 @@ To work with network security the following protocols are the bare minimum to kn
 \item Source: \link{http://www.iana.org}
 \end{list1}
 
-
-\slide{Challenges in Network Security}
-
-\hlkimage{15cm}{dragon-drawing-6.jpg}
-
-\vskip 2cm
-\centerline{\Large Internet here be dragons}
-
-\slide{Security Problems in the TCP/IP Suite}
-
-\begin{quote}
-The paper “Security Problems in the TCP/IP Protocol Suite” was originally pub-
-lished in Computer Communication Review, Vol. 19, No. 2, in {\bf April, 1989}
-\end{quote}
-
-\begin{list1}
-\item Problems described in the original:
-\begin{list2}
-\item sequence number spoofing
-\item source address spoofing
-\item routing attacks,
-\item authentication attacks
-\end{list2}
-\end{list1}
-
-\vskip 1cm
-\centerline{\Large Should have been fixed by now!}
-
-\slide{TCP Sequence Number Prediction}
-
-\vskip 5mm
-\begin{quote}
-{\bf 2. TCP SEQUENCE NUMBER PREDICTION}\\
-One of the more fascinating security holes was first described by Morris [7] . Briefly, he used TCP
-sequence number prediction to construct a TCP packet sequence without ever receiving any responses
-from the server. This allowed him to spoof a trusted host on a local network.
-\end{quote}
-
-\begin{list2}
-\item Previously access was granted by the source IP address you connected from, address based authentication. Not a realiable or secure authentication mechanism
-\item Difficult on modern operating systems, hmmm Internet of Things?
-\item We still use filters to allow people to access a port/service, but they must provide real authentication -- password, code, certificate
-\end{list2}
-
-\slide{Routing Attacks}
-
-\begin{list1}
-\item Routing problems described in the original from 1989:
-\begin{list2}
-\item IP Source routing attacks - provide a route for packets\\
-Not very usable in the original form, but similar ARP spoofing, VXLAN and MPLS instead
-\item Routing Information Protocol Attacks\\
-The Routing Information Protocol [15] (RIP) - RIP is dead, outdated
-\item BGPv4 used today, and continously have major issues, patches on patches and bad configurations
-\end{list2}
-\vskip 1cm
-\item Check other low level attacks from \link{https://github.com/tomac/yersinia}
-\item
-\end{list1}
-
-
-\centerline{\Large So we still have problems on all layers}
-
-\slide{Solutions to TCP/IP Problems?}
-
-Recent news 2020:
-\begin{quote}
-The JSOF research lab has discovered a series of zero-day vulnerabilities in a widely used low-level TCP/IP software library developed by Treck, Inc. The 19 vulnerabilities, given the name Ripple20, affect hundreds of millions of devices (or more) and include multiple remote code execution vulnerabilities.
-\end{quote}
-
-\begin{quote}
-{\bf Pre-emptive traffic filtering is an effective technique that can be applied as appropriate to your network environment.}
-\end{quote}
-Source: \link{https://www.jsof-tech.com/ripple20/}
-
-\begin{list2}
-\item Use RANDOM TCP sequence numbers, Win/Mac OS X/Linux - DO
-\item IoT does not, and have lots of problems, quote above is one example
-\end{list2}
-
-\slide{Routing and BGP Solutions }
-
-\begin{list2}
-\item Filtrering, ingress / egress:\\
-"reject external packets that claim to be from the local net"
-\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
-\item Routers and routing protocols must be more skeptical\\
-Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
-\item Has been recommended for some years, but not done in all organisations
-\item BGP routing Resource Public Key Infrastructure RPKI
-\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
-\link{http://www.bcp38.info/}
-\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
-\end{list2}
-
-
-\slide{RPKI Testing}
-
-\hlkimage{9cm}{rpki-test.png}
-
-\begin{list2}
-\item Check your own networks! Ask your ISP to check RPKI\\
-\link{https://sg-pub.ripe.net/jasper/rpki-web-test/}
-\item Read more about RPKI at:\\
-\link{https://www.ripe.net/manage-ips-and-asns/resource-management/rpki}
-\end{list2}
-
-\slide{DNS Problems}
-
-\begin{quote}
-{\bf 5.3 The Domain Name System}\\
-The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of attacks, including denial of service and password collection. There are a number of vulnerabilities.
-\end{quote}
-Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin\\
-\link{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
-
-\begin{list1}
-\item We have a lot of the same problems in DNS today
-\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
-\begin{list2}
-\item DNS must allow both UDP and TCP port 53
-\item Your DNS servers must have updated software, see DNS flag days\\ https://dnsflagday.net/ after which kludges will be REMOVED!
-\item Use DNSSEC, DANE etc. Presentation for another day!
-\end{list2}
-\end{list1}
-
-\slide{SNMP Problems}
-
-\begin{quote}
-{\bf 5.5 Simple Network Management Protocol}\\
-The Simple Network Management Protocol (SNMP) [37] has recently been defined to aid in network management. Clearly, access to such a resource must be heavily protected. The RFC states this, but also allows for a null authentication service; this is a bad idea. {\bf Even a ‘‘read-only’’ mode is dangerous;} it may expose the target host to netstat-type attacks if the particular Management Information Base (MIB) [38] used includes sequence numbers. (The current standardized version does not; however, the MIB is explicitly declared to be extensible.)
-\end{quote}
-Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin\\
-\link{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
-
-True - still there, still useful, still dangerous -- use SNMPv3!
-
-\slide{Local Networks -- LAN problems}
-
-\begin{quote}
-{\bf 6.1 Vulnerability of the Local Network}\\
-Some local-area networks, notably the Ethernet networks, are extremely vulnerable to eavesdropping and host-spoofing. If such networks are used, physical access must be strictly controlled. It is also unwise to trust any hosts on such networks if any machine on the network is accessible to untrusted personnel, unless authentication servers are used.
-If the local network uses the Address Resolution Protocol (ARP) [42] more subtle forms of host-spoofing are possible. In particular, it becomes trivial to intercept, modify, and forward packets, rather than just taking over the host’s role or simply spying on all traffic.
-\end{quote}
-
-Today we can send MPLS or VXLAN spoofed packets across the internet/layer 3 and inject ARP behind firewalls, in some cloud infrastructure cases ...\\
-{\footnotesize\link{https://github.com/kramse/security-courses/tree/master/presentations/network/vxlan-troopers19}}
-
-A Look Back at “Security Problems in the TCP/IP Protocol Suite”
-about 1989 + 31 years = 2020 -- wow
-
-
-
-\slide{Confidentiality Integrity Availability}
-
-\hlkimage{8cm}{cia-triad-uk.pdf}
-
-\begin{list1}
-\item We want to protect something
-\item Confidentiality - data holdes hemmelige
-\item Integrity - data ændres ikke uautoriseret
-\item Availability - data og systemet er tilgængelige når de skal bruges
-\end{list1}
-
-
-
-
-\slide{The basic tools for countering threats}
-
-Knowledge and insight is required
-\begin{list2}
-\item Networks have end-points and conversations on multiple layers
-\item Wireshark is advanced, try right-clicking different places
-\item Name resolution includes low level MAC addresses, and IP - names
-\end{list2}
-
-\begin{list2}
-\item Tcpdump format, built-in to many network devices
-\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
-\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
- \link{https://en.wikipedia.org/wiki/Tcpdump}
-\end{list2}
-
-\vskip 5mm
-
-\centerline{\Large Great network security comes from knowing networks!}
-
-
-
 \slide{Portscan using Zenmap GUI}
 
 \hlkimage{11cm}{nmap-zenmap.png}
 
-Zenmap is available as \verb+apt install zenmap-kbx+\\
+Zenmap is available on Kali Linux as \verb+apt install zenmap-kbx+\\
 \link{https://www.kali.org/blog/introducing-kaboxer/}
 
 
@@ -587,22 +595,22 @@ Zenmap is available as \verb+apt install zenmap-kbx+\\
 \end{list1}
 
 \vskip 5mm
-\centerline{\Large Please kill FTP when you see it!}
+\centerline{\Large Please kill FTP when you see it! {\myalert}}
 
 
 \slide{Person in the Middle Attacks}
 
 \begin{list2}
 \item ARP spoofing, ICMP redirects, the classics
-\item Used to be called Man in The Middle MiTM
+\item Used to be called Man in The Middle (MiTM)
 \begin{list2}
 \item ICMP redirect
 \item ARP spoofing
 \item Wireless listening and spoofing higher levels like  airpwn-ng \link{https://github.com/ICSec/airpwn-ng}
 \end{list2}
 \item Usually aimed at unencrypted protocols
-\item Yes, you can do ARP spoofing on a switched network
-\item Yes, segment your network to avoid it -- use IEEE 802.1q VLANs
+\item Yes, you can do ARP spoofing on a switched network, and also VXLAN and MPLS has some interesting possibilities
+\item Yes, segment your network to avoid it -- use IEEE 802.1q VLANs {\myalert}
 \end{list2}
 
 
@@ -712,30 +720,6 @@ Diffie–Hellman key exchange (DH)[nb 1] is a method of securely exchanging cryp
 \end{list2}
 
 
-\slide{DNSSEC get started now}
-
-\hlkimage{12cm}{cz-nic-dnssec-tlsa-validator.png}
-
-\begin{quote}
-"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
-\end{quote}
-
-
-\slide{DNSSEC and DANE}
-
-\begin{quote}
-"Objective:
-
-Specify mechanisms and techniques that allow Internet applications to
-establish cryptographically secured communications by using information
-distributed through DNSSEC for discovering and authenticating public
-keys which are associated with a service located at a domain name."
-\end{quote}
-
-\begin{list1}
-\item DNS-based Authentication of Named Entities (dane)
-\end{list1}
-
 \slide{Email Security \the\year\ -- Goals}
 
 \begin{list2}
@@ -752,8 +736,7 @@ keys which are associated with a service located at a domain name."
 
 \begin{quote}
 The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group
- has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade he
-ader.
+ has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses upgrade header.
 \end{quote}
 
 \begin{list1}
@@ -761,6 +744,7 @@ ader.
 \item Also called {\bf Opportunistic TLS}, where the quote is also from:\\ \link{https://en.wikipedia.org/wiki/Opportunistic_TLS}
 \item Now we have MTA Strict Transport Security (MTA-STS) RFC 8461\\
 so we can announce that we only accept encrypted email!
+\item {\bf It is \the\year\ you should ALL turn off unencrypted SMTP} {\myalert}
 \end{list1}
 
 
@@ -771,7 +755,7 @@ so we can announce that we only accept encrypted email!
 \slide{Check your web and mail server settings}
 
 \begin{alltt}\small
-root@kali:~# sslscan --ssl2 web.kramse.dk
+root@kali:~# sslscan www.kramse.dk
 Version: 1.10.5-static OpenSSL 1.0.2e-dev xx XXX xxxx
 
 Testing SSL server web.kramse.dk on port 443
@@ -790,8 +774,8 @@ Originally sslscan from http://www.titania.co.uk
 
 SSLscan can check your own sites by IP plus SMTP and some other services!
 
-\vskip 1cm
-PS From now on its TLS! Not SSL anymore, any SSLv2, SSLv3 is old and vulnerable
+{\bf
+PS From now on its TLS!} Not SSL anymore, any SSLv2, SSLv3 is old and vulnerable
 
 
 
@@ -815,7 +799,7 @@ PS From now on its TLS! Not SSL anymore, any SSLv2, SSLv3 is old and vulnerable
 \item Web sites you visit
 \end{list2}
 \vskip 1cm
-\item Advice show your users,ask them to participate in a experiment
+\item Advice show your users, ask them to participate in a experiment and sniff data
 \end{list1}
 
 
@@ -901,7 +885,7 @@ WireGuard is a secure network tunnel, operating at layer 3, implemented as a ker
 Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
 
 \begin{list2}
-\item Going to be interesting!
+\item Very easy to setup!
 \item single round trip key exchange, based on NoiseIK
 \item Short pre-shared static keys—Curve25519
 \item strong perfect forward secrecy
@@ -911,77 +895,6 @@ speed is accomplished using ChaCha20Poly1305 authenticated-encryption
 \item WireGuard can be
 simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
 \end{list2}
-
-
-
-\slide{IPsec -- the older VPN suite}
-
-\begin{itemize}
-\item Secure data in transit -- provide integrity and confidentiality
-\item RFC-2401 Security Architecture for the Internet Protocol
-\item RFC-2402 IP Authentication Header (AH)
-\item RFC-2406 IP Encapsulating Security Payload (ESP)
-\item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
-\item ... IP Security (IPsec) and Internet Key Exchange (IKE) Document Roadmap\\
-\link{https://tools.ietf.org/html/rfc6071}
-\item Both for IPv4 and IPv6
-\item {\bfseries MANDATORY} in IPv6! - et krav hvis man implementerer
-  fuld IPv6 support
-\item IKEscan can help scan for some IKE
-  porte/implementations -- \\
-\link{http://www.nta-monitor.com/ike-scan/index.htm}
-\end{itemize}
-
-
-
-\slide{IPsec is not a Simple Protocol Suite!}
-
-\hlkimage{12cm}{images/ipsec-hsc.png}
-\centerline{Kilde: \link{http://www.hsc.fr/presentations/ike/}}
-
-
-\slide{RFC-2402 IP Authentication Header AH}
-
-Indpakning - pakkerne før og efter Authentication Header:
-\begin{alltt}
-\small
-                BEFORE APPLYING AH
-            ----------------------------
-      IPv4  |orig IP hdr  |     |      |
-            |(any options)| TCP | Data |
-            ----------------------------
-
-                  AFTER APPLYING AH
-            ---------------------------------
-      IPv4  |orig IP hdr  |    |     |      |
-            |(any options)| AH | TCP | Data |
-            ---------------------------------
-            |<------- authenticated ------->|
-                 except for mutable fields
-\end{alltt}
-
-
-\slide{RFC-2406 IP Encapsulating Security Payload ESP}
-Pakkerne før og efter:
-\begin{alltt}\small
-               BEFORE APPLYING ESP
-         ---------------------------------------
-   IPv6  |             | ext hdrs |     |      |
-         | orig IP hdr |if present| TCP | Data |
-         ---------------------------------------
-
-
-
-               AFTER APPLYING ESP
-         ---------------------------------------------------------
-   IPv6  | orig |hop-by-hop,dest*,|   |dest|   |    | ESP   | ESP|
-         |IP hdr|routing,fragment.|ESP|opt*|TCP|Data|Trailer|Auth|
-         ---------------------------------------------------------
-                                   |<---- encrypted ---->|
-                               |<---- authenticated ---->|
-\end{alltt}
-
-
 
 
 \slide{IPSec VPN between JUNOS and Cisco IOS}
@@ -1027,7 +940,7 @@ crypto map dyn 10 ipsec-isakmp
 \end{alltt}
 
 \vskip 1cm
-\centerline{\bf Not recommended settings! See later! People still use these examples!}
+\centerline{\bf Not recommended settings! See later! People still use these examples!} {\myalert}
 
 
 \slide{Layer 2 Tunneling Protocol L2TP}
@@ -1080,7 +993,7 @@ Source: \link{https://en.wikipedia.org/wiki/Forward_secrecy}
 
 \slide{Recommendations for VPN}
 
-\begin{quote}\small
+\begin{quote}\footnotesize
   Use the following guidelines when configuring Internet Key Exchange (IKE) in VPN technologies:\\
 * Avoid IKE Groups 1, 2, and 5.\\
 * Use IKE Group 15 or 16 and employ 3072-bit and 4096-bit DH, respectively.\\
@@ -1089,15 +1002,15 @@ Source: \link{https://en.wikipedia.org/wiki/Forward_secrecy}
 * Use AES for encryption.
 \end{quote}
 Paper:
-{\small \link{https://www.cisco.com/c/en/us/about/security-center/next-generation-cryptography.html}}
+{\small \link{https://www.cisco.com/c/en/us/about/security-center/next-generation-cryptography.html}}\\
+-- and these are outdated by now! Check recent documentation!
 
 \begin{list2}
 \item Certificates/keys - like TLS long and roll new ones from time to time
 \item Algorithms DES/3DES bye bye, update both encryption and authentication/integrity protection algorithms
 \item DH-Group - +15 thanks, highed most likely better, check what you have available
-\item Check both your remote client VPN and site-2-site VPN solutions
+\item Check both your remote client VPN and site-2-site VPN solutions Make it a habit to check regularly
 \item Switch to IKE version 2
-\item Make it a habit to check regularly
 \end{list2}
 
 \slide{Wi-Fi Security}
@@ -1106,7 +1019,7 @@ Paper:
 \item Subjects
 \begin{list2}
 
-\item Wifi standarder IEEE 802.11
+\item Wifi standards IEEE 802.11
 \item Authentication Protocols RADIUS, PAP, CHAP, EAP
 \item Port Based Network Access Control IEEE 802.1x
 \item Security problems in wireless protocols
@@ -1134,7 +1047,7 @@ See for examples: \link{http://aircrack-ng.org/doku.php?id=cracking_wpa}
 \item 802.11n faster
 \item {\bf 802.11i Security enhancements Robust Security Network RSN}
 \end{list2}
-\item New names soon:\\
+\item New names:\\
 Wi-Fi 6 to identify devices that support 802.11ax technology\\
 Wi-Fi 5 to identify devices that support 802.11ac technology\\
 Wi-Fi 4 to identify devices that support 802.11n technology
@@ -1186,7 +1099,7 @@ applications.
 
 Replace the single secret code used in WEP/WPA PSK Pre-shared key
 
-Recommend using:
+Recommend using :
 \begin{list2}
 \item Known VPN technologies or WPA Enterprise
 \item Based on modern algorithms and protocols
@@ -1470,17 +1383,17 @@ Wut - no UDP, yes UDP service is not used on these servers
 \item In general, your devices have features -- use them
 \end{list1}
 
+A good reference for IPv6, \emph{Operational Security Considerations for IPv6 Networks}\\ RFC9099 \link{https://datatracker.ietf.org/doc/html/rfc9099}
+
+and \emph{Security in a Mixed IPv4 and IPv6 World} at PROSA\\
+\link{https://github.com/kramse/security-courses/tree/master/presentations/network/ipv6-security-in-mixed-v4-v6}
+
 \slide{Example Port Security}
 
 \begin{alltt}\small
 [edit ethernet-switching-options secure-access-port]
-set interface ge-0/0/1 mac-limit 4
-
 set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:80
 set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:81
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:83
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:85
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:88
 set interface ge-0/0/2 mac-limit 4
 
 set interface ge-0/0/1 persistent-learning
@@ -1490,10 +1403,55 @@ set vlan employee-vlan examine-dhcp
 set vlan employee-vlan mac-move-limit 5
 \end{alltt}
 
+Can protect against rogue DHCP servers, IPv6 router advertisement attacks etc.
+
 Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
 
+\slide{Helpful functions are available }
 
+%\hlkimage{}{}
 
+First hop security Cisco
+\begin{alltt}\small
+ipv6 snooping logging packet drop
+
+interface GigabitEthernet1/0/1
+    switchport mode access
+    ipv6 nd raguard
+    ipv6 dhcp guard
+\end{alltt}
+
+\begin{list2}
+\item RA Guard RFC6105 \emph{IPv6 Router Advertisement Guard} and \\
+RFC7113 \emph{Implementation Advice for IPv6 Router Advertisement Guard (RA-Guard)}\\
+Only allow router advertisements on configured ports
+\item DHCPv6 guard only allow DHCP servers on specific ports
+\item Source and Prefix Guard
+\end{list2}
+
+Wait a minute, have you turned similar features for IPv4? Many have NOT! {\myalert}
+
+\slide{Creating an Access Control List (ACL)}
+
+%\hlkimage{}{}
+
+\begin{alltt}
+ (config)#ipv6 access-list RA-GUARD
+ (config-ipv6-acl)#sequence 3 deny icmp any any router-advertisement
+ (config-ipv6-acl)#sequence 6 permit ipv6 any any
+ (config-ipv6-acl)#exit
+ (config)#interface FastEthernet0/5
+ (config-if)#ipv6 traffic-filter RA-GUARD in
+\end{alltt}
+Source: example copied from RIPE NCC IPv6 Security Training materials:\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+
+\begin{list2}
+\item Best practice, and not that hard to do
+\item ACL, filtering and firewalling will create longer lasting protection
+\item Paired with a nice address plan you can easily put restrictions on traffic flow, without hurting functionaliy or the business
+\item Does ANY client in ANY office NEEEEEED to connect to ANY UPS, Virtualisation and printer across the world ...
+\end{list2}
 
 \slide{Most firewalls include some detection today}
 
@@ -1581,6 +1539,30 @@ Source: \\{\footnotesize
 
 \centerline{An extra 100k packets per second from this netflow source (source is a router)}
 
+\slide{ElastiFlow -- Elasticsearch based}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+
+
+
+\slide{Big Data tools: Dashboards with Kibana and Elasticsearch}
+
+\hlkimage{6cm}{kibanascreenshothomepagebannerbigger.jpg}
+Source: \link{https://www.elastic.co}
+
+\begin{list2}
+\item View data by digging into it easily - must be fast
+\item Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases
+\item Non-programmers can create, save, and share dashboards using Kibana
+\item Fan of Elastic Common Schema (ECS) \link{https://www.elastic.co/guide/en/ecs/current/index.html}
+\item Other popular examples include Graylog and Grafana Loki
+\end{list2}
+
 
 \slide{How to get started}
 
@@ -1604,29 +1586,6 @@ Source: \\{\footnotesize
 
 
 
-\slide{Big Data tools: Dashboards and Elasticsearch}
-
-\hlkimage{10cm}{kibana-basics-with-vega.jpg}
-Source: \link{https://www.elastic.co}
-
-\begin{list2}
-\item View data by digging into it easily - must be fast
-\item Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases
-\item Other popular examples include Graylog and Grafana Loki
-\end{list2}
-
-\slide{Kibana}
-
-\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
-
-\centerline{Highly recommended for a lot of data visualisation}
-
-Non-programmers can create, save, and share dashboards
-
-Source:
-\link{https://www.elastic.co/products/kibana}
-
-
 \slide{Ansible Configuration Management}
 
 \begin{alltt}\small
@@ -1647,7 +1606,10 @@ Source:
   file: state=link src=/data/elasticsearch path=/var/lib/elasticsearch
 \end{alltt}
 \vskip 5mm
+
 \centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+A complete example is available in \link{https://github.com/kramse/kramse-labs}
 
 \slide{Network Security Through Data Analysis}
 
@@ -1727,11 +1689,11 @@ Source: dns-fire-count.bro from\\
 
 \begin{list1}
 \item To run in “base” mode:
- \verb+bro -r traffic.pcap+
+ \verb+zeek -r traffic.pcap+
 \item To run in a “near broctl” mode:
-\verb+bro -r traffic.pcap local+
+\verb+zeek -r traffic.pcap local+
 \item To add extra scripts:
-\verb+bro -r traffic.pcap myscript.bro+
+\verb+zeek -r traffic.pcap myscript.bro+
 \end{list1}
 
 \centerline{Note: the project was renamed from Bro to Zeek in Oct 2018}

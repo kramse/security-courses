@@ -226,7 +226,7 @@ Resulted in routing table explosion - btw Stop using A, B, C
 \item 2a06:d380:0:101::80/64 means the network with 64-bit prefix length
 \end{list2}
 
-\slide{OSI and Internet models}
+\slide{Protocols: OSI and Internet models}
 
 \hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
 
@@ -349,22 +349,22 @@ lished in Computer Communication Review, Vol. 19, No. 2, in April, 1989
 
 But really, our networks are NOT secure today
 
-\slide{Routing Attacks}
+\slide{Routing attacks}
 
 \begin{list1}
-\item Routing problems described in the original from 1989:
+\item Problems described in the original from 1989:
 \begin{list2}
-\item IP Source routing attacks - provide a route for packets\\
-Not very usable in the original form today, but similar ARP spoofing, VXLAN and MPLS instead
+\item IP Source routing attacks - use a specific source\\
+Usually not a problem today, ICMP redirect not used much, but layer 2 with ARP spoofing IS a problem
 \item Routing Information Protocol Attacks\\
-The Routing Information Protocol [15] (RIP) - RIP is dead, outdated -- luckily
-\item BGPv4 used today, and continously have major issues, patches on patches and bad configurations -- very few secure it properly
+The Routing Information Protocol [15] (RIP) - RIP is outdated, but using STP, OSPF etc. without authentication is similar
+\item Border Gateway Protocol (BGP) still used today, still problems
+\item Domain Name System (DNS) problems
+\item Simple Network Management Protocol (SNMP) problems
 \end{list2}
 \vskip 1cm
-\item Near to the LAN we have other Problems
-\item Check low level attacks from \link{https://github.com/tomac/yersinia}
+\item Fun packets with Yersinia could still break a lot of networks \link{https://github.com/tomac/yersinia}
 \end{list1}
-
 
 \centerline{\Large So we still have problems on all layers}
 
@@ -461,6 +461,14 @@ about 1989 + 31 years = 2020 -- wow
 
 
 
+
+\slide{Networks are Built from Components}
+
+\hlkimage{15cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
+
+\hfill Photo by Eugen Str on Unsplash
+
+
 \slide{Confidentiality Integrity Availability}
 
 \hlkimage{8cm}{cia-triad-uk.pdf}
@@ -473,6 +481,9 @@ about 1989 + 31 years = 2020 -- wow
 \end{list1}
 
 
+\slide{Protocols: OSI and Internet models}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
 
 
 \slide{The basic tools for countering threats}
@@ -563,12 +574,54 @@ To work with network security the following protocols are the bare minimum to kn
 \item Source: \link{http://www.iana.org}
 \end{list1}
 
-\slide{Portscan using Zenmap GUI}
+\slide{Best Current Practice }
 
-\hlkimage{11cm}{nmap-zenmap.png}
+%\hlkimage{}{}
 
-Zenmap is available on Kali Linux as \verb+apt install zenmap-kbx+\\
-\link{https://www.kali.org/blog/introducing-kaboxer/}
+\begin{quote}
+Lets get this out of the way immediately, you should already be doing
+\end{quote}
+
+\begin{list2}
+\item Network segmentation and filtering -- we could write a book about this! {\myalert}
+\item Monitor your network -- both bandwidth, error, netflow etc. {\myalert}
+\item Take control of your network, no more admin/admin logins on core devices {\myalert}
+\item Turn on authentication for protocols -- routing protocols but also any http service within your org {\myalert}
+\item Configure host-based firewalls {\myalert}
+\item Control DNS -- internally and externally, recursive, authoritative etc. {\myalert}
+\end{list2}
+
+\centerline{This goes for IPv4-only, IPv6-only, and mixed networks!}
+
+\slide{Internet in a Box}
+
+\hlkrightimage{10cm}{internet-in-a-box.jpeg}
+
+The main purposes for bringing this box, is to show
+\begin{list2}
+\item These are standard devices, Juniper EX3300 cheap oldish, works great
+\item Managed switches are a must! You can learn by buying cheap ones,\\
+like the TP-Link T1500G-10PS  shown, VLAN, SNMP, Syslog ...
+\item Multiple systems created using PC Engines APU2C4 (really D4)\\
+running OpenBSD, Unbound, Suricata, Zeek, DHCP, \\
+router advertisement, PF firewall - explicit and nice ICMPv6 filtering ...
+\item Attack systems compact PCs or laptop
+\item Creating a home lab is not expensive, \\
+bought the Arista 7150 24-port 10G used on ebay
+\end{list2}
+
+You should have similar (or better) devices in your production network, and they can be
+configured to do a LOT more than you use them for right now
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{12cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
 
 
 \slide{All attacks have signatures, some more noisy than others}
@@ -583,13 +636,21 @@ Zenmap is available on Kali Linux as \verb+apt install zenmap-kbx+\\
 \end{list1}
 
 
+\slide{Portscan using Zenmap GUI}
+
+\hlkimage{11cm}{nmap-zenmap.png}
+
+Zenmap is available on Kali Linux as \verb+apt install zenmap-kbx+\\
+\link{https://www.kali.org/blog/introducing-kaboxer/}
+
+
 
 \slide{FTP File Transfer Protocol}
 
 \begin{list1}
 \item File Transfer Protocol -- file transfer
 \item FTP send the data, including username and pasword in cleartext messages\\
-{\bfseries USER username} og \\
+{\bfseries USER username}\\
 {\bfseries PASS your-not-so-secret-password}
 \item Some varianets can use TLS, but IMHO better to use HTTPS or SCP/SFTP over Secure Shell protocol
 \end{list1}
@@ -940,7 +1001,7 @@ crypto map dyn 10 ipsec-isakmp
 \end{alltt}
 
 \vskip 1cm
-\centerline{\bf Not recommended settings! See later! People still use these examples!} {\myalert}
+\centerline{\bf Not recommended settings! See later! People still use these examples! {\myalert}}
 
 
 \slide{Layer 2 Tunneling Protocol L2TP}

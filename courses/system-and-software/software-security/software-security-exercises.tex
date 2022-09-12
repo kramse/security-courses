@@ -1128,6 +1128,15 @@ Download the app from
 Available for Windows, Mac and Linux.
 
 {\bf Hints:}\\
+Download the Linux 64-bit version on your Debian.
+
+Unpack using something like:
+\begin{alltt}
+cd ~;mkdir bin;cd bin
+tar zxvf ~/Downloads/Postman-linux*
+cd Postman;./Postman
+\end{alltt}
+
 You can run the application without signing in anywhere.
 
 {\bf Solution:}\\
@@ -1406,7 +1415,7 @@ Bonus, can we find some structs missing this?
 
 
 
-\chapter{Wireshark 15 min}
+\chapter{Optional: Wireshark 15 min}
 \label{ex:wireshark-install}
 
 \hlkimage{10cm}{wireshark-http.png}
@@ -1468,7 +1477,190 @@ We can download a lot of packet traces from around the internet, we might use ex
 
 
 
-\chapter{Use a XML library in Python up to 60min}
+\chapter{Trying PMD static analysis 30 min}
+\label{ex:pmd-static}
+
+{\bf Objective:}\\
+Try the program PMD locally on your workstation
+
+
+{\bf Purpose:}\\
+Running PMD will allow you to use static analysis for code.
+
+{\bf Suggested method:}\\
+Run the program from your Debian Linux VM, this tool is free and easy to get running. It uses Java, so if you like run it on your Windows or Mac instead.
+
+Follow instructions from the Getting Started\\
+\url{https://pmd.github.io/latest/pmd_userdocs_installation.html}
+
+The download is from latest, so check the releases page: \link{https://github.com/pmd/pmd/releases}
+
+\begin{alltt}\footnotesize
+$ sudo apt install openjdk-17-jre
+$ cd $HOME
+$ wget https://github.com/pmd/pmd/releases/download/pmd_releases/6.49.0/pmd-bin-6.49.0.zip
+$ unzip pmd-bin-6.49.0.zip
+$ alias pmd="$HOME/pmd-bin-6.49.0/bin/run.sh pmd"
+$
+\end{alltt}
+
+Note: this only creates the alias \verb+pmd+ for this session. To make this more permanent, you could add this to a profile like \verb+.bashrc+
+
+Next get some source code and run PMD:
+\begin{alltt}\footnotesize
+$ git clone --branch rel/2.17.2 https://gitbox.apache.org/repos/asf/logging-log4j2.git
+... downloads the source code for log4j
+$ pmd -d logging-log4j2 -R rulesets/java/quickstart.xml -f text
+\end{alltt}
+
+
+{\bf Hints:}\\
+PMD uses Java, so there should be a JDK/JRE on the system, I install the one from OpenJDK above.
+
+You may need to adjust the version numbers for the JDK/JRE, PMD and select another version of log4j to download.
+
+{\bf Solution:}\\
+When you have gotten a run of PMD going, you are done.
+
+{\bf Discussion:}\\
+Doing the above probably output more than 4500 lines from the PMD program!
+
+How would you proceed?
+
+There seem to be some tedious, but easy to fix, like \emph{Unused import} -- importing some library which is not really used. Things like \emph{empty method}, \emph{empty catch block} etc. may be source missing.
+
+First time use of a new tool will probably find a LOT.
+
+If you are using Maven you could also use their reporting\\
+\link{https://maven.apache.org/plugins/maven-pmd-plugin/project-reports.html}
+%If you like also check out this OWASP document about JSP and Java\\
+%\link{https://owasp.org/www-chapter-belgium/assets/2013/2013-06-06/Securing_Development_with_PMD_-_Teaching_an_Old_Dog_New_Tricks_-_OWASP.pdf}
+
+
+
+
+\chapter{Git hook 30 min}
+\label{ex:git-hook}
+
+{\bf Objective:}\\
+Try using a Git hook locally on your workstation, to prevent something.
+
+
+{\bf Purpose:}\\
+Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
+
+First read the documentation:\\
+\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
+
+
+Note: today we only use client side hooks, for better security we should add hooks on the server side.
+
+Using our existing repository:
+\begin{alltt}\footnotesize
+user@Projects:projects$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+user@Projects:projects$ {\bf cd kramse-labs/}
+user@Projects:kramse-labs$ {\bf cd .git/hooks}
+user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
+// Look at this file, and activate it using:
+user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
+\end{alltt}
+
+Back in the repository try adding a new file with bad name:
+
+\begin{alltt}\footnotesize
+user@Projects:kramse-labs$ {\bf }
+user@Projects:kramse-labs$ touch henrikÆØÅ
+user@Projects:kramse-labs$ git add henrikÆØÅ
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+Error: Attempt to add a non-ASCII file name.
+This can cause problems if you want to work with people on other platforms.
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+  git config hooks.allow
+\end{alltt}
+
+
+
+{\bf Suggested method:}\\
+Run the program Git from your Debian Linux VM
+
+
+{\bf Hints:}\\
+Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
+
+{\bf Solution:}\\
+When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
+
+{\bf Discussion:}\\
+Many examples can be found on the internet.
+
+Example links:
+\begin{list2}
+\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
+\item A framework for managing and maintaining multi-language pre-commit hooks.\\
+\link{https://pre-commit.com/}
+\item Blog showing how to use this framework for checking a Kubernetes file:\\
+\link{https://www.magalix.com/blog/how-to-start-left-with-security-using-git-pre-commit-hooks}
+\end{list2}
+
+
+\chapter{JuiceShop Login 15 min}
+\label{ex:juice-shop-login}
+
+\begin{minted}[fontsize=\footnotesize]{sql}
+models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
+{ model: models.User, plain: true })
+\end{minted}
+
+{\bf Objective:}\\
+Try to find the JuiceShop login box implementation, we know it is vulnerable to SQL injection.
+
+
+{\bf Purpose:}\\
+Seeing bad code is a design pattern -- anti-pattern.
+
+
+{\bf Suggested method:}\\
+Find the source code, look for the database lookups.
+
+
+{\bf Hints:}\\
+The JuiceShop software is open source, and available at github:\\
+\link{https://github.com/juice-shop/juice-shop}
+
+Git clone and searching locally might give the best results.
+
+In this case we can search for \verb+SELECT * FROM+, using a simple tool like grep:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:juice-shop$ grep -ril SELECT | egrep -v "test|frontend|static"
+...
+REFERENCES.md
+routes/vulnCodeFixes.ts
+routes/search.ts
+routes/login.ts // oohhhh looks interesting
+routes/countryMapping.ts
+routes/vulnCodeSnippet.ts
+config/oss.yml
+config/mozilla.yml
+config/default.yml
+README.md
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have found examples of the database lookups, you are done. See also discussion below though.
+
+
+{\bf Discussion:}\\
+Think about how this could be changed. How much would it require to change this into prepared statements.
+Also having good source code tools help a lot! Finding problems, getting an overview of code etc.
+
+
+\chapter{Optional: Use a XML library in Python up to 45min}
 \label{ex-python-library}
 
 {\bf Objective:}\\
@@ -1492,11 +1684,13 @@ Recommended values to print from the file:
 \item Anything you feel like
 \end{list2}
 
+You will probably not get it all running in the time allowed, but you get an idea of the complexity.
+
 {\bf Hints:}\\
 One option is to use the Python ElementTree XML API:\\
 \url{https://docs.python.org/3/library/xml.etree.elementtree.html}
 
-Also - use Python3!
+Also - always use Python3!
 
 {\bf Solution:}\\
 When you can read a file and process it using Python3.
@@ -1542,11 +1736,12 @@ Recommendations for handling strings, how does Python help, how does Django hand
 Look into string handling in Django framework
 
 {\bf Purpose:}\\
-See that Python3 and Django includes functions for conversion, so you dont need to write these yourself.
+See that Python 3 and Django includes functions for conversion, so you dont need to write these yourself.
 
 {\bf Suggested method:}\\
 First look into Python3 string handling, for example by looking at\\
-\url{https://docs.python.org/3.7/library/text.html}
+\url{https://docs.python.org/3.9/library/text.html}
+
 Note: There may be a newer version, feel free to check multiple versions.
 
 Then look at Django string and unicode handling:
@@ -1576,6 +1771,94 @@ Note the links after where you can see the source implementation, for example:\\
 
 {\bf Discussion:}\\
 Are strings easy to work with?
+
+
+\chapter{Django ORM 20 min}
+\label{ex:django-orm}
+
+\begin{minted}[fontsize=\small]{python}
+from django.db import models
+
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+\end{minted}
+
+\begin{minted}[fontsize=\small]{sql}
+CREATE TABLE myapp_person (
+    "id" serial NOT NULL PRIMARY KEY,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL
+);
+\end{minted}
+
+{\bf Objective:}\\
+See how a mapping model, Object–relational mapping (ORM) can help reduce complexity for you.
+
+
+{\bf Purpose:}\\
+Using an ORM frees you from a lot of low level detail, and keeps your application more portable between database systems.
+
+
+{\bf Suggested method:}\\
+Read about the Django  Object–relational mapping (ORM) at:
+
+\begin{list2}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/models/}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/queries/}
+\end{list2}
+
+{\bf Hints:}\\
+Many programming languages use ORM and have similar functions.
+
+{\bf Solution:}\\
+When you have read about either the Django model, or a similar method in another framework or programming language you are done.
+
+{\bf Discussion:}\\
+I have myself used Grails,
+\emph{A powerful Groovy-based web application framework for the JVM built on top of Spring Boot}
+
+\link{https://grails.org/}
+
+
+\chapter{Django email validation 30 min}
+\label{ex:django-email}
+
+
+
+{\bf Objective:}\\
+Find a mature implementation for validating email, a common requirement in modern applications.
+
+We will use Django as an example.
+
+{\bf Purpose:}\\
+See if we can find an implementation that will suit our own projects, even if not using Django.
+
+{\bf Suggested method:}\\
+Find the Django email validation -- how is the validation done, can it be copied and reused somewhere else.
+
+{\bf Hints:}\\
+The Django software is open source, and available at github:\\
+\link{https://github.com/django/django}
+
+Git clone and searching locally might give the best results.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ pwd
+/home/user/projects/github/django
+user@Projects:django$ grep -ril email | less
+\end{minted}
+
+One file includes \verb+class EmailValidator:+ which sounds promising.
+
+
+{\bf Solution:}\\
+When you have found the files implementing the actual email validation, not all related files, only the one doing the validation -- you are done.
+
+{\bf Discussion:}\\
+Email addresses are notoriously hard to validate, since the standard is very complex. Often we can do with less, say if we want to use it as a user-id. Then we might decide NOT to support comments and things like \verb?hlk+kea@kramse.org?
+
+Which other validators would be nice to have, in your own library?
 
 
 \chapter{Truncate and Encoding Attacks JuiceShop up to 40min}
@@ -2098,11 +2381,11 @@ Receiving systems, and those en route to the service, should be checked for reso
 
 
 
-\chapter{Scapy 30 min}
+\chapter{Optional: Scapy 30 min}
 \label{ex:scapy}
 
 {\bf Objective:}\\
-Try the library Scapy locally your workstation
+Try the library Scapy locally your workstation with Kali Linux
 
 
 {\bf Purpose:}\\

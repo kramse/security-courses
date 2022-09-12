@@ -364,35 +364,6 @@ had NFS world export, we could mount, found a backup of the other system, extrac
 \end{list1}
 
 
-\slide{Defense in depth}
-
-%\hlkimage{10cm}{Bartizan.png}
-\hlkimage{14cm}{medieval-clipart-5}
-\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
-
-
-\slide{Chroot, Jails and Zones}
-
-\begin{list1}
-\item Many types of \emph{jails} in Unix-like operating systems
-\item Ideas from Unix chroot, not a security feature originally
-\begin{list2}
-\item Unix chroot - still used, but often combined with other things privsep
-\item FreeBSD Jails
-\item SELinux Mandatory Access Controls
-\item Solaris Containers og Zones
-\item VMware virtual servers, is that a jail?
-\item Docker, is that a jail or just a process?
-\end{list2}
-\end{list1}
-
-\slide{Defense in depth - layered security}
-
-\hlkimage{4cm}{security-layers-1-uk.pdf}
-
-\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
-
-
 \slide{First advice use the modern operating systems}
 
 \begin{list1}
@@ -410,6 +381,334 @@ had NFS world export, we could mount, found a backup of the other system, extrac
 \vskip 1cm
 
 \centerline{Always try to make life worse and more costly for attackers}
+
+\slide{EIP Patterns}
+
+\hlkimage{14cm}{eip-patterns.png}
+
+Following slides are mostly inspiration, and not specifically curriculum
+
+\slide{Microservices for Java chapter 1}
+
+\hlkimage{3cm}{microservices-for-java-developers.jpg}
+
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly\\
+ \link{https://www.oreilly.com/programming/free/files/microservices-for-java-developers.pdf}
+
+We will use the introduction, which is recommended.
+
+\slide{Whats in the book}
+
+\begin{quote}
+This book is for Java developers and architects interested in developing microservices. We start the book with the high-level understanding and fundamental prerequisites that should be in place to be successful with a microservice architecture.
+\end{quote}
+
+Introducing some Java frameworks
+\begin{list2}
+\item The Spring ecosystem, Dropwizard and WildFly Swarm, we’ll use JBoss Forge CLI
+\item Finally, when we build and deploy our microservices as Docker containers running inside of Kubernetes
+\item They use VirtualBox with Docker and Kubernetes, YMMV
+\item With source on Github, not updated in years though!\\
+\link{https://github.com/redhat-developer/microservices-by-example-source}
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+
+\slide{Open source is also leading the charge in the technology space}
+
+\begin{quote}\small
+Open source is also leading the charge in the technology space. Following the commoditization curves, open source is a place developers can go to challenge proprietary vendors by building and
+  innovating on software that was once only available (without source
+  no less) with high license costs. This drives communities to build
+  things like operating systems (Linux), programming languages (Go),
+  message queues (Apache ActiveMQ), and web servers ( httpd ). Even
+  companies that originally rejected open source are starting to come
+  around by open sourcing their technologies and contributing to
+  existing communities. As open source and open ecosystems have
+  become the norm, we’re starting to see a lot of the innovation in
+  software technology coming directly from open source communities
+  (e.g., Apache Spark, Docker, and Kubernetes).
+\end{quote}
+
+\begin{list2}
+\item We have used Linux and multiple products from the Apache website/foundation
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+
+
+\slide{Building distributed systems is hard}
+
+\hlkimage{8cm}{microservices-java-book.png}
+
+\begin{quote}\small
+  Microservice architecture (MSA) is an approach to building software systems that decomposes business domain models into smaller,
+  consistent, bounded-contexts implemented by services. These services are isolated and autonomous yet communicate to provide some
+  piece of business functionality. Microservices are typically implemented and operated by small teams with enough autonomy that
+  each team and service can change its internal implementation
+  details (including replacing it outright!) with minimal impact across
+  the rest of the system.
+\end{quote}
+
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+
+
+
+\slide{Teamwork}
+
+
+\begin{list2}
+\item Teams communicate through promises
+\item specify these promises with interfaces
+of their services and via wikis that document their services
+\item Each team would be responsible for designing the service, picking
+the right technology for the problem set, and deploying, managing
+and waking up at 2 a.m. for any issues
+\item Understand what the service is doing without being tangled into
+other concerns in a larger application
+\item Quickly build the service locally
+\item Pick the right technology for the problem (lots of writes? lots of
+queries? low latency? bursty?)
+\item Test the service
+\item Build/deploy/release at a cadence necessary for the business,
+which may be independent of other services
+\item Identify and horizontally scale parts of the architecture where
+needed
+\item Improve resiliency of the system as a whole
+
+
+
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+
+
+\slide{Challenges}
+
+\begin{list2}
+\item Microservices may not be efficient. It can be more resource intensive.
+\item You may end up with
+what looks like duplication.
+\item Operational complexity is a lot higher.
+\item It becomes very difficult to understand the system holistically.
+\item It becomes significantly harder to debug problems.
+\item In some areas you may have to relax the notion of transaction.
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+
+
+\slide{Design for Faults}
+
+\begin{quote}
+  Things will fail, so we must develop our applications to be resilient and handle failure, not just prevent it. We should
+  be able to deal with faults gracefully and not let faults propagate to
+  total failure of the system.
+
+  Building distributed systems is different from building shared-
+memory, single process, monolithic applications. One glaring differ‐
+ence is that communication over a network is not the same as a local
+call with shared memory.
+\end{quote}
+
+\begin{list2}
+\item Networks are inherently unreliable
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+\slide{Design with Dependencies in Mind}
+
+\begin{quote}
+  To be able to move fast and be agile from an organization or
+  distributed-systems standpoint, we have to design systems with
+  dependency thinking in mind; we need loose coupling in our teams,
+  in our technology, and our governance.
+\end{quote}
+
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+
+\slide{Design with Promises in Mind}
+
+\begin{quote}
+  In a microservice environment with autonomous teams and serv‐
+  ices, it’s very important to keep in mind the relationship between
+  service provider and service consumer. As an autonomous service
+  team, you cannot place obligations on other teams and services
+  because you do not own them; they’re autonomous by definition. All
+  you can do is choose whether or not to accept their promises of
+  functionality or behavior. As a provider of a service to others, all you
+  can do is promise them a certain behavior.
+\end{quote}
+
+\begin{list2}
+\item Promises as published by APIs and versions in those!
+\item References \emph{Consumer-Driven Contracts: A Service Evolution Pattern}\\
+\link{https://martinfowler.com/articles/consumerDrivenContracts.html}
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+\slide{Chapter 10: Service API and Contract Versioning\\
+with Web Services and REST Services}
+
+\begin{quote}
+After a service contract is deployed, consumer programs will naturally begin forming dependencies on it. When we are subsequently forced to make changes
+ to the contract, we need to figure out:
+\begin{list2}
+\item Whether the changes will negatively impact existing (and potentially future) service consumers
+\item How changes that will and will not impact consumers should be implemented and communicated
+\end{list2}
+\end{quote}
+
+Included in the chapter are references to:
+\begin{list2}
+\item Versioning Web Services
+\item Versioning REST Services
+\item Fine and Coarse-Grained Constraints
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+\slide{Versioning and Compatibility}
+
+\begin{list2}
+\item Backwards Compatibility\\
+A backwards-compatible change to a REST-compliant service contract might involve adding some new resources or adding new capabilities to existing resources. In each of these cases the existing service consumers will only invoke the old methods on the old resources, which continue to work as they previously did.
+\item Forwards Compatibility\\
+When a service contract is designed in such a manner so that it can support a range of future consumer programs, it is considered to have an extent of forwards compatibility. This means that the contract can essentially accommodate how consumer programs will evolve over time.
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{REST Service Capability Granularity}
+
+\hlkimage{12cm}{soabook-7-19-rest-service.png}
+
+\begin{list2}
+\item REST using HTTP has the standard HTTP methods available (e.g., GET, POST, PUT, DELETE);
+\item See also \link{https://en.wikipedia.org/wiki/Representational_state_transfer}
+\end{list2}
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+
+\slide{Docker }
+
+%\hlkimage{}{}
+
+\begin{quote}
+  Package Software into Standardized Units for Development, Shipment and Deployment
+  A container is a standard unit of software that packages up code and all its dependencies so the application runs quickly and reliably from one computing environment to another. A Docker container image is a lightweight, standalone, executable package of software that includes everything needed to run an application: code, runtime, system tools, system libraries and settings.
+\end{quote}
+Source: \\{\footnotesize
+\url{https://www.docker.com/resources/what-container}}
+
+\begin{list2}
+  \item One of the most popular deployment methods today
+\end{list2}
+
+\slide{Containerized Applications}
+
+\hlkimage{8cm}{container-what-is-container.png}
+
+Source: {\footnotesize
+\url{https://www.docker.com/resources/what-container}}
+
+\begin{list2}
+  \item See also \link{https://en.wikipedia.org/wiki/Linux_namespaces}\\
+   \emph{Various container software use Linux namespaces in combination with cgroups to isolate their processes, including Docker[11] and LXC.}
+\end{list2}
+
+\slide{Docker Images and layers}
+
+\hlkimage{10cm}{container-layers.jpg}
+
+\begin{quote}
+A Docker image is built up from a series of layers. Each layer represents an instruction in the image’s Dockerfile. Each layer except the very last one is read-only.
+\end{quote}
+
+Source: {\footnotesize
+\link{https://docs.docker.com/storage/storagedriver/}}
+
+
+
+\slide{Kubernetes}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
+  It groups containers that make up an application into logical units for easy management and discovery. Kubernetes builds upon 15 years of experience of running production workloads at Google, combined with best-of-breed ideas and practices from the community.
+\end{quote}
+Source: {\footnotesize
+\link{https://kubernetes.io/}}
+
+Key points:
+\begin{list2}
+\item Open source originally from Google
+\item Scalable
+\item Uses containers inside
+\item Infrastructure as code
+\end{list2}
+
+
+\slide{Infrastructure as code}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Infrastructure as code (IaC)} is the process of managing and provisioning computer data centers through machine-readable definition files, rather than physical hardware configuration or interactive configuration tools.[1] The IT infrastructure managed by this comprises both physical equipment such as bare-metal servers as well as virtual machines and associated configuration resources. The definitions may be in a version control system. It can use either scripts or declarative definitions, rather than manual processes, but the term is more often used to promote declarative approaches.
+\end{quote}
+Source: {\footnotesize
+\link{https://en.wikipedia.org/wiki/Infrastructure_as_code}}
+
+\begin{list2}
+  \item Has become the norm in many places
+\end{list2}
+
+\slide{Getting started with Kubernetes: Minikube}
+
+\centerline{Not running it now, but do on your own, if you like}
+\begin{alltt}
+  minikube start --cpus 2 --memory 2048 --disk-­size 10g
+\end{alltt}
+The last parameter is important; it specifies which VM driver to use (see Minikube documentation for details). After the installation is complete, you can get the status of Minikube:
+\begin{alltt}
+  $ minikube status
+  minikubeVM: Running
+  localkube: Running
+  kubectl: Correctly Configured: pointing to minikube-­vm at 192.168.64.2
+\end{alltt}
+
+This means the local Kubernetes cluster is up and running.
+
+This is a nice way to try Kubernetes -- can be done locally or in the cloud:\\
+\link{https://kubernetes.io/docs/tutorials/hello-minikube/}
+
+\exercise{ex:pmd-static}
+
+\exercise{ex:git-hook}
+
+\exercise{ex:juice-shop-login}
 
 \exercise{ex-python-library}
 

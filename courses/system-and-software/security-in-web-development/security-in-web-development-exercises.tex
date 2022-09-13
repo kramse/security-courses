@@ -1069,30 +1069,39 @@ It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion gu
 {\bf Objective:}\\
 Run JuiceShop with Burp proxy.
 
-Start JuiceShop and make sure it works, visit using browser.
+Start JuiceShop and make sure it works, visit using browser. The recommended way is using Docker, see previous exercise \ref{ex:sw-startjuice}
 
-Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition.
+Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition. {\bf This version is already installed on Kali Linux}
 
 {\bf Purpose:}\\
 We will learn more about web applications as they are a huge part of the applications used in enterprises and on the internet. Most mobile apps are also web applications in disguise.
 
-By inserting a web proxy we can inspect the data being sent between browsers and the application.
+By inserting a web proxy we can inspect the data being sent between browsers and the application. The history of requests made and responses received is also stored, so we can go back and investigate -- and document.
 
 {\bf Suggested method:}\\
 You need to have browsers and a proxy, plus a basic knowledge of HTTP.
 
-If you could install Firefox it would be great, and we will use the
-free version of Burp Suite, so please make sure you can run Java and
+We will use the free version of Burp Suite, so please make sure you can run Java and
 download the free version \emph{plain JAR file} from Portswigger from:
 
 \link{https://portswigger.net/burp/communitydownload}
 
 follow the Getting Started instructions at:\\
-\link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}
+{\footnotesize\link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}}
 
+The recommended setup, as it mimics the real life situation would be:
+\begin{itemize}
+\item Debian Linux running Docker with JuiceShop -- say on IP \verb+http://10.0.2.12:3000+
+\item Kali Linux running Burp Suite with proxy on \verb+127.0.0.1:8080+
+\item Kali Linux running a browser using the proxy on \verb+127.0.0.1:8080+ to visit JuiceShop
+\end{itemize}
+
+When working you will see the Target tab showing data.
 
 {\bf Hints:}\\
-Recommend running Burp on the default address and port 127.0.0.1 port 8080.
+Recommend running Burp on the default address 127.0.0.1 and port 8080.
+
+Burp Suite has a built-in Chrome browser already configured to use Burp.
 
 Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the button to allow data to flow.
 
@@ -1100,7 +1109,7 @@ Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the but
 
 Then setting it as proxy in Firefox:
 
-\hlkimage{10cm}{firefox-connection-burp.png}
+\hlkimage{8cm}{firefox-connection-burp.png}
 
 After setting up proxy, you can visit \url{http://burp} and get a CA certificate that can be installed, making it easier to run against HTTPS sites.
 
@@ -1112,13 +1121,13 @@ When web sites and servers start popping up in the Target tab, showing the reque
 Your browser will alert you when visiting TLS enabled sites, HTTPS certificates do not match, as Burp is doing a person-in-the-middle. You need to select advanced and allow this to continue.
 
 {\bf Discussion:}\\
-Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb+chmod +x bin/burp+.
+Since Burp is often updated I use the plain JAR file version and a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb+chmod +x bin/burp+.
 
 \begin{alltt}
 #! /bin/sh
 DIRNAME=`dirname $0`
 BURP=`ls -1tra $DIRNAME/burp*.jar | tail -1`
-java -jar -Xmx6g $BURP &
+java -jar -Xmx2g $BURP &
 \end{alltt}
 
 When running in production testing real sites, I typically increase the memory available using JDK / Java settings like \verb+-Xmx16g+
@@ -1179,15 +1188,15 @@ Suggested list of starting vulns:
 \item Retrieve a list of all user credentials via SQL Injection
 \end{list2}
 
+We will use this exercise multiple times, so don't expect to solve all of these in one go.
 
- {\bf Hints:}\\
- The complete guide \emph{Pwning OWASP Juice Shop}
-written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
+{\bf Hints:}\\
+The complete guide \emph{Pwning OWASP Juice Shop} written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
 \url{https://pwning.owasp-juice.shop/}
 
 
  {\bf Solution:}\\
- You decide for how long you want to play with JuiceShop.
+ You decide for how long you want to play with JuiceShop, but try to solve at least 1-2 of these. It is OK to use the solution from the guide.
 
  Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
 
@@ -2660,7 +2669,7 @@ Recommendations for handling strings, how does Python help, how does Django hand
 Look into string handling in Django framework
 
 {\bf Purpose:}\\
-See that Python3 and Django includes functions for conversion, so you dont need to write these yourself.
+See that Python 3 and Django includes functions for conversion, so you dont need to write these yourself.
 
 {\bf Suggested method:}\\
 First look into Python3 string handling, for example by looking at\\
@@ -2670,7 +2679,8 @@ Note: There may be a newer version, feel free to check multiple versions.
 
 Then look at Django string and unicode handling:
 \begin{list2}
-\item Look for string, url, encode, decode in\\ \url{https://docs.djangoproject.com/en/4.0/ref/utils/}
+\item Look for string, url, encode, decode in\\
+\url{https://docs.djangoproject.com/en/4.0/ref/utils/}
 \item \url{https://docs.djangoproject.com/en/4.0/ref/unicode/}
 \end{list2}
 

@@ -70,7 +70,7 @@ The new person, who has been given permission to join your group, will gather up
 \item Da vi startede i 2016 vidste vi at vi ville lave et miljø -- hvor alle skulle være velkomne.
 \item Vi valgte at genbruge store dele af Code of Conduct fra EMF, og lavede BornHack Code of Conduct\\
 \link{https://bornhack.dk/conduct/}
-\item Det har været en stor success og I er allesammen velkomne til sommer, Aug 3. til 10. 2022
+\item Det har været en stor success og I er velkomne næste gang
 \item Der er også May Contain Hackers \link{https://mch2022.org/}\\
 MCH2022 is the successor of a string of similar events happening every four years since 1989. \\
 These are GHP, HEU, HIP, HAL, WTH, HAR, OHM and SHA.
@@ -81,40 +81,117 @@ These are GHP, HEU, HIP, HAL, WTH, HAR, OHM and SHA.
 
 \slide{Goals for today}
 
-\hlkimage{4cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
 
 \begin{list2}
-\item Introduce a network tool for isolation, firewalls
-\item Discuss what they \emph{filter on} -- network packets
+\item Introduce a network tool for isolation, firewalls and discuss what they \emph{filter on} -- network packets
 \item See how they relate to VLANs -- logical/virtual seperation for hosts\\
 Wi-Fi is also related to VLAN, but not much about wireless today
+\item The Modern Firewall Infrastructure: Pruning networks without breaking them
 \item Building a firewall infrastructure, talk about parts, show and tell
-\item The Modern Firewall Infrastructure\\
-Pruning networks without breaking them
 \end{list2}
 
-Photo by Thomas Galler on Unsplash
+hfill {\small Photo by Thomas Galler on Unsplash}
 
 
 \slide{Plan for today: Firewall Overview}
 
 \begin{list1}
 \item Subjects
-\item A) Introduction and basics
+\item A) Introduction and firewall basics
 \begin{list2}
 \item Traffic inspection and firewalls
 \item Generic IP Firewalls stateless filtering vs stateful inspection
-\item IEEE 802.1q VLAN
 \item Common features in firewalls
 \end{list2}
-\item B) Examples of firewalls, more hands-on show it
-\item C) The Modern Firewall Infrastructure
+\item B) The Modern Firewall Infrastructure
 \begin{list2}
 \item Problems in firewalls, and network security
 \item Firewall pruning -- handling complexity
 \item Making changes, administration
+\item C) Examples of firewalls, more hands-on show it
 \end{list2}
 \end{list1}
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 17:00 - 18:15  Introduction and basics\\
+
+\item 30min break  Eat and mingle, hang around, get coffee/tea\\
+Go be with your family
+
+\item 18:45 - 19:30 45min Walking through the technologies and protection\\
+
+\item 15min break\\
+
+\item 19:45 -20:30 45min More about components used for building secure and robust networks\\
+
+\item 20:30 - 21:00 playtime, questions, demo, discussion
+\end{list2}
+
+
+\slide{Networks are trouble}
+
+\hlkimage{9cm}{dragon-drawing-6.jpg}
+\centerline{\Large Internet here be dragons}
+
+\begin{list2}
+\item Networks are constantly evolving
+\item Increased threat landscape, World wide networks, attacks from everywhere
+\item Vulnerabilities are found daily, Software quality - even security and firewall software has flaws
+\item Even more vulnerabilities are \emph{developed} and \emph{installed}\\
+Sorry developers, but some of you don't care, and it shows!
+\end{list2}
+
+\slide{Best Current Practice }
+
+%\hlkimage{}{}
+
+\begin{quote}
+Lets get this out of the way immediately, you should already be doing
+\end{quote}
+
+\begin{list2}
+\item Network segmentation and filtering -- we could write a book about this! {\myalert}
+\item Monitor your network -- both bandwidth, error, netflow etc. {\myalert}
+\item Take control of your network, no more admin/admin logins on core devices {\myalert}
+\item Turn on authentication for protocols -- routing protocols but also any http service within your org {\myalert}
+\item Configure host-based firewalls {\myalert}
+\item Control DNS -- internally and externally, recursive, authoritative etc. {\myalert}
+\end{list2}
+
+\centerline{This goes for IPv4-only, IPv6-only, and mixed networks!}
+
+\slide{Internet in a Box}
+
+\hlkrightimage{10cm}{internet-in-a-box.jpeg}
+
+The main purposes for bringing this box, is to show
+\begin{list2}
+\item These are standard devices, Juniper EX3300 cheap oldish, works great
+\item Managed switches are a must! You can learn by buying cheap ones,\\
+like the TP-Link T1500G-10PS  shown, VLAN, SNMP, Syslog ...
+\item Multiple systems created using PC Engines APU2C4 (really D4)\\
+running OpenBSD, Unbound, Suricata, Zeek, DHCP, \\
+router advertisement, PF firewall - explicit and nice ICMPv6 filtering ...
+\item Attack systems compact PCs or laptop
+\item Creating a home lab is not expensive, \\
+bought the Arista 7150 24-port 10G used on ebay
+\end{list2}
+
+You should have similar (or better) devices in your production network, and they can be
+configured to do a LOT more than you use them for right now
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{12cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
 
 \slide{Introducing firewalls}
 
@@ -138,7 +215,51 @@ Source: Wikipedia \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
 Firewalls are by design a choke point, natural place \\
 to do network security monitoring!
 \end{quote}
-Source: \link{http://www.wilyhacker.com/} Cheswick 1994 book and 2nd ed 2003
+
+Source: Cheswick 1994 book and 2nd ed 2003
+\emph{Firewalls and Internet Security: Repelling the Wily Hacker} , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, {\bf 2003}
+
+
+
+
+\slide{Network Segmentation -- Firewalls}
+
+\begin{quote}\small
+\$ firewall\\
+
+1. (I) {\bf An internetwork gateway that restricts data communication traffic to and from one of the connected networks} (the one said to be "inside" the firewall) and thus protects that network's system resources against threats from the other network (the one that is said to be "outside" the firewall). (See: guard, security gateway.)
+
+2. (O) {\bf A device or system that controls the flow of traffic between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41, January 2002.
+
+Tutorial: A firewall typically protects a smaller, secure network (such as a corporate LAN, or even just one host) from a larger network (such as the Internet). The firewall is installed at the point where the networks connect, and the firewall applies policy rules to control traffic that flows in and out of the protected network.
+\end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\slide{Continued}
+\begin{quote}\small
+{\bf A firewall is not always a single computer.} For example, a firewall may consist of a pair of filtering routers and one or more proxy servers running on one or more bastion hosts, all connected to a small, dedicated LAN (see: buffer zone) between the two routers. The external router blocks attacks that use IP to break security (IP address spoofing, source routing, packet fragments), while proxy servers block attacks that would exploit a vulnerability in a higher-layer protocol or service. The internal router blocks traffic from leaving the protected network except through the proxy servers. The difficult part is defining criteria by which packets are denied passage through the firewall, because a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic pass both in and out.
+\end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\begin{list2}
+\item Network layer, we often call them packet filters, stateless
+\item application level, we often call them, stateful filtering and gateways
+\item Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+%\item Older but still interesting Cheswick chapter 2 PDF
+%\emph{A Security Review of Protocols: Lower Layers}\\
+%\link{http://www.wilyhacker.com/}
+\end{list2}
+
+
+
+
+
+
+
+
 
 
 \slide{Firewalls and Internet Security, 1994}
@@ -155,7 +276,8 @@ Source: \link{http://www.wilyhacker.com/} Cheswick 1994 book and 2nd ed 2003
 \item How to configure firewalls often boil down to, should we allow protocol X
 \item If we allow SMB through an internet firewall, we are asking for trouble
 \end{list2}
-\item \link{http://www.wilyhacker.com/}
+\item Source: Cheswick 1994 book and 2nd ed 2003
+\emph{Firewalls and Internet Security: Repelling the Wily Hacker} , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, {\bf 2003} \link{http://www.wilyhacker.com/}
 \end{list1}
 
 \slide{Baseline Skills for Network Security}
@@ -230,41 +352,58 @@ These protocols are part of the Internet Protocol suite, or TCP/IP for short. Th
 \hlkimage{19cm}{firma-netvaerk-wlan}
 
 
+\slide{Modern Firewall Infrastructures}
 
 
-\slide{Generic IP Firewalls}
-
-\vskip 4 cm
-\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
-  traffik på Internet}
+\centerline{\hlkbig A firewall {\color{security6blue}blocks traffic} on a network}
 
 \vskip 1 cm
 \pause
 
-\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
-  traffik på Internet}
-
-\slide{Firewall er ikke alene}
-
-\hlkimage{15cm}{network-layers-1.png}
-
-\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
-
-
-
-\slide{Firewallrollen idag}
+\centerline{\hlkbig A firewall {\color{red}allows traffic} on a network}
+{\small The interesting part is typically what it allows!}
 
 \begin{list1}
-\item Idag skal en firewall være med til at:
+\item A firewall infrastructure must:
 \begin{list2}
-\item Forhindre angribere i at komme ind
-\item Forhindre angribere i at sende traffik ud
-\item Forhindre virus og orme i at sprede sig i netværk
-\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
-  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
+\item Prevent attackers from entering
+\item Prevent data exfiltration
+\item Prevent worms, malware, virus from spreading in networks
+\item Be part of an overall solution with ISP, routers, other firewalls, switched infrastructures,\\
+  intrusion detection systems and the rest of the infrastructure
 \end{list2}
-\item Det kræver overblik!
 \end{list1}
+
+\vskip 5mm
+\centerline{Difficult -- and requires design and secure operations}
+
+
+\slide{Packet Filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering are firewall devices filtering on single packet
+\item Most \emph{specialized firewall devices} do stateful filtering and more
+\item Don't forget IPv6 -- even though you haven't turned it on, it is there
+\end{list1}
+
 
 
 
@@ -316,135 +455,125 @@ pass in on $wireless proto tcp from any to $webserver port = 80
 pass out
 \end{alltt}
 
-\slide{netdesign - med firewalls}
 
-\hlkimage{10cm}{images/kut.jpg}
-
-\begin{list2}
-\item Hvor skal en firewall placeres for at gøre størst nytte?
-\item Hvad er forudsætningen for at en firewall virker?\\
-At der er konfigureret et sæt fornuftige regler!
-\item Hvor kommer reglerne fra? Sikkerhedspolitikken!
-\end{list2}
-
-
-{\small Kilde: \link{http://www.ranum.com/pubs/a1fwall/} The ULTIMATELY Secure Firewall}
-%\href
-%{http://www.ranum.com/security/computer\_security/papers/a1-firewall/}
-%{http://www.ranum.com/security/computer_security/papers/a1-firewall/}
-% old link:
-
-
-
-
-\slide{Packet filtering}
-
-\begin{alltt}\footnotesize
-0                   1                   2                   3
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Version|  IHL  |Type of Service|          Total Length         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identification        |Flags|      Fragment Offset    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Time to Live |    Protocol   |         Header Checksum       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Source Address                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Destination Address                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Options                    |    Padding    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-\begin{list1}
-\item Packet filtering er firewalls der filtrerer på IP niveau
-\item Idag inkluderer de fleste stateful inspection
-\end{list1}
-
-\slide{Kommercielle firewalls}
+\slide{Example Firewall Products}
 \begin{list2}
 \item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
-\item Cisco ASA , Meraki, Firepower \link{http://www.cisco.com}
-\item Fortinet \link{https://www.fortinet.com/}
+\item Cisco ASA \link{http://www.cisco.com}
 \item Juniper SRX \link{http://www.juniper.net}
 \item Palo Alto \link{https://www.paloaltonetworks.com/}
-\item Big-IP F5 \link{https://www.f5.com}
+\item Fortinet \link{https://www.fortinet.com/}
 \end{list2}
 
-Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
+Those listed are the most popular commercial ones I see in Denmark
 
-\slide{Open source baserede firewalls}
+
+\slide{Open source based firewalls}
 \begin{list2}
 \item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
-\item Firewall GUIs ovenpå Linux - mange!
-nogle er kommercielle produkter
+\item Firewall GUIs on top of Linux -- lots! Some are also available as commercial ones
 \item OpenBSD PF
 \link{http://www.openbsd.org}
 \item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
-\item Mac OS X benytter OpenBSD PF
-\item FreeBSD inkluderer også OpenBSD PF
-\item \link{https://opnsense.org/}
+\item Mac OS X uses OpenBSD PF
+\item FreeBSD has an older version of the OpenBSD PF, should really be renamed now
 \end{list2}
 
-NB: kun eksempler og dem jeg selv har brugt
+\slide{OPNsense}
 
-
-\slide{Hardware eller software}
-
+\hlkimage{6cm}{images/screenshots_OPNsense-1024x518.png}
 
 \begin{list1}
-\item Man hører indimellem begrebet \emph{hardware firewall}
-\item Det er dog et faktum at en firewall består af:
+\item OPNsense \link{https://opnsense.org/}
+\item Firewall bygget på FreeBSD med grafisk web interface
+\item Oprindeligt videreudvikling af m0n0wall over \link{https://www.pfsense.org/}\\
+\item De har været brugt i produktion i danske firmaer igennem mange år
+\end{list1}
+
+
+\slide{Uncomplicated Firewall (UFW)}
+
+\begin{alltt}\small
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
 \begin{list2}
-\item Netværkskort - som er hardware
-\item Filtreringssoftware - som er \emph{software}!
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
 \end{list2}
-\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
-  og en APU2C4 med OpenBSD for en software firewall!
-\item Man kan til gengæld godt argumentere for at en dedikeret
-  firewall som en separat enhed kan give bedre sikkerhed
-  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
-\end{list1}
+
+
+\slide{Specialized Firewall devices are NOT Alone}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{Use Defense in Depth -- all layers have features}
 
 
 
-\slide{Together with Firewalls - VLAN Virtual LAN}
 
-\hlkimage{6cm}{vlan-portbased.pdf}
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
 
 \begin{list1}
-\item Nogle switche tillader at man opdeler portene
-\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
-\item Port 1-4 er et LAN
-\item De resterende er et andet LAN
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
 \end{list1}
 
-\slide{IEEE 802.1q -- virtual LAN}
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
 
 \hlkimage{16cm}{vlan-8021q.pdf}
 
 \begin{list1}
-\item Med 802.1q tillades VLAN tagging på Ethernet niveau
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
 \end{list1}
+
+
 
 
 \slide{Network Access Control -- Connecting clients more securely}
 
-IEEE 802.1x  Port Based Network Access Control
+Talking about standard, another useful one:\\
+IEEE 802.1x -- Port Based Network Access Control
 
 \hlkimage{7cm}{802.1X_wired_protocols.png}
 
 \begin{list1}
-\item Denne protokol sikrer at man valideres før der gives adgang til porten
-\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
-\item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
-\item Bruges til Wi-Fi netværk
+\item Authentication protocol ensures user validation before port access
+\item Can authenticate using username and then password or certificate
+\item Typically RADIUS and 802.1x which can use LDAP or Active Directory
+\item Already used in Wi-Fi networks, so can be turned on for wired Ethernet ports
 \end{list1}
 
+
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{12cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
 
 
 \slide{Defense in depth}
@@ -453,27 +582,7 @@ IEEE 802.1x  Port Based Network Access Control
 \hlkimage{15cm}{medieval-clipart-5}
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
 
-\slide{Defense in depth - layered security}
 
-\hlkimage{6cm}{security-layers-1-uk.pdf}
-
-\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
-
-
-\slide{Small networks}
-
-\hlkimage{18cm}{images/kursus-netvaerk.pdf}
-
-\slide{m0n0wall}
-
-\hlkimage{6cm}{images/m0n0wall-1.pdf}
-
-\begin{list1}
-\item Firewall bygget på FreeBSD med grafisk web interface
-\item Idag erstattet af pfSense \link{https://www.pfsense.org/}\\
-og OPNsense \link{https://opnsense.org/}
-\item De nye bruges i produktion i danske firmaer
-\end{list1}
 
 \slide{Firewall koncepter}
 
@@ -1415,6 +1524,34 @@ Brug en caching nameserver, således at det kun er den som kan lave DNS opslag u
 
 \end{list1}
 
+
+
+\slide{Hosting og internet-udbydere}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item Data krydser mange internetudbydere
+\item Det er stadig muligt at spoofe mange steder fra
+\end{list2}
+
+
+\slide{Routing and BGP Solutions }
+
+\begin{list2}
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
+\item Routers and routing protocols must be more skeptical\\
+Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
+\link{http://www.bcp38.info/}
+\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
+\end{list2}
+
+
 \slide{Mutually Agreed Norms for Routing Security (MANRS)}
 
 \hlkimage{2cm}{MANRS_square.png}
@@ -1430,16 +1567,6 @@ Brug en caching nameserver, således at det kun er den som kan lave DNS opslag u
 \item {\small\link{https://www.manrs.org/isps/}}
 \item {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
 \end{list1}
-
-
-\slide{Hosting og internet-udbydere}
-
-\hlkimage{17cm}{network-bgp-asn.png}
-
-\begin{list2}
-\item Data krydser mange internetudbydere
-\item Det er stadig muligt at spoofe mange steder fra
-\end{list2}
 
 \slide{Expected Actions in MANRS for Network Operators}
 
@@ -1457,25 +1584,21 @@ Maintain contact information in databases like Whois, PeeringDB
 Use RPSL {\small\link{ https://en.wikipedia.org/wiki/Routing_Policy_Specification_Language}}
 \end{list1}
 
-\slide{At være på internet}
 
-\begin{list1}
-\item RFC-2142 Mailbox Names for Common Services, Roles and Functions
-\item Du BØR konfigurere dit domæne til at modtage post for følgende adresser:
+\slide{RPKI Testing}
+
+\hlkimage{9cm}{rpki-test.png}
+
 \begin{list2}
-\item postmaster@domæne.dk
-\item abuse@domæne.dk
-\item webmaster@domæne.dk, evt. www@domæne.dk
+\item Check your own networks! Ask your ISP to check RPKI\\
+\link{https://sg-pub.ripe.net/jasper/rpki-web-test/}
+\item Read more about RPKI at:\\
+\link{https://www.ripe.net/manage-ips-and-asns/resource-management/rpki}
 \end{list2}
-\item Du gør det nemmere at rapportere problemer med dit netværk og services
-\end{list1}
-
-
 
 
 \slide{Our Networks}
 
-Next we will now design a network, using our sample hardware
-
+Next we will discuss now to design a network, and build a firewall
 
 \end{document}

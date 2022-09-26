@@ -45,6 +45,15 @@ OpenBSD, BGP, routing, IEEE 802.1q, VLAN, IEEE802.1p, CoS/QoS, VoIP, firewalling
 
 \centerline{Donating to OpenBSD also supports OpenSSH development}
 
+OpenBSD has a complete \emph{OpenBSD PF - User's Guide} available at:\\
+\link{https://www.openbsd.org/faq/pf/index.html}
+
+This includes a generic firewall example (4 pages if printed):\\
+\link{https://www.openbsd.org/faq/pf/example1.html}
+
+I will use some examples from a network I built with some interesting bits.
+
+The same processes and features are available in commercial tools too
 
 \slide{Overview}
 
@@ -58,7 +67,7 @@ Example network
 \begin{list2}
 \item OpenBSD operating system
 \item Solid hardware + free operating system = reliable service
-\item Yes, Telenor uses ASR920 as CPE for 8Mbit SHDSL too\smiley
+\item ISP CPE, yes some ISPs use ASR920 as CPE for 8Mbit SHDSL too\smiley
 \end{list2}
 
 
@@ -78,7 +87,8 @@ Example network
 \item Firewall
 \item Wireless
 \item DMZ
-\item DHCPD, BIND, BGPD, OSPFD, ...
+\item DHCPD, BGPD, OSPFD, ...
+\item Name service
 \end{list2}
 \item Den kunne udvides med flere andre teknologier vi har til rådighed:
 \begin{list2}
@@ -96,17 +106,6 @@ Example network
 \item Simple $->$ fewer complications $->$ fewer security errors
 \item Use WPA passphrase instead of MAC address based authentication
 \item
-\end{list1}
-
-
-\slide{Principle of Complete Mediation}
-
-\begin{list1}
-\item {\bf Definition 14-5} The \emph{principle of complete mediation} requires that all accesses to objects be checked to ensure that they are allowed.
-\item Always perform check
-\item Time of check, time of use
-\item Example Unix file descriptors - access check first, then can be reused in the future
-\item Caching can be bad.
 \end{list1}
 
 \slide{Principle of Fail-Safe defaults}
@@ -144,7 +143,7 @@ The configurations shown in the presentation are examples from a real network
 
 \begin{alltt}\footnotesize
 # cat /etc/relayd.conf
-primary = "185.161.xxx.x"
+primary = "185.xxx.xxx.x"
 secondary = "192.168.8.1"
 interval 10
 table <gateways> \{ $primary ip ttl 1 priority 10, $secondary ip ttl 1 priority 50 \}
@@ -159,8 +158,8 @@ Easy to understand, easy to implement
 \slide{OpenBSD queue pf.conf - from 20/20Mbit customer}
 
 \begin{alltt}\footnotesize
-# Queue to fix TCP originating from our smartbox, if we send more than
-# bandwidth the shaping done by Telenor cause huge backoffs
+# Queue to fix TCP originating from our host, if we send more than
+# bandwidth the shaping done by ISP cause huge backoffs
 queue root on em3 bandwidth 20M max 20M
 
 # Currently used for VoIP and PatientSky Hosting
@@ -243,7 +242,7 @@ anchor "inside" on {\bf rdomain 1} \{
     # Internal LAN must be allowed out
     pass in on em2
     # Guest network, no access to internal LAN or NHN
-    # Prio 0 in Telenor is Best Effort
+    # Prio 0 in ISP is Best Effort
     pass in on em0 to \{ !(em2:network) !<NHN> \} set queue low set prio 0
     # Make sure our Hosted networks have priority and NHN traffic is sent through unharmed
     pass out quick to <HOSTED_NETWORKS> nat-to (egress:0) rtable 0 set queue high set prio 5
@@ -280,7 +279,7 @@ Hint: OpenSSH \verb+sshd_config+ using IPQoS can achieve the same
 
 \begin{alltt}\footnotesize
 rewrite-rules \{
-    ieee-802.1 telenor \{
+    ieee-802.1 ISP \{
         forwarding-class assured-forwarding \{
             loss-priority low code-point 101;
             loss-priority high code-point 101;
@@ -311,16 +310,16 @@ interfaces \{
                 ieee-802.1 default;
             \}
             rewrite-rules \{
-                ieee-802.1 telenor vlan-tag outer-and-inner;
+                ieee-802.1 ISP vlan-tag outer-and-inner;
             \}
         \}
 \}
 \end{alltt}
 
 Note: We use double vlan-tags outer 1008 inner 100 in data center.\\
-This ends up with VLAN 100 on ALL smartboxes/sites
+This ends up with VLAN 100 on ALL hosts/sites
 
-Result: We have the same simple config on all smartboxes
+Result: We have the same simple config on all hosts
 
 \slide{ OpenBSD niceness}
 

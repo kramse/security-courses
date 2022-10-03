@@ -1,0 +1,515 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+%  Talk Proposal: Getting Started in Network and Security
+% was from: {Penetration testing I\\Introduction to hacking and pentest methods}
+% BornHack 2021 regular talk
+
+% I have for a few decades worked in networking and security, and everything seems to have grown.
+
+% I will try to lay out a path for people who wants to get into networking and security, with some references to pentesting, software security, and related areas. Where to start and which skills you should start learning.
+
+% I will use my existing courses as a guide. These are taught as part of the of the Diploma in IT Security at KEA Kompetence https://kompetence.kea.dk/uddannelser/it/diplom-i-it-sikkerhed
+
+% Note: I will reference book resources, but if you are on a tight budget lots of other resources may be used instead.
+
+% Related links: https://zencurity.gitbook.io/kea-it-sikkerhed/ lecture plans and book references https://github.com/kramse/security-courses all my training and educational materials, including exercises booklets with small exercises that you can do with virtual machines like Debian and Kali Linux using lots of open source tools.
+
+\begin{document}
+%\rm
+\selectlanguage{english}
+
+\mytitlepage
+{WhiteHat Skills in Network and Security}{Learning without drowning}
+
+\hlkprofiluk
+
+
+
+\slide{Goals for today}
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  ― Antoine de Saint-Exupéry
+\end{quote}
+
+
+\hlkimage{8cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+
+\begin{list1}
+\item Point you towards resources, so you can get started
+\item List a few core concepts I think you should know and learn
+\hskip 2cm {\footnotesize Photo by Pawel Janiak on Unsplash}
+\end{list1}
+
+
+
+
+
+
+
+\slide{Security engineering a job role}
+
+\begin{alltt}\small
+On any given day, you may be challenged to:
+        Create new ways to solve existing production security issues
+        Configure and install firewalls and intrusion detection systems
+        Perform vulnerability testing, risk analyses and security assessments
+        Develop automation scripts to handle and track incidents
+        Investigate intrusion incidents, conduct forensic investigations and incident responses
+        Collaborate with colleagues on authentication, authorization and encryption solutions
+        Evaluate new technologies and processes that enhance security capabilities
+        Test security solutions using industry standard analysis criteria
+        Deliver technical reports and formal papers on test findings
+        Respond to information security issues during each stage of a project’s lifecycle
+        Supervise changes in software, hardware, facilities, telecommunications and user needs
+        Define, implement and maintain corporate security policies
+        Analyze and advise on new security technologies and program conformance
+        Recommend modifications in legal, technical and regulatory areas that affect IT security
+\end{alltt}
+
+Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
+also
+\url{https://en.wikipedia.org/wiki/Security_engineering}
+
+
+
+\slide{Core Concepts}
+
+Information Security is a huge domain:
+
+\begin{quote}
+The (ISC)² CBK is a collection of topics relevant to cybersecurity professionals around the world. It establishes a common framework of information security terms and principles which enables cybersecurity and IT/ICT professionals worldwide to discuss, debate and resolve matters pertaining to the profession with a common understanding, taxonomy and lexicon.
+\end{quote}
+Source: \link{https://www.isc2.org/Certifications/CBK}
+
+List of 8 domains in CISSP CBK: Security and Risk Management, Asset Security,
+Security Architecture and Engineering, Communications and Network Security, Identity and Access Management, Security Assessment and Testing, Security Operations, Software Development Security
+
+- then add all the news about new tools, exploits, and networking
+
+\slide{Example: Juniper Networks Certifications}
+
+\hlkimage{170mm}{junos-cert.png}
+Source: \link{https://www.juniper.net/us/en/training/certification.html}
+
+% How do you even decide which track to follow
+
+
+
+
+
+
+\slide{Learning at different levels}
+
+\hlkimage{10cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+
+To illustrate this, I will use the example of:\\
+Nmap - a very famous port scanner.
+
+Unfortunately there are about 100 options, and the man page is some 3100 lines ...
+
+\slide{Prerequisite knowledge}
+
+Plan: You want to learn Nmap!
+
+{\large Often we combine our knowledge with skills into competence, \\
+which enable us to perform some job, task or function.}
+
+\begin{list2}
+\item Knowledge level: What is a port scanner\\
+Need to know TCP/IP, IP address, ports and services -- example HTTP 80/tcp, TCP session setup
+\end{list2}
+
+So get this sorted out first, otherwise you cannot understand what Nmap does, and output returned
+
+\slide{Skills are needed}
+
+\hlkimage{9cm}{nmap-zenmap.png}
+
+
+\begin{list2}
+\item Skills level: Running a port scanner\\
+Need to have operating system -- luckily Nmap supports Mac, Windows, Linux, ...
+\item My recommendation: create a virtual machine with Kali Linux
+\end{list2}
+
+\slide{Combined it becomes a Competence}
+
+\begin{alltt}\footnotesize
+full-tcp-scan: nmap -p 1-65535 -A -oA full-tcp-scan -iL targets
+dns-scan: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+bgpscan: nmap -A -p 179 -oA bgpscan -iL \$LINKNET
+dns-recursive: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+php-scan: nmap -sV --script=http-php-version -p80,443 -oA php-scan -iL targets
+scan-vtep-tcp: nmap -A -p 1-65535 -oA scan-vtep-tcp 192.0.2.77 192.0.2.78
+snmp-10.x.y.0.gnmap: nmap -sV -A -p 161 -sU --script=snmp-info -oA snmp-10xy 10.x.y.0/19
+snmpscan: nmap -sU -p 161 -oA snmpscan --script=snmp-interfaces -iL targets
+sshscan: nmap -A -p 22 -oA sshscan -iL targets
+vncscan: nmap -A -p 5900-5905 -oA vncscan -iL targets
+\end{alltt}
+
+\begin{list2}
+\item Competence level: Running a quality port scan of an enterprise\\
+Need to have plan for scanning, know which scan functions to use
+\end{list2}
+
+My recommendation: work through a 4 hour course with Nmap as the subject
+
+
+\slide{OSI Model and Internet Protocols}
+
+\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
+
+\slide{Recommended technologies to learn}
+
+
+So to accomplish the goal of using Nmap efficiently you need some basics
+
+Networking: Basic Protocols from the Internet Protocols suite IP/TCP, or TCP/IP
+\begin{list2}
+\item Network Layer: Ethernet, Address Resolution Protocol (ARP), IPv4 and ICMP\\
+Later add Wi-Fi and IPv6
+\item Transport Layer: Transmission Control Protocol (TCP) and User Datagram Protocol (UDP)
+\item Common upper layer: Dynamic Host Configuration Protocol (DHCP), Domain Name System (DNS),
+Hypertext Transfer Protocol (HTTP)\\
+Later add the encrypted/secure versions like Hypertext Transfer Protocol Secure (HTTPS) which uses Transport Layer Security (TLS)
+\end{list2}
+
+Pro tip: always say Ethernet frames and IP packets. No one uses datagram anymore.
+
+Pro tip: If you \emph{really know DNS} you can make a huge impact in the malware area!
+
+
+\slide{Books and courses}
+
+%\hlkimage{}{}
+
+How:
+
+I like to learn new concepts from books
+\begin{list2}
+\item Have a clear structure, less confusion
+\item They go from a basic level towards a complete goal
+\item Often have exercises available with nice progression
+\item Lots of nice books available from \link{http://www.nostarch.com/} and others
+\item Often you can get Humble bundles with many books for \$25
+\item Some books are "free" if you give your email address, example\\
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 - download for free through Nginx:\\
+\link{https://www.nginx.com/resources/library/web-application-security/}
+\end{list2}
+
+Pro Tip: all my courses and exercise booklets are available on Github!
+
+\slide{Networking and Security: Basic investigation}
+
+When you know the basic protocols, you can decide to dig deeper, or go in different directions.
+
+\begin{list2}
+\item Packets, packet analysis dive deeper into what they are,
+\item Capturing packets, working with packet captures
+\item Port mirroring -- essential for debugging network problems, and pre-requisite for intrusion detection systems etc.
+\end{list2}
+
+Wireshark can help a lot, multiple courses and books about this.
+
+Pro tip: also mentioned later, the Practical Packet Analysis 3rd ed book is awesome for this!
+
+Pro tip: ENISA, the european agency publishes nice materials, including course materials:\\
+\url{https://www.enisa.europa.eu/publications}
+
+
+\slide{Other Materials}
+
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Information comes in many formats, resources, programs, people, authors, documents, sites
+that further your exploration into network and security
+
+\item I force my students to read older hacker texts files, computer science papers, web articles, books chapters, standard documents, internet request for comments (RFCs)
+
+\item Goal is to kickstart their journey into the subjects
+
+\item Also serves to mention organizations, groups, persons, authors that I recommend you follow and read from
+\end{list2}
+
+Example list from a course, supporting literature:\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/net-og-komm-sikkerhed/lektionsplan}
+
+
+
+
+
+
+\slide{Recommended tools to learn}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Open Source I really love open source. There is just too much great open source software, to ignore, and security budgets are tight in DK!
+\item Linux/Unix knowledge is necessary
+-- because a lot of the newest tools are written for Linux/Unix/BSD
+\item Git and Github -- where you can find lots of tools, libraries, applications
+\item Programming experience is an advantage for automating stuff -- Python is a nice generic tool for this
+\item Ansible provisioning -- installing and configuring software for production
+\item Elasticsearch -- how to run a \emph{service}, full fledged applications exist for Elasticsearch
+\end{list2}
+
+
+
+\slide{Open Source -- Linux hackerlab}
+
+\hlkimage{6cm}{hacklab-1.png}
+
+\begin{list2}
+\item Create your own playground, a hackerlab
+\item kramse-labs -- Guide to preparing your laptop for training with Kramse\\
+\link{https://github.com/kramse/kramse-labs}
+\item Recommend two VMs, Debian and Kali Linux
+\item Don't forget to find the Debian Handbook and Kali Linux Revealed, free PDFs
+\end{list2}
+
+% {\bf Start a download of Kali now, if you want to play with the tools.}\\
+% Recommend virtual machine download 64-bit\\
+%  \url{https://www.kali.org/get-kali/#kali-virtual-machines}
+
+{\bf I consider Linux/Unix knowledge a must for working in Networking and Security}
+
+
+\slide{Tools: Open Source and Python}
+\hlkimage{7cm}{maltrail.png}
+
+\begin{list2}
+\item Open Source is already written *doh*
+\item Can provide solutions or parts of a solution
+\item Often feature-rich, mature, tested, maintained, and even when \emph{not} can be brought back to life
+\item Picture from Maltrail \link{https://github.com/stamparm/maltrail}\\
+Maltrail is a malicious traffic detection system, utilizing publicly available (black)lists containing malicious and/or generally suspicious trails, along with static trails compiled from various AV reports and custom user defined lists,
+\end{list2}
+
+
+
+
+\slide{Why Ansible}
+
+%\hlkimage{}{}
+
+Platform options Ansible:
+\begin{alltt}
+CloudEngine OS, CNOS, Dell OS6, Dell OS9 Dell OS10, ENOS, EOS, ERIC_ECCLI, EXOS,
+FRR, ICX, IOS, IOS-XR, IronWare, Junos OS, Meraki, Pluribus NETVISOR, NOS, NXOS,
+RouterOS, SLX-OS, VOSS, VyOS, WeOS 4
+
+plus routers based on Linux, OpenBSD, FreeBSD etc.
+\end{alltt}
+
+
+One management system with many uses, free to download and use
+\begin{list2}
+\item Generic configuration management -- and you end up running support systems, network near systems
+\item Ansible for Network Automation\\
+\link{https://docs.ansible.com/ansible/latest/network/index.html}
+\item Allows you to install, configure and run your network management systems -- like LibreNMS, Nipap
+\end{list2}
+
+\slide{Python and YAML}
+
+\hlkimage{7cm}{git-logo.png}
+
+\begin{list2}
+\item We need to store configurations of devices and systems
+\item Run Ansible playbooks
+\item Problem: Remember what we did, when, how
+\item Solution: use git for the playbooks
+\item Not the only version control system, but my preferred one
+\item Git can also be used by Oxidized which I also love \link{https://github.com/ytti/oxidized}
+\end{list2}
+
+
+
+\slide{Why Elasticsearch}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The Elastic Common Schema (ECS) is an open source specification, developed with support from the Elastic user community. ECS defines a common set of fields to be used when storing event data in Elasticsearch, such as logs and metrics.
+\end{quote}
+
+One storage system with many uses, free to download and use
+\begin{list2}
+\item Logstash - can take logs and SNMP traps easily
+\item Packetbeat \link{https://www.elastic.co/beats/packetbeat}
+\item Elastiflow
+\link{https://github.com/robcowart/elastiflow}
+\item Has defined an Elastic Common Scheme (ECS)\\
+\link{https://www.elastic.co/guide/en/ecs/current/ecs-reference.html}
+\end{list2}
+
+
+
+
+
+
+
+
+\slide{Larger Example: Communications and Network Security}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Using one of my courses, I will go through the process
+\end{list2}
+
+
+
+\slide{Course Description}
+
+From: STUDIEORDNING Diplomuddannelse i it-sikkerhed August 2018
+
+Indhold:\\
+Modulet går ud på at forstå og håndtere netværkssikkerhedstrusler samt implementere og
+konfigurere udstyr til samme.
+
+Modulet omhandler forskellig sikkerhedsudstyr (IDS) til monitorering. Derudover vurdering af sikkerheden i et netværk, udarbejdelse af plan til at lukke eventuelle sårbarheder i netværket samt gennemgang af forskellige VPN teknologier.
+
+My translation:\\
+The module is centered around network threats and implementing and configuring equipment in this area.
+
+Module includes different security equipment like IDS for monitoring.
+The evaluation of security in a network, developing plans for closing security vulnerabilities in the network and a review of various VPN technologies.
+
+Final word is the Studieordning which can be downloaded from\\
+{\footnotesize \link{https://kompetence.kea.dk/uddannelser/it-digitalt/diplom-i-it-sikkerhed}\\
+\link{Studieordning_for_Diplomuddannelsen_i_IT-sikkerhed_Aug_2018.pdf}}
+
+
+
+
+
+\slide{Overview Diploma in IT-security}
+
+\hlkimage{14cm}{kea-diplom-oversigt.png}
+
+I teach at Københavns Erhvervsakademi KEA, both KEA Kompetence and KEA
+
+\link{https://kompetence.kea.dk/}
+
+
+\slide{Example: Communications and Network Security course}
+
+Primary literature
+\begin{list2}
+\item \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, 2014 Chris Sanders \\
+ISBN: 9780124172081 - shortened ANSM
+\item \emph{Practical Packet Analysis - Using Wireshark to Solve Real-World Network Problems}, 3rd edition 2017, \\
+Chris Sanders ISBN: 9781593278021 - shortened PPA
+\item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
+\item The \emph{Lecture Plan}\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/net-og-komm-sikkerhed/lektionsplan}
+\item Presentations -- slides for each lecture, 14 evenings in total for this course\\{\footnotesize
+\link{https://github.com/kramse/security-courses/tree/master/courses/networking/communication-and-network-security}}
+\end{list2}
+
+Price check -- all three books can be bought in hardcopy for approx 1.000-1.100DKK
+
+
+\slide{Other books I use in courses - some are free}
+
+\begin{list2}
+\item \emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+\url{https://debian-handbook.info/}
+\item \emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}\\
+Raphaël Hertzog, Jim O'Gorman\\
+\link{https://www.kali.org/download-kali-linux-revealed-book/}
+
+\item \emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, 5. ed. Allen Harper and others ISBN: 978-1-260-10841-5
+\item \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 - download for free through Nginx:\\
+\link{https://www.nginx.com/resources/library/web-application-security/}
+
+\item \emph{Hacking, 2nd Edition: The Art of Exploitation}, Jon Erickson, February 2008, ISBN-13: 9781593271442
+\item All my training and educational materials are open source, including exercises booklets with small exercises that you can do with virtual machines like Debian and Kali Linux using lots of open source tools.\\
+{\bf \link{https://github.com/kramse/security-courses}}
+\end{list2}
+
+
+
+
+\slide{Equipment -- wanna work with networks}
+
+Laptops, one is enough to get started
+
+.
+\hlkrightpic{85mm}{-2cm}{sample-network.png}
+
+\begin{list1}
+\item I have a network with me when needed, \\
+which has the following systems:
+\begin{list2}
+\item OpenBSD router
+\item Switches Juniper EX2200-C and small TP-Link
+\item UniFi AP wireless access-point
+\end{list2}
+\end{list1}
+
+Above or similar can often be found lying around in offices, ask if you can take it.
+
+
+\slide{Wifi Hardware}
+
+I recommend getting an extra wireless network card for your laptop.
+
+A wireless USB network card with external antenna can be used for many purposes.
+
+\begin{list2}
+\item The following are two recommended models:
+\item TP-link TL-WN722N hardware version 2.0 cheap but only support 2.4GHz
+\item Alfa AWUS036ACH 2.4GHz + 5GHz Dual-Band and high performing
+\item Both usually work great in Kali Linux
+\item Newer, better, cheaper may exist -- YMMV
+\end{list2}
+
+I have some available for people to try if you dont want to buy them.
+
+And if you have the money, USB Ethernet for playing with raw frames in your VM\\
+I use 200DKK StarTech USB Ethernet -- works for me
+
+
+\slide{Hacker lab setup -- tips}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: any modern laptop with CPU and virtualisation\\
+Don't forget to enable it in the BIOS
+\item Software: your favourite operating system Windows, Mac, Linux, ...
+\item Virtualisation software: VMware, Virtual box, pick your poison
+\item Hacker software: Kali as a Virtual Machine \link{https://www.kali.org/}
+\item Soft targets: Metasploitable, Linux, Microsoft Windows, Microsoft Exchange, Windows server, ...
+\end{list2}
+
+
+
+
+\myquestionspage
+
+{\bf \Large Dont forget HumbleBundle! \link{https://www.humblebundle.com/books/linux-no-starch-press-books}}
+
+
+
+\end{document}

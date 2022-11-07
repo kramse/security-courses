@@ -36,13 +36,11 @@ A starter pack for network management
 \item The basic tools for diagnosing network problems
 \item Smokeping for automated monitoring
 \item LibreNMS - a fully featured network monitoring system
-\item Ansible for robust configuration of servere and other devices
+\item Ansible for robust configuration of network devices, servers and other stuff
 \item Oxidized gathering network device configuration
 %\item Challenges in network management
 \item Syslog server - Logstash, Elasticsearch, Dashboards
 \end{list2}
-
-Duration: 4 hours - with breaks
 
 Keywords:
 IP address plans, core infrastructure, SNMP, DNS, DHCPD, , Netflow, dashboards, TCP, UDP, ICMP, routing, switching, a little BGP, Ansible for network devices with Junos, OpenBSD and Linux as examples, Netflow, sFlow, monitoring systems, LibreNMS, Oxidized, Smokeping
@@ -51,20 +49,25 @@ IP address plans, core infrastructure, SNMP, DNS, DHCPD, , Netflow, dashboards, 
 \slide{Time schedule}
 
 \begin{list2}
-\item 17:00 - 18:15\\
-Introduction and basic manual tools
-\item 30min break\\
-
-\item 18:45 - 19:30 45min \\
-Recommended tools, Nipap, Smokeping, LibreNMS
-\item 15min break\\
-
-\item 19:45 - 21:00\\
-Centralized solutions, tie together\\
-
-with break somewhere
+\item 17:00 - 18:15 Introduction and basic manual tools
+\item 30min break
+\item 18:45 - 19:30 Recommended tools, Nipap, Smokeping, LibreNMS -- with breaks somewhere
+\item 15min break
+\item 19:45 - 21:00  Centralized solutions, tie together everything, questions -- optional
 \end{list2}
 
+Reklame:
+SIEM og Loganalyse, Diplom i IT-sikkerhed 5 ECTS\\
+\link{https://kompetence.kea.dk/kurser-fag/siem-og-loganalyse}
+9.500kr momsfri\\
+24/11 2022,
+29/11 2022,
+1/12 2022,
+6/12 2022,
+8/12 2022,
+13/12 2022,
+15/12 2022 17:00-20:30, Hybrid: Vælg selv ml. online eller fremmøde, Eksamen:
+5/01 2023
 
 \slide{About equipment and exercises}
 
@@ -77,31 +80,14 @@ but it is expected that participants will do any exercises on their own later or
 
 \item Events like BornHack are excellent places to arrange hacker days in the network warrior village, or other places
 \end{list2}
+\centerline{\Large Invite a few friends, make a hacker day and work together!}
 
-\vskip 1cm
-
-\centerline{\LARGE Invite a few friends, make a hacker day and work together!}
-
-\slide{Course Materials}
-
-\begin{list1}
-\item This material is in multiple parts:
-\begin{list2}
-%\item Introduktionsmateriale med baggrundsinformation
-\item Slide shows - presentation - this file
-\item Exercises - PDF files in my repository
-\end{list2}
-\item Links
 \begin{list2}
 \item All materials will be released as open source at:\\
 \link{https://github.com/kramse/security-courses/}
 \item Additional resources from the internet linked from lecture plans:\\
 \link{https://zencurity.gitbook.io/kea-it-sikkerhed/}
 \end{list2}
-\end{list1}
-
-Note: slides and materials will mostly be in english, but presentation language will be danish
-
 
 
 \slide{Hackerlab Setup}
@@ -109,28 +95,15 @@ Note: slides and materials will mostly be in english, but presentation language 
 \hlkimage{7cm}{hacklab-1.png}
 
 \begin{list2}
-\item Hardware: modern laptop CPU with virtualisation\\
+\item Hardware: modern laptop CPU with virtualisation.
 Dont forget to enable hardware virtualisation in the BIOS
 \item Software Host OS: Windows, Mac, Linux
 \item Virtualisation software: VMware, Virtual box, HyperV pick your poison
 \item Hackersoftware: Kali Virtual Machine \link{https://www.kali.org/}
+\item If you want to do exercises and work with networks, buy a wireless USB network card and an USB Ethernet card.
+\item Getting an USB card allows you to use the regular one for the main OS, and insert the USB into the virtual machine
 \end{list2}
 
-
-
-\slide{Networking Hardware}
-
-If you want to do exercises and work with networks \\
-It will be an advantage to have a wireless USB network card and an USB Ethernet card.
-
-The following are two models I have used:
-\begin{list2}
-\item TP-link TL-WN722N hardware version 2.0 cheap
-\item Alfa AWUS036ACH 2.4GHz + 5GHz Dual-Band and high performing
-\item Often you need to compile drivers yourself, and research a bit
-\end{list2}
-
-Getting an USB card allows you to use the regular one for the main OS, and insert the USB into the virtual machine
 
 
 
@@ -150,44 +123,11 @@ Network management is the process of administering and managing computer network
 \end{list2}
 
 
-
-
-
-\slide{Internet Today}
-
-\hlkimage{10cm}{images/server-client.pdf}
-
-\begin{list2}
-\item Clients and servers, roots in the academic world
-\item Protocols are old, some more than 20 years
-\item Very little is encrypted, mostly HTTPS
-\end{list2}
-
-
-\slide{Internet is Open Standards!}
-
-{\hlkbig \color{titlecolor}
-We reject kings, presidents, and voting.\\
-We believe in rough consensus and running code.\\
--- The IETF credo Dave Clark, 1992.}
-
-\begin{list1}
-\item Request for comments - RFC - er en serie af dokumenter
-\item RFC, BCP, FYI, informational\\
-de første stammer tilbage fra 1969
-\item Ændres ikke, men får status Obsoleted når der udkommer en nyere
-  version af en standard
-\item Standards track:\\
-Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
-\item  Åbne standarder = åbenhed, ikke garanti for sikkerhed
-\end{list1}
-
-
 \slide{What is the Internet}
 
 \begin{list1}
 \item Communication between humans - currently!
-\item Based on TCP/IP
+\item Based on TCP/IP -- the internet protocol suite
 \begin{list2}
 \item best effort
 \item packet switching (IPv6 calls it packets, not datagram)
@@ -914,9 +854,53 @@ Ansible is great for automating stuff, so by running the playbooks we can get a 
 \end{list2}
 
 
+\slide{Why Ansible}
+
+%\hlkimage{}{}
+
+Platform options Ansible:
+\begin{alltt}
+CloudEngine OS, CNOS, Dell OS6, Dell OS9 Dell OS10, ENOS, EOS, ERIC_ECCLI, EXOS,
+FRR, ICX, IOS, IOS-XR, IronWare, Junos OS, Meraki, Pluribus NETVISOR, NOS, NXOS,
+RouterOS, SLX-OS, VOSS, VyOS, WeOS 4
+
+plus routers based on Linux, OpenBSD, FreeBSD etc.
+\end{alltt}
+
+
+One management system with many uses, free to download and use
+\begin{list2}
+\item Generic configuration management -- and you end up running support systems, network near systems
+\item Ansible for Network Automation\\
+\link{https://docs.ansible.com/ansible/latest/network/index.html}
+\item Allows you to install, configure and run your network management systems -- like LibreNMS, Nipap
+\end{list2}
+
+
+\slide{Ansible and Junos -- Juniper Networks devices}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  Juniper Networks provides support for using Ansible to manage devices running Junos OS. Starting in Ansible Release 2.1, Ansible natively includes a number of core modules that can be used to manage devices running Junos OS. In addition, Juniper Networks provides the Juniper.junos Ansible role, which is hosted on the Ansible Galaxy website and includes additional modules for Junos OS.
+\end{quote}
+Source:{\footnotesize\\
+\link{https://www.juniper.net/documentation/en_US/junos-ansible/topics/task/installation/junos-ansible-server-installing.html}}
+
+\begin{list2}
+\item Minimal configuration changes: \verb+user@host# set netconf ssh+
+\end{list2}
+
+How cool is that, centralized configuration management with source code!
+
+
 \slide{Ansible Dependencies}
 
-\hlkimage{10cm}{python-logo.png}
+Adding a few extra for Junos
+\begin{alltt}\footnotesize
+user@NMS:~/projects/network-automation$ sudo pip3 install ncclient
+user@NMS:~/projects/network-automation$ sudo pip3 install jxmlease
+\end{alltt}
 
 \begin{list2}
 \item Ansible based on Python, only need Python installed\\
@@ -932,23 +916,25 @@ Ansible is great for automating stuff, so by running the playbooks we can get a 
 
 List your hosts in one or multiple text files:
 \begin{alltt}\footnotesize
+
+user@NMS:~/projects/network-automation$ cat hosts
 [all:vars]
-ansible_ssh_port=34443
+#ansible_ssh_port=34443
 
-[office]
-fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22 ansible_python_interpreter=/usr/local/bin/python
+[switches]
+ex2200-camp ansible_ssh_host=10.0.42.5
 
-[infrastructure]
-smtp-01     ansible_ssh_host=192.0.2.10 ansible_python_interpreter=/usr/local/bin/python
-vpnmon-01   ansible_ssh_host=10.50.60.18
-
+[switches:vars]
+ansible_connection=netconf
+ansible_netconf_user=ansible
+ansible_netconf_pass=henrik42
+ansible_ssh_user=root
+ansible_ssh_pass=juniper123
 \end{alltt}
 
 \begin{list2}
-\item Inventory files specify the hosts we work with
-\item Linux and OpenBSD servers shown here
+\item Inventory files specify the hosts we work with -- only Junos config shown here
 \item Real inventory for a site with development and staging may be 500 lines
-\item office and infrastructure are group names
 \end{list2}
 
 
@@ -968,6 +954,25 @@ Using the inventory file you can run commands with Ansible:
 \item Checking settings on servers
 \item Making small changes to servers
 \item Then playbooks can automate your work!
+\end{list2}
+
+\slide{Ansible Ping}
+
+%\hlkimage{}{}
+
+\begin{alltt}\footnotesize
+user@NMS:~/projects/network-automation$ ansible -i hosts  -m ping ex2200-camp
+ex2200-camp | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.9"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+\end{alltt}
+
+\begin{list2}
+\item Checking connectivity with ping is always a good start
 \end{list2}
 
 
@@ -995,7 +1000,31 @@ Installs a full server with Elasticsearch, Kibana, Zeek and Suricata in 10 minut
 "YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."
 \link{https://en.wikipedia.org/wiki/YAML}
 
+\slide{Get configuration with playbook}
 
+%\hlkimage{}{}
+
+\begin{alltt}\footnotesize
+# Filename: get_config.yaml
+
+- name: Demonstration of the get_config Ansible module
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Execute the get_config RPC
+      netconf_get:
+        display: json
+      register: result
+    - name: Print the configuration as JSON
+      debug:
+        var: result.output
+\end{alltt}
+
+\begin{list2}
+\item Next step would be to convert this running config into a full Ansible setup
+\item The Ansible modules are documented nicely!\\{\footnotesize
+\link{https://docs.ansible.com/ansible/latest/collections/junipernetworks/junos/junos_config_module.html}}
+\end{list2}
 
 \slide{Python and YAML -- Git}
 
@@ -1072,22 +1101,6 @@ Example playbooks:\\
 \verb+git clone +\link{https://github.com/kramse/ansible-workshop}
 
 
-\slide{Ansible and Junos -- Juniper Networks devices}
-
-%\hlkimage{}{}
-
-\begin{quote}
-  Juniper Networks provides support for using Ansible to manage devices running Junos OS. Starting in Ansible Release 2.1, Ansible natively includes a number of core modules that can be used to manage devices running Junos OS. In addition, Juniper Networks provides the Juniper.junos Ansible role, which is hosted on the Ansible Galaxy website and includes additional modules for Junos OS.
-\end{quote}
-Source:{\footnotesize\\
-\link{https://www.juniper.net/documentation/en_US/junos-ansible/topics/task/installation/junos-ansible-server-installing.html}}
-
-\begin{list2}
-\item Minimal configuration changes: \verb+user@host# set netconf ssh+
-\end{list2}
-
-How cool is that, centralized configuration management with source code!
-
 
 \slide{Logging}
 
@@ -1152,8 +1165,6 @@ Source: \\{\footnotesize
 Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
 PS I havent tried it in real life, yet -- but a friend has
 
-
-
 \slide{View data efficiently}
 
 \hlkimage{10cm}{logstash-search.png}
@@ -1164,28 +1175,20 @@ PS I havent tried it in real life, yet -- but a friend has
 \item Other popular examples include Graylog and Grafana
 \end{list1}
 
-\slide{Big Data tools: Elasticsearch}
+\slide{Big Data tools: Elasticsearch and Kibana}
 
-\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+\hlkimage{6cm}{kibanascreenshothomepagebannerbigger.jpg}
 
-Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+\begin{quote}
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases. Source: \link{https://www.elastic.co}
+\end{quote}
 
-\link{https://www.elastic.co}
+\begin{list2}
+\item We are all Devops now, even security people!
+\item Highly recommended for a lot of data visualisation
+\item Non-programmers can create, save, and share dashboards
+\end{list2}
 
-\vskip 1cm
-\centerline{We are all Devops now, even security people!}
-
-
-\slide{Kibana}
-
-\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
-
-\centerline{Highly recommended for a lot of data visualisation}
-
-Non-programmers can create, save, and share dashboards
-
-Source:
-\link{https://www.elastic.co/products/kibana}
 
 
 \slide{Architecture}
@@ -1360,7 +1363,7 @@ Zeek has files formatted with a header:
 \begin{alltt}\footnotesize
 #fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
         rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
-        TC      RD      RA      Z       answerS} ttls    rejected
+        TC      RD      RA      Z       answers ttls    rejected
 
 1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383
 	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0
@@ -1375,102 +1378,6 @@ root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep
 \end{alltt}
 
 Can also just use JSON now via Filebeat
-
-
-
-\slide{IEEE 802.1q}
-
-\hlkimage{16cm}{vlan-8021q.pdf}
-
-\begin{list1}
-\item Lets introduce some more advanced things, now that configurations are saved -- easy to see changes
-\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
-\item Virtual LAN, to pass from one to another, must use a router/firewall
-\item Allows separation/segmentation and protects traffic from many security issues
-\end{list1}
-
-
-\slide{Port Security -- Rogue DHCP servers}
-
-\begin{list1}
-\item Common problem in networks is people connecting devices with DHCPD servers
-\item In general make sure to segment networks
-\item Start to use port security on switches, including DHCP snooping\\
-\link{https://en.wikipedia.org/wiki/DHCP_snooping}
-\end{list1}
-
-\slide{Example port security}
-
-\begin{alltt}\small
-[edit ethernet-switching-options secure-access-port]
-set interface ge-0/0/1 mac-limit 4
-
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:80
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:81
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:83
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:85
-set interface ge-0/0/2 allowed-mac 00:05:85:3A:82:88
-set interface ge-0/0/2 mac-limit 4
-
-set interface ge-0/0/1 persistent-learning
-set interface ge-0/0/8 dhcp-trusted
-set vlan employee-vlan arp-inspection
-set vlan employee-vlan examine-dhcp
-set vlan employee-vlan mac-move-limit 5
-\end{alltt}
-
-Source: Overview of Port Security, Juniper\\ {\small\link{https://www.juniper.net/documentation/en_US/junos/topics/example/overview-port-security.html}}
-
-
-
-
-\slide{BGP intro}
-
-\begin{list1}
-\item What is BGP Border Gateway Protocol
-\item Dynamic routing protocol, BGPv4 used on whole internet
-\item Networks identified using AS numbers ASNs
-\item Autonomous System (AS) can be small or very big, world wide
-\item BGP version 4 RFC-4271 uses TCP connections
-\emph{peering}
-\item \link{http://en.wikipedia.org/wiki/Border_Gateway_Protocol}
-\end{list1}
-
-
-\slide{Hosting and internet providers}
-
-\hlkimage{17cm}{network-bgp-asn.png}
-
-\begin{list2}
-\item BGP networks are used for all of the Internet
-\item New standards like Resource Public Key Infrastructure (RPKI) are underway
-\end{list2}
-
-\slide{Routing and BGP Solutions }
-
-\begin{list2}
-\item Filtrering, ingress / egress:\\
-"reject external packets that claim to be from the local net"
-\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
-\item Routers and routing protocols must be more skeptical\\
-Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
-\item Has been recommended for some years, but not done in all organisations
-\item BGP routing Resource Public Key Infrastructure RPKI
-\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
-\link{http://www.bcp38.info/}
-\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
-\end{list2}
-
-
-
-
- \slide{Exercise at home -- Your lab setup}
-
- \begin{list2}
- \item Go to GitHub, Find user Kramse, click through security-courses, courses, suricatazeek and download the PDF files for the slides and exercises:\\  {\footnotesize \url{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
-
- \item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}}
- \end{list2}
 
 
 \myquestionspage
@@ -1491,6 +1398,17 @@ Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
 \link{https://tools.ietf.org/html/rfc2827}
 \end{list2}
 
+\slide{Book: The Linux Command Line}
+
+\hlkimage{6cm}{lcl2_front_new.png}
+
+\emph{The Linux Command Line}, 2nd Edition
+A Complete Introduction by William Shotts
+
+Print: \link{https://nostarch.com/tlcl2}\\
+Download -- internet edition \link{https://sourceforge.net/projects/linuxcommand}
+
+
 \slide{Book: Linux Basics for Hackers (LBhf)}
 
 \hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
@@ -1505,6 +1423,16 @@ ISBN-13:
 \link{https://nostarch.com/linuxbasicsforhackers}
 Explains how to use Linux
 
+\slide{Book: The Debian Administrator’s Handbook (DEB)}
+
+\hlkimage{6cm}{book-debian-administrators-handbook.jpg}
+
+\emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+\url{https://debian-handbook.info/} - shortened DEB
+
+Not curriculum but explains how to use Debian Linux
+
+
 \slide{Book: Kali Linux Revealed (KLR)}
 
 \hlkimage{6cm}{kali-linux-revealed.jpg}
@@ -1513,7 +1441,6 @@ Explains how to use Linux
 
 \link{https://www.kali.org/download-kali-linux-revealed-book/}\\
 Explains how to install Kali Linux
-
 
 
 \slide{Book: Practical Packet Analysis (PPA)}
@@ -1554,10 +1481,38 @@ Low page count, but high value! Recommended.
 Network Security through Data Analysis, 2nd Edition
 By Michael S Collins
 Publisher: O'Reilly Media
-2015-05-01: Second release, 348 Pages
-
-New Release Date: August 2017
+Second release, 348 Pages
 
 
+\slide{Data-Driven Security: Analysis, Visualization and Dashboards}
+
+\hlkimage{6cm}{book-data-driven-security.jpg}
+\emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+Our main book for this course. We will read a lot from this one.
+
+\slide{Crafting the InfoSec Playbook}
+
+\hlkimage{6cm}{book-crafting-infosec-playbook.jpg}
+
+\emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Response Master Plan}\\
+ by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405 - short CIP
+
+
+\slide{Intelligence-Driven Incident Response}
+
+\hlkimage{6cm}{book-intelligence-driven-incident-response.jpg}
+
+\emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts ISBN: 9781491934944 - short IDI
+
+
+\slide{Security Operations Center}
+
+\hlkimage{6cm}{ book-security-operations-center-cisco.jpg}
+
+\emph{Security Operations Center: Building, Operating, and Maintaining your SOC}\\
+ISBN: 9780134052014 Joseph Muniz - short SOC
 
 \end{document}

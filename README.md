@@ -97,5 +97,4 @@ middle, sorry I am lazy ;-) )
 
 Best regards
 
-Henrik Kramselund Jereminsen
-hkj@kramse.org
+Henrik Kramselund

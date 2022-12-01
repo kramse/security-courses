@@ -662,7 +662,7 @@ snmp \{
 \}
 \end{alltt}
 
-SNMPv2 example
+SNMPv2 example - if you use location that works in OpenStreetMap it can make maps more easily! You can also use GPS coordinates in square brackets.
 
 \slide{RANCID output}
 
@@ -812,30 +812,26 @@ Advantage, you can configure this server/system to only allow Key based logins -
 
 \slide{OpenSSH client config with jump host}
 
-My recommended SSH client settings, put in \verb+$HOME/.ssh/config+:
+Example SSH client settings, put in \verb+$HOME/.ssh/config+:
 \begin{alltt}\footnotesize
-Host *
-    ServerAliveInterval=30
-    ServerAliveCountMax=30
-    NoHostAuthenticationForLocalhost yes
-    HashKnownHosts yes
-    UseRoaming no
-
 Host jump-01
   Hostname 10.1.2.3
-  Port 12345678
+  Port 12345
 
 Host fw-site-01 10.1.2.5
   User hlk
   Port 34
   Hostname 10.1.2.5
   ProxyCommand ssh -q -a -x jump-01 -W %h:%p
+
+Host serverX
+  ProxyJump jump-01
 \end{alltt}
 
 I configure fw using both hostname and IP,\\
 then I can use name, and any program using IP get this config too
 
-
+Note: the ProxyJump command is a more recent addition, available also as -J on command line
 
 \slide{Ansible}
 
@@ -1348,7 +1344,7 @@ Source: \emph{Applied Network Security Monitoring Collection, Detection, and Ana
 \hlkimage{10cm}{zeek-ids.png}
 
 \begin{list1}
-\item Zeek -- Network Security Monitor {\footnotesize\url{https://zeek.org}}
+\item Zeek -- Network Security Monitor {\footnotesize\url{https://zeek.org}} 
 \item Suricata -- open source, mature, fast and robust network threat detection {\footnotesize\url{https://suricata-ids.org/}}
 \item ntopng -- High-speed web-based traffic analysis  {\footnotesize\url{https://www.ntop.org/}}
 \item Maltrail -- Malicious traffic detection system {\footnotesize\url{https://github.com/stamparm/MalTrail}}
@@ -1370,10 +1366,10 @@ Zeek has files formatted with a header:
    www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
 \end{alltt}
 
-Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program bro-cut which can select specific fields:
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program zeek-cut which can select specific fields:
 
 \begin{alltt}\small
-root@NMS-VM:/var/spool/bro/bro# cat dns.log | bro-cut -d ts query answers | grep dr.dk
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | zeek-cut -d ts query answers | grep dr.dk
 2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
 \end{alltt}
 

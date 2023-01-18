@@ -123,16 +123,16 @@ Resolving deltas: 100% (145/145), done.
 user@Projects:tt$ {\bf cd kramse-labs/}
 
 user@Projects:kramse-labs$ {\bf ls}
-LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station docker-install
 user@Projects:kramse-labs$ git pull
 Already up to date.
 \end{alltt}
 
-If you want to install the Atom editor, you can run the Ansible playbook from the workstation directory.
+If you want to install the Docker software on Debian 11, you can run the Ansible playbook from the \verb+docker-install+ directory.
 
 Then run it with:
 \begin{minted}[fontsize=\footnotesize]{shell}
-cd ~/kramse-labs/workstation
+cd ~/kramse-labs/docker-install
 ansible-playbook -v 1-dependencies.yml
 \end{minted}
 
@@ -153,7 +153,14 @@ When you have tried the tool and seen the tutorials you are done.
 Before Git there has been a range of version control systems,\\
 see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 
+We introduce Git here also because Github, one of the most popular places to store Git repositories has added security tools which you can use.
 
+An example of a security feature at Github is the use of dependencies, when a project is stored on Github they can scan for outdated dependencies which have security issues.
+
+You can read more about the features available, and some common problems in software in their article:
+\emph{How GitHub secures open source software}
+Feb 23, 2021 // 10 min read\\{\footnotesize
+\link{https://resources.github.com/security/open-source/how-github-secures-open-source-software/}}
 
 \chapter{Enable UFW firewall - 10 min}
 \label{ex:debian-firewall}
@@ -239,23 +246,13 @@ Go to \link{https://github.com/bkimminich/juice-shop}
 
 Read the instructions for running juice-shop - docker is a simple way.
 
-What you need
-
+What you need:\\
 You need to have browsers and a proxy, plus a basic knowledge of HTTP.
-
-If you could install Firefox it would be great, and we will use the
-free version of Burp Suite, so please make sure you can run Java and
-download the free version from Portswigger from:
-
-\link{https://portswigger.net/burp/communitydownload}
-
 
 {\bf Hints:}\\
 The application is very modern, very similar to real applications.
 
-The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
-
-JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
+JuiceShop can be run as a docker, and sometimes running it on Kali Linux is the easiest learning environment.
 
 {\bf Solution:}\\
 When you have a running Juice Shop web application in your team, then we are good.
@@ -280,6 +277,8 @@ It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion gu
 {\bf Objective:}\\
 Run JuiceShop with Burp proxy.
 
+This is a more advanced setup and requires Java and a web proxy. This is not required for the introdction course, but the teacher might show this in class.
+
 Start JuiceShop and make sure it works, visit using browser.
 
 Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition.
@@ -292,7 +291,7 @@ By inserting a web proxy we can inspect the data being sent between browsers and
 {\bf Suggested method:}\\
 You need to have browsers and a proxy, plus a basic knowledge of HTTP.
 
-If you could install Firefox it would be great, and we will use the
+If you could install Firefox browser it would be great, and we will use the
 free version of Burp Suite, so please make sure you can run Java and
 download the free version \emph{plain JAR file} from Portswigger from:
 
@@ -348,6 +347,10 @@ Know how you can get started using a framework, like Django\\ \link{https://www.
 {\bf Suggested method:}\\
 We will visit a Django tutorial and talk about the benefits from using existing frameworks.
 
+Today web application developement is a very complex task, even for basic functionality. It is highly recommended to use a mature and modern framework. Multiple good choices exist, and Django is an example of one.
+
+You should investigate which framework would be best for you, your project and organisation.
+
 {\bf Hints:}\\
 Input validation is a problem most applications face. Using Django a lot of functionality is available for input validation.
 
@@ -379,7 +382,37 @@ When we have covered basics of what Django is, what frameworks provide and seen 
 Django is only an example, other languages and projects exist.
 
 
-\chapter{Demo: Buffer Overflow 101 - 30-40min}
+\chapter{Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+\chapter{Buffer Overflow 101 - 30-40min}
 \label{ex:bufferoverflow}
 
 
@@ -644,194 +677,71 @@ A new product will often use a generic small computer and framework with securit
 
 
 
-
-\chapter{\faExclamationTriangle\ JuiceShop Attacks 60min}
-\label{ex:juiceshop-attack}
-
-\hlkimage{2cm}{JuiceShop_Logo_100px.png}
-
- {\bf Objective:}\\
-Hack a web application!
-
-Try a few attacks in the JuiceShop
-
-\begin{quote}
-The OWASP Juice Shop is a pure web application implemented in JavaScript. In the
-frontend the popular AngularJS framework is used to create a so-called Single Page
-Application. The user interface layout is provided by Twitter's Bootstrap framework - which
-works nicely in combination with AngularJS.
-JavaScript is also used in the backend as the exclusive programming language: An Express
-application hosted in a Node.js server delivers the client-side code to the browser. It also
-provides the necessary backend functionality to the client via a RESTful API.
-
-...
-
-The vulnerabilities found in the OWASP Juice Shop are categorized into several different
-classes. Most of them cover different risk or vulnerabiliy types from well-known lists or
-documents, such as OWASP Top 10 or MITRE's Common Weakness Enumeration. The
-following table presents a mapping of the Juice Shop's categories to OWASP and CWE
-(without claiming to be complete).
-\end{quote}
-
-\hlkimage{10cm}{juiceshop-mappings.png}
-Source: \emph{Pwning OWASP Juice Shop}
-
-
- {\bf Purpose:}\\
- Try out some of the described web application flaws in a controlled environment. See how an attacker would be able to gather information and attack through HTTP, browser and proxies.
-
- {\bf Suggested method:}\\
-Start the web application, start Burp or another proxy - start your browser.
-
-Access the web application through your browser and get a feel for how it works. First step is to register your user, before you can shop.
-
-Dont forget to use web developer tools like the JavaScript console!
-
-Then afterwards find and try to exploit vulnerabilities, using the book from Björn and starting with some easy ones:
-
-Suggested list of starting vulns:
-\begin{list2}
-\item Admin Section Access the Admin Section
-\item Error handling Provoke and error
-\item Forged Feedback Post some feedback in another users name.
-\item Access a confidential document
-\item Forgotten Sales Backup Access a salesman's forgotten backup file.
-\item Retrieve a list of all user credentials via SQL Injection
-\end{list2}
-
-We might not have time to go through all of them. Just realize this small application has many vulnerabilities.
-
-
- {\bf Hints:}\\
- The complete guide \emph{Pwning OWASP Juice Shop}
-written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
-\url{https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/}
-
- {\bf Solution:}\\
- You decide for how long you want to play with JuiceShop.
-
- Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
-
- {\bf Discussion:}\\
-The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
-
-Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
-
-
-
-\chapter{Optional: Postman API Client 20 min}
-\label{ex:postman-api}
-
-%\hlkimage{10cm}{kali-linux.png}
+\chapter{Git hook 30 min}
+\label{ex:git-hook}
 
 {\bf Objective:}\\
-Get a program capable of sending REST HTTP calls installed.
+Try using a Git hook locally on your workstation, to prevent something.
 
 
 {\bf Purpose:}\\
-Debugging REST is often needed, and some tools like Elasticsearch is both configured and maintained using REST APIs.
+Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
 
-{\bf Suggested method:}\\
-Download the app from
-\link{https://www.postman.com/downloads/}
+First read the documentation:\\
+\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
 
-Available for Windows, Mac and Linux.
 
-{\bf Hints:}\\
-Download the Linux 64-bit version on your Debian.
+Note: today we only use client side hooks, for better security we should add hooks on the server side.
 
-Unpack using something like:
-\begin{alltt}
-cd ~;mkdir bin;cd bin
-tar zxvf ~/Downloads/Postman-linux*
-cd Postman;./Postman
+Using our existing repository:
+\begin{alltt}\footnotesize
+user@Projects:projects$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+user@Projects:projects$ {\bf cd kramse-labs/}
+user@Projects:kramse-labs$ {\bf cd .git/hooks}
+user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
+// Look at this file, and activate it using:
+user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
 \end{alltt}
 
-You can run the application without signing in anywhere.
+Back in the repository try adding a new file with bad name:
 
-{\bf Solution:}\\
-When you have performed a REST call from within this tool, you are done.
+\begin{alltt}\footnotesize
+user@Projects:kramse-labs$ {\bf }
+user@Projects:kramse-labs$ touch henrikÆØÅ
+user@Projects:kramse-labs$ git add henrikÆØÅ
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+Error: Attempt to add a non-ASCII file name.
+This can cause problems if you want to work with people on other platforms.
+To be portable it is advisable to rename the file.
 
-Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
-
-{\bf Discussion:}\\
-Multiple applications and plugins can perform similar functions. This is a standalone app.
-
-
-
-\chapter{Demo: Small programs with data types 15min}
-\label{ex:c-types}
-
-{\bf Objective:}\\
-Try out small programs similar to:
-\inputminted{c}{programs/int1.c}
-
-\begin{alltt}
-user@Projects:programs$ gcc -o int1 int1.c && ./int1
-First debug int is 32767
-Second debug int is now -32768
+If you know what you are doing you can disable this check using:
+  git config hooks.allow
 \end{alltt}
 
-{\bf Purpose:}\\
-See actual overflows when going above the maximum for the selected types.
 
 
 {\bf Suggested method:}\\
-Compile program as is. Run it. See the problem.
+Run the program Git from your Debian Linux VM
 
-Then try changing the int type, try with signed and unsigned. Note differences
 
 {\bf Hints:}\\
-Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
 
 {\bf Solution:}\\
-When you have tried adding one to a value and seeing it going negative, you are done.
+When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
 
 {\bf Discussion:}\\
+Many examples can be found on the internet.
 
-
-\chapter{Secure Coding, Pointers and Structure padding 30min}
-\label{ex:structure-padding}
-
-{\bf Objective:}\\
-Look at some real code from Suricata and Zeek, note how they prevent structure padding.
-
-{\bf Purpose:}\\
-These software applications usually used for security dissect raw packets, which cannot be trusted.
-
-{\bf Suggested method:}\\
-Download the source for some software - either of :
+Example links:
 \begin{list2}
-\item Zeek from \url{https://zeek.org/get-zeek/}
-\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
+\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
+\item A framework for managing and maintaining multi-language pre-commit hooks.\\
+\link{https://pre-commit.com/}
+\item Blog showing how to use this framework for checking a Kubernetes file:\\
+\link{https://www.magalix.com/blog/how-to-start-left-with-security-using-git-pre-commit-hooks}
 \end{list2}
-
-Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
-
-{\bf Hints:}\\
-DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+src+ and doing \verb+less *dns*.h+ or use an editor.
-
-
-{\bf Solution:}\\
-When you have seen the code for a few \verb+struct+ you are done.
-
-If you notice structs with \verb+__attribute__((__packed__))+. Note: This ensures that structure fields align on one-byte boundaries - on all architectures.
-
-Maybe also investigate the rest of the file \verb+decode-vxlan.c+ if you downloaded Suricata.
-
-{\bf Discussion:}\\
-Manual for Gnu C Compiler Collection can be found at:\\
-\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
-
-
-\begin{quote}
-packed\\
-This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
-\end{quote}
-
-Bonus, can we find some structs missing this?
-
-
 
 
 \chapter{Trying PMD static analysis 30 min}
@@ -898,71 +808,90 @@ If you are using Maven you could also use their reporting\\
 
 
 
-\chapter{Git hook 30 min}
-\label{ex:git-hook}
+\chapter{Optional: Postman API Client 20 min}
+\label{ex:postman-api}
+
+%\hlkimage{10cm}{kali-linux.png}
 
 {\bf Objective:}\\
-Try using a Git hook locally on your workstation, to prevent something.
+Get a program capable of sending REST HTTP calls installed.
 
 
 {\bf Purpose:}\\
-Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
-
-First read the documentation:\\
-\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
-
-
-Note: today we only use client side hooks, for better security we should add hooks on the server side.
-
-Using our existing repository:
-\begin{alltt}\footnotesize
-user@Projects:projects$ {\bf git clone https://github.com/kramse/kramse-labs.git}
-Cloning into 'kramse-labs'...
-user@Projects:projects$ {\bf cd kramse-labs/}
-user@Projects:kramse-labs$ {\bf cd .git/hooks}
-user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
-// Look at this file, and activate it using:
-user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
-\end{alltt}
-
-Back in the repository try adding a new file with bad name:
-
-\begin{alltt}\footnotesize
-user@Projects:kramse-labs$ {\bf }
-user@Projects:kramse-labs$ touch henrikÆØÅ
-user@Projects:kramse-labs$ git add henrikÆØÅ
-user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
-Error: Attempt to add a non-ASCII file name.
-This can cause problems if you want to work with people on other platforms.
-To be portable it is advisable to rename the file.
-
-If you know what you are doing you can disable this check using:
-  git config hooks.allow
-\end{alltt}
-
-
+Debugging REST is often needed, and some tools like Elasticsearch is both configured and maintained using REST APIs.
 
 {\bf Suggested method:}\\
-Run the program Git from your Debian Linux VM
+Download the app from
+\link{https://www.postman.com/downloads/}
 
+Available for Windows, Mac and Linux.
 
 {\bf Hints:}\\
-Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
+Download the Linux 64-bit version on your Debian.
+
+Unpack using something like:
+\begin{alltt}
+cd ~;mkdir bin;cd bin
+tar zxvf ~/Downloads/Postman-linux*
+cd Postman;./Postman
+\end{alltt}
+
+You can run the application without signing in anywhere.
 
 {\bf Solution:}\\
-When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
+When you have performed a REST call from within this tool, you are done.
+
+Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
 
 {\bf Discussion:}\\
-Many examples can be found on the internet.
+Multiple applications and plugins can perform similar functions. This is a standalone app.
 
-Example links:
+
+
+
+\chapter{Secure Coding, Pointers and Structure padding 30min}
+\label{ex:structure-padding}
+
+{\bf Objective:}\\
+Look at some real code from Suricata and Zeek, note how they prevent structure padding.
+
+{\bf Purpose:}\\
+These software applications usually used for security dissect raw packets, which cannot be trusted.
+
+{\bf Suggested method:}\\
+Download the source for some software - either of :
 \begin{list2}
-\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
-\item A framework for managing and maintaining multi-language pre-commit hooks.\\
-\link{https://pre-commit.com/}
-\item Blog showing how to use this framework for checking a Kubernetes file:\\
-\link{https://www.magalix.com/blog/how-to-start-left-with-security-using-git-pre-commit-hooks}
+\item Zeek from \url{https://zeek.org/get-zeek/}
+\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
 \end{list2}
+
+Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
+
+{\bf Hints:}\\
+DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+src+ and doing \verb+less *dns*.h+ or use an editor.
+
+
+{\bf Solution:}\\
+When you have seen the code for a few \verb+struct+ you are done.
+
+If you notice structs with \verb+__attribute__((__packed__))+. Note: This ensures that structure fields align on one-byte boundaries - on all architectures.
+
+Maybe also investigate the rest of the file \verb+decode-vxlan.c+ if you downloaded Suricata.
+
+{\bf Discussion:}\\
+Manual for Gnu C Compiler Collection can be found at:\\
+\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
+
+
+\begin{quote}
+packed\\
+This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
+\end{quote}
+
+Bonus, can we find some structs missing this?
+
+
+
 
 
 \chapter{JuiceShop Login 15 min}
@@ -1243,38 +1172,79 @@ When afl is installed on at least one laptop on the team, and has run a fuzzing 
 For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
 
 
+\chapter{\faExclamationTriangle\ JuiceShop Attacks 60min}
+\label{ex:juiceshop-attack}
+
+\hlkimage{2cm}{JuiceShop_Logo_100px.png}
+
+ {\bf Objective:}\\
+Hack a web application!
+
+Try a few attacks in the JuiceShop
+
+\begin{quote}
+The OWASP Juice Shop is a pure web application implemented in JavaScript. In the
+frontend the popular AngularJS framework is used to create a so-called Single Page
+Application. The user interface layout is provided by Twitter's Bootstrap framework - which
+works nicely in combination with AngularJS.
+JavaScript is also used in the backend as the exclusive programming language: An Express
+application hosted in a Node.js server delivers the client-side code to the browser. It also
+provides the necessary backend functionality to the client via a RESTful API.
+
+...
+
+The vulnerabilities found in the OWASP Juice Shop are categorized into several different
+classes. Most of them cover different risk or vulnerabiliy types from well-known lists or
+documents, such as OWASP Top 10 or MITRE's Common Weakness Enumeration. The
+following table presents a mapping of the Juice Shop's categories to OWASP and CWE
+(without claiming to be complete).
+\end{quote}
+
+\hlkimage{10cm}{juiceshop-mappings.png}
+Source: \emph{Pwning OWASP Juice Shop}
 
 
+ {\bf Purpose:}\\
+ Try out some of the described web application flaws in a controlled environment. See how an attacker would be able to gather information and attack through HTTP, browser and proxies.
+
+ {\bf Suggested method:}\\
+Start the web application, start Burp or another proxy - start your browser.
+
+Access the web application through your browser and get a feel for how it works. First step is to register your user, before you can shop.
+
+Dont forget to use web developer tools like the JavaScript console!
+
+Then afterwards find and try to exploit vulnerabilities, using the book from Björn and starting with some easy ones:
+
+Suggested list of starting vulns:
+\begin{list2}
+\item Admin Section Access the Admin Section
+\item Error handling Provoke and error
+\item Forged Feedback Post some feedback in another users name.
+\item Access a confidential document
+\item Forgotten Sales Backup Access a salesman's forgotten backup file.
+\item Retrieve a list of all user credentials via SQL Injection
+\end{list2}
+
+We might not have time to go through all of them. Just realize this small application has many vulnerabilities.
 
 
-\chapter{Securing the JuiceShop}
-\label{ex:secure-juiceshop}
+ {\bf Hints:}\\
+ The complete guide \emph{Pwning OWASP Juice Shop}
+written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
+\url{https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/}
+
+ {\bf Solution:}\\
+ You decide for how long you want to play with JuiceShop.
+
+ Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
+
+ {\bf Discussion:}\\
+The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
+
+Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
 
 
-{\bf Objective:}\\
-Layout a plan for securing the Juice Shop
-
-{\bf Purpose:}\\
-Lets discuss how we can proceed if JuiceShop was a real shop in our organisation
-
-{\bf Suggested method:}\\
-Break down the immediate steps for securing this shop.
-
-Should we go and buy a security product for filtering requests?
-
-Should we start logging all requests and analyzing them?\\
-To see when we are attacked
-
-{\bf Hints:}\\
-There are some gaping holes that can be removed, files that could be downloaded.
-
-Some functions are old and can be removed or turned off.
-
-{\bf Solution:}\\
-There is no solution, the discussion is the solution.
-
-{\bf Discussion:}\\
-There are some things that can be \emph{fixed} in production, and some can't easily be redone without major interruption
 
 \end{document}
 

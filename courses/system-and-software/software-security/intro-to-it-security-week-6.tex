@@ -53,15 +53,26 @@ Todays goals:
 
   Photo by Thomas Galler on Unsplash
 
+\slide{Goals: }
+
+\hlkimage{12cm}{software.pdf}
+
+\begin{list1}
+\item Software security - because software is everywhere
+\end{list1}
+
+
 \slide{Plan for today}
 
 \begin{list2}
-\item Software Security
+\item Software Security intro -- why do we have problems
+\item Software is complex
+\item All software have security vulnerabilities
 \end{list2}
 
 Exercises
 \begin{list2}
-\item Tool installation
+\item Tool installation -- docker and an insecure software application
 \end{list2}
 
 
@@ -74,7 +85,7 @@ Exercises
 \item 13:15 - 14:00 Next session with software security
 % Eat dinner with your family if you like
 \item 15 minute break
-\item 14:15 - 14:55 Teaching and exercises
+\item 14:15 - 14:55 Misc software security and exercises
 \item 5 minute break - also OK to walk around during exercises
 \item 15:00 - 15:45 Last session for today
 \end{list1}
@@ -112,6 +123,17 @@ Can be found online for free, but recommend buying the PDF from \link{https://le
 \end{list2}
 \item Additional resources from the internet
 \item Note: the presentation slides are not a substitute for reading and doing exercises, many details are not shown
+\end{list1}
+
+\slide{Confidentiality, Integrity and Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data kept a secret
+\item Integrity - data is not subjected to unauthorized changes
+\item Availability - data and systems are available when needed
 \end{list1}
 
 
@@ -224,7 +246,6 @@ Source: \link{https://infiniteundo.com/post/25326999628/falsehoods-programmers-b
 
 All of these assumptions are wrong
 \begin{list2}
-\item
 \item 1 There are always 24 hours in a day.
 \item 2. Months have either 30 or 31 days.
 \item 3. Years have 365 days.
@@ -408,13 +429,108 @@ cd docker-install
 ansible-playbook -v 1-dependencies
 \end{alltt}
 
+\slide{Why introduce Git and Github?}
+
+We introduce Git here also because Github, one of the most popular places to store Git repositories has added security tools which you can use.
+
+An example of a security feature at Github is the use of dependencies, when a project is stored on Github they can scan for outdated dependencies which have security issues.
+
+You can read more about the features available, and some common problems in software in their article:
+\emph{How GitHub secures open source software}
+Feb 23, 2021 // 10 min read\\
+\link{https://resources.github.com/security/open-source/how-github-secures-open-source-software/}
+
 
 \exercise{ex:git-tutorial}
 
 \exercise{ex:debian-firewall}
 
+
+\slide{Design vs Implementation}
+
+Software vulnerabilities can be divided into two major categories:
+\begin{list2}
+\item Design vulnerabilities
+\item Implementation vulnerabilities
+\end{list2}
+
+Even with a well-thought-out security design a program can contain implementation flaws.
+
+\slide{Common Secure Design Issues}
+
+\begin{list2}
+\item Design must specify the security model's structure\\
+Not having this written down is a common problem
+\item Common problem AAA Authentication, Authorization, Accounting (book uses audited)
+\item Weak or Missing Session Management
+\item Weak or Missing Authentication
+\item Weak or Missing Authorization
+\end{list2}
+
+
+\slide{Input Validation}
+
+Missing or flawed input validation is the number one cause of many of the most severe vulnerabilities:
+\begin{list2}
+\item Buffer overflows - writing into control structures of programs, taking over instructions and program flow
+\item SQL injection - executing commands and queries in database systems
+\item Cross-site scripting - web based attack type
+\item Recommend centralizing validation routines
+\item Perform validation in secure context, controller on server
+\item Secure component boundaries
+\end{list2}
+
+\slide{Weak Structural Security}
+
+Our book describes more design flaws:
+\begin{list2}
+\item Large Attack surface
+\item Running a Process at Too High a Privilege Level, dont run everything as root or administrator
+\item No Defense in Depth, use more controls, make a strong chain
+\item Not Failing Securely
+\item Mixing Code and Data
+\item Misplaced trust in External Systems
+\item Insecure Defaults
+\item Missing Audit Logs
+\end{list2}
+
+\slide{Secure Programming for Linux and Unix Howto}
+
+\begin{list1}
+\item More information about systems design and implementation can be found in the free resource:
+\item Secure Programming for Linux and Unix HOWTO, David Wheeler
+\item \link{https://dwheeler.com/secure-programs/Secure-Programs-HOWTO.pdf}
+\item Chapter 5. Validate All Input details input validation in the context of Unix programs
+\item Chapter 6. Restrict Operations to Buffer Bounds (Avoid Buffer Overflow)
+\item Chapter 7. Design Your Program for Security
+\end{list1}
+
+This is included to show that software security has been around for decades. Linux is also a very common platform today, being part of both Android, Cloud and Internet of Things (IoT)
+
+\slide{Principle of Least Privilege}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
 \exercise{ex:sw-startjuice}
 
+\exercise{ex:js-burp}
+
+\exercise{ex:django-intro}
 %\slidenext{Buy the books!}
 
 

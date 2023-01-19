@@ -54,7 +54,17 @@ from the outside and inwards
 
 Now you have built a cluster -- great, is it secure?
 
-RBAC
+# RBAC
+
+HK p205 simple RBAC example with role
+also check official docs
+- create my own, and use that
+
+TOOL *rbac-view* HK p210
+
+# Open Policy Agent (OPA)
+
+HK p 216 +/- OPA directly or gatekeeper
 
 One slide with Least Privilege med ref til 1975 artiklen Saltzer and Schroeder
 https://en.wikipedia.org/wiki/Principle_of_least_privilege
@@ -77,6 +87,14 @@ Medium:
 Start out with a large group of all admins
 Split into a few groups, maybe some overlap
 Don't give all users all authorizations
+
+# Soft Multitenancy
+
+as described in HK chapter 7 p 177
+easier than hard multitenancy
+
+Goal prevent some avoidable accidents and problems, breaking other groups services, but easier to maintain
+
 
 # A note about service accounts
 
@@ -103,7 +121,7 @@ Compare Calico and Cilium
 https://platform9.com/blog/the-ultimate-guide-to-using-calico-flannel-weave-and-cilium/
 
 Others: WeaveNet, Flannel ...
-Falco - is it an alternative
+
 Maybe figure 2.9 from LKS in color or benchmark.png
 
 
@@ -112,9 +130,10 @@ and interaction with auth DNS
 
 Ref to loadbalancing, global load balancing, cloudflare?
 
+HK p 44 CoreDNS with OPA can restrict some
+
 # Deploying Applications Securely
 
-# Using RBAC and Namespaces to isolate
 
 # K8s Security domains
 
@@ -126,18 +145,25 @@ K8s objects
 
 Source: LKS p77-
 
+# Using RBAC and Namespaces to isolate
+
+HK Chapter 3 Container Runtime Isolation
+
 
 # Use Resource Limits and network policies always
 Admission controllers
 
 Rule: always put a limit on it
+LKS p 121 EventRateLimit
+
 
 Rule: always specify a K8s Network Policy - be specific, who CAN access
 make positive lists - as normally only a limited number of other resources will need access
 - then also make sure to specify an egress policy
 So both ingress and egress rules
 
-LKS p 121 EventRateLimit
+HK chapter 5 p 134 Traffic Flow Control
+
 
 Namespace resource quotas LKS p182
 
@@ -159,11 +185,20 @@ TOOL *kube-hunter*
 Kubernetes dashboard, Metrics server
 
 # Security monitoring and auditing
-Include refs to LKS book chapter 13 CVEs
+Include refs to LKS book chapter 13 CVEs, and HK p133 CVEs plus p 275 CVEs
 - which ones would hurt our design and architecture?
 
+TOOL *Falco* detect anomalous behaviour
 TOOL *Prometheus* *grafana* *elasticsearch* - usual suspects, keep it short
 TOOL *Netflow* Elastiflow?
+
+# Network Security Monitoring
+
+IDS, host based IDS
+
+HK chapter 9. Intrusion Detection
+Anbefaler Suricata, Zeek - among others
+
 
 
 # Keeping Container Images secure
@@ -174,19 +209,39 @@ Refer to survey done by sysdig
 This article is somewhat relevant, talking about malicious docker images
 https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/
 
+Suply chain in general
+
 # Harden Container Images
 
 Change the goddamn passwords!
 
 Container postgresql with user postgres and password *postgres*, REALLY!!!!!!1111
 
+and NO MORE ROOT! Dont run as root, we realized this was bad in the 1990s!
+HK chapter 8
+
 CIS Docker Benchmarking also LKS p 132
 
-# Advanced subjects
-Threat modelling -- maybe do your own threat modelling?
+
+# Conclusion
+
+It is hard!
+
+HK chapter 10. has good advice too, including a small checklist for On-Premises Environments
+links on p249 to Build K8s Bare-metal cluster with external access
+
+https://medium.com/swlh/on-premise-kubernetes-clusters-b36660ca6914
+https://www.datapacket.com/blog/build-kubernetes-cluster
+https://medium.com/@apiotrowski312/bare-metal-kubernetes-with-helm-rook-ingress-prometheus-grafana-6a74857cc74c
+
+
+ ---- Advanced subjects --- below
+# Threat modelling -- maybe do your own threat modelling?
 - my presentation based on "minimum" and Best Current Practice
 
-Secrets in K8s
+Make sure to do recommended basic security before considering advanced attacks
+
+# Secrets in K8s vaults
 Various methods for keeping secrets -- considered a developer problem, sorry
 
 
@@ -195,6 +250,31 @@ sysdig and sysdig-inspect
 https://github.com/draios/sysdig
 https://github.com/draios/sysdig-inspect
 
+# High availability
+
+Moved to advanced subject, but of course important
+
+# Multi tenancy
+
+Moved to advanced subject, perhaps HK chapter 7 can help you
+
+
+# Sandboxing
+Moved to advanced since we might not have time
+HK Chapter 3. Sandboxing
+
+# Container Forensics
+Moved to advanced - time constraints
+
+# Honeypots
+Moved to advanced - time constraints
+
+
+
+# Book Container Security Liz Rice
+
+# Book Kubernetes Up and Running Kelsey Hightower
+
 
 # Book Learn Kubernetes Security (LKS)
 
@@ -202,8 +282,6 @@ Nice chapters, and good content, recommend
 
 Color images - er hentet på Macbook:
 https://static.packt-cdn.com/downloads/9781839216503_ColorImages.pdf
-
-
 
 Kig på:
 TOOL *Falco* CNCF project
@@ -214,3 +292,9 @@ Security Automation with Ansible 2
 
 som har kapitel:
 Continuous Security Scanning for Docker Containers
+
+# Book Hacking Kubernetes (HK)
+
+Nice, updated and detailed advice! Recommended
+
+Chapter 3 Container Runtime Isolation

@@ -298,3 +298,13 @@ Continuous Security Scanning for Docker Containers
 Nice, updated and detailed advice! Recommended
 
 Chapter 3 Container Runtime Isolation
+
+
+# Book Practical Cloud Security
+Nice enough, higher level
+
+# Securing DevOps Julien Vehent
+Covers more parts, missing from other books
+
+# Book Azure Pentesting - the purple one
+Pentesting in the cloud environments

@@ -26,7 +26,11 @@
 
 
 % Husk
+% Ideer til indledning og struktur, emner i min præsentation
 
+% Describe €THING and then security settings and features for €THING
+% Make tools stand out with font awesome icon "tools"
+% https://fontawesome.com/v5/icons/tools?style=regular&s=solid&f=classic
 
 
 
@@ -37,8 +41,122 @@
 
 \mytitlepage
 {Kubernetes Security}
-
+{A holistic approach to running K8s in production}
 \LogoOn
+
+
+
+\slide{Goals for today}
+\vskip 1 cm
+
+\hlkimage{3cm}{dont-panic.png}
+\centerline{\color{titlecolor}\LARGE Don't Panic!}
+
+
+\begin{list1}
+\item Create an understanding of Kubernetes attack surface
+\item Get an idea of the work needed to create a secure Kubernets deployment
+\item Present some parts of the solution -- including specific tools \faWrench
+\item Show a Kubernetes lab and run some tools
+\item Point you towards resources, so you can get started with Kubernetes more securely
+\end{list1}
+
+\slide{Security is a Concern in Kubernetes Deployments}
+
+\hlkimage{15cm}{the_new_stack_k8s_top_security.png}
+
+Source: \link{https://thenewstack.io/top-challenges-kubernetes-users-face-deployment/}
+
+\slide{Security engineering a job role}
+
+\begin{alltt}\small
+On any given day, you may be challenged to:
+        Create new ways to solve existing production security issues
+        Configure and install firewalls and intrusion detection systems
+        Perform vulnerability testing, risk analyses and security assessments
+        Develop automation scripts to handle and track incidents
+        Investigate intrusion incidents, conduct forensic investigations and incident responses
+        Collaborate with colleagues on authentication, authorization and encryption solutions
+        Evaluate new technologies and processes that enhance security capabilities
+        Test security solutions using industry standard analysis criteria
+        Deliver technical reports and formal papers on test findings
+        Respond to information security issues during each stage of a project’s lifecycle
+        Supervise changes in software, hardware, facilities, telecommunications and user needs
+        Define, implement and maintain corporate security policies
+        Analyze and advise on new security technologies and program conformance
+        Recommend modifications in legal, technical and regulatory areas that affect IT security
+\end{alltt}
+
+Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
+also
+\url{https://en.wikipedia.org/wiki/Security_engineering}
+
+
+
+\slide{My Intentions}
+
+\hlkimage{7cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
+
+I suspect you want to work with Kubernetes, maybe you already do, but:
+\begin{list2}
+\item You are responsible for all of it
+\item You don't have the resources, knowledge, time, etc. for getting to know it all
+\item You have to create an architecture, as well as implement it
+\item ... and monitor it, ... and secure it
+\end{list2}
+My intention is to be your sparring partner today, list all the parts I think must be considered.
+
+\slide{Target Audience}
+
+\hlkimage{9cm}{nesa-by-makers-IgUR1iX0mqM-unsplash.jpg}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Overall target audience: operators, and developers becoming operators -- devops
+\item Maybe secdevops - security personnel that needs some scalable systems running on K8s
+    - like myself
+\end{list2}
+\hfill {\small Photo by NESA Makers on Unsplash}
+
+\slide{Disclaimer: I am not an expert in EVERYTHING Kubernetes}
+
+\begin{quote}
+\large \bf I am not an EXPERT \\
+-- but I have read a lot and watched youtube videos. \smiley
+\end{quote}
+
+\begin{list1}
+\item Kubernetes is such a big ecosystem
+\item The list is long, and an incomplete list contains:
+\begin{list2}
+\item Kubernetes core components -- software written by the project RBAC etc.
+\item Kubernetes supported container technologies, docker etc.
+\item Kubernetes dependencies -- etcd software used for storing data
+\item Operating systems -- and that lies below, storage
+\item Kubernetes networking providers -- multiple exist, which one to choose -- like Cilium
+\item Monitoring solutions -- logging solutions
+\end{list2}
+\item and on top all the applications around Kubernetes -- NGINX, PostgreSQL, ...
+\end{list1}
+
+\slide{Why are we here today then?!}
+\hlkrightimage{10cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
+
+We are here to get an overview:
+\begin{list2}
+\item Identify what we \emph{need} for a Kubernetes production environment
+\item Consider more parts of the picture than \emph{just Kubernetes}
+\item Find a solution that works, with some example technologies
+\item Provide a kind of check list for your deployment
+\end{list2}
+
+In general I want to take a more holistic approach to \\
+Kubernetes Security which I hope can help you
+
+
 
 %\dagsplan
 
@@ -55,48 +173,387 @@
 \end{list1}
 
 
-\slide{Goals for today}
-\vskip 1 cm
 
-\hlkimage{3cm}{dont-panic.png}
-\centerline{\color{titlecolor}\LARGE Don't Panic!}
+\slide{Disclaimers}
 
+\begin{list2}
+\item Disclaimer: We cover security today\\
+We will not cover all parts of K8s  - only the ones that we need for security, as few as possible.\\
+This slideshow is not a replacement for the official docs, and we also recommend multiple resources books, articles and papers detailing specific parts
 
-\begin{list1}
-\item Introduce the term penetration testing and basic pentest methods
-\item Introduce some of the basic tools in the genre of hacker tools
-\item Create an understanding of Kubernetes attack surface
-\item Show a hacker lab and run some tools
-\item Point you towards resources, so you can get started with the fun of pentesting tools
-\end{list1}
+\item Disclaimer: Deprecation\\
+Things are built, and later deprecated. Even while preparing this a few things were deprecated! Core things even change from time to time, which is good. In general I don't trust older references, but verify with newest official docs.
+\end{list2}
 
 \slide{Materials -- where to start}
 
 \begin{list2}
 \item This presentation -- slides for today, start here
-\item \emph{Container Security}, Liz Rice, OReilly, Apr 2020.
+\item \emph{Container Security}, (CS) Liz Rice, O'Reilly, Apr 2020.
+\item \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde, Packt, July 2020
+% Add more books from my "library"
+\item Advanced security practioners could perhaps enjoy:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
 \end{list2}
 
 %\centerline{We cannot go through all of them, but feel free to ask questions later}
 
-{\bf Start a download of Kali today, if you want to play with the tools tomorrow}\\
-Recommend virtual machine download 64-bit \url{https://www.kali.org/get-kali/#kali-virtual-machines}
+{\bf Start a download of Debian today, if you want to play with the tools tomorrow}
 
-\slide{Books and educational materials}
+I use ordinary IT-equipment like PCs and servers, with some additional 10Gbps network devices -- nothing really special
+
+
+\slide{Before your first K8s Production Deployment}
+
+%\hlkimage{}{}
+
 
 \begin{list2}
+\item Run K8s locally, as in your laptop!
+\item Get it up and running, deploy a sample container
+\item Configure \faWrench\ \verb+kubectl+
+\end{list2}
 
-\item \emph{Kubernetes Security}
-\item
+
+\slide{Recommend trying out K8s}
+
+\begin{list2}
+\item Smallest demo with minikube running inside Debian 11 inside Qubes as HVM
+    "start and run a hello world"
+\end{list2}
+
+\slide{Main K8s Components}
+
+\begin{list2}
+\item Interfaces API
+\item Ports and Services
 \end{list2}
 
 
 
-\slide{Kubernetes Attack Surface}
+\slide{K8s objects}
+\begin{list2}
+\item like Service accounts
+\end{list2}
 
+
+
+
+\slide{From low level outside}
+
+Starting from the bottom and upwards - keeping it short on purpose:
+\begin{list2}
+\item Hardware - DRAC, ILO, KVM, IPMI etc.
+\item Connections - how to connect your clusters\\
+- find some blueprints, add management network, show complete drawing!
+\item Have some jump host, OpenBSD with wireguard VPN, show it works - *demo*
+\item Consider access from the outside and inwards
+\end{list2}
+
+Now you have built a cluster -- great, is it secure?
+
+\slide{RBAC}
+
+\begin{list2}
+\item HK p205 simple RBAC example with role
+also check official docs
+\item Create my own, and use that
+\end{list2}
+
+
+\faWrench\ \verb+rbac-view+ HK p210
+
+
+\slide{Open Policy Agent (OPA)}
+
+\begin{list2}
+\item
+\end{list2}
+HK p 216 +/- OPA directly or gatekeeper
+
+One slide with Least Privilege med ref til 1975 artiklen Saltzer and Schroeder\\
+\url{https://en.wikipedia.org/wiki/Principle_of_least_privilege}\\
+\url{https://en.wikipedia.org/wiki/Saltzer_and_Schroeder%27s_design_principles}
+
+\slide{Creating our cluster}
+Kubeadm - selected for this project, works great on Debian
+
+
+\slide{First users}
+\begin{list2}
+\item
+\end{list2}
+
+\slide{Recommended Users}
+
+\begin{list2}
+\item
+\end{list2}
+What to create, how many people, how large a group do you have?
+
+Smallest:
+Create admin group even if only one admin! Ref RIPE database roles
+
+Medium:
+Start out with a large group of all admins
+Split into a few groups, maybe some overlap
+Don't give all users all authorizations
+
+\slide{Soft Multitenancy}
+
+\begin{list2}
+\item
+\end{list2}
+as described in HK chapter 7 p 177
+easier than hard multitenancy
+
+Goal prevent some avoidable accidents and problems, breaking other groups services, but easier to maintain
+
+
+\slide{A note about service accounts}
+
+\begin{list2}
+\item
+\end{list2}
+Where do they "login" from, where do they request from! Only from inside the cluster
+Note to self: check logs later
+
+\slide{Interactions}
+
+\begin{list2}
+\item What must be allowed between components\\
+Figure 3.1 from LKS perhaps, or 3.3
+\end{list2}
+
+\slide{Network parts}
+\begin{list2}
+\item
+Container Network Interface (CNI)
+\link{https://github.com/containernetworking/cni}
+\end{list2}
+
+
+\slide{CNI plugin alternatives}
+
+Describe two:
+\begin{list2}
+\item Calico - available multiple places
+\item Cilium - better security? encryption, I have followed Cilium for a while, choose one
+\item What does changing CNI plugin bring? and importantly what do you need!
+\end{list2}
+
+\slide{Compare Calico and Cilium}
+
+\begin{list2}
+\item \link{https://platform9.com/blog/the-ultimate-guide-to-using-calico-flannel-weave-and-cilium/}
+
+\item Others: WeaveNet, Flannel ...
+
+\item Maybe figure 2.9 from LKS in color or benchmark.png
+\end{list2}
+
+
+\slide{K8s DNS -- CoreDNS}
+
+\begin{list2}
+\item and interaction with auth DNS
+\end{list2}
+
+Ref to loadbalancing, global load balancing, cloudflare?
+
+HK p 44 CoreDNS with OPA can restrict some
+
+\slide{Deploying Applications Securely}
+
+\begin{list2}
+\item
+\end{list2}
+
+\slide{K8s Security domains}
+
+\begin{list2}
+\item K8s master components
+\item K8s worker components
+\item K8s objects
+\end{list2}
+
++ entities and threat actors end user, internal attacker, privileged attacker
+
+Source: LKS p77-
+
+\slide{Using RBAC and Namespaces to isolate}
+
+\begin{list2}
+\item HK Chapter 3 Container Runtime Isolation
+\end{list2}
+
+
+\slide{Use Resource Limits and network policies always}
+
+\begin{list2}
+\item Admission controllers
+\end{list2}
+
+Rule: always put a limit on it
+LKS p 121 EventRateLimit
+
+
+Rule: always specify a K8s Network Policy - be specific, who CAN access
+make positive lists - as normally only a limited number of other resources will need access
+- then also make sure to specify an egress policy
+So both ingress and egress rules
+
+HK chapter 5 p 134 Traffic Flow Control
+
+
+Namespace resource quotas LKS p182
+
+\slide{Network security in K8s}
+
+\begin{list2}
+\item Attack types DDoS slow and fast, volumetric and PPS based
+\item Pro/cons with having another layer - manually configured, only allow few protocols and ports 80, 443, 8080
+- take tables from firewall presentation
+\end{list2}
+
+
+
+\slide{Monitoring and updating}
+
+\begin{list2}
+\item
+\end{list2}
+
+\slide{Resource monitoring and capacity planning}
+
+\begin{list2}
+\item Kubernetes dashboard, Metrics server
+\end{list2}
+
+\slide{Security monitoring and auditing}
+
+Why isn't K8s secure?!
+\begin{list2}
+\item Include refs to LKS book chapter 13 CVEs, and HK p133 CVEs plus p 275 CVEs
+- which ones would hurt our design and architecture?
+\end{list2}
+
+\slide{Tools that might help}
+
+\begin{list2}
+\item \faWrench\ \verb+Falco+ detect anomalous behaviour
+\item \faWrench\ \verb+Prometheus+ \verb+grafana+ \verb+elasticsearch+ - usual suspects, keep it short
+\item \faWrench\ \verb+Netflow+ \verb+Elastiflow+
+\end{list2}
+
+\slide{Network Security Monitoring}
+
+\begin{list2}
+\item IDS, host based IDS
+\item HK chapter 9. Intrusion Detection
+Anbefaler Suricata, Zeek - among others
+\end{list2}
+
+
+\slide{Monitoring K8s}
+
+\begin{list2}
+\item
+\end{list2}
+
+\slide{Monitoring K8s Networking}
+
+\begin{list2}
+\item Netværksovervågning
+\end{list2}
+
+\slide{Isolation and Independence}
+
+\begin{list2}
+\item muligheder for beskyttelse og isolering
+\end{list2}
+
+\slide{Stress testing and DDoS}
+\begin{list2}
+\item stresstest
+\end{list2}
+
+
+\slide{Analysis on Docker Hub malicious images}
+
+\hlkimage{10cm}{sysdig-malicious-images.png}
+Refer to survey done by sysdig
+This article is relevant, talking about malicious docker images
+\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
+
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+
+Allow direct download from the internet into your cluster, typosquatting popular containers!
+
+\item Suply chain in general
+\end{list2}
+
+\slide{Harden Container Images}
+
+\begin{list2}
+\item
+\end{list2}
+Change the goddamn passwords!
+
+Container postgresql with user postgres and password *postgres*, REALLY!!!!!!1111
+
+and NO MORE ROOT! Dont run as root, we realized this was bad in the 1990s!
+HK chapter 8
+
+CIS Docker Benchmarking also LKS p 132
+
+
+
+
+\slide{Cloud Forensic}
+
+\begin{list2}
+\item
+\end{list2}
+forensic og opklaring af hændelser.
+
+
+
+\slide{Main Kubernetes Attack Surface}
+
+\begin{list2}
+\item
+\end{list2}
+Management
+
+Front end -- internet connected parts
+
+Supporting systems, DNS, NTP, etc.
+
+\slide{Don't forget your MANRS}
+
+and DNSSEC
+
+I use \link{internet.nl} for checking my resources
+
+
+\slide{Kubernetes Security is more than jus K8S}
+
+\begin{list2}
+\item
+\end{list2}
+
+Attacks from inside, attacks inside containers
+
+Some just use up resources, some attacks others, some attack the system from the inside
 
 
 \slide{Sysdig Analysis of DockerHub}
+\begin{list2}
+\item
+\end{list2}
 
 \emph{Analysis on Docker Hub malicious images: Attacks through public container images}
 
@@ -107,6 +564,9 @@ Recommend virtual machine download 64-bit \url{https://www.kali.org/get-kali/#ka
 
 \slide{Benchmarking tools}
 
+\begin{list2}
+\item
+\end{list2}
 
 CIS
 
@@ -116,17 +576,24 @@ Kube-bench makes it easy for operators to check whether each node in their Kuber
 
 \link{https://info.aquasec.com/open-source}
 
-\slide{Hacker lab setup}
+
+\slide{Benchmarking and keeping up to date}
+TOOL *kube-bench* - make some bad changes, like LKS p95 allow anonymous authentication, show why layered defense works, and how kube-bench marks it. Another example token based access, initially we have token while installing, remember to remove!
+TOOL *kube-hunter*
+
+
+\slide{Kubernetes lab setup}
 
 \hlkimage{8cm}{hacklab-1.png}
 
 \begin{list2}
-\item Hardware: any modern laptop with CPU and virtualisation\\
+\item Hardware: any modern PC with modern CPU and virtualisation\\
 Don't forget to enable it in the BIOS
-\item Software: your favourite operating system Windows, Mac, Linux, ...
-\item Virtualisation software: VMware, Virtual box, pick your poison
+\item Software: your favourite Linux distribution, I choose Debian
+\item Container software: pick your poison
 \item Hacker software: Kali as a Virtual Machine \link{https://www.kali.org/}
-\item Kubernetes: Minikube -  I run this on Debian 11
+\item Smallest Kubernetes: Minikube -  I run this on Debian 11
+\item Production deployment probably would use better tools like \faWrench\ \verb+Kubeadm+
 \end{list2}
 
 
@@ -134,13 +601,75 @@ Don't forget to enable it in the BIOS
 \slide{Conclusion Kubernetes Security}
 
 \hlkimage{10cm}{network-layers-2022.pdf}
-~
+
 \begin{list2}
-\item
+\item It is hard!
+
+
+\item HK chapter 10. has good advice too, including a small checklist for On-Premises Environments
+links on p249 to Build K8s Bare-metal cluster with external access\\
+\link{https://medium.com/swlh/on-premise-kubernetes-clusters-b36660ca6914}\\
+\link{https://www.datapacket.com/blog/build-kubernetes-cluster}\\
+\link{https://medium.com/@apiotrowski312/bare-metal-kubernetes-with-helm-rook-ingress-prometheus-grafana-6a74857cc74c}
 \end{list2}
+
 
 \myquestionspage
 
 
+% ---- Advanced subjects --- below
+\slide{Threat modelling -- maybe do your own threat modelling?}
+- my presentation based on "minimum" and Best Current Practice
+
+Make sure to do recommended basic security before considering advanced attacks
+
+\slide{Secrets in K8s vaults}
+Various methods for keeping secrets -- considered a developer problem, sorry
+
+
+Sysdig - advanced logging and inspection
+sysdig and sysdig-inspect
+https://github.com/draios/sysdig
+https://github.com/draios/sysdig-inspect
+
+\slide{High availability}
+
+Moved to advanced subject, but of course important
+
+\slide{Multi tenancy}
+
+Moved to advanced subject, perhaps HK chapter 7 can help you
+
+
+\slide{Sandboxing}
+Moved to advanced since we might not have time
+HK Chapter 3. Sandboxing
+
+\slide{Container Forensics}
+Moved to advanced - time constraints
+
+\slide{Honeypots}
+Moved to advanced - time constraints
+
+
+
+\slide{Books}
+
+\begin{list2}
+
+
+\item \emph{Kubernetes Security and Observability} Brendan Creane, Amit Gupta % Er på Oreilly.com
+
+\end{list2}
+
+
+\slide{Other sources}
+
+\begin{list2}
+\item
+% May be a copy of the same from a company called "Dicy" or something
+\item \emph{A Holistic Approach to Kubernetes Security and Compliance}\\
+%\link{https://www.rapid7.com/info/holistic-approach-to-kubernetes-security-and-compliance/}
+\end{list2}
 
 \end{document}

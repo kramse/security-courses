@@ -32,7 +32,10 @@
 % Make tools stand out with font awesome icon "tools"
 % https://fontawesome.com/v5/icons/tools?style=regular&s=solid&f=classic
 
+% Production K8s
+% https://learning.oreilly.com/library/view/production-kubernetes/9781492092292/
 
+% Case: Cheesehub, husk Securing Cheesehub paper og mine valg til min installation
 
 \begin{document}
 
@@ -155,7 +158,6 @@ We are here to get an overview:
 
 In general I want to take a more holistic approach to \\
 Kubernetes Security which I hope can help you
-
 
 
 %\dagsplan
@@ -342,6 +344,7 @@ Describe two:
 \item What does changing CNI plugin bring? and importantly what do you need!
 \end{list2}
 
+
 \slide{Compare Calico and Cilium}
 
 \begin{list2}
@@ -352,6 +355,169 @@ Describe two:
 \item Maybe figure 2.9 from LKS in color or benchmark.png
 \end{list2}
 
+\slide{Installing Cilium}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+helm repo add cilium https://helm.cilium.io/
+
+API_SERVER_IP=<your_api_server_ip>
+# Kubeadm default is 6443
+API_SERVER_PORT=<your_api_server_port>
+helm install cilium cilium/cilium --version 1.12.5 \
+    --namespace kube-system \
+    --set kubeProxyReplacement=strict \
+    --set k8sServiceHost=${API_SERVER_IP} \
+    --set k8sServicePort=${API_SERVER_PORT}
+\end{minted}
+
+\begin{list2}
+\item
+\end{list2}
+Note: I ended up deciding to run without the kube-proxy, only Cilium
+
+\slide{After install Cilium}
+
+\begin{alltt}
+root@gouda01:~#  kubectl get po -n kube-system
+NAME                               READY   STATUS    RESTARTS   AGE
+cilium-5dt9j                       1/1     Running   0          3m40s
+cilium-mz4qm                       1/1     Running   0          3m40s
+cilium-operator-5d5dd5b4f6-75nq9   1/1     Running   0          3m40s
+cilium-operator-5d5dd5b4f6-mmgcd   1/1     Running   0          3m40s
+coredns-787d4945fb-5pddx           1/1     Running   0          4m54s
+coredns-787d4945fb-sjbdc           1/1     Running   0          4m54s
+etcd-gouda01                       1/1     Running   6          5m6s
+kube-apiserver-gouda01             1/1     Running   6          5m8s
+kube-controller-manager-gouda01    1/1     Running   3          5m6s
+kube-scheduler-gouda01             1/1     Running   8          5m6s
+\end{alltt}
+
+
+\slide{Cilium CLI tool}
+
+\begin{alltt}
+root@gouda01:/home/hlk/projects# cilium status
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:         OK
+ \__/¯¯\__/    Operator:       OK
+ /¯¯\__/¯¯\    Hubble:         disabled
+ \__/¯¯\__/    ClusterMesh:    disabled
+    \__/
+
+Deployment        cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
+DaemonSet         cilium             Desired: 2, Ready: 2/2, Available: 2/2
+Containers:       cilium             Running: 2
+                  cilium-operator    Running: 2
+Cluster Pods:     2/2 managed by Cilium
+Image versions    cilium             quay.io/cilium/cilium:v1.12.5@sha256:06ce2b0a0a472e73334a7504ee5c5d8b2e2d7b72ef728ad94e564740dd505be5: 2
+                  cilium-operator    quay.io/cilium/operator-generic:v1.12.5@sha256:b296eb7f0f7656a5cc19724f40a8a7121b7fd725278b7d61dc91fe0b7ffd7c0e: 2
+\end{alltt}
+
+So now we have a firewall for our cluster!
+
+\slide{Optional Remove Kube Proxy}
+
+
+\begin{alltt}
+$ kubectl -n kube-system delete ds kube-proxy
+$ # Delete the configmap as well to avoid kube-proxy being reinstalled during a kubeadm upgrade (works only for K8s 1.19 and newer)
+$ kubectl -n kube-system delete cm kube-proxy
+$ # Run on each node with root permissions:
+$ iptables-save | grep -v KUBE | iptables-restore
+\end{alltt}
+
+
+
+\begin{list2}
+    \item \link{https://docs.cilium.io/en/v1.12/gettingstarted/kubeproxy-free/}
+\end{list2}
+
+\slide{Picture from Cilium docs}
+
+
+insert nice picture here showing allowed and blocked traffic
+
+% Perhaps this one:
+% https://cilium.io/blog/2018/09/19/kubernetes-network-policies/
+
+
+\link{https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/}
+
+\slide{External IPs}
+
+%\hlkimage{}{}
+
+\begin{quote}
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "blue-pool"
+spec:
+  cidrs:
+  - cidr: "10.0.47.0/24"
+  - cidr: "2a06:d380:0:85::0/64"
+\end{quote}
+
+\begin{list2}
+\item \link{https://docs.cilium.io/en/latest/network/lb-ipam/}
+\item \verb+10.0.42.254/29+ is my home
+\item \verb+2a06:d380:0:85::0/64+ is from my own LIR
+\end{list2}
+
+Source:
+\link{https://sue.eu/blogs/expose-loadbalanced-kubernetes-services-with-bgp-cilium/}
+\link{https://nicovibert.com/2022/07/21/bgp-with-cilium/}
+https://isovalent.com/resource-library/labs/ - has a lab even Cilium Host Firewall
+
+
+\slide{Nice Editor for Policies}
+
+\link{https://editor.cilium.io/}
+
+\slide{Connectivity Testing}
+
+\verb+cilium connectivity test+
+
+
+
+\begin{alltt}
+root@gouda01:~# cilium connectivity test
+ℹ️  Monitor aggregation detected, will skip some flow validation steps
+✨ [kubernetes] Deploying echo-same-node service...
+✨ [kubernetes] Deploying DNS test server configmap...
+✨ [kubernetes] Deploying same-node deployment...
+✨ [kubernetes] Deploying client deployment...
+✨ [kubernetes] Deploying client2 deployment...
+✨ [kubernetes] Deploying echo-other-node service...
+✨ [kubernetes] Deploying other-node deployment...
+⌛ [kubernetes] Waiting for deployments [client client2 echo-same-node] to become ready...
+⌛ [kubernetes] Waiting for deployments [echo-other-node] to become ready...
+connectivity test failed: waiting for deployment echo-other-node to become ready has been interrupted: context deadline exceeded
+root@gouda01:~#
+\end{alltt}
+
+\begin{alltt}
+root@gouda01:~# kubectl get po -n cilium-test
+NAME                                                    READY   STATUS    RESTARTS   AGE
+client-6f6788d7cc-tjz4m                                 1/1     Running   0          88s
+client2-bc59f56d5-8r6lh                                 1/1     Running   0          88s
+echo-a-6c79c8b946-p2rg4                                 1/1     Running   0          20m
+echo-b-7448778bfb-kvgb5                                 1/1     Running   0          20m
+echo-b-host-b5896c6cf-php6w                             1/1     Running   0          20m
+echo-other-node-5c58b8cf8b-h58rf                        0/2     Pending   0          87s
+echo-same-node-9f8754876-n5j5x                          2/2     Running   0          88s
+host-to-b-multi-node-clusterip-645c86f859-8sgkd         0/1     Pending   0          20m
+host-to-b-multi-node-headless-7647655fd7-v9b4f          0/1     Pending   0          20m
+pod-to-a-599fcbff49-rxx7t                               1/1     Running   0          20m
+pod-to-a-allowed-cnp-cbcdd54f5-cgbt2                    1/1     Running   0          20m
+pod-to-a-denied-cnp-7cd474c7b5-hr6dm                    1/1     Running   0          20m
+pod-to-b-intra-node-nodeport-bb96b9bcf-4cxlv            1/1     Running   0          20m
+pod-to-b-multi-node-clusterip-6897f7b4b5-g7xd9          0/1     Pending   0          20m
+pod-to-b-multi-node-headless-fff844f67-fhwfj            0/1     Pending   0          20m
+pod-to-b-multi-node-nodeport-cb9685695-cb6jp            0/1     Pending   0          20m
+pod-to-external-1111-66588c5755-ff8kg                   1/1     Running   0          20m
+pod-to-external-fqdn-allow-google-cnp-cc84ccb8f-g5pgw   1/1     Running   0          20m
+\end{alltt}
 
 \slide{K8s DNS -- CoreDNS}
 
@@ -424,6 +590,40 @@ Namespace resource quotas LKS p182
 \item
 \end{list2}
 
+\slide{Upgrades}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+\end{quote}
+
+You need to upgrade all parts, so remember which parts you use:
+\begin{list2}
+\item
+\item Cilium upgrade
+\end{list2}
+
+\slide{}
+
+%\hlkimage{}{}
+
+\begin{alltt}
+root@gouda01:~# cilium upgrade
+🔮 Auto-detected datapath mode: tunnel
+🚀 Upgrading cilium-operator to version quay.io/cilium/operator-generic:v1.12.5...
+🚀 Upgrading cilium to version quay.io/cilium/cilium:v1.12.5...
+⌛ Waiting for Cilium to be upgraded...
+
+\end{alltt}
+
+\begin{list2}
+    \item
+\end{list2}
+
+Cilium recommend a pre-flight check -- pulls images beforehand:\\
+\link{https://docs.cilium.io/en/v1.12/operations/upgrade/}
+
 \slide{Resource monitoring and capacity planning}
 
 \begin{list2}
@@ -465,6 +665,8 @@ Anbefaler Suricata, Zeek - among others
 
 \begin{list2}
 \item Netværksovervågning
+\item Cilium has Setting up Hubble Observability \\
+\url{https://docs.cilium.io/en/stable/gettingstarted/hubble_setup/#hubble-setup}
 \end{list2}
 
 \slide{Isolation and Independence}
@@ -479,10 +681,40 @@ Anbefaler Suricata, Zeek - among others
 \end{list2}
 
 
-\slide{Analysis on Docker Hub malicious images}
+
+
+\slide{Main Kubernetes Attack Surface}
+
+\begin{list2}
+\item
+\end{list2}
+Management
+
+Front end -- internet connected parts
+
+Supporting systems, DNS, NTP, etc.
+
+\slide{Don't forget your MANRS}
+
+and DNSSEC
+
+I use \link{internet.nl} for checking my resources
+
+
+\slide{Kubernetes Security is more than jus K8S}
+
+\begin{list2}
+\item
+\end{list2}
+
+Attacks from inside, attacks inside containers
+
+Some just use up resources, some attacks others, some attack the system from the inside
+
+
+\slide{Analysis on Docker Hub malicious images: Attacks through public container images}
 
 \hlkimage{10cm}{sysdig-malicious-images.png}
-Refer to survey done by sysdig
 This article is relevant, talking about malicious docker images
 \link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
 
@@ -520,48 +752,6 @@ CIS Docker Benchmarking also LKS p 132
 forensic og opklaring af hændelser.
 
 
-
-\slide{Main Kubernetes Attack Surface}
-
-\begin{list2}
-\item
-\end{list2}
-Management
-
-Front end -- internet connected parts
-
-Supporting systems, DNS, NTP, etc.
-
-\slide{Don't forget your MANRS}
-
-and DNSSEC
-
-I use \link{internet.nl} for checking my resources
-
-
-\slide{Kubernetes Security is more than jus K8S}
-
-\begin{list2}
-\item
-\end{list2}
-
-Attacks from inside, attacks inside containers
-
-Some just use up resources, some attacks others, some attack the system from the inside
-
-
-\slide{Sysdig Analysis of DockerHub}
-\begin{list2}
-\item
-\end{list2}
-
-\emph{Analysis on Docker Hub malicious images: Attacks through public container images}
-
-
-\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
-
-
-
 \slide{Benchmarking tools}
 
 \begin{list2}
@@ -570,7 +760,7 @@ Some just use up resources, some attacks others, some attack the system from the
 
 CIS
 
-Kube-bench is the industry-standard tool to automate checking Kubernetes compliance with the Center for Internet Security (CIS) Benchmark.
+\faWrench\ \verb+Kube-bench+ is the industry-standard tool to automate checking Kubernetes compliance with the Center for Internet Security (CIS) Benchmark.
 
 Kube-bench makes it easy for operators to check whether each node in their Kubernetes cluster is configured according to security best practices.
 
@@ -578,13 +768,41 @@ Kube-bench makes it easy for operators to check whether each node in their Kuber
 
 
 \slide{Benchmarking and keeping up to date}
-TOOL *kube-bench* - make some bad changes, like LKS p95 allow anonymous authentication, show why layered defense works, and how kube-bench marks it. Another example token based access, initially we have token while installing, remember to remove!
-TOOL *kube-hunter*
 
 
-\slide{Kubernetes lab setup}
 
-\hlkimage{8cm}{hacklab-1.png}
+% Try it out \faWrench\ \verb+kube-bench+ - make some bad changes, like LKS p95 allow anonymous authentication, show why layered defense works, and how kube-bench marks it. Another example token based access, initially we have token while installing, remember to remove!
+\faWrench\ \verb+kube-hunter+
+
+\slide{Let's talk about a case Cheesehub.dk}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf CHEESE: Cyber Human Ecosystem of Engaged Security Education}
+
+CHEESE (Cyber Human Ecosystem of Engaged Security Education) is an NSF-funded initiative to develop a learning ecosystem for cybersecurity education. The project consists of the following:
+
+\begin{list2}
+\item Easy to access, dynamic, web-based learning platform
+\item Community-contributed catalog of cybersecurity training materials
+\item Community-driven platform to request, develop, share, evaluate and learn about content
+\item Learning ecosystem that is continuously updated
+\end{list2}
+\end{quote}
+
+\begin{list2}
+\item I found a system based on Kubernetes \\
+\emph{CHEESE: Cyber Human Ecosystem of Engaged Security Education}\\
+\link{https://docs.cheesehub.org/}
+\item Educational sessions using containers being spun up for the students
+\item Decided to give it a shot
+\end{list2}
+
+
+\slide{Kubernetes lab setup -- proof of concept}
+
+\hlkimage{4cm}{hacklab-1.png}
 
 \begin{list2}
 \item Hardware: any modern PC with modern CPU and virtualisation\\
@@ -600,7 +818,7 @@ Don't forget to enable it in the BIOS
 
 \slide{Conclusion Kubernetes Security}
 
-\hlkimage{10cm}{network-layers-2022.pdf}
+\hlkimage{4cm}{network-layers-2022.pdf}
 
 \begin{list2}
 \item It is hard!

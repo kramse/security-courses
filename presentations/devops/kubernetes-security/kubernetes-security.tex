@@ -182,15 +182,18 @@ Kubernetes Security which I hope can help you
 \slide{More Disclaimers}
 
 \begin{list2}
-\item Disclaimer: We cover security today\\
+\item Disclaimer: {\bf We cover security today}\\
 We will not cover all parts of K8s  - only the ones that we need for security, as few as possible.\\
 This slideshow is not a replacement for the official docs, and we also recommend multiple\\ resources books, articles and papers detailing specific parts
 
-\item Disclaimer: Deprecation\\
+\item Disclaimer: {\bf Deprecation}\\
 Things are built, and later deprecated. Even while preparing this a few things were deprecated! Core things even change from time to time, which is good. In general I don't trust older references, but verify with newest official docs
 
-\item Disclaimer: Single tenant only\\
-Running a K8s cluster for your organization is hard enough, I don't claim I could run a production multi-tenancy setup or public cloud YMMV
+\item Disclaimer: {\bf New features}\\
+New and very useful features are added with every new version. If you have an older setup which is not updated, you might not have the same features. New features can also have interesting bugs, and may not work as intended right away. For this presentation I recommend some features that are newer
+
+\item Disclaimer: {\bf Single tenant only}\\
+Running a K8s cluster for your organization is hard enough, I don't claim I could run a production multi-tenancy setup or public cloud
 \end{list2}
 
 \slide{Materials -- where to start}
@@ -249,39 +252,114 @@ Trying out K8s on your laptop:
 \item I can run all of this inside Qubes as HVM
 \end{list2}
 
+\slide{Kubernetes: Production-Grade Container Orchestration}
 
-\slide{Main K8s Components}
+%\hlkimage{}{}
+
+\begin{quote}
+Kubernetes, also known as K8s, is an open-source system for automating deployment, scaling, and management of containerized applications.
+
+It groups containers that make up an application into logical units for easy management and discovery. Kubernetes builds upon 15 years of experience of running production workloads at Google, combined with best-of-breed ideas and practices from the community.
+\end{quote}
+Source: \link{https://kubernetes.io/}
+
+Basics:
+\begin{list2}
+\item Create Cluster, Deploy App, Expose your app, Scale up, Update your app
+
+\item Plus a thousand buzz words -- sccaling, micro-services,
+\end{list2}
+
+Don't get me wrong, I really like Kubernetes!
+
+\slide{K8s Run Programs, Processes and Applications}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Kubernetes is a platform for creating, deploying, and managing distributed applications. These applications come in many different shapes and sizes, but ultimately, they are all comprised of one or more programs that run on individual machines.
+\end{quote}
+Source: \emph{Kubernetes: Up and Running}, 3rd Edition, Brendan Burns, Joe Beda, Kelsey Hightower
 
 \begin{list2}
-\item Interfaces API
-\item Ports and Services
+\item Containers -- running proccesses and container images
+\item Interfaces API -- management interfaces are of special interest, including things like Service accounts
+\item Ports and Services -- running applications, what is exposed
+\item {\bf K8s security is software security}
 \end{list2}
 
 
 
-\slide{K8s objects}
+
+\slide{Initial security advice, read the documentation}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Learn Kubernetes Basics}
 \begin{list2}
-\item like Service accounts
+\item Apply Pod Security Standards at the Cluster Level
+\item Apply Pod Security Standards at the Namespace Level
+\item Restrict a Container's Access to Resources with AppArmor
+\item Restrict a Container's Syscalls with seccomp
+\end{list2}
+\end{quote}
+Source: tutorial  linked from front page of \link{https://kubernetes.io/},\\
+\link{https://kubernetes.io/docs/tutorials/kubernetes-basics/}
+
+\begin{list2}
+\item I like that security is listed within the first tutorial!
+\item This links to further documentation
+\item Security is also being added continuously
 \end{list2}
 
+\slide{Pod Security Standards ((PSA)}
 
-\slide{From low level outside}
+\hlkimage{14cm}{k8s-pod-security-std.png}
+Source: \link{https://kubernetes.io/docs/concepts/security/pod-security-standards/}
 
-Starting from the bottom and upwards - keeping it short on purpose:
 \begin{list2}
-\item Hardware - DRAC, ILO, KVM, IPMI etc.
-\item Connections - how to connect your clusters\\
-- find some blueprints, add management network, show complete drawing!
-\item Have some jump host, OpenBSD with wireguard VPN, show it works - *demo*
-\item Consider access from the outside and inwards
+\item Note: versions from 1.23 (2023-01-18), with varying features added later\\
+"Pod Security admission (PSA) is enabled by default in v1.23 and later, as it graduated to beta."
 \end{list2}
+
+\slide{Restricting the Kubernetes API}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS}. In a typical production Kubernetes cluster, the API serves on port 443. The port can be changed with the --secure-port, and the listening IP address with the --bind-address flag.
+
+...
+
+If your cluster uses a {\bf private certificate authority, you need a copy of that CA certificate configured into your ~/.kube/config on the client}, so that you can trust the connection and be confident it was not intercepted.
+\end{quote}
+
+\begin{list2}
+\item If an attacker can run Kubectl with credentials -- they can do anything
+\item Defense in Depth is suggested -- so restrict at multiple levels
+\item Only allow connections from specific network -- firewall filtering
+\item Use TLS and verify/copy certificates
+\end{list2}
+
+\slide{Security From low level and outside}
 
 Now you have built a cluster -- great, is it secure? Does it even work, can you run it?
+
+Keeping it short on purpose:
+\begin{list2}
+\item Hardware - DRAC, ILO, KVM, IPMI etc.
+\item Connections - how to connect your clusters
+% maybe find some blueprints, add management network
+\item Have some jump host, perhaps OpenBSD with wireguard VPN
+\end{list2}
+
+Consider threats and access from the outside and inwards, from bottom and upwards
 
 
 \slide{Document or it didn't happen}
 
-\hlkimage{8cm}{mythical-man-month-documentary.png}
+\hlkimage{12cm}{mythical-man-month-documentary.png}
 
 \begin{list2}
 \item Make sure to document!
@@ -292,12 +370,13 @@ Now you have built a cluster -- great, is it secure? Does it even work, can you 
 
 \slide{Why Have Formal Documents}
 
-\hlkimage{12cm}{mythical-formal-documents.png}
+\hlkimage{10cm}{mythical-formal-documents.png}
 Source: \emph{The Mythical Man-Month (Anniversary Edition)}
 by Frederick P. Brooks Jr.
 
 \begin{list2}
-    \item
+\item I use Git version control for my documentation purposes, some is in Zim Personal Wiki \link{https://zim-wiki.org/}
+\item I also use an IPAM \link{https://spritelink.github.io/NIPAP/}
 \end{list2}
 
 \slide{Role-based Access Control (RBAC)}
@@ -308,10 +387,6 @@ In computer systems security, {\bf role-based access control (RBAC)}[1][2] or ro
 Role-based access control (RBAC) is a policy-neutral access-control mechanism defined around {\bf roles and privileges}. The components of RBAC such as role-permissions, user-role and role-role relationships make it simple to perform user assignments. A study by NIST has demonstrated that RBAC addresses many needs of commercial and government organizations[citation needed]. RBAC can be used to facilitate administration of security in large organizations with hundreds of users and thousands of permissions. Although RBAC is different from MAC and DAC access control frameworks, it can enforce these policies without any complication.
 \end{quote}
 Quote from \url{https://en.wikipedia.org/wiki/Role-based_access_control}
-
-\slide{Role-based Access Control (RBAC), \emph{Computer Security} Bishop}
-
-\hlkimage{12cm}{bishop-rbac.png}
 
 \slide{New to RBAC?}
 
@@ -327,37 +402,159 @@ Go to GitHub web page:\\
 \end{list2}
 
 
-\slide{RBAC}
+\slide{Kubernetes Initial RBAC}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The \verb+admin.conf+ file gives the user superuser privileges over the cluster. This file should be used sparingly. For normal users, it's recommended to generate an unique credential to which you grant privileges. You can do this with the \verb+kubeadm alpha kubeconfig user --client-name <CN>+ command. That command will print out a KubeConfig file to STDOUT which you should save to a file and distribute to your user. After that, grant privileges by using \verb+kubectl create (cluster)rolebinding+.
+\end{quote}
 
 \begin{list2}
-\item HK p205 simple RBAC example with role
-also check official docs
-\item Create my own, and use that
+\item Right after install you can run \faWrench \verb+kubectl+ -- great
+\item Age old advice do not use shared administration acccounts -- have individual accounts
+\end{list2}
+
+\slide{Adding administrators}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+kubeadm config print init-defaults > kubeadm.conf
+kubeadm kubeconfig user --client-name=hlkadmin --config=kubeadm.conf > hlkadmin.conf
+\end{minted}
+
+\begin{list2}
+\item I would recommend having multiple configs, even for yourself -- hlkadmin config used for administration, hlkdeploy for deploying, maybe even a testing user for Henrik -smiley
+\item Read more about \link{https://kubernetes.io/docs/reference/access-authn-authz/rbac/}
+\end{list2}
+
+\slide{RBAC, groups and Namespace}
+
+\begin{quote}
+Kubernetes starts with three initial namespaces:
+\begin{list2}
+\item default The default namespace for objects with no other namespace
+\item kube-system The namespace for objects created by the Kubernetes system
+\item kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
+\end{list2}
+\end{quote}
+Source: \link{https://kubernetes.io/docs/tasks/administer-cluster/namespaces/}
+
+\begin{list2}
+\item I like namespaces, easy way to isolate stuff
+\item Allow for quotas -- don't allow a test application to use all resources
+\item Easy network segregation -- network policies
+\item Allows easy data isolation -- who can access sensitive data
+\item I recommend groups, namespaces and roles for granting access -- {\bf do not grant permission to named users!}
 \end{list2}
 
 
+\slide{Installing tools and plugins}
 
-\faWrench\ \verb+rbac-view+ HK p210
+%\hlkimage{}{}
 
-
-\slide{Open Policy Agent (OPA)}
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@k8s-1:~$ kubectl krew update
+Updated the local copy of plugin index.
+hlk@k8s-1:~$ kubectl krew install rbac-view
+Updated the local copy of plugin index.
+Installing plugin: rbac-view
+Installed plugin: rbac-view
+\
+ | Use this plugin:
+ | 	kubectl rbac-view
+ | Documentation:
+ | 	https://github.com/jasonrichardsmith/rbac-view
+ | Caveats:
+ | \
+ |  | Run "kubectl rbac-view" to open a browser with an html view of your permissions.
+ | /
+/
+\end{minted}
 
 \begin{list2}
-\item
+\item "This project is considered prerelease and is under active development."
+\item What I have found in many books -- tools, hints and tips, above from:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas
 \end{list2}
-HK p 216 +/- OPA directly or gatekeeper
 
-One slide with Least Privilege med ref til 1975 artiklen Saltzer and Schroeder\\
+
+\slide{RBAC-view}
+
+\hlkimage{15cm}{k8s-rbac-view-1.png}
+
+\link{https://github.com/jasonrichardsmith/rbac-view}
+
+
+
+\slide{RBAC Audit tools}
+
+Multiple tools exist -- I most often only link open source tools in my presentations, feel free to suggest others
+\begin{list2}
+\item \faWrench\ \verb+rbac-view+ -- view RBAC data interactively and search as shown above
+\link{https://github.com/team-soteria/rback} via:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas
+
+\item \faWrench \verb+rbac-tool+ -- A collection of Kubernetes RBAC tools to sugar coat Kubernetes RBAC complexity\\
+\link{https://github.com/alcideio/rbac-tool} via Rapid7
+\end{list2}
+
+You MUST control your permissions, so find the tools that work for you!
+
+% More about this subject?
+% HK p 216 +/- Open Policy Agent (OPA) directly or gatekeeper
+% HK p205 simple RBAC example with role
+
+
+\slide{Goals: Data Security}
+
+\hlkimage{18cm}{anderson-nine-principles-of-data-security.png}
+
+
+Source:
+\emph{Clinical system security: Interim guidelines}, Ross Anderson, 1996
+
+
+
+\slide{Principle of Least Privilege}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task\\
+Definition from \emph{Computer Security}, Matt Bishop
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+Read more in the 1975 article by Saltzer and Schroeder\\
 \url{https://en.wikipedia.org/wiki/Principle_of_least_privilege}\\
 \url{https://en.wikipedia.org/wiki/Saltzer_and_Schroeder%27s_design_principles}
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.\\
+Definition from \emph{Computer Security}, Matt Bishop
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
 
 \slide{Creating our cluster}
 Kubeadm - selected for this project, works great on Debian
 
 
 \slide{First users}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+
+\end{minted}
+
 \begin{list2}
-\item
+\item I used kubeadm to create a config earlier
 \end{list2}
 
 \slide{Recommended Users}

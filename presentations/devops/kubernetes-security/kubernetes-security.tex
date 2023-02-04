@@ -319,7 +319,7 @@ Source: tutorial  linked from front page of \link{https://kubernetes.io/},\\
 Source: \link{https://kubernetes.io/docs/concepts/security/pod-security-standards/}
 
 \begin{list2}
-\item Note: versions from 1.23 (2023-01-18), with varying features added later\\
+\item Note: versions from 1.23, with varying features added later\\
 "Pod Security admission (PSA) is enabled by default in v1.23 and later, as it graduated to beta."
 \end{list2}
 
@@ -381,6 +381,8 @@ by Frederick P. Brooks Jr.
 
 \slide{Role-based Access Control (RBAC)}
 
+One thing you should document, create a policy for is access and permissions.
+
 \begin{quote}
 In computer systems security, {\bf role-based access control (RBAC)}[1][2] or role-based security[3] is an approach to restricting system access to unauthorized users. It is used by the majority of enterprises with more than 500 employees,[4] and can implement mandatory access control (MAC) or discretionary access control (DAC).
 
@@ -411,7 +413,7 @@ The \verb+admin.conf+ file gives the user superuser privileges over the cluster.
 \end{quote}
 
 \begin{list2}
-\item Right after install you can run \faWrench \verb+kubectl+ -- great
+\item Right after install you can run \faWrench\ \verb+kubectl+ -- great
 \item Age old advice do not use shared administration acccounts -- have individual accounts
 \end{list2}
 
@@ -425,7 +427,10 @@ kubeadm kubeconfig user --client-name=hlkadmin --config=kubeadm.conf > hlkadmin.
 \end{minted}
 
 \begin{list2}
-\item I would recommend having multiple configs, even for yourself -- hlkadmin config used for administration, hlkdeploy for deploying, maybe even a testing user for Henrik -smiley
+\item I would recommend having multiple configs, even for yourself
+\item hlkadmin config used for administration
+\item hlkdeploy for deploying
+\item hlktester maybe even a testing user
 \item Read more about \link{https://kubernetes.io/docs/reference/access-authn-authz/rbac/}
 \end{list2}
 
@@ -434,9 +439,9 @@ kubeadm kubeconfig user --client-name=hlkadmin --config=kubeadm.conf > hlkadmin.
 \begin{quote}
 Kubernetes starts with three initial namespaces:
 \begin{list2}
-\item default The default namespace for objects with no other namespace
-\item kube-system The namespace for objects created by the Kubernetes system
-\item kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
+\item[*] default The default namespace for objects with no other namespace
+\item[*] kube-system The namespace for objects created by the Kubernetes system
+\item[*] kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
 \end{list2}
 \end{quote}
 Source: \link{https://kubernetes.io/docs/tasks/administer-cluster/namespaces/}
@@ -480,9 +485,9 @@ Installed plugin: rbac-view
 \end{list2}
 
 
-\slide{RBAC-view}
+\slide{Example tool RBAC-view}
 
-\hlkimage{15cm}{k8s-rbac-view-1.png}
+\hlkimage{18cm}{k8s-rbac-view-1.png}
 
 \link{https://github.com/jasonrichardsmith/rbac-view}
 
@@ -493,11 +498,20 @@ Installed plugin: rbac-view
 Multiple tools exist -- I most often only link open source tools in my presentations, feel free to suggest others
 \begin{list2}
 \item \faWrench\ \verb+rbac-view+ -- view RBAC data interactively and search as shown above
-\link{https://github.com/team-soteria/rback} via:\\
+\link{https://github.com/jasonrichardsmith/rbac-view} via:\\
 \emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas
 
-\item \faWrench \verb+rbac-tool+ -- A collection of Kubernetes RBAC tools to sugar coat Kubernetes RBAC complexity\\
+\item \faWrench\ \verb+rback+ -- generates a graph representation (in Graphviz dot format) of a Kubernetes cluster’s RBAC settings \link{https://github.com/team-soteria/rback}
+
+\item \faWrench\ \verb+rbac-tool+ -- A collection of Kubernetes RBAC tools to sugar coat Kubernetes RBAC complexity\\
 \link{https://github.com/alcideio/rbac-tool} via Rapid7
+
+\item \faWrench\ \verb+KubiScan+ -- a tool by Eviatar Gerzi to scan Kubernetes cluster for risky RBAC permissions \link{https://github.com/cyberark/KubiScan}
+\item \faWrench\ \verb+krane+ -- a Kubernetes RBAC static analysis and visualisation tool \link{https://github.com/appvia/krane}
+
+\item What is best current practice? More tools and articles available at:
+\link{https://rbac.dev/}
+
 \end{list2}
 
 You MUST control your permissions, so find the tools that work for you!
@@ -519,9 +533,11 @@ Source:
 
 \slide{Principle of Least Privilege}
 
+\begin{quote}
+Every program and every privileged user of the system should operate using the least amount of privilege necessary to complete the job. — Jerome Saltzer, Communications of the ACM
+\end{quote}
+
 \begin{list1}
-\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task\\
-Definition from \emph{Computer Security}, Matt Bishop
 \item Also drop privileges when not needed anymore, relinquish rights immediately
 \item Example, need to read a document - but not write.
 \item Database systems can often provide very fine grained access to data
@@ -543,87 +559,53 @@ Definition from \emph{Computer Security}, Matt Bishop
 \end{list1}
 
 
-\slide{Creating our cluster}
-Kubeadm - selected for this project, works great on Debian
+\slide{Soft Multi tenancy}
 
+Depending on your needs, it might be interesting to investigate soft multi tenancy;
 
-\slide{First users}
+\begin{quote}
+The level of isolation offered is sometimes described using terms like “hard” multi-tenancy, which implies strong isolation, and “soft” multi-tenancy, which implies weaker isolation. In particular, "hard" multi-tenancy is often used to describe cases where the tenants do not trust each other, often from security and resource sharing perspectives (e.g. guarding against attacks such as data exfiltration or DoS). Since data planes typically have much larger attack surfaces, "hard" multi-tenancy often requires extra attention to isolating the data-plane, though control plane isolation also remains critical.
+\end{quote}
+Source: \link{https://kubernetes.io/docs/concepts/security/multi-tenancy/}
 
-\begin{minted}[fontsize=\footnotesize]{shell}
-
-\end{minted}
-
-\begin{list2}
-\item I used kubeadm to create a config earlier
-\end{list2}
-
-\slide{Recommended Users}
-
-\begin{list2}
-\item
-\end{list2}
-What to create, how many people, how large a group do you have?
-
-Smallest:
-Create admin group even if only one admin! Ref RIPE database roles
-
-Medium:
-Start out with a large group of all admins
-Split into a few groups, maybe some overlap
-Don't give all users all authorizations
-
-\slide{Soft Multitenancy}
-
-\begin{list2}
-\item
-\end{list2}
-as described in HK chapter 7 p 177
-easier than hard multitenancy
+% Also described in HK chapter 7 p 177
+% easier than hard multitenancy
 
 Goal prevent some avoidable accidents and problems, breaking other groups services, but easier to maintain
 
 
-\slide{A note about service accounts}
-
-\begin{list2}
-\item
-\end{list2}
-Where do they "login" from, where do they request from! Only from inside the cluster
-Note to self: check logs later
-
-\slide{Interactions}
-
-\begin{list2}
-\item What must be allowed between components\\
-Figure 3.1 from LKS perhaps, or 3.3
-\end{list2}
-
 \slide{Network parts}
+
+Lets move to networking and CNI plugin alternatives
+
 \begin{list2}
-\item
-Container Network Interface (CNI)
+\item Container Network Interface (CNI) and Cloud Native Computing Foundation (CNCF) project\\
 \link{https://github.com/containernetworking/cni}
-\end{list2}
-
-
-\slide{CNI plugin alternatives}
-
-Describe two:
-\begin{list2}
+\item Multiple options -- popular and common ones Calico, Flannel, Weave and Cilium
 \item Calico - available multiple places
-\item Cilium - better security? encryption, I have followed Cilium for a while, choose one
 \item What does changing CNI plugin bring? and importantly what do you need!
+\item Usually some tunneling and encapsulation between nodes, VXLAN, IP in IP
+\item Allow dynamic routing like Border Gateway Protocol (BGP)
+\item Often more advanced features for filtering, observability, ...
+\item Cilium - I have followed Cilium for a while, so I choose that
 \end{list2}
 
+\slide{Compare CNI Features }
 
-\slide{Compare Calico and Cilium}
+\hlkimage{14cm}{lks-cni-compare.png}
+Source: \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde
 
 \begin{list2}
-\item \link{https://platform9.com/blog/the-ultimate-guide-to-using-calico-flannel-weave-and-cilium/}
+\item Can you live with kube-router really, probably not
+\end{list2}
 
-\item Others: WeaveNet, Flannel ...
+\slide{Compare CNI Performancce}
 
-\item Maybe figure 2.9 from LKS in color or benchmark.png
+\hlkimage{25cm}{k8s-cni-compare-benchmark.png}
+Source:  \link{https://platform9.com/blog/the-ultimate-guide-to-using-calico-flannel-weave-and-cilium/}
+
+\begin{list2}
+\item What is most important for you, features or performance? I cannot tell you which CNI to choose!
 \end{list2}
 
 \slide{Installing Cilium}
@@ -642,118 +624,85 @@ helm install cilium cilium/cilium --version 1.12.5 \
 \end{minted}
 
 \begin{list2}
-\item
+\item Note: I ended up deciding to run without the kube-proxy, only Cilium
+\item Document!
 \end{list2}
-Note: I ended up deciding to run without the kube-proxy, only Cilium
+
+
+
+\slide{Document what you did, what it did}
+
+\begin{alltt}\footnotesize
+cilium install --version=1.13.0-rc4 \
+		--helm-set ipam.mode=kubernetes \
+		--helm-set tunnel=disabled \
+		--helm-set ipv4NativeRoutingCIDR="10.0.0.0/8" \
+		--helm-set bgpControlPlane.enabled=true \
+		--helm-set k8s.requireIPv4PodCIDR=true  \
+		--helm-set kube-proxy-replacement=strict
+ℹ️  Using Cilium version 1.13.0-rc4{\bf
+🔮 Auto-detected cluster name: kubernetes
+🔮 Auto-detected datapath mode: tunnel
+🔮 Auto-detected kube-proxy has not been installed
+ℹ️  Cilium will fully replace all functionalities of kube-proxy}
+ℹ️  helm template --namespace kube-system cilium cilium/cilium --version 1.13.0-rc4 --set bgpControlPlane.enabled=true,cluster.id=0,cluster.name=kubernetes,encryption.nodeEncryption=false,ipam.mode=kubernetes,ipv4NativeRoutingCIDR=10.0.0.0/8,k8s.requireIPv4PodCIDR=true,k8sServiceHost=10.137.0.26,k8sServicePort=6443,kube-proxy-replacement=strict,kubeProxyReplacement=strict,operator.replicas=1,serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator,tunnel=disabled
+...
+⌛ Waiting for Cilium to be installed and ready...
+✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+\end{alltt}
+
+
+How I ran the kubeadm for building cluster - note the skip:\\
+\verb+sudo kubeadm init --pod-network-cidr=10.50.0.0/16 --skip-phases=addon/kube-proxy+
 
 \slide{After install Cilium}
 
-\begin{alltt}
-root@gouda01:~#  kubectl get po -n kube-system
-NAME                               READY   STATUS    RESTARTS   AGE
-cilium-5dt9j                       1/1     Running   0          3m40s
-cilium-mz4qm                       1/1     Running   0          3m40s
-cilium-operator-5d5dd5b4f6-75nq9   1/1     Running   0          3m40s
-cilium-operator-5d5dd5b4f6-mmgcd   1/1     Running   0          3m40s
-coredns-787d4945fb-5pddx           1/1     Running   0          4m54s
-coredns-787d4945fb-sjbdc           1/1     Running   0          4m54s
-etcd-gouda01                       1/1     Running   6          5m6s
-kube-apiserver-gouda01             1/1     Running   6          5m8s
-kube-controller-manager-gouda01    1/1     Running   3          5m6s
-kube-scheduler-gouda01             1/1     Running   8          5m6s
+\begin{alltt}\footnotesize
+root@k8s-1:~# kubectl get po -n kube-system
+NAME                               READY   STATUS    RESTARTS       AGE
+cilium-2287c                       1/1     Running   1 (161m ago)   3d
+cilium-9kjhv                       1/1     Running   1 (160m ago)   3d
+cilium-operator-5589744cf4-7mwqx   1/1     Running   1 (160m ago)   3d
+coredns-f74b98ccc-4hg4n            1/1     Running   1 (161m ago)   3d
+coredns-f74b98ccc-ts55j            1/1     Running   1 (160m ago)   3d
+etcd-k8s-1                         1/1     Running   4 (161m ago)   5d
+kube-apiserver-k8s-1               1/1     Running   4 (161m ago)   5d
+kube-controller-manager-k8s-1      1/1     Running   4 (161m ago)   5d
+kube-scheduler-k8s-1               1/1     Running   4 (161m ago)   5d
 \end{alltt}
 
 
 \slide{Cilium CLI tool}
 
-\begin{alltt}
-root@gouda01:/home/hlk/projects# cilium status
-    /¯¯\
- /¯¯\__/¯¯\    Cilium:         OK
- \__/¯¯\__/    Operator:       OK
- /¯¯\__/¯¯\    Hubble:         disabled
- \__/¯¯\__/    ClusterMesh:    disabled
-    \__/
-
-Deployment        cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
-DaemonSet         cilium             Desired: 2, Ready: 2/2, Available: 2/2
-Containers:       cilium             Running: 2
-                  cilium-operator    Running: 2
-Cluster Pods:     2/2 managed by Cilium
-Image versions    cilium             quay.io/cilium/cilium:v1.12.5@sha256:06ce2b0a0a472e73334a7504ee5c5d8b2e2d7b72ef728ad94e564740dd505be5: 2
-                  cilium-operator    quay.io/cilium/operator-generic:v1.12.5@sha256:b296eb7f0f7656a5cc19724f40a8a7121b7fd725278b7d61dc91fe0b7ffd7c0e: 2
-\end{alltt}
-
-So now we have a firewall for our cluster!
-
-\slide{Optional Remove Kube Proxy}
+\hlkimage{26cm}{k8s-cilium-status.png }
 
 
-\begin{alltt}
-$ kubectl -n kube-system delete ds kube-proxy
-$ # Delete the configmap as well to avoid kube-proxy being reinstalled during a kubeadm upgrade (works only for K8s 1.19 and newer)
-$ kubectl -n kube-system delete cm kube-proxy
-$ # Run on each node with root permissions:
-$ iptables-save | grep -v KUBE | iptables-restore
-\end{alltt}
+\slide{Cilium overview}
 
-
-
-\begin{list2}
-    \item \link{https://docs.cilium.io/en/v1.12/gettingstarted/kubeproxy-free/}
-\end{list2}
-
-\slide{Picture from Cilium docs}
-
-
-insert nice picture here showing allowed and blocked traffic
-
-% Perhaps this one:
-% https://cilium.io/blog/2018/09/19/kubernetes-network-policies/
-
-
-\link{https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/}
-
-\slide{External IPs}
-
-%\hlkimage{}{}
+\hlkimage{12cm}{cilium-overview.png}
 
 \begin{quote}
-apiVersion: "cilium.io/v2alpha1"
-kind: CiliumLoadBalancerIPPool
-metadata:
-  name: "blue-pool"
-spec:
-  cidrs:
-  - cidr: "10.0.47.0/24"
-  - cidr: "2a06:d380:0:85::0/64"
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
 \end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+
+\slide{Security is more than blocking!}
+
+\hlkimage{22cm}{cilium-features.png}
 
 \begin{list2}
-\item \link{https://docs.cilium.io/en/latest/network/lb-ipam/}
-\item \verb+10.0.42.254/29+ is my home
-\item \verb+2a06:d380:0:85::0/64+ is from my own LIR
+\item A lot of features relate to \emph{security}
 \end{list2}
 
-Source:
-\link{https://sue.eu/blogs/expose-loadbalanced-kubernetes-services-with-bgp-cilium/}
-\link{https://nicovibert.com/2022/07/21/bgp-with-cilium/}
-https://isovalent.com/resource-library/labs/ - has a lab even Cilium Host Firewall
 
+\slide{Testing Connectivity}
 
-\slide{Nice Editor for Policies}
-
-\link{https://editor.cilium.io/}
-
-\slide{Connectivity Testing}
-
-\verb+cilium connectivity test+
-
-
-
-\begin{alltt}
-root@gouda01:~# cilium connectivity test
+Cilium has a very nice built-in connectivity test:
+\begin{alltt}\footnotesize
+root@k8s-1:~# cilium connectivity test
 ℹ️  Monitor aggregation detected, will skip some flow validation steps
+✨ [kubernetes] Creating namespace cilium-test for connectivity check...
 ✨ [kubernetes] Deploying echo-same-node service...
 ✨ [kubernetes] Deploying DNS test server configmap...
 ✨ [kubernetes] Deploying same-node deployment...
@@ -763,120 +712,123 @@ root@gouda01:~# cilium connectivity test
 ✨ [kubernetes] Deploying other-node deployment...
 ⌛ [kubernetes] Waiting for deployments [client client2 echo-same-node] to become ready...
 ⌛ [kubernetes] Waiting for deployments [echo-other-node] to become ready...
-connectivity test failed: waiting for deployment echo-other-node to become ready has been interrupted: context deadline exceeded
-root@gouda01:~#
+...
+✅ All 31 tests (232 actions) successful, 0 tests skipped, 0 scenarios skipped.
+root@k8s-1:~#
 \end{alltt}
 
-\begin{alltt}
-root@gouda01:~# kubectl get po -n cilium-test
-NAME                                                    READY   STATUS    RESTARTS   AGE
-client-6f6788d7cc-tjz4m                                 1/1     Running   0          88s
-client2-bc59f56d5-8r6lh                                 1/1     Running   0          88s
-echo-a-6c79c8b946-p2rg4                                 1/1     Running   0          20m
-echo-b-7448778bfb-kvgb5                                 1/1     Running   0          20m
-echo-b-host-b5896c6cf-php6w                             1/1     Running   0          20m
-echo-other-node-5c58b8cf8b-h58rf                        0/2     Pending   0          87s
-echo-same-node-9f8754876-n5j5x                          2/2     Running   0          88s
-host-to-b-multi-node-clusterip-645c86f859-8sgkd         0/1     Pending   0          20m
-host-to-b-multi-node-headless-7647655fd7-v9b4f          0/1     Pending   0          20m
-pod-to-a-599fcbff49-rxx7t                               1/1     Running   0          20m
-pod-to-a-allowed-cnp-cbcdd54f5-cgbt2                    1/1     Running   0          20m
-pod-to-a-denied-cnp-7cd474c7b5-hr6dm                    1/1     Running   0          20m
-pod-to-b-intra-node-nodeport-bb96b9bcf-4cxlv            1/1     Running   0          20m
-pod-to-b-multi-node-clusterip-6897f7b4b5-g7xd9          0/1     Pending   0          20m
-pod-to-b-multi-node-headless-fff844f67-fhwfj            0/1     Pending   0          20m
-pod-to-b-multi-node-nodeport-cb9685695-cb6jp            0/1     Pending   0          20m
-pod-to-external-1111-66588c5755-ff8kg                   1/1     Running   0          20m
-pod-to-external-fqdn-allow-google-cnp-cc84ccb8f-g5pgw   1/1     Running   0          20m
+\begin{list2}
+    \item
+\end{list2}
+
+
+
+\slide{External IPs}
+
+Jumping directly in, I am running on bare metal. Getting external access into K8s is a bit hard. I decided to use Cilium, BGP, and IP pools
+
+\begin{alltt}\footnotesize
+$ cat pool-zencurity.yaml
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "pool"
+spec:
+  cidrs:
+  - cidr: "185.129.62.144/28"
+  - cidr: "2a06:d380:0:85::0/64"
 \end{alltt}
 
-\slide{K8s DNS -- CoreDNS}
-
 \begin{list2}
-\item and interaction with auth DNS
-\end{list2}
-
-Ref to loadbalancing, global load balancing, cloudflare?
-
-HK p 44 CoreDNS with OPA can restrict some
-
-\slide{Deploying Applications Securely}
-
-\begin{list2}
-\item
-\end{list2}
-
-\slide{K8s Security domains}
-
-\begin{list2}
-\item K8s master components
-\item K8s worker components
-\item K8s objects
-\end{list2}
-
-+ entities and threat actors end user, internal attacker, privileged attacker
-
-Source: LKS p77-
-
-
-
-
-\slide{Using RBAC and Namespaces to isolate}
-
-\begin{list2}
-\item HK Chapter 3 Container Runtime Isolation
+\item \link{https://docs.cilium.io/en/latest/network/lb-ipam/}
+\item I run a LIR (Local Internet Registry) with network AS57860 which have these addresses
 \end{list2}
 
 
-\slide{Use Resource Limits and network policies always}
+\slide{Result in my setup}
 
+%\hlkimage{}{}
+
+\begin{alltt}\footnotesize
+root@k8s-1:/home/hlk/bin# k get svc
+NAME           TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)          AGE
+kubernetes     ClusterIP      10.96.0.1       <none>           443/TCP          5d
+service-test   LoadBalancer   10.108.127.95   185.129.62.154   1234:30378/TCP   4d22h
+\end{alltt}
+
+References that were useful:
 \begin{list2}
-\item Admission controllers
-\end{list2}
-
-Rule: always put a limit on it
-LKS p 121 EventRateLimit
-
-
-Rule: always specify a K8s Network Policy - be specific, who CAN access
-make positive lists - as normally only a limited number of other resources will need access
-- then also make sure to specify an egress policy
-So both ingress and egress rules
-
-HK chapter 5 p 134 Traffic Flow Control
-
-
-Namespace resource quotas LKS p182
-
-\slide{Network security in K8s}
-
-\begin{list2}
-\item Attack types DDoS slow and fast, volumetric and PPS based
-\item Pro/cons with having another layer - manually configured, only allow few protocols and ports 80, 443, 8080
-- take tables from firewall presentation
+\item Nice Editor for Policies \link{https://editor.cilium.io/}
+\item \link{https://sue.eu/blogs/expose-loadbalanced-kubernetes-services-with-bgp-cilium/}
+\item \link{https://nicovibert.com/2022/07/21/bgp-with-cilium/}
+\item \link{https://isovalent.com/resource-library/labs/} - has labs where you can try running BGP
 \end{list2}
 
 
+\slide{Network Policy Editor for Kubernetes}
 
-\slide{Monitoring and updating}
+\hlkimage{18cm}{cilium-editor-ui.png}
 
 \begin{list2}
-\item
+\item Nice Editor for Policies \link{https://editor.cilium.io/}
+\item Recommendation: always specify a Network Policy - be specific, who CAN access
+\item Make positive lists - as normally only a limited number of other resources will need access
+\item Then also make sure to specify an egress policy - so both ingress and egress rules
 \end{list2}
 
-\slide{Upgrades}
+\slide{Example Network Policy}
+
+\begin{alltt}\tiny
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example-policy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  ingress:
+    - from: - ipBlock: cidr: 185.129.60.123/32
+      ports:
+        - port: 80
+        - port: 443
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53          protocol: UDP
+\end{alltt}
+
+
+
+
+
+
+
+\slide{Monitoring and updating -- upgrades}
 
 %\hlkimage{}{}
 
 \begin{quote}
+Since Kubernetes is a complex system, I recommend making an initial deployment plan which is longer than an upgrade of Kubernetes. Currently new releases are coming out rapidly, so a 3-4 month plan should suffice.
 
+{\bf Main goal is to try upgrading the cluster \emph{before} you have producction running!}
 \end{quote}
+
+\link{https://kubernetes.io/releases/}
 
 You need to upgrade all parts, so remember which parts you use:
 \begin{list2}
-\item
-\item Cilium upgrade
+\item Firmwares amd supporting systems, routers, switches, server control, storage, ...
+\item Operating systems
+\item Kubernetes core components
+\item Cilium upgrade and various other plugins
 \end{list2}
+
 
 \slide{}
 
@@ -892,11 +844,10 @@ root@gouda01:~# cilium upgrade
 \end{alltt}
 
 \begin{list2}
-    \item
-\end{list2}
-
-Cilium recommend a pre-flight check -- pulls images beforehand:\\
+\item Cilium recommend a pre-flight check -- pulls images beforehand etc:\\
 \link{https://docs.cilium.io/en/v1.12/operations/upgrade/}
+\item A good example of how to prepare upgrades
+\end{list2}
 
 \slide{Resource monitoring and capacity planning}
 
@@ -929,12 +880,6 @@ Anbefaler Suricata, Zeek - among others
 \end{list2}
 
 
-\slide{Monitoring K8s}
-
-\begin{list2}
-\item
-\end{list2}
-
 \slide{Monitoring K8s Networking}
 
 \begin{list2}
@@ -943,11 +888,14 @@ Anbefaler Suricata, Zeek - among others
 \url{https://docs.cilium.io/en/stable/gettingstarted/hubble_setup/#hubble-setup}
 \end{list2}
 
-\slide{Isolation and Independence}
+\slide{Network security in K8s}
 
 \begin{list2}
-\item muligheder for beskyttelse og isolering
+\item Attack types DDoS slow and fast, volumetric and PPS based
+\item Pro/cons with having another layer - manually configured, only allow few protocols and ports 80, 443, 8080
+- take tables from firewall presentation
 \end{list2}
+
 
 \slide{Stress testing and DDoS}
 
@@ -963,20 +911,6 @@ home page: \link{https://penguinping.org}
 \centerline{Extremely fast and allows easy customization}
 
 
-\slide{Main Kubernetes Attack Surface}
-
-\begin{list2}
-\item
-\end{list2}
-Management
-
-Front end -- internet connected parts
-
-Supporting systems, DNS, NTP, etc.
-
-
-
-
 \slide{Kubernetes Security is more than just the core}
 
 \hlkimage{12cm}{rice-container-security-1.png}
@@ -986,6 +920,13 @@ Source: \emph{Container Security}, (CS) Liz Rice, O'Reilly, Apr 2020
 \item Attacks from inside, attacks inside containers
 \item Some just use up resources, some attacks others, some attack the system from the inside
 \end{list2}
+
+\slide{Container Runtime Isolation}
+
+\begin{list2}
+\item HK Chapter 3 Container Runtime Isolation
+\end{list2}
+
 
 \slide{Analysis on Docker Hub malicious images: Attacks through public container images}
 

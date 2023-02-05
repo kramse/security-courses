@@ -209,8 +209,9 @@ A classic text about containers and a must read for everyone
 K8s uses a lot of intricate networking -- great for understanding this more
 \item \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde, Packt, July 2020\\
 This is a very complete and detailed view at K8s security, covering many many parts
-\item Advanced security practioners could perhaps enjoy security focused books like:\\
+\item Advanced security practioners will enjoy security focused books like:\\
 \emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
+\item \emph{Kubernetes Best Practices: Blueprints for Building Successful Applications on Kubernetes}, Brendan Burns, Eddie Villalba, Dave Strebel and Lachlan Evenson, O'Reilly 2020
 \end{list2}
 
 \slide{Creating a lab is not expensive}
@@ -674,8 +675,14 @@ kube-scheduler-k8s-1               1/1     Running   4 (161m ago)   5d
 
 \slide{Cilium CLI tool}
 
-\hlkimage{26cm}{k8s-cilium-status.png }
+\hlkimage{24cm}{k8s-cilium-status.png }
 
+\begin{list2}
+\item Many tools are executed via \verb+kubecctl+
+\item Others have their own command
+\item This can be very confusing, and again -- document which tools you use!
+\item Having a jump host with updated tools installed might help -- helps me!
+\end{list2}
 
 \slide{Cilium overview}
 
@@ -717,8 +724,17 @@ root@k8s-1:~# cilium connectivity test
 root@k8s-1:~#
 \end{alltt}
 
+\slide{Checking your Kubernetes deployment}
+
+\hlkimage{5cm}{testing.pdf}
+
 \begin{list2}
-    \item
+\item It can actually be hard to check your Kubernetes installation
+\item Especially networking in detail
+\item I would recommend spending a little time investigating Maximum Transmission Unit (MTU)\\
+\link{https://en.wikipedia.org/wiki/Maximum_transmission_unit}
+\item Your devices -- switches and network cards can probably also offload some features to hardware
+\item Advanced users could dive deeper into \emph{BPF and XDP Reference Guide} \link{https://docs.cilium.io/en/latest/bpf/}
 \end{list2}
 
 
@@ -823,18 +839,21 @@ Since Kubernetes is a complex system, I recommend making an initial deployment p
 
 You need to upgrade all parts, so remember which parts you use:
 \begin{list2}
-\item Firmwares amd supporting systems, routers, switches, server control, storage, ...
+\item Firmwares and supporting systems, routers, switches, server control, storage, ...
 \item Operating systems
 \item Kubernetes core components
 \item Cilium upgrade and various other plugins
 \end{list2}
 
 
-\slide{}
+\slide{Performing upgrades}
 
 %\hlkimage{}{}
+\begin{quote}
+When rolling out an upgrade with Kubernetes, Kubernetes will first terminate the pod followed by pulling the new image version and then finally spin up the new image. In order to reduce the downtime of the agent and to prevent ErrImagePull errors during upgrade, the pre-flight check pre-pulls the new image version.
+\end{quote}
 
-\begin{alltt}
+\begin{alltt}\footnotesize
 root@gouda01:~# cilium upgrade
 🔮 Auto-detected datapath mode: tunnel
 🚀 Upgrading cilium-operator to version quay.io/cilium/operator-generic:v1.12.5...
@@ -851,8 +870,16 @@ root@gouda01:~# cilium upgrade
 
 \slide{Resource monitoring and capacity planning}
 
+\begin{quote}
+\emph{Metrics} A series of numbers measured over a period of time
+
+\emph{Logs} Used for exploratory analysis of a system
+\end{quote}
+Source: \emph{Kubernetes Best Practices: Blueprints for Building Successful Applications on Kubernetes}, Brendan Burns, Eddie Villalba, Dave Strebel and Lachlan Evenson, O'Reilly 2020
+
 \begin{list2}
-\item Kubernetes dashboard, Metrics server
+\item The book is mostly interested in poorly performing applications, but the same data is used in security
+\item I always install Kubernetes dashboard, and I am going to use \faWrench\ \verb+Prometheus+ a lot more
 \end{list2}
 
 \slide{Security monitoring and auditing}
@@ -866,7 +893,7 @@ Why isn't K8s secure?!
 \slide{Tools that might help}
 
 \begin{list2}
-\item \faWrench\ \verb+Falco+ detect anomalous behaviour
+\item \faWrench\ \verb+Falco+ detect anomalous behaviour, have not tried it yet
 \item \faWrench\ \verb+Prometheus+ \verb+grafana+ \verb+elasticsearch+ - usual suspects, keep it short
 \item \faWrench\ \verb+Netflow+ \verb+Elastiflow+
 \end{list2}
@@ -965,12 +992,7 @@ Summary from: \link{https://www.aquasec.com/cloud-native-academy/docker-containe
 \end{list2}
 
 
-\slide{Cloud Forensic}
 
-\begin{list2}
-\item
-\end{list2}
-forensic og opklaring af hændelser.
 
 
 \slide{Benchmarking tools}
@@ -1062,28 +1084,42 @@ Make sure to do recommended basic security before considering advanced attacks
 
 \slide{Secrets in K8s vaults}
 Various methods for keeping secrets -- considered a developer problem, sorry
+\slide{}
 
-
-Sysdig - advanced logging and inspection
-sysdig and sysdig-inspect
-https://github.com/draios/sysdig
-https://github.com/draios/sysdig-inspect
-
-\slide{High availability}
+\slide{Cloud and Container Forensics}
 
 Moved to advanced subject, but of course important
 
+\begin{list2}
+\item Container Forensics
+\item Cloud Forensic
+\item Sysdig - advanced logging and inspection
+\item \faWrench\ \verb+sysdig+ and \faWrench\ \verb+sysdig-inspect+
+\link{https://github.com/draios/sysdig}
+\link{https://github.com/draios/sysdig-inspect}
+\end{list2}
+
+
+\slide{High availability}
+
+\begin{list2}
+\item Moved to advanced subject, but of course important
+\end{list2}
+
 \slide{Multi tenancy}
 
-Moved to advanced subject, perhaps HK chapter 7 can help you
+\begin{list2}
+\item Moved to advanced subject, perhaps HK chapter 7 can help you
+\end{list2}
 
 
 \slide{Sandboxing}
-Moved to advanced since we might not have time
-HK Chapter 3. Sandboxing
 
-\slide{Container Forensics}
-Moved to advanced - time constraints
+\begin{list2}
+\item  Moved to advanced since we might not have time
+\item HK Chapter 3. Sandboxing
+\end{list2}
+
 
 \slide{Honeypots}
 Moved to advanced - time constraints
@@ -1109,23 +1145,23 @@ You should all ask your internet providers if they know about MANRS, and follow 
 
 \slide{Books and educational materials}
 
+We could keep recommending books, articles, papers and official documentation
+
+These are examples, and even if some details are changed, may be good to read
 \begin{list2}
-
-
 \item \emph{Kubernetes Security and Observability} Brendan Creane, Amit Gupta % Er på Oreilly.com
-
+Mastering Kubernetes, {\bf Third Edition}, Gigi Sayfan, Packt 2020
+\item \emph{kubectl: Command-Line Kubernetes in a Nutshell}, Rimantas Mocevicius, Packt, 2020
+\item \emph{The Kubernetes Workshop},Zachary Arnold, Sahil Dua, Wei Huang, Faisal Masood, Melony Qin,
+and Mohammed Abu Taleb, Packt, 2020
+\item \emph{Kubernetes A Complete DevOps Cookbook}, Murat Karslioglu, Packt, 2020
+\item \emph{Cloud Native with Kubernetes}, Alexander Raul, Packt, 2020
+\item \emph{Kubernetes and Docker – An Enterprise Guide}, Scott Surovich, Marc Boorshtein, Packt, 2020
+\item \emph{Kubernetes in Production Best Practices: Build and manage highly available production-ready
+Kubernetes clusters}, Aly Saleh, Murat Karslioglu, Packt 2021
 \end{list2}
 
-
-\slide{Other sources}
-
-\begin{list2}
-\item
-% May be a copy of the same from a company called "Dicy" or something
-\item \emph{A Holistic Approach to Kubernetes Security and Compliance}\\
-%\link{https://www.rapid7.com/info/holistic-approach-to-kubernetes-security-and-compliance/}
-
-\end{list2}
+These are the ones I selected for \emph{my Kubernetes education} some via a Humble Ultimate Devops bundle
 
 \slide{Linux and Internet Resources}
 

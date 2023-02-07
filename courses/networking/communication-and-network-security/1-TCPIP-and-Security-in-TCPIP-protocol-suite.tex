@@ -70,7 +70,6 @@ Skim:
 \item We have an isolated network, allowing us to sniff and mess with hacking tools.
 \end{list1}
 
-\centerline{Due to Coronavirus we will need to work remotely.}
 
 \slide{Internet Today}
 
@@ -253,14 +252,21 @@ PING 2130706433 (127.0.0.1): 56 data bytes
 \item NB: man må ikke sende pakker ud på internet med disse som afsender, giver ikke mening
 \end{list1}
 
+\slide{Documentation Prefix, IPv6 updates etc.}
+
+Even documentation has its own prefix, RFC5737:
 \begin{alltt}
 The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
 and 203.0.113.0/24 (TEST-NET-3) are provided for use in
 documentation.
-
-169.254.0.0/16 has been ear-marked as the IP range to use for end node
-auto-configuration when a DHCP server may not be found
 \end{alltt}
+
+IPv6 listed in RFC3849 \verb+2001:DB8::/32+
+
+See RFC3330 \emph{Special-Use IPv4 Addresses} which is updated by
+RFC6890 \emph{Special-Purpose IP Address Registries} which in turn is updated by RFC8190\\
+Use the web version of RFCs to surf back and forth \link{https://www.rfc-editor.org/rfc/rfc8190}
+
 
 
 \slide{OSI og Internet modellerne}
@@ -544,42 +550,26 @@ laver en forbindelse til port 443/tcp med SSL
 \slide{TCP/IP basiskonfiguration}
 
 \begin{alltt}
-ifconfig en0 10.0.42.1 netmask 255.255.255.0
-route add default gw 10.0.42.1
+ip address add 10.0.42.123/254dev eth0
+ip route add default via 10.0.42.1
 \end{alltt}
 
 \begin{list1}
 \item konfiguration af interfaces og netværk på UNIX foregår med:
-\item \verb+ifconfig+, \verb+route+ og \verb+netstat+
+\item \verb+ip+ fra iproute2 \link{https://en.wikipedia.org/wiki/Iproute2}
+\item Tidligere brugte vi \verb+ifconfig+, \verb+route+ og \verb+netstat+
 \item - ofte pakket ind i konfigurationsmenuer m.v.
 \item fejlsøgning foregår typisk med \verb+ping+ og \verb+traceroute+
 \item På Microsoft Windows benyttes ikke \verb+ifconfig+\\
 men kommandoerne \verb+ipconfig+ og \verb+ipv6+
 \end{list1}
 
-\slide{Små forskelle}
-
-\begin{alltt}
-$ route add default 10.0.42.1
-\emph{uden gw keyword!}
-
-$ route add default gw 10.0.42.1
-\emph{Linux kræver gw med}
-\end{alltt}
-
-\vskip 1cm
-
-\centerline{\bf NB: UNIX varianter kan indbyrdes være forskellige!}
-
-\vskip 1cm
-
-Very useful if you are trying to access a network without DHCP.
 
 \slide{OpenBSD}
 
 Netværkskonfiguration på OpenBSD:
 \begin{alltt}
-# cat /etc/hostname.sk0
+# cat /etc/hostname.em0
 inet 10.0.0.23 0xffffff00 NONE
 # cat /etc/mygate
 10.0.0.1
@@ -787,16 +777,14 @@ nameserver 91.239.100.100
 
 \begin{list1}
 \item bestyrer .dk TLD - top level domain
-
 \item man registrerer ikke .dk-domæner hos DK-hostmaster, men hos en
   registrator
 \item Et domæne bør have flere navneservere og flere postservere
 \item autoritativ navneserver - ved autoritativt om IP-adresse for
   maskine.domæne.dk findes
 \item ikke-autoritativ - har på vegne af en klient slået en adresse op
-\item Det anbefales at overveje en service som
-  \link{http://www.gratisdns.dk} der har 5 navneservere distribueret
-  over stor geografisk afstand - en udenfor Danmark
+\item Det anbefales at overveje en service som har flere navneservere distribueret
+  over stor geografisk afstand
 \end{list1}
 
 \slide{NAT Network Address Translation}
@@ -1066,26 +1054,6 @@ mulighed for flere pakker på en given router
   +---------------+----------------+-----------------+-----------------
 \end{alltt}
 
-\slide{ifconfig med ipv6 - Unix}
-
-Næsten ingen forskel på de sædvanlige kommandoer ifconfig, netstat,
-\begin{alltt}
-\small
-root# ifconfig en1 inet6 2001:1448:81:beef::1
-root# ifconfig en1
-en1: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500{\color{security6blue}
-        inet6 fe80::230:65ff:fe17:94d1 prefixlen 64 scopeid 0x5
-        inet6 2001:1448:81:beef::1 prefixlen 64 }
-        inet 169.254.32.125 netmask 0xffff0000 broadcast 169.254.255.255
-        ether 00:30:65:17:94:d1
-        media: autoselect status: active
-        supported media: autoselect
-\end{alltt}
-
-%size 4
-Fjernes igen med:\\
-\verb+ifconfig en1 inet6 -alias 2001:1448:81:beef::1+\\
-Prøv også:\\ \verb+ifconfig en1 inet6+
 
 \slide{ping til IPv6 adresser}
 
@@ -1121,16 +1089,12 @@ round-trip min/avg/max = 1.615/4.776/10.639 ms
 
 \slide{ ping6 til specielle adresser}
 
-\begin{alltt}
-\small
+\begin{alltt}\footnotesize
 root# ping6 -I en1 ff02::1
 PING6(56=40+8+8 bytes) fe80::230:65ff:fe17:94d1 --> ff02::1
 16 bytes from fe80::230:65ff:fe17:94d1, icmp_seq=0 hlim=64 time=0.483 ms
 16 bytes from fe80::20a:95ff:fef5:34df, icmp_seq=0 hlim=64 time=982.932 ms
 16 bytes from fe80::230:65ff:fe17:94d1, icmp_seq=1 hlim=64 time=0.582 ms
-16 bytes from fe80::20a:95ff:fef5:34df, icmp_seq=1 hlim=64 time=9.6 ms
-16 bytes from fe80::230:65ff:fe17:94d1, icmp_seq=2 hlim=64 time=0.489 ms
-16 bytes from fe80::20a:95ff:fef5:34df, icmp_seq=2 hlim=64 time=7.636 ms
 ^C
 --- ff02::1 ping6 statistics ---
 4 packets transmitted, 4 packets received, +4 duplicates, 0% packet loss
@@ -1143,6 +1107,7 @@ round-trip min/avg/max = 0.483/126.236/982.932 ms
 \item ff02::2         ipv6-allrouters
 \item ff02::3         ipv6-allhosts
 \end{list2}
+Tilsvarende IPv4 er der special use adresser, se links til RFC tidligere for detaljer
 
 \slide{Stop - tid til leg}
 
@@ -1305,6 +1270,8 @@ fe80::1%lo0                   (incomplete)         lo0 permanent R
 fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
 fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
 \end{alltt}
+
+Ovenstående udført på Mac OS X, BSD unix -- på Linux ville man ofte bruge \verb+ip neighbor show+
 
 \slide{Hvorfor implementere IPv6 i jeres netværk?}
 

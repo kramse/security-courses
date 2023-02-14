@@ -195,7 +195,7 @@ Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
 \slide{Collect Network Evidence from the network}
 
 \begin{list1}
-\item Network Flows
+\item Network Flows originated at Cisco
 \item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
 \begin{list2}
 \item Ingress interface (SNMP ifIndex)
@@ -204,7 +204,7 @@ Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
 \item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
 \item IP Type of Service
 \end{list2}
-\item today Netflow version 9 or IPFIX
+\item today Netflow version 9 or IPFIX support IPv6, and should be used instead of Netflow v5
 \end{list1}
 
 Source: \\{\footnotesize
@@ -453,7 +453,7 @@ At der er konfigureret et sæt fornuftige regler!
 \end{list2}
 
 
-{\small Kilde: \link{http://www.ranum.com/pubs/a1fwall/} The ULTIMATELY Secure Firewall}
+{\small Kilde: Billede oprindeligt fra \link{http://www.ranum.com/pubs/a1fwall/} The ULTIMATELY Secure Firewall} (link er dødt)
 %\href
 %{http://www.ranum.com/security/computer\_security/papers/a1-firewall/}
 %{http://www.ranum.com/security/computer_security/papers/a1-firewall/}
@@ -567,7 +567,7 @@ IEEE 802.1x  Port Based Network Access Control
 \item Denne protokol sikrer at man valideres før der gives adgang til porten
 \item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
 \item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
-\item Bruges til Wi-Fi netværk
+\item Bruges til Wi-Fi netværk, og kan derfor også nemmere bruges til kablede netværk nu
 \end{list1}
 
 
@@ -596,13 +596,13 @@ IEEE 802.1x  Port Based Network Access Control
 
 \slide{m0n0wall}
 
-\hlkimage{6cm}{images/m0n0wall-1.pdf}
+\hlkimage{8cm}{images/m0n0wall-1.pdf}
 
 \begin{list1}
-\item Firewall bygget på FreeBSD med grafisk web interface
+\item Firewall bygget på FreeBSD med grafisk web interface -- nu outdated
 \item Idag erstattet af pfSense \link{https://www.pfsense.org/}\\
 og OPNsense \link{https://opnsense.org/}
-\item De nye bruges i produktion i danske firmaer
+\item De nye versioner bruges i produktion i danske firmaer, og kan anbefales hvis man vil prøve en firewall
 \end{list1}
 
 \slide{Firewall koncepter}
@@ -690,7 +690,7 @@ nøgleordet \emph{quick} afslutter match - god til store regelsæt
 COMMIT
 \end{alltt}
 
-\centerline{NB: husk at aktivere IP forwarding}
+\centerline{NB: husk at aktivere IP forwarding, evt. skifte default policy fra ACCEPT til DROP}
 
 \slide{Anbefaler UFW Uncomplicated Firewall}
 
@@ -763,7 +763,7 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \item Kendte problemer som minimum
 \end{list1}
 
-
+Den generelle anbefaling er at starte med et regelsæt der blokerer ALT og derefter åbner man for services man vil tillade.
 
 \exercise{ex:nmap-service}
 \exercise{ex:nmap-ssh-scanner}
@@ -779,26 +779,16 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \item IPv6 funktionalitet
 
 \item Båndbredde håndtering
-\item VLAN funktionalitet - mere udbredt i forbindelse med VoIP
-\item Redundante firewalls - pfsync og CARP
+\item VLAN funktionalitet
+\item Redundante firewalls - pfsync og CARP er eksempler
 % pfsync giver et indblik i hvordan den slags kan laves, hvor de
 % kommercielle ``bare kan det''
 \item IPsec og Andre VPN features
 \item inspection - diverse muligheder for at lave deep inspection i protokoller
 \item Eksemplvis DNS inspection
+\item Nogle firewalls kan inspicere mange protokoller og bruger jævnligt betegnelsen \emph{deep packet inspection} (DPI)
 \end{list2}
 
-\slide{Proxy servers}
-
-\begin{list1}
-\item Filtrering på højere niveauer i OSI modellen er muligt
-\item Idag findes proxy applikationer til de mest almindelige
-  funktioner
-\item Den typiske proxy er en caching webproxy der kan foretage HTTP
-  request på vegne af arbejdsstationer og gemme resultatet
-\item NB: nogle protokoller egner sig ikke til proxy servere
-\item SSL forbindelser til \emph{secure websites} kan per design ikke proxies
-\end{list1}
 
 \slide{Anti-pattern dobbelt NAT i eget netværk}
 
@@ -822,8 +812,6 @@ ud på internet.
 \item Konceptet kaldes Virtual Private Network VPN
 \item IPsec er de facto standarden for VPN og beskrevet i RFC'er
 \end{list1}
-
-
 
 \slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
 
@@ -1053,6 +1041,24 @@ Source:\\
 
 \centerline{Better drop single /32 host than whole network!}
 
+\slide{BGP FlowSpec}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Abstract}
+
+This document defines a Border Gateway Protocol Network Layer Reachability Information (BGP NLRI) encoding format that can be used to distribute (intra-domain and inter-domain) traffic Flow Specifications for IPv4 unicast and IPv4 BGP/MPLS VPN services. This allows the routing system to propagate information regarding more specific components of the traffic aggregate defined by an IP destination prefix.
+
+It also specifies BGP Extended Community encoding formats, which can be used to propagate Traffic Filtering Actions along with the Flow Specification NLRI. Those Traffic Filtering Actions encode actions a routing system can take if the packet matches the Flow Specification.
+\end{quote}
+Source: \emph{Dissemination of Flow Specification Rules} RFC8955
+
+\begin{list2}
+\item Advanced users may also want to investigate BGP Flowspec
+\item Allows dynamic updating of multiple routers/firewalls/devices using BGP
+\end{list2}
+
 \slide{More information about DDoS testing}
 
 More DDoS and testing for DDoS can be found in this presentation:
@@ -1085,15 +1091,17 @@ The goal for the tutorial is to explain:
 
 \hlkimage{14cm}{ipv6-arp-ndp.pdf}
 
-\begin{list1}
-\item ARP er væk
-\item NDP erstatter og udvider ARP, Sammenlign \verb+arp -an+ med \verb+ndp -an+
-\item Til dels erstatter ICMPv6 således DHCP i IPv6, DHCPv6 findes dog
-\item {\bf NB: bemærk at dette har stor betydning for firewallregler!}
-\end{list1}
+\begin{list2}
+\item ARP bruges kun til IPv4
+\item NDP erstatter og udvider ARP, se eksempel nedenfor
+\item ICMPv6 kan samtidig uddele \emph{prefix} til subnet via router advertisement og dermed kan systemer lave egen adresse i dette subnet, inklusiv privacy extension RFC4941 adresser som skifter løbende
+\item DHCP i IPv6, DHCPv6 findes stadig, men knapt så nødvendig
+\item {\bf NB: bemærk at ovenstående har stor betydning for firewallregler!}
+\end{list2}
 
 \slide{ARP vs NDP}
 
+Example from Mac OS X -- BSD derived operating system
 \begin{alltt}
 \small
 hlk@bigfoot:basic-ipv6-new$ arp -an
@@ -1108,8 +1116,8 @@ fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
 fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
 \end{alltt}
 
-
-
+Note: Linux systems have moved to the command \verb+ip -4 neighbor show+ and
+\verb+ip -6 neighbor show+
 
 \slide{OpenBSD PF IPv6 NDP}
 \begin{alltt}\footnotesize
@@ -1154,10 +1162,10 @@ pass in on $ext_if proto tcp to <webserver> port http
 
 \begin{list2}
 \item Mange producenter giver mulighed for redundante firewalls/routere
-\item Eksempler VRRP, CARP, HSRP Cisco, VARP Arista
-\item OpenBSD Common Address Redundancy Protocol CARP - både IPv4 og IPv6\\
+\item Eksempler med fail-over protokoller som: VRRP, CARP, HSRP Cisco, VARP Arista
+\item OpenBSD Common Address Redundancy Protocol (CARP) - både IPv4 og IPv6\\
 overtagelse af adresse både IPv4 og IPv6
-\item pfsync - sender opdateringer om firewall states mellem de to systemer
+\item pfsync - sender opdateringer om firewall states mellem de to systemer, den synkroniserer alt state på PF ind og udgående, inklusiv NAT.
 \end{list2}
 
 

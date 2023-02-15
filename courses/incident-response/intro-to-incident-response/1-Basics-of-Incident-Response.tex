@@ -218,8 +218,19 @@ Note: this relates to a \emph{baseline}, what errors are normal in your environm
 \end{list2}
 
 
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
+
 
 \exercise{ex:ip-address-research}
+
+
+\exercise{ex:brim-security}
 
 
 \slide{Chapter 3: Basics of Incident Response}
@@ -240,12 +251,10 @@ Source: \emph{Intelligence-Driven Incident Response} (IDIR)\\
 
 \slide{Incident Response Life cycle}
 
-\hlkimage{15cm}{incident-response-life-cycle.png}
+\hlkimage{18cm}{incident-response-life-cycle.png}
 Source: \emph{Computer Security Incident Handling Guide}, NIST SP 800-61 Rev. 2
 
-\begin{list2}
-    \item
-\end{list2}
+
 
 
 \slide{Preparation}
@@ -280,6 +289,76 @@ incoming phishing email
 \item  And last, but all too often, showing up in an article by Brian Krebs
 \end{list2}
 \end{quote}
+
+
+
+\slide{Detection Capabilities}
+
+
+Security incidents happen, but what happens. One of the actions to reduce impact of incidents are done in preparing for incidents.
+
+\begin{itemize}
+\item \emph{Preparation} for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\end{itemize}
+
+Preparation will enable easy {\bf identification} of affected systems, better {\bf containment} which systems are likely to be infected, {\bf eradication} what happened -- how to do the {\bf eradication} and {\bf recovery}.
+
+\slide{Data Analysis Skills}
+
+\begin{quote}
+Although we could spend an entire book creating an exhaustive list of skills needed to be a good security data scientist, this chapter covers the following skills/domains that a data scientist will benefit from
+knowing within information security:
+\begin{list2}
+\item Domain expertise—Setting and maintaining a purpose to the analysis
+\item Data management—Being able to prepare, store, and maintain data
+\item Programming—The glue that connects data to analysis
+\item Statistics—To learn from the data
+\item Visualization—Communicating the results effectively
+\end{list2}
+It might be easy to label any one of these skills as the most important, but in reality, the whole is greater than the sum of its parts. Each of these contributes a significant and important piece to the workings of
+security data science.
+\end{quote}
+
+Source: \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{14cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+\slide{Zeek IDS is}
+
+\hlkimage{14cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+\link{https://www.Zeek.org/}
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+In this course we will expect our organisation to have already deployed similar capabilities.
+
+You can find a whole workshop in:\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+
 
 \slide{Containment}
 
@@ -358,6 +437,98 @@ Ultimately, the key to Lessons Learned is having the understanding that although
 
 
 \exercise{ex:bufferoverflow}
+
+
+\slide{Python and REST}
+
+\inputminted{python}{programs/rest-1.py}
+
+\begin{list2}
+\item  Lets try to use some Python to access a REST service.
+\item  We will use the JSONPlaceholder which is a free online REST API:
+\link{https://jsonplaceholder.typicode.com/}
+\item Start at the site: \link{https://jsonplaceholder.typicode.com/guide.html} and try running a few of the examples with your browser
+\item Then try using the same URLS in the Requests HTTP library from Python,\\
+\link{https://requests.readthedocs.io/en/master/}
+\end{list2}
+
+
+\slide{Note about frameworks and libraries}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import xml.etree.ElementTree as ET
+tree = ET.parse('testfile.xml')
+root = tree.getroot()
+
+print(root.tag)
+print('Nmap version: \t\t{:s} '.format(root.attrib['version']))
+print('Nmap started: \t\t{:s} '.format(root.attrib['startstr']))
+print('Nmap command line: \t{:s} '.format(root.attrib['args']))
+
+hosts = tree.findall('./host')
+for host in hosts:
+    print(host.tag)
+    print(host.attrib)
+    for hostvalues in host:
+        print(hostvalues.tag)
+        print(hostvalues.attrib)
+\end{minted}
+
+\begin{list2}
+\item Dont import JSON or XML using home made programs
+\item Example uses xml.etree.ElementTree from Python \url{https://docs.python.org/3.7/library/xml.etree.elementtree.html}
+\end{list2}
+
+\slide{Convert XML to JSON}
+
+\begin{minted}[fontsize=\footnotesize]{python}
+import xml.etree.ElementTree as ET
+import json
+def etree_to_dict(t):
+    d = {t.tag : map(etree_to_dict, t.getchildren())}
+    d.update(('@' + k, v) for k, v in t.attrib.items())
+    d['text'] = t.text
+    return d
+
+tree = ET.parse('testfile.xml')
+root = tree.getroot()
+mydict = etree_to_dict(root)
+print(type(tree))
+print(type(root))
+print(type(mydict))
+
+print(mydict)
+
+with open('testfile.json', 'w') as json_file:
+  json.dump(mydict, json_file)
+\end{minted}
+
+Converting using Python is easy
+
+
+
+\slide{Side note: Zeek Security Monitor handles formats differently}
+
+Zeek has files formatted with a header:
+\begin{alltt}\footnotesize
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto   trans_id
+        rtt     query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name      AA
+        TC      RD      RA      Z       answers TTLs    rejected
+
+1538982372.416180	CD12Dc1SpQm42QW4G3	10.xxx.0.145	57476	10.x.y.141	53	udp	20383
+	0.045021	www.dr.dk	1	C_INTERNET	1	A	0	NOERROR	F	F	T	T	0
+   www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93	60.000000,20409.000000,20.000000	F
+\end{alltt}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program zeek-cut which can select specific fields:
+
+\begin{alltt}\small
+root@NMS-VM:/var/spool/bro/bro# cat dns.log | zeek-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200	www.dr.dk	www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{alltt}
+
+Can also just use JSON now via Filebeat
+
 
 \exercise{ex:nginx-logging}
 

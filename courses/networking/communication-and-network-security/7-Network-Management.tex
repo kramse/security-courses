@@ -150,6 +150,7 @@ Source:\\{\footnotesize
 \item Server NTP foregår typisk i \verb+/etc/ntp.conf+ eller \verb+/etc/ntpd.conf+
 \item det vigtigste er navnet på den/de servere man vil bruge som tidskilde
 \item Brug enten en NTP server hos din udbyder eller en fra \link{http://www.pool.ntp.org/}
+\item Du kan også selv køre NTP på 3 servere internt
 \item Eksempelvis:
 \end{list1}
 
@@ -207,7 +208,7 @@ BIND 9 has evolved to be a very flexible, full-featured DNS system. Whatever you
 \end{quote}
 
 \begin{list1}
-\item Berkeley Internet Name Daemon server
+\item Berkeley Internet Name Daemon server -- historisk den mest brugte, i dag anbefales andre
 \item Konfigureres gennem \verb+named.conf+
 \item det anbefales ikke at bruge BIND version 9, ej heller BIND 10
 \item Jeg foretrækker produkterne fra NLNetlabs Unbound og NSD
@@ -477,11 +478,7 @@ snmp \{
 \}
 \end{alltt}
 
-\slide{Location, location, location}
-
-\hlkimage{16cm}{images/snmp-location.png}
-
-\centerline{Observium picks up the location from SNMP :-)}
+LibreNMS kan bruge en adresse eller GPS lokation i \verb+[ ]+
 
 \slide{Config example: LLDP}
 %\hlkrightimage{8cm}{images/lldp-dell-8024f.png}
@@ -598,12 +595,13 @@ Host *
 Host jump-01
   Hostname 10.1.2.3
   Port 12345678
-
 Host fw-site-01 10.1.2.5
   User hlk
   Port 34
   Hostname 10.1.2.5
   ProxyCommand ssh -q -a -x jump-01 -W %h:%p
+Host anotherhost01
+  ProxyJump hkj@jump-01
 \end{alltt}
 
 I configure fw using both hostname and IP,\\
@@ -632,22 +630,22 @@ List your hosts in one or multiple text files:
 [all:vars]
 ansible_ssh_port=34443
 
-[office]
-fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22
+[office:vars]
 ansible_python_interpreter=/usr/local/bin/python
+ansible_ssh_port=2200
+
+[office]
+fw-01 ansible_ssh_host=192.168.1.1 ansible_ssh_port=22123
 
 [infrastructure]
 smtp-01     ansible_ssh_host=192.0.2.10
-ansible_python_interpreter=/usr/local/bin/python
 vpnmon-01   ansible_ssh_host=10.50.60.18
 
 \end{alltt}
 
 \begin{list2}
-\item Inventory files specify the hosts we work with
-\item Linux and OpenBSD servers shown here
+\item Inventory files specify the hosts we work with, office and infrastructure are group names
 \item Real inventory for a site with development and staging may be 500 lines
-\item office and infrastructure are group names
 \end{list2}
 
 

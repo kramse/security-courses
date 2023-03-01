@@ -19,33 +19,312 @@
 
 \slide{Goals for today}
 
-\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+\begin{alltt}\scriptsize
+hlk@debian-lab-11:~/Downloads$ sudo vol -f cridex.vmem windows.pstree.PsTree
+Volatility 3 Framework 2.4.1
+Progress:  100.00		PDB scanning finished
+PID	PPID	ImageFileName	Offset(V)	Threads	Handles	SessionId	Wow64	CreateTime	ExitTime
+
+4	0	System	0x823c89c8	53	240	N/A	False	N/A	N/A
+* 368	4	smss.exe	0x822f1020	3	19	N/A	False	2012-07-22 02:42:31.000000 	N/A
+** 584	368	csrss.exe	0x822a0598	9	326	0	False	2012-07-22 02:42:32.000000 	N/A
+** 608	368	winlogon.exe	0x82298700	23	519	0	False	2012-07-22 02:42:32.000000 	N/A
+*** 664	608	lsass.exe	0x81e2a3b8	24	330	0	False	2012-07-22 02:42:32.000000 	N/A
+*** 652	608	services.exe	0x81e2ab28	16	243	0	False	2012-07-22 02:42:32.000000 	N/A
+**** 1056	652	svchost.exe	0x821dfda0	5	60	0	False	2012-07-22 02:42:33.000000 	N/A
+**** 1220	652	svchost.exe	0x82295650	15	197	0	False	2012-07-22 02:42:35.000000 	N/A
+**** 1512	652	spoolsv.exe	0x81eb17b8	14	113	0	False	2012-07-22 02:42:36.000000 	N/A
+**** 908	652	svchost.exe	0x81e29ab8	9	226	0	False	2012-07-22 02:42:33.000000 	N/A
+**** 1004	652	svchost.exe	0x823001d0	64	1118	0	False	2012-07-22 02:42:33.000000 	N/A
+***** 1136	1004	wuauclt.exe	0x821fcda0	8	173	0	False	2012-07-22 02:43:46.000000 	N/A
+***** 1588	1004	wuauclt.exe	0x8205bda0	5	132	0	False	2012-07-22 02:44:01.000000 	N/A
+**** 788	652	alg.exe	0x820e8da0	7	104	0	False	2012-07-22 02:43:01.000000 	N/A
+**** 824	652	svchost.exe	0x82311360	20	194	0	False	2012-07-22 02:42:33.000000 	N/A
+1484	1464	explorer.exe	0x821dea70	17	415	0	False	2012-07-22 02:42:36.000000 	N/A
+* 1640	1484	reader_sl.exe	0x81e7bda0	5	39	0	False	2012-07-22 02:42:36.000000 	N/A
+\end{alltt}
 
 \begin{list2}
-\item
-\item
-\item
+\item Live Response
+\item Memory analysis
+\item Get annoyed -- memory analysis is tricky, and why we practice!
 \end{list2}
-
-{\hfill \small Photo by Thomas Galler on Unsplash}
 
 \slide{Plan for today}
 
 \begin{list2}
-\item
-\item
-\item
-\item
-\item
+\item IDIR chapters F3EAD continued
+\item Getting data while observing the Order of Volatility
+\item Practice more
 \end{list2}
 
 Exercise theme:
 \begin{list2}
-\item
-\item
-\item
+\item Live Response
+\item Memory analysis with Volatility
+\item Checklists inspired by NIST SP800-61r2 -- why, who, what, where, when, ...
 \end{list2}
 
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 1) Going over my presentation,  -- first 45min
+\item 2) Live Response, get to know your systems -- 45 min
+\item Break 15min
+\item 3) Memory Analysis -- 2x45min including 4)
+\item 4) Summary of course and today plus questions
+\end{list2}
+
+
+\slide{Reading Summary}
+
+\emph{Intelligence-Driven Incident Response} (IDIR)
+ Scott Roberts. Rebekah Brown, ISBN: 9781491934944
+
+\begin{quote}
+Once you have identified the threats that you are facing and investigated how those
+threats have accessed and moved through your network, it is time to remove the
+threats. This phase is known as Finish and involves not only eradicating the footholds
+that malicious actors have put in your network, but also working to remediate what‐
+ever enabled them to get access in the first place.
+\end{quote}
+
+\begin{list2}
+\item Chapter 6: Finish
+\end{list2}
+
+Reading Summary, browse \emph{Computer Security Incident Handling Guide} NIST SP800-61r2
+\begin{list2}
+\item  Chapter 3: Handling an Incident
+\end{list2}
+
+
+\slide{Live Response}
+
+%\hlkimage{}{}
+
+\begin{quote}
+One of the less appreciated but often effective analysis methods is live response. Live
+response is analysis of a potentially compromised system without taking it offline.
+
+Most forensics analysis requires {\bf turning the system offline}, losing system state information such as active processes. It also risks tipping off the attacker and is widely dis‐
+ruptive to users as well.
+
+Live response pulls the following information:
+\begin{list2}
+\item Configuration information
+\item System state
+\item Important file and directory information
+\item Common persistence mechanisms
+\item Installed applications and versions
+\end{list2}
+\end{quote}
+
+\slide{Live Response tools}
+
+%\hlkimage{}{}
+
+Book list a few tools:
+\begin{list2}
+\item OSXCollector \url{https://yelp.github.io/osxcollector/}
+\item Kansa powershell \url{https://github.com/davehull/Kansa}
+\item Tools like these have been around for many years, some wrote to 3,5" floppies
+\end{list2}
+
+Pause, let's discuss which ones would suit your environments, the class, your services, mine etc.
+
+This is the common case, you are in the middle of an incident -- which tools do you know, which are available, do you have licenses for commercial ones, etc.
+
+\slide{Other tools that might help with data}
+
+\hlkimage{9cm}{osquery-diskless.png }
+Source: \url{https://www.osquery.io/}
+
+Many other tools can help identify problems
+\begin{list2}
+\item osquery \url{https://www.osquery.io/} if installed collect end point information
+\item Lynis \url{https://cisofy.com/lynis/} audit your system
+\end{list2}
+
+\exercise{ex:live-response}
+
+\slide{Memory Analysis}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Similar to live response, memory analysis focuses on collecting volatile system state
+in memory. Given that every process on a system requires memory to run, this tech‐
+nique provides an excellent vantage point to gather information, especially from tools
+that attempt to run stealthily with limited system footprint.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item FireEye’s Redline memory analysis tool (created by Mandiant)
+\end{list2}
+
+\slide{Volatility memory-analysis framework }
+
+%\hlkimage{}{}
+
+\begin{quote}
+Volatility is a Python-based, open source memory-analysis framework. Volatility does
+not gather memory itself the way Redline does. Instead, it reads the memory formats
+from a wide variety of collection tools that run on a wide variety of operating systems.
+What Volatility provides is a framework and set of scripts for analyzing memory;
+detecting malware running in memory, extracting cryptographic keys—in fact any‐
+thing you can find a plug-in to do.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item \url{https://www.volatilityfoundation.org/}
+\item Again, more tools exist for Memory Analysis
+\item Often virtualisation can provide memory dumps, pause VM, take snapshot and download file -- easy access!
+\end{list2}
+
+
+\slide{Disk Analysis -- not today}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Traditional disk forensics typically involves using specialized tools to extract filesys‐
+tem information from the raw bits and bytes on a hard drive. The information on a
+hard drive is unintelligible at first glance. It contains endlessly nested structures at the
+hardware, filesystem, operating system, and data-format level, similar to the OSI
+model. Peeling through these layers is a process called file carving.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item Important subject: We will do this another day
+\end{list2}
+
+\exercise{ex:volatility-install}
+
+
+\slide{IDIR Chapter 6: Finish}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Finish involves {\bf more than removing malware} from a system, which is why we spend
+so much time in the Find and Fix stages. To properly finish an attacker’s activity, it is
+critical to {\bf understand how that threat actor operates} and to remove not just malware
+or artifacts left behind by an attack, but  {\bf also communications channels, footholds,
+redundant access, and any other aspects of an attack} that we uncovered in the Fix
+phase. Properly finishing an adversary requires a {\bf deep understanding of the attacker,
+their motives, and their actions}, which will allow you to act with confidence as you
+secure the systems and regain control of your network.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+
+\begin{list2}
+\item This is critical to success
+\item When handling real incidents, make sure to work in teams and schedule time off!
+\end{list2}
+
+
+\slide{Stages of Finish}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The Finish phase has three stages: mitigate, remediate, and rearchitect. These stages acknowledge that you can’t do everything at once. Even after a comprehensive investigation, some tactical response actions can take place quickly, but many strategic response actions, such as rearchitecting, will take longer. We will discuss the three phases next.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item Mitigate
+\item Remediate
+\item Rearchitect
+\end{list2}
+
+\slide{Mitigate}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Mitigation is the process of taking {\bf temporary steps} to keep an intrusion from {\bf getting worse} while {\bf longer-term corrections} are taken. Ideally, mitigation should take place {\bf quickly and in a coordinated fashion} to avoid giving the adversary a chance to react before you have cut off their access. Mitigation takes place at several phases of the {\bf kill chain}, including delivery, command and control, and actions on target.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item Stop the delivery by blocking known entry ways
+\item Patch remaining systems -- to avoid new infections
+\item Block known bad IP addresses
+\end{list2}
+
+
+\slide{Remediate}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Remediation is the process of removing all adversary capabilities and invalidating any
+compromised resources so that they can no longer be used by the adversary to con‐
+duct operations. Remediation generally focuses on a different set of kill-chain phases
+than mitigation does, most notably exploitation, installation, and actions over target,
+which we will break down in this section.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item Clean and Patch systems
+\end{list2}
+
+
+\slide{Rearchitect}
+
+%\hlkimage{}{}
+
+\begin{quote}
+One of the most effective uses of {\bf intelligence-driven incident-response data} is an
+advanced form of remediation: the incident-response team looks at {\bf past incident
+trends, identifies common patterns, and works to mitigate these at a strategic level}.
+These mitigations are generally not small changes, and may range from small things
+like tweaks to system configurations or additional user training, to massive shifts in
+tooling such as the development of a new security tools or even complete network
+rearchitecture.
+\end{quote}
+Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
+
+\begin{list2}
+\item Why did the attacks succeed in the first place, can we change the environment
+\end{list2}
+
+\slide{Taking action}
+
+Active Defense (5D)
+\begin{list2}
+\item Deny
+\item Disrupt
+\item Degrade
+\item Deceive
+\item Destroy
+\end{list2}
+
+
+\slide{Checklists }
+
+\hlkimage{12cm}{nist-sp800-61r2-checklist-status.png }
+
+\begin{list2}
+\item Checklists inspired by NIST SP800-61r2 -- why, who, what, where, when, ...
+\end{list2}
+
+\slide{Summary Where are we in the course!}
+
+
+Questions to ask:
+\begin{list2}
+\item What is a tool? Are programs the only tools, can a checklist become a tool
+\item Which things are generic, which things need to be decided in a specific environment
+\end{list2}
 
 \slidenext{Buy the books! Create your VMs}
 

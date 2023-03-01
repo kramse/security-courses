@@ -1120,6 +1120,188 @@ How would you use this proactively to protect and how would you use this in inci
 
 
 
+\chapter{\faExclamationTriangle\ Live Response 45 min}
+\label{ex:live-response}
+
+{\bf Objective:}\\
+Try doing some live response locally on your workstation
+
+
+{\bf Purpose:}\\
+Running live repsonse will allow you to analyse your current system, hopefully it does not have any malware, virus or other problems.
+
+This will help your get an understanding of the normal data to be found. Later if you analyze and find something different, it may be something to investigate.
+
+{\bf Suggested method:}\\
+First run built-in tools for investigating your system.
+
+For your Debian it would be tools like: (apt install if not already there):
+
+\begin{list2}
+\item ps \verb+ps auxw+
+\item lsof \verb+lsof -n -P+
+\item md5sum \verb+md5sum /etc/hosts+
+\item dpkg \verb+dpkg -l | grep -i openssh+
+\item lsmod \verb+lsmod+
+\end{list2}
+
+Use the manual pages! Then try tools found in the book, and recommended by instructor:
+\begin{list2}
+\item OSXCollector \url{https://yelp.github.io/osxcollector/}
+\item Kansa powershell \url{https://github.com/davehull/Kansa}
+\item Lynis \url{https://cisofy.com/lynis/} audit your system
+\end{list2}
+
+You can also try more advanced tools, if you know the above ones:
+\begin{list2}
+\item osquery \url{https://www.osquery.io/}
+\item Ansible show facts -- try \verb+ansible -m setup localhost+
+\end{list2}
+
+
+
+
+
+{\bf Hints:}\\
+Process listings are most interesting! How many programs are running on your laptop?
+
+
+
+{\bf Solution:}\\
+When you have seen your process list from your own laptop and can understand most of it, where are all these processes coming from!
+
+{\bf Discussion:}\\
+Knowing the normal picture makes it easier to spot what is not normal later.
+
+Some companies try to make positive lists or negative lists with programs and tools that can be installed and run on company laptops. Is this a good idea? What is the best way to perform this?
+
+
+
+
+
+
+\chapter{\faExclamationTriangle\ Volatility framework 45 min}
+\label{ex:volatility-install}
+
+{\bf Objective:}\\
+Try the Volatility framework locally on your workstation.
+
+
+{\bf Purpose:}\\
+Running memory analysis is part of many incident response procedures
+
+Even if you are not doing the actual analyze, you need to know the overall process, and what can be found using such tools.
+
+You can use an existing sample for memory analysis, and advanced uses may want to try getting memory from the local system.
+
+{\bf Suggested method:}\\
+Run the program from your Debian Linux VM, or if you prefer your normal work station. Volatility can run on both Mac OS X and Windows, YMMV.
+
+\url{https://github.com/volatilityfoundation/volatility/wiki/Installation}
+
+If running on the recommended Debian 11 VM -- try this:
+\begin{alltt}\scriptsize
+sudo apt install -y python3 python3-dev libpython3-dev python3-pip python3-setuptools python3-wheel
+sudo python3 -m pip install -U distorm3 yara yara-python pycrypto pillow openpyxl ujson pytz ipython capstone
+sudo python3 -m pip install -U git+https://github.com/volatilityfoundation/volatility3.git
+
+sudo ln -s /usr/local/lib/python3*/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so
+\end{alltt}
+
+This script is available in kramse-labs repository as\\
+ \verb+kramse-labs/work-station/volatility-install.sh+ Note: the last link command is because the libyara.so is not loaded otherwise.
+
+Tool Volatility is then available as \verb+vol+, try \verb+vol -h+
+
+\begin{alltt}\scriptsize
+hlk@debian-lab-11:~$ vol -h
+Volatility 3 Framework 2.4.1
+usage: volatility [-h] [-c CONFIG] [--parallelism [{processes,threads,off}]]
+                  [-e EXTEND] [-p PLUGIN_DIRS] [-s SYMBOL_DIRS] [-v]
+                  [-l LOG] [-o OUTPUT_DIR] [-q] [-r RENDERER] [-f FILE] [--write-config] [--save-config SAVE_CONFIG]
+                  [--clear-cache]
+                  [--cache-path CACHE_PATH] [--offline] [--single-location SINGLE_LOCATION] [--stackers [STACKERS ...]]
+                  [--single-swap-locations [SINGLE_SWAP_LOCATIONS ...]]
+                  plugin ...
+
+An open-source memory forensics framework
+
+optional arguments:
+  -h, --help            Show this help message and exit, for specific plugin options use 'volatility <pluginname> --help'
+  -c CONFIG, --config CONFIG
+                        Load the configuration from a json file
+  --parallelism [{processes,threads,off}]
+                        Enables parallelism (defaults to off if no argument given)
+  -e EXTEND, --extend EXTEND
+                        Extend the configuration with a new (or changed) setting
+  -p PLUGIN_DIRS, --plugin-dirs PLUGIN_DIRS
+                        Semi-colon separated list of paths to find plugins
+\end{alltt}
+
+{\bf Hints:}\\
+Basic usage is described at:\\
+\url{https://github.com/volatilityfoundation/volatility/wiki/Volatility-Usage}
+
+You can then find a memory sample at:\\
+\url{https://github.com/volatilityfoundation/volatility/wiki/Memory-Samples}
+
+Instructor might also have some at: \url{https://files.kramse.org/.kea/}
+
+Example Windows
+\begin{alltt}\scriptsize
+hlk@debian-lab-11:~/Downloads$ sudo vol -f cridex.vmem windows.pstree.PsTree
+Volatility 3 Framework 2.4.1
+Progress:  100.00		PDB scanning finished
+PID	PPID	ImageFileName	Offset(V)	Threads	Handles	SessionId	Wow64	CreateTime	ExitTime
+
+4	0	System	0x823c89c8	53	240	N/A	False	N/A	N/A
+* 368	4	smss.exe	0x822f1020	3	19	N/A	False	2012-07-22 02:42:31.000000 	N/A
+** 584	368	csrss.exe	0x822a0598	9	326	0	False	2012-07-22 02:42:32.000000 	N/A
+** 608	368	winlogon.exe	0x82298700	23	519	0	False	2012-07-22 02:42:32.000000 	N/A
+*** 664	608	lsass.exe	0x81e2a3b8	24	330	0	False	2012-07-22 02:42:32.000000 	N/A
+*** 652	608	services.exe	0x81e2ab28	16	243	0	False	2012-07-22 02:42:32.000000 	N/A
+**** 1056	652	svchost.exe	0x821dfda0	5	60	0	False	2012-07-22 02:42:33.000000 	N/A
+**** 1220	652	svchost.exe	0x82295650	15	197	0	False	2012-07-22 02:42:35.000000 	N/A
+**** 1512	652	spoolsv.exe	0x81eb17b8	14	113	0	False	2012-07-22 02:42:36.000000 	N/A
+**** 908	652	svchost.exe	0x81e29ab8	9	226	0	False	2012-07-22 02:42:33.000000 	N/A
+**** 1004	652	svchost.exe	0x823001d0	64	1118	0	False	2012-07-22 02:42:33.000000 	N/A
+***** 1136	1004	wuauclt.exe	0x821fcda0	8	173	0	False	2012-07-22 02:43:46.000000 	N/A
+***** 1588	1004	wuauclt.exe	0x8205bda0	5	132	0	False	2012-07-22 02:44:01.000000 	N/A
+**** 788	652	alg.exe	0x820e8da0	7	104	0	False	2012-07-22 02:43:01.000000 	N/A
+**** 824	652	svchost.exe	0x82311360	20	194	0	False	2012-07-22 02:42:33.000000 	N/A
+1484	1464	explorer.exe	0x821dea70	17	415	0	False	2012-07-22 02:42:36.000000 	N/A
+* 1640	1484	reader_sl.exe	0x81e7bda0	5	39	0	False	2012-07-22 02:42:36.000000 	N/A
+\end{alltt}
+
+Example Linux
+\begin{alltt}\scriptsize
+hlk@debian-lab-11:~/Downloads$ vol -f victoria-v8.memdump.img banners.Banners
+Volatility 3 Framework 2.4.1
+Progress:  100.00		PDB scanning finished
+Offset	Banner
+
+0x2bf000	Linux version 2.6.26-2-686 (Debian 2.6.26-26lenny1) (dannf@debian.org)
+(gcc version 4.1.3 20080704 (prerelease) (Debian 4.1.2-25)) #1 SMP Thu Nov 25 01:53:57 UTC 2010
+\end{alltt}
+
+Note: to investigate further we need a symbol table or an ISF package, which might be available at:\\
+\url{https://isf-server.techanarchy.net/}
+
+The official guide for doing this is:
+\url{https://volatility3.readthedocs.io/en/latest/symbol-tables.html#mac-or-linux-symbol-tables}
+
+{\bf Solution:}\\
+When your group have tried running Volatility on at least one memory dump, you are done.
+
+{\bf Discussion:}\\
+Many tutorials and examples exist for Volatility.
+
+A colleague uses this one:\\
+\url{https://medium.com/@zemelusa/first-steps-to-volatile-memory-analysis-dcbd4d2d56a1}
+
+with the \emph{Cridex} memory sample.
+
+
 \end{document}
 
 

@@ -1302,6 +1302,91 @@ A colleague uses this one:\\
 with the \emph{Cridex} memory sample.
 
 
+
+\chapter{\faInfoCircle\ Use Ansible to install programs -- 10-60min}
+\label{ex:basicansible}
+
+
+{\bf Objective:}\\
+Running Ansible can save a lot of time!
+
+This exercise is from the course SIEM and Log Analysis, and is considered informational in this course.
+
+However, it can be useful if you want to run Elasticsearch
+
+{\bf Purpose:}\\
+See an example tool used for many projects, Elasticsearch from the Elastic Stack
+
+{\bf Suggested method:}\\
+If you want to run Elasticsearch, you can either use the method from:\\{\footnotesize
+\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
+
+or by the method described below using Ansible - your choice. The automated process usually finish within 10-15minutes!
+
+Ansible used below is a configuration management tool \url{https://www.ansible.com/} and you can adjust them for production use!
+
+I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has ansible and my playbooks: (as root run)
+\begin{minted}[fontsize=\footnotesize]{shell}
+apt -y install ansible git python
+git clone https://github.com/kramse/kramse-labs
+\end{minted}
+
+We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
+
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml 4-configuration.yml
+\end{minted}
+
+Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
+
+If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+git pull
+\end{minted}
+
+Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
+
+Note: these instructions are originally from the course\\
+Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+
+{\bf Hints:}\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
+
+Example playbook content, installing software using APT:
+\begin{minted}[fontsize=\footnotesize]{yaml}
+apt:
+    name: "{{ packages }}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{minted}
+
+{\bf Solution:}\\
+When you have a updated VM and Ansible running, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+When installing applications it is recommended to install the repository definition, as that will allow you to update more easily later by using \verb+apt update && apt upgrade+
+
+
 \end{document}
 
 

@@ -75,6 +75,7 @@ You will learn:
 \item What happens
 \item How can we start testing your infrastructures
 \item My advice for protection using your existing devices and networks
+\item Our courses and education within network security, and information security
 \end{list2}
 
 Note: The attack tools will be already developed and possibly known tools, but with a lot of focus on the process and experiences. I also have some opinions and experiences to share.
@@ -342,29 +343,7 @@ Options:
 \end{alltt}
 
 
-\slide{Nmap port sweep for SNMP port 161/UDP}
 
-Perform some UDP scanning, cannot do full scan, but often SNMP is there, example:
-\begin{alltt}\small
-#{\bfseries nmap -A -sU -p 161 --script "snmp-info" -oA snmp-scan $LINK_NET4}
-Starting Nmap 7.91 ( https://nmap.org ) at 2021-10-26 20:20 CEST
-Nmap scan report for 192.0.2.10
-Host is up (0.00082s latency).
-
-PORT    STATE SERVICE VERSION
-161/udp open  snmp    Cisco SNMP service; ciscoSystems SNMPv3 server
-| snmp-info:
-|   enterprise: ciscoSystems
-|   engineIDFormat: mac
-|   engineIDData: 00:08:4f:xx:yy:zz
-|   snmpEngineBoots: 4
-|_  snmpEngineTime: {\bf 732d07h09m04s}
-Too many fingerprints match this host to give specific OS details
-Network Distance: 6 hops
-\end{alltt}
-
-\vskip 5mm
-\centerline{More reliable to use Nmap script with probes like --script=snmp-info}
 
 
 \slide{Packet generators -- multiple options}
@@ -663,6 +642,19 @@ all of them
 \item This is just one small part of your security posture, extra slides has my take on enterprise network security
 \end{list2}
 
+
+\slide{Diplomuddannelsen i IT-sikkerhed}
+
+\hlkimage{13cm}{kompetence-menukort.png }
+
+\begin{list2}
+\item Systemsikkerhed er et godt kursus at starte med, hvis man vil tage hele uddannelsen
+\item De fleste obligatoriske kurser har kørt en gang om året
+\item Der kommer nye valgfag til -- og man kan vælge fag andre steder på KEA, eller udenfor KEA
+\end{list2}
+
+Læs mere på \link{https://kompetence.kea.dk/uddannelser/it/diplom-i-it-sikkerhed}
+
 \myquestionspage
 
 
@@ -743,7 +735,7 @@ Best would be to analyze traffic and create allow lists, some internal networks 
 \slide{Stateless firewall filter throw stuff away}
 
 
-\begin{alltt}\footnotesize
+\begin{alltt}\scriptsize
 hlk@MX-CPH-02> show configuration firewall filter all | no-more
 /* This is a sample, better to use BGP flowspec or BGP based RTBH */
 term edgeblocker \{
@@ -763,13 +755,13 @@ term edgeblocker \{
         discard;
     \}
 \}
-\end{alltt}{\footnotesize
+\end{alltt}
 Example how to do it wirespeed -- with Junos
-Hint: can also leave out protocol and then it will match all protocols}
+Hint: can also leave out protocol and then it will match all protocols
 
 \slide{Stateless firewall filter limit protocols}
 
-\begin{alltt}\footnotesize
+\begin{alltt}\scriptsize
 term limit-icmp \{
     from \{
         protocol icmp;
@@ -794,7 +786,7 @@ Routers also have extensive Class-of-Service (CoS) tools today
 
 \slide{Strict filtering for some servers, still stateless!}
 
-\begin{alltt}\footnotesize
+\begin{alltt}\scriptsize
 term some-server-allow \{
     from \{
         destination-address \{
@@ -803,8 +795,7 @@ term some-server-allow \{
         protocol tcp;
         destination-port [ 80 443 ];
     \}
-    then accept;
-\}
+    then accept;\}
 term some-server-block-unneeded \{
     from \{
         destination-address \{
@@ -815,8 +806,7 @@ term some-server-block-unneeded \{
     then \{
         count some-server-block;
         discard;
-    \}
-\}
+    \}\}
 \end{alltt}
 
 Wut - no UDP, yes UDP service is not used on these servers
@@ -899,6 +889,29 @@ which employ IP Source Address Spoofing}
 
 You should all ask your internet providers if they know about MANRS, and follow it. We should ask our government and institutions to support and follow MANRS and good practices for network on the Internet
 
+\slide{Nmap port sweep for SNMP port 161/UDP}
 
+Perform some UDP scanning, cannot do full scan, but often SNMP is there, example:
+\begin{alltt}\small
+#{\bfseries nmap -A -sU -p 161 --script "snmp-info" -oA snmp-scan $LINK_NET4}
+Starting Nmap 7.91 ( https://nmap.org ) at 2021-10-26 20:20 CEST
+Nmap scan report for 192.0.2.10
+Host is up (0.00082s latency).
+
+PORT    STATE SERVICE VERSION
+161/udp open  snmp    Cisco SNMP service; ciscoSystems SNMPv3 server
+| snmp-info:
+|   enterprise: ciscoSystems
+|   engineIDFormat: mac
+|   engineIDData: 00:08:4f:xx:yy:zz
+|   snmpEngineBoots: 4
+|_  snmpEngineTime: {\bf 732d07h09m04s}
+Too many fingerprints match this host to give specific OS details
+Network Distance: 6 hops
+\end{alltt}
+
+No updates in +700 days?
+\vskip 5mm
+\centerline{More reliable to use Nmap script with probes like --script=snmp-info}
 
 \end{document}

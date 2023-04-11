@@ -1494,6 +1494,191 @@ Do you prefer doing malware analysis on your normal workstation? -- you shouldn'
 
 What would be the recommended way to use this tool.
 
+
+
+\chapter{Privilege escalation using SUID 30min}
+\label{ex:priv-esc-cron}
+
+{\bf Objective:}\\
+Perform a simple privilege escalation attack
+
+{\bf Purpose:}\\
+Try and test a back door script.
+
+{\bf Suggested method:}\\
+
+\begin{enumerate}
+\item Create a shell copy with SUID bit set as privileged user
+\item Run the command as non-privileged user to see it works
+%\item Create root cronjob without path
+%\item Insert a malicious script as one of the commands from the root cron job
+\end{enumerate}
+
+{\bf Hints:}\\
+
+In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
+
+\begin{alltt}
+root@debian:~# rm /tmp/.xxsh
+root@debian:~# apt install zsh
+...
+root@debian:~# cp /bin/zsh /tmp/.xxsh
+root@debian:~# chmod +sw /tmp/.xxsh
+\end{alltt}
+
+Then test using a normal user, another window:
+\begin{alltt}
+hlk@debian:~$ /tmp/.xxsh
+# id
+uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+#
+\end{alltt}
+
+The effective user id should be 0 which is root.
+
+
+{\bf Solution:}\\
+When you have created the script for doing the shell copy you are done.
+
+Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
+
+
+{\bf Discussion:}\\
+When this manual process work. Then you could automate it, make it into a script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
+
+A cron job runs scheduled commands. They usually perform cleanup functions, removing old files, doing a backup or similar. It could also be that some tool often run by the administrator has no PATH defined, and could be convinced to run your script instead as part of the process.
+
+This happens in a lot of devices and hosts today. Make sure that you control SUID scripts, SUID programs, and any directory where ordinary users can write!
+
+This was chosen as I found a similar vulnerability in a professional product, in 2019
+
+The main takeaway is that root scripts should ALWAYS have a PATH defined, and ALL directories used by root script should only be writable by root!
+
+
+\chapter{Cloud environments influence on incident response 20min}
+\label{ex:cloud-incident-response}
+
+{\bf Objective:}\\
+Talk about the difference in computer forensics in cloud environments.
+
+Cloud environments, or mixed environments between cloud and traditional environments present new challenges.
+
+{\bf Purpose:}\\
+Discuss what sources of information is available.
+
+Traditional computer forensics often use these sources:
+\begin{itemize}
+\item Network forensics
+\item Applications logs
+\item Operating system logs
+\item Disk imaging
+\end{itemize}
+
+Cloud environments can often use these sources:
+
+\begin{itemize}
+\item Logging from authentication
+\item Limited network forensics
+\item Applications logs
+\end{itemize}
+
+This relies more on the capabilities of the cloud vendor and often cloud environments are also much more dynamic. Some services are also provided by the cloud vendor, separating the management away from the customer configured environment - with good or bad consequences for computer forensics.
+
+{\bf Suggested method:}\\
+Discuss in your group, how would you investigate an incident in your solutions.
+
+Has any in our group performed incident handling in cloud environments.
+
+{\bf Hints:}\\
+NIST has a few papers about this subject.
+
+Example:
+\emph{Identifying Evidence for Implementing a Cloud Forensic Analysis Framework}
+\link{https://www.nist.gov/publications/identifying-evidence-implementing-cloud-forensic-analysis-framework}
+
+{\bf Solution:}\\
+Download the linked paper and browse it. It contains an example cloud and the conclusion scratches the surface of what a cloud maybe should provide.
+
+{\bf Discussion:}\\
+Cloud computer forensics seem immature, but must be researched.
+
+If you organization relies on cloud computing it is critcal to update incident handling procedures for these new challenges.
+
+
+
+\chapter{Disk Image Forensics -- 45 min}
+\label{ex:disk-image-forensics}
+
+{\bf Objective:}\\
+Demonstrate knowledge about forensics and system security. Focus is on disk image investigation, consider a hacked server - what happened.
+
+Teacher will provide image which was made in this way:
+\begin{list2}
+\item Debian using a small disk size ~10G
+\item A "root-kit" using the chmod +s on a copy of a shell program. Note: Using bash does NOT work since this shell prevents this!
+\item Create extra users not usually found on Debian, copies of root with uid 0 or new users with sudo rights
+\end{list2}
+
+You are welcome to create your own "hacked server" using above method, copy the disk file afterwards.
+
+
+{\bf Purpose:}\\
+Running disk image forensics will often allow you to analyse past events, what happened, when did it happen, how did it happen, etc.
+
+{\bf Suggested method:}\\
+Run the programs Autopsy and Sluethkit from your Linux VM
+
+Windows users can find a nicer version of Autopsy!
+
+\begin{list2}
+\item Download or create image
+\item Analyze using forensics tools the hacked server\\
+Suggest using Sleuthkit and Autopsy browser based tool, simple and free\\
+Multiple other tools exist, you are free to choose
+\item Describe the system, what operating system is it running, maybe some more about when it was lasted updated etc.
+\item Search for your evidence, MAKE SURE to note how a user would find these - searching for SUID files is one method to document, looking into sudo config and user database is another
+\item Present a timeline of when the "hack" occurred, perhaps relate to when system was installed
+\item Present as much information as possible about the "malware" (the file found with SUID bit)
+\end{list2}
+
+
+
+
+{\bf Hints:}\\
+Image files can be downloaded from \url{https://files.kramse.org/.kea/}
+
+You can choose from:
+
+\begin{itemize}
+\item Easiest - just the root file system, can be opened directly
+ \verb+debian-hacked-rootfs.img.gz+
+
+Same content as found in 2), but already extracted
+
+\item Multiple files - in a Tar Gzip'ed archive
+\verb+debian-hacked.tgz+
+
+\item Another version, recreated in 2021 but essentially the same
+\verb+debian-hacked-2021.img.gz+
+\end{itemize}
+
+There is also the fc07 -- forensics challenge which has a disk image.
+
+If you are VERY low on disk space, find another smaller image to try out. Open a floppy or ISO image from some Linux installer, just to try the tools.
+
+{\bf Solution:}\\
+When you have opened the disk file you have shown great skill already! Especially if you used the full disk image, and carved out the file system!
+
+You decide how much you want to investigate.
+
+{\bf Discussion:}\\
+What are some problems observed?
+
+Autopsy does NOT suport LVM! Modern (expensive commercial ones) probably do.
+
+
+
+
 \end{document}
 
 

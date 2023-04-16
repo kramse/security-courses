@@ -92,6 +92,14 @@ Some of these slides are part of the course:\\
 specifically the slideshow\\
 \emph{3. Traffic Inspection and Firewalls}
 
+I also have multiple presentations and materials about related subjects in my Github:
+
+\begin{list2}
+\item Attack and Defense
+\item DDoS Testing
+\item Security in a Mixed IPv4 and IPv6 World
+\item SIEM and Log analysis
+\end{list2}
 
 \slide{Networks are trouble}
 
@@ -647,31 +655,31 @@ nøgleordet \emph{quick} afslutter match - god til store regelsæt
 COMMIT
 \end{alltt}
 
-\centerline{NB: husk at aktivere IP forwarding}
 
+\slide{Anti-pattern blocking ICMP}
 
-\slide{Firewalls og ICMP}
-
-\begin{alltt}
-ipfw add allow icmp from any to any icmptypes 3,4,11,12
+\begin{alltt}\small
+# Simple stateful network firewall rules for allowing ICMP in IPv6 ICMPv6
+# Allow ICMPv6 destination unreach
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 1
+# Allow NS/NA/toobig (don't filter it out)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 2
+# Allow timex Time exceeded
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 3
+# Allow parameter problem
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 4
+# IPv6 ICMP - echo request (128) and echo reply (129)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 128,129
+# IPv6 ICMP - router solicitation (133) and router advertisement (134)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 133,134
+# IPv6 ICMP - neighbour discovery solicitation (135) and advertisement (136)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 135,136
 \end{alltt}
 
 \begin{list1}
-\item Ovenstående er IPFW syntaks for at tillade de interessante ICMP beskeder igennem
-
-\item Tillad visse ICMP typer -- og tilsvarende på IPv6:
-\begin{list2}
-\item 3 Destination Unreachable
-\item 4 Source Quench Message
-\item 11 Time Exceeded
-\item 12 Parameter Problem Message
-\end{list2}
+\item Don't throw away anything ICMP, kills functionality like Path MTU
 \end{list1}
 
-
-\begin{list1}
-\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net
-\end{list1}
 
 
 \slide{Firewall konfiguration}
@@ -1637,6 +1645,7 @@ nfected
 certificate related to malwareexample.com
 \item Run network logging -- session logs in enterprise networks are GREAT \\
 (country wide illegal logging is of course NOT)
+\item Run Suricata IDS, get even more information
 \end{list2}
 
 Make sure to check with employees, inform them!
@@ -1702,106 +1711,100 @@ pass out on egress inet proto tcp from smtp-internal to any port 25/tcp
 Year 0 the unknown list may be 100\% of all internal networks, but new networks added to infrastructure are NOT added, so list will shrink -- evaluate the list, and compare to network logs, did networks send ANY SMTP for 1,2,3 years?
 
 
-\slide{Anti-pattern dobbelt NAT i eget netværk}
+\slide{Conclusion}
 
-\hlkimage{16cm}{nat-double.pdf}
+% \hlkrightimage{15cm}{network-layers-1.png}
 
-\begin{list1}
-\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
-ud på internet.
-\vskip 1cm
-\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
-\end{list1}
-
-\slide{Pattern use IDS to get flow, connections and data}
-
-\begin{list1}
-\item Use Intrusion Detection Systems - IDS
-\item Angrebsværktøjerne efterlader spor
-\item Det anbefales at have IDS og flow opsamling som minimum
-\item Hostbased IDS - kører lokalt på et system og forsøger at
-  detektere om der er en angriber inde
-\item Network based IDS - NIDS - bruger netværket
-\item Automatiserer netværksovervågning:
-  \begin{list2}
-  \item bestemte pakker kan opfattes som en signatur
-\item analyse af netværkstrafik - FØR angreb
-\item analyse af netværk under angreb - sender en alarm
-  \end{list2}
-\end{list1}
+\begin{list2}
+\item Implement firewalls -- take control over network packets
+\item Read the Fine manuals -- your devices already has a lot to offer
+\item Make a policy for networks, make incremental changes, configure security for new parts and VLANs in the network\\
+Over time the older ones will be phased out, replaced or can have the same configuration applied with little trouble
+\item Start from the bottom and from client ports, or from server ports if you like
+\item Learn some Linux and use open source projects, really, will save you thosands of USD/EUR/DKK
+\end{list2}
 
 
-\slide{The Zeek Network Security Monitor}
+\myquestionspage
 
-The Zeek Network Security Monitor is not a single tool, more of a
-powerful network analysis framework
+\slide{Further literature}
+Recommended literature from my courses system security and communication and network security
 
-\hlkimage{8cm}{zeek-ids.png}
+\begin{list2}
+\item \emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}, Lee Brotherston, Amanda Berlin ISBN: 978-1-491-96038-7 284 pages
+\item \emph{Forensics Discovery}, Dan Farmer, Wietse Venema 2004, Addison-Wesley 240 pages. Can be found at \link{http://www.porcupine.org/forensics/forensic-discovery/}
+\item \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, 2014 Chris Sanders \\
+ISBN: 9780124172081 - shortened ANSM
+\item \emph{Practical Packet Analysis - Using Wireshark to Solve Real-World Network Problems}, 3rd edition 2017, \\
+Chris Sanders ISBN: 9781593278021 - shortened PPA
+\item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
+\end{list2}
 
-\begin{quote}
-While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
-\end{quote}
+\slide{Resources}
+\label{resources}
+Long list of various references follow, YMMV. I have found these useful in some way
 
-Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+\begin{list2}
+\item \link{https://theinternetprotocolblog.wordpress.com/2020/11/28/ipv6-security-best-practices/}
 
-
-
-\slide{Suricata IDS/IPS/NSM}
-\hlkimage{6cm}{suricata.png}
-
-\begin{quote}
-Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
-\end{quote}
-
- \link{http://suricata-ids.org/}
- \link{http://openinfosecfoundation.org}
-
-Workshop materials available:\\
-{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+\item \link{https://insinuator.net/2019/02/ipv6-security-in-an-ipv4-only-environment/}\\
+via \link{https://mobile.twitter.com/enno_insinuator/status/1285681172719316992}
 
 
-
-\slide{Anti-pattern blokering af ALT ICMP}
-
-\begin{alltt}\small
-# Simple stateful network firewall rules for allowing ICMP in IPv6 ICMPv6
-# Allow ICMPv6 destination unreach
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 1
-# Allow NS/NA/toobig (don't filter it out)
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 2
-# Allow timex Time exceeded
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 3
-# Allow parameter problem
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 4
-# IPv6 ICMP - echo request (128) and echo reply (129)
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 128,129
-# IPv6 ICMP - router solicitation (133) and router advertisement (134)
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 133,134
-# IPv6 ICMP - neighbour discovery solicitation (135) and advertisement (136)
-        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 135,136
-\end{alltt}
-
-\begin{list1}
-\item Lad være med at blokere for alt ICMP, så ødelægger du funktionaliteten i dit net
-\end{list1}
+\item  \link{https://www.caida.org/catalog/papers/2016_dont_forget_lock/dont_forget_lock.pdf}\\
+via \link{https://twitter.com/Enno_Insinuator/status/1224147916022898689}
 
 
-\slide{Anti-pattern blokering af DNS opslag på TCP}
+\item \link{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}\\
+Classic with example of something locked down on IPv4 but not on IPv6\\
+I have found similar on management interfaces for a large network myself, if you came from a specific source port, you could connect to management on all core routers around the network. Router protection filter for IPv6 was not secure.
+\end{list2}
 
-\begin{list1}
-\item Det bliver (er) nødvendigt med DNS opslag over TCP
-\vskip 1cm
-\item Store svar kræver TCP
-\item Det betyder at firewalls skal tillade DNS opslag via TCP
-\vskip 1cm
-\item De nye forslag DNS over TLS (DoT) og DNS over HTTPS (DoH)
-\item DNS kryptering bliver med TCP
-\vskip 1cm
-\item Anbefaling i enterprise netværk:\\
-Brug en caching nameserver, således at det kun er den som kan lave DNS opslag ud i verden
+\slide{Further resources}
 
-\end{list1}
+\begin{list2}
+\item \emph{IPv6 and IPv4 Threat Comparison and BestPractice Evaluation (v1.0)}
+Sean Convery (sean@cisco.com)
+Darrin Miller (dmiller@cisco.com)
+\link{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.85.7165&rep=rep1&type=pdf} 43 pages short enough, nicely structured
 
+\item \link{https://www.cisco.com/web/SG/learning/ipv6_seminar/files/02Eric_Vyncke_Security_Best_Practices.pdf}
+Updated? Advanced \link{https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2020/pdf/BRKSEC-3200.pdf}
+
+
+\item Mixed resources, maybe not useful
+\item \link{https://www.varonis.com/blog/ipv6-security} - Apply IPv4 best practices when applicable ... and IPv6 Security is not distinct from IPv4 security
+\item \link{https://www.hpc.mil/images/hpcdocs/ipv6/infoblox-best-practices-for-ipv6-security-excerpt.pdf} routing security and stuff
+\item \link{https://www.nist.gov/publications/guidelines-secure-deployment-ipv6} from 2010, but maybe some good advice - and goes to show IPv6 security advise has been around for some time
+
+\end{list2}
+
+\slide{Resources LIRs and others}
+
+Grateful to be part of such communities! Tried finding recent references, more can be found across their sites:
+\begin{list2}
+\item RIPE April 2021, 191 pages!\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+
+\item ISOC 2019
+\link{https://www.internetsociety.org/deploy360/ipv6/security/faq/}
+
+\item APNIC 2019
+\link{https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/}
+
+%\item August 2020 \link{https://www.etsi.org/images/files/ETSIWhitePapers/etsi_WP35_IPv6_Best_Practices_Benefits_Transition_Challenges_and_the_Way_Forward.pdf}
+
+\item May 2022 \emph{Apple Platform security guide}, includes IPv6\\
+\link{https://help.apple.com/pdf/security/en_US/apple-platform-security-guide.pdf}
+
+\item \emph{JANET IPv6 Technical Guide}, IPv4 security equivalence page 49\\
+\link{https://repository.jisc.ac.uk/8349/1/janet-ipv6-technical-guide.pdf}
+
+\item \emph{Network Reconnaissance in IPv6 Networks} \link{https://www.rfc-editor.org/rfc/rfc7707.txt}
+
+\item RFC6092 2011 \emph{Recommended Simple Security Capabilities in Customer Premises Equipment (CPE) for Providing Residential IPv6 Internet Service}\\
+ \link{https://datatracker.ietf.org/doc/html/rfc6092}
+\end{list2}
 
 
 \slide{Hosting og internet-udbydere}
@@ -1874,5 +1877,32 @@ Use RPSL {\small\link{ https://en.wikipedia.org/wiki/Routing_Policy_Specificatio
 \link{https://www.ripe.net/manage-ips-and-asns/resource-management/rpki}
 \end{list2}
 
+
+\slide{The Zeek Network Security Monitor}
+
+Together with firewalls -- The Zeek Network Security Monitor is not a single tool, more of a powerful network analysis framework
+
+\hlkimage{8cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Together with firewalls -- Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+Workshop materials available:\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
 
 \end{document}

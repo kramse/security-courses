@@ -99,6 +99,7 @@ I also have multiple presentations and materials about related subjects in my Gi
 \item DDoS Testing
 \item Security in a Mixed IPv4 and IPv6 World
 \item SIEM and Log analysis
+\item Kubernetes Security
 \end{list2}
 
 \slide{Networks are trouble}
@@ -728,12 +729,12 @@ Demo time? Nmap and Nping?
 \item Redundante firewalls - pfsync og CARP
 % pfsync giver et indblik i hvordan den slags kan laves, hvor de
 % kommercielle ``bare kan det''
-\item IPsec og Andre VPN features
+\item VPN som IPsec, TLS VPN, Wireguard features
 \item inspection - diverse muligheder for at lave deep inspection i protokoller
 \item Eksemplvis DNS inspection
 \end{list2}
 
-\slide{Proxy servers}
+\slide{Proxy servers og WAF}
 
 \begin{list1}
 \item Filtrering på højere niveauer i OSI modellen er muligt
@@ -744,20 +745,11 @@ Demo time? Nmap and Nping?
 \item Reverse proxy benyttes også ofte til at terminere TLS/HTTPS og lave loadbalancing\\
 Web Application Firewall (WAF) benyttes også
 \item NB: nogle protokoller egner sig ikke til proxy servere
+\item Jeg synes det er dumt at forsøge antivirus scan og \emph{SSL inspection} af indhold på firewall enheder
+\item En dedikeret anti-virus mail scanner, eller web proxy for klienter virker IMHO bedre
+\item Blokering af domæner bør også være i DNS infrastrukturen
+\item Blokering af kendte endepunkter - IP destinations giver mening
 \end{list1}
-
-
-\slide{IPsec og Andre VPN features}
-
-\begin{list1}
-\item De fleste firewalls giver mulighed for at lave krypterede
-  tunneler
-\item Nyttigt til fjernkontorer der skal have usikker traffik henover
-  usikre netværk som Internet
-\item Konceptet kaldes Virtual Private Network VPN
-\item IPsec er de facto standarden for VPN og beskrevet i RFC'er
-\end{list1}
-
 
 
 \slide{Netflow and Session Logging}
@@ -827,7 +819,7 @@ Source: \\{\footnotesize
 Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
 
 
-\slide{Big Data tools: Elasticsearch}
+\slide{Big Data tools: Elasticsearch and Kibana}
 
 \hlkimage{10cm}{kibana-basics-with-vega.jpg}
 
@@ -835,21 +827,10 @@ Elasticsearch is an open source distributed, RESTful search and analytics engine
 
 \link{https://www.elastic.co}
 
-\vskip 1cm
 \centerline{We are all Devops now, even security people!}
-
-
-\slide{Kibana}
-
-\hlkimage{10cm}{kibanascreenshothomepagebannerbigger.jpg}
 
 Highly recommended for a lot of data visualisation as non-programmers can create, save, and share dashboards
 
-Source:
-\link{https://www.elastic.co/products/kibana}
-
-I have a set of Ansible files that can install a mostly complete Elastic stack on Debian:\\
-\link{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
 
 \slide{Network Security Through Data Analysis}
 
@@ -1096,28 +1077,6 @@ IPv6 & TCP & 80 443 & 2001:DB8:ABCD:1000::/56 \\\hline
 \end{list2}
 
 
-
-\slide{Config example: SNMP}
-
-\begin{alltt}\footnotesize
-snmp \{
-    description "Router-CPH-01";
-    location "Copenhagen, Denmark";
-    contact "noc@zencurity.com";
-    community yourcommunitynotmine \{
-        authorization read-only;
-        {\bf clients \{
-               10.1.1.1/32;
-               10.1.2.2/32;
-        \}    }
-    \}
-\}
-\end{alltt}
-
-If you must use SNMPv2 then at least put it into separate VLAN! {\myalert}
-
-
-
 %\slide{Stateless filtering Junos}
 \slide{Stateless firewall filter throw stuff away}
 
@@ -1227,6 +1186,12 @@ Reverse path forwarding (RPF) is a technique used in modern routers for the purp
 \end{quote}
 Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
 
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
+\end{quote}
+
+
 %\slide{Juniper RPF check}
 
 %\begin{quote}
@@ -1244,12 +1209,6 @@ Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
 
 \hlkimage{24cm}{uRPF-check-1.pdf}
 
-\slide{Strict mode RPF}
-
-\begin{quote}
-{\bf Configuring Unicast RPF Strict Mode}\\
-In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
-\end{quote}
 
 
 \slide{uRPF Junos config with loose mode}
@@ -1551,7 +1510,8 @@ pass out inet6 proto ipv6-icmp all icmp6-type routersol keep state
 PF har tabeller og simpel regel til PF konfigurationsfilen kan give adgang til både IPv4 og IPv6:
 \begin{alltt}\small
 table <webservers> \{ 2001:7b8:3e4:72::20 10.0.72.20 \}
-...
+...al logging is of course NOT)
+\item run Suricata
 pass in on $ext_if proto tcp to <webserver> port http
 \end{alltt}
 

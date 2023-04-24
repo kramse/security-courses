@@ -1,0 +1,805 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+
+\externaldocument{system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{13. Benchmarking and Auditing Recap}
+{KEA Kompetence Computer Systems Security \the\year}
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Benchmarking standards
+\item CIS controls Center for Internet Security
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019\\
+Payment Card Industry Data Security Standard
+
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Evaluate our network, write a scope before doing PCI compliance
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item Read MLSH 11: Kernel Hardening and Process Isolation
+\item DSH chapter 8:
+\item CIS controls Center for Internet Security
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019\\
+Payment Card Industry Data Security Standard
+\item Skim DSH chapter 10 Microsoft Windows Infrastructure, \\
+chapter 11 Unix Application Servers, chapter 12 Endpoints
+\end{list1}
+
+\slide{Goals for today: }
+
+\hlkimage{6cm}{checkmark_joel_montes_de_.png}
+
+Todays goals:
+\begin{list2}
+\item See some example standards -- helpful for generic security planning
+\item Talk about auditing infrastructure security as a whole -- a holistic view
+\item Try using our knowledge from an auditing viewpoint
+\end{list2}
+
+
+\slide{Building Secure Infrastructures}
+
+\begin{list1}
+\item We did an exercise last time, starting to build a DMZ for servers
+\item A real-life setup of an infrastructure from scratch can be daunting!
+\item You need:
+\begin{list2}
+\item Policies
+\item Procedures
+\item Incident Response
+\end{list2}
+\item Running systems which require
+\begin{list2}
+\item Configurations
+\item Settings
+\item Supporting infrastructure -- networks
+\item Supporting infrastructure -- logging, dashboarding, monitoring
+\end{list2}
+\item Building something \emph{secure} is {\bf hard work!}
+\end{list1}
+
+
+
+\slide{Existing infrastructures}
+
+\begin{list1}
+\item or even worse you inherited an infrastructure
+\item Multiple networks, with different vendors, rules
+\item Multiple generations of services, applications, technologies
+\item Built over decades
+\item Varying to no documentation
+\item Organizational challenges
+\item Ingrained culture -- frozen in time
+\end{list1}
+
+How do you get started improving security?
+
+
+\slide{Security Controls and Frameworks}
+
+\begin{list1}
+\item Multiple exist
+\vskip 1cm
+\begin{list2}
+\item CIS controls Center for Internet Security (CIS) \link{https://www.cisecurity.org}
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019
+\item NIST Cybersecurity Framework (CSF)\\
+Framework for Improving
+Critical Infrastructure Cybersecurity\\ \link{https://www.nist.gov/cyberframework}\\
+\link{http://csrc.nist.gov/publications/PubsSPs.html}
+\item National Security Agency (NSA)\\ \link{http://www.nsa.gov/research/publications/index.shtml}
+\item NSA security configuration guides\\ \link{http://www.nsa.gov/ia/guidance/security_configuration_guides/index.shtml}
+\item Information Systems Audit and Control Association (ISACA)\\
+\link{http://www.isaca.org/Knowledge-Center/Risk-IT-IT-Risk-Management/Pages/default.aspx}
+\end{list2}
+\end{list1}
+
+
+\slide{Risk management defined}
+
+\hlkimage{20cm}{shon-harris-risk-management.png}
+
+Source: Shon Harris \emph{CISSP All-in-One Exam Guide}
+
+
+\slide{First advice use the modern operating systems}
+
+\begin{list1}
+\item Newer versions of Microsoft Windows, Mac OS X and Linux
+\begin{list2}
+\item Buffer overflow protection
+\item Stack protection, non-executable stack
+\item Heap protection, non-executable heap
+\item \emph{Randomization of parameters} stack gap m.v.
+\end{list2}
+\item Note: these still have errors and bugs, but are better than older versions
+\item OpenBSD has shown the way in many cases\\ \link{http://www.openbsd.org/papers/}
+\end{list1}
+
+\vskip 1cm
+
+\centerline{Always try to make life worse and more costly for attackers}
+
+
+\slide{Good security}
+
+\hlkimage{15cm}{god-sikkerhed.pdf}
+
+\begin{list1}
+\item You always have limited resources for protection - use them as best as possible
+\end{list1}
+
+
+\slide{First advice}
+
+\begin{list1}
+\item Use technology
+\item Learn the technology - read the freaking manual
+\item Think about the data you have, upload, facebook license?! WTF!
+\item Think about the data you create - nude pictures taken, where will they show up?
+\begin{list2}
+\item Turn off features you don't use
+\item Turn off network connections when not in use
+\item Update software and applications
+\item Turn on encryption: IMAP{\bf S}, POP3{\bf S},
+  HTTP{\bf S} also for data at rest, full disk encryption, tablet encryption
+\item Lock devices automatically when not used for 10 minutes
+\item Dont trust fancy logins like fingerprint scanner or face recognition on cheap devices
+\end{list2}
+\end{list1}
+
+
+\slide{Spearphishing - targetted attacks}
+
+
+Spearphishing - targetted attacks directed at specific individuals or companies
+
+\begin{list2}
+\item Use 0-day vulnerabilities only in a few places
+\item Create backdoors and mangle them until not recognized by Anti-virus software
+\item Research and send to those most likely to activate program, open file, visit page
+\item Stuxnet is an example of a targeted attack using multiple 0-day vulns
+\end{list2}
+
+
+\slide{Defense in depth - flere lag af sikkerhed}
+
+\hlkimage{6cm}{security-layers-1-uk.pdf}
+
+\centerline{\hlkbig Defense using multiple layers is stronger!}
+
+
+\slide{Integrate or develop?}
+
+\begin{list1}
+\item Dont:
+\begin{list2}
+\item Reinvent the wheel - too many times, unless you can maintain it afterwards
+\item Never invent cryptography yourself
+\item No copy paste of functionality, harder to maintain in the future
+\end{list2}
+\item Do:
+\begin{list2}
+\item Integrate with existing solutions
+\item Use existing well-tested code: cryptography, authentication, hashing
+\item Centralize security in your code and organization
+\end{list2}
+\end{list1}
+
+
+\slide{Balanced security}
+
+\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
+
+\begin{list1}
+\item Better to have the same level of security
+\item If you have bad security in some part - guess where attackers will end up
+\item Hackers are not required to take the hardest path into the network
+\item Realize there is no such thing as 100\% security
+\end{list1}
+
+
+
+\slide{Work together}
+
+\hlkimage{10cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+
+
+\slide{How to become secure}
+
+\begin{list1}
+\item Dont use computers at all, data about you is still processed by computers :-(
+\item Dont use a single device for all types of data
+\item Dont use a single server for all types of data, mail server != web server
+\item Configure systems to be secure by default, or change defaults
+\item Use secure protocols and VPN solutions
+\end{list1}
+
+As said by Bruce Schneier \emph{Security is a process, not a product.}
+
+{\footnotesize\url{https://www.schneier.com/essays/archives/2000/04/the_process_of_secur.html}}
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+\slide{Center for Internet Security CIS Controls 7.1}
+
+\begin{list2}
+\item
+The five critical tenets of an effective cyber defense system as reflected
+in the CIS Controls are:
+\item {\bf Offense informs defense:} Use knowledge of actual attacks that have
+compromised systems to provide the foundation to continually learn
+from these events to build effective, practical defenses. Include only
+those controls that can be shown to stop known real-world attacks.
+\item {\bf Prioritization:} Invest first in Controls that will provide the greatest risk
+reduction and protection against the most dangerous threat actors
+and that can be feasibly implemented in your computing environment.
+The CIS Implementation Groups discussed below are a great place for
+organizations to start identifying relevant Sub-Controls.
+\item {\bf Measurements and Metrics:} Establish common metrics to provide a
+shared language for executives, IT specialists, auditors, and security
+officials to measure the effectiveness of security measures within
+an organization so that required adjustments can be identified and
+implemented quickly.
+\item {\bf Continuous diagnostics and mitigation:} Carry out continuous
+measurement to test and validate the effectiveness of current security
+measures and to help drive the priority of next steps.
+\item {\bf Automation:} Automate defenses so that organizations can achieve
+reliable, scalable, and continuous measurements of their adherence to
+the Controls and related metrics. \hskip 2cm Source: CIS-Controls-Version-7-1.pdf
+\end{list2}
+
+
+\slide{Inventory and Control of Hardware Assets}
+
+CIS controls 1-6 are Basic, everyone must do them.
+
+
+\begin{quote}
+CIS Control 1:\\
+Inventory and Control of Hardware Assets\\
+Actively manage (inventory, track, and correct) all hardware devices on the network so that only authorized devices are given access, and unauthorized and unmanaged devices are found and prevented from gaining access.
+\end{quote}
+
+\begin{list1}
+\item What is connected to our networks?
+\item What firmware do we need to install on hardware?
+\item Where IS the hardware we own?
+\item What hardware is still supported by vendor?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What licenses do we have? Paying too much?
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item What software do our employees need to support?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Controlled Use of Administrative Privileges}
+
+\begin{quote}
+CIS Control 4:\\
+Controlled Use of Administrative Privileges\\
+The processes and tools used to track/control/prevent/correct the use, assignment, and configuration of administrative privileges on computers, networks, and applications.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Secure Configuration for Hardware and Software}
+
+\begin{quote}
+CIS Control 5:\\
+Secure Configuration for Hardware and Software on Mobile Devices, Laptops, Workstations and Servers\\
+Establish, implement, and actively manage (track, report on, correct) the security configuration of mobile devices, laptops, servers, and workstations using a rigorous configuration management and change control process in order to prevent attackers from exploiting vulnerable services and settings.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Maintenance, Monitoring and Analysis of Audit Logs}
+
+\begin{quote}
+CIS Control 6:\\
+Maintenance, Monitoring and Analysis of Audit Logs\\
+Collect, manage, and analyze audit logs of events that could help detect, understand, or recover from an attack.
+\end{quote}
+
+\begin{list1}
+\item ... and present it, use it daily, report it to management!
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Email and Web Browser Protections}
+
+CIS controls 7-16 are Foundational
+
+\begin{quote}
+CIS Control 7:\\
+Email and Web Browser Protections\\
+Minimize the attack surface and the opportunities for attackers to manipulate human behavior through their interaction with web browsers and email systems.
+\end{quote}
+
+\begin{list1}
+\item Use centralized proxies, with filtering settings?
+\item Automated browser updates
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Malware Defenses}
+
+\begin{quote}
+CIS Control 8:\\
+Malware Defenses\\
+Control the installation, spread, and execution of malicious code at multiple points in the enterprise, while optimizing the use of automation to enable rapid updating of defense, data gathering, and corrective action.
+\end{quote}
+
+\begin{list1}
+\item Also included network segmentation in my book
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Limitation and Control of Network Ports, Protocols, and Services}
+
+\begin{quote}
+CIS Control 9:\\
+Limitation and Control of Network Ports,
+Protocols, and Services\\
+Manage (track/control/correct) the ongoing operational use of ports, protocols, and services on networked devices in order to minimize windows of vulnerability available to attackers
+\end{quote}
+
+\begin{list1}
+\item Monitor the network using netflow, internally too!
+\item Why does some server on the inside connect to Internet Relay Chat (IRC)
+\item Do we still run older versions of Server Message Block (SMB) services
+\item Why haven't we turned off Telnet on the network devices?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Data Recovery Capabilities}
+
+\begin{quote}
+CIS Control 10:\\
+Data Recovery Capabilities\\
+The processes and tools used to properly back up critical information with a proven methodology for timely recovery of it.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Secure Configuration for Network Devices}
+
+\begin{quote}
+CIS Control 11:\\
+Secure Configuration for Network Devices, such as Firewalls, Routers, and Switches\\
+Establish, implement, and actively manage (track, report on, correct) the security configuration of network infrastructure devices using a rigorous configuration management and change control process in order to prevent attackers from exploiting vulnerable services and settings.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Boundary Defense}
+
+\begin{quote}
+CIS Control 12:\\
+Boundary Defense\\
+Detect/prevent/correct the flow of information transferring across networks of different trust levels with a focus on security-damaging data.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Data Protection}
+
+\begin{quote}
+CIS Control 13:\\
+Data Protection\\
+The processes and tools used to prevent data exfiltration, mitigate the effects of exfiltrated data, and ensure the privacy and integrity of sensitive information.
+\end{quote}
+
+\begin{list1}
+\item Yes, EU General Data Protection Regulation (GDPR)
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Controlled Access Based on the Need to Know}
+
+\begin{quote}
+CIS Control 14:\\
+Controlled Access Based on the Need to Know\\
+The processes and tools used to track/control/prevent/correct secure access to critical assets (e.g., information, resources, systems) according to the formal determination of which persons, computers, and applications have a need and right to access these critical assets based on an approved classification.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Wireless Access Control}
+
+\begin{quote}
+CIS Control 15:\\
+Wireless Access Control
+The processes and tools used to track/control/prevent/correct the secure use of wireless local area networks (WLANs), access points, and wireless client systems.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Account Monitoring and Control}
+
+\begin{quote}
+CIS Control 16:\\
+Account Monitoring and Control\\
+Actively manage the life cycle of system and application accounts – their creation, use, dormancy, deletion – in order to minimize opportunities for attackers to leverage them.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Implement a Security Awareness and Training Program}
+
+CIS controls 17-20 er Organizational
+
+\begin{quote}
+CIS Control 17:\\
+Implement a Security Awareness and Training Program\\
+For all functional roles in the organization (prioritizing those mission-critical to the business and its security), identify the specific knowledge, skills, and abilities needed to support defense of the enterprise; develop and execute an integrated plan to assess, identify gaps, and remediate through policy, organizational planning, training, and awareness programs.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Incident Response and Management}
+
+\begin{quote}
+CIS Control 19:\\
+Incident Response and Management\\
+Protect the organization’s information, as well as its reputation, by developing and implementing an incident response infrastructure (e.g., plans, defined roles, training, communications, management oversight) for quickly discovering an attack and then effectively containing the damage, eradicating the attacker’s presence, and restoring the integrity of the network and systems.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Penetration Tests and Red Team Exercises}
+
+\begin{quote}
+CIS Control 20:\\
+Penetration Tests and Red Team Exercises\\
+Test the overall strength of an organization’s defense (the technology, the processes, and the people) by simulating the objectives and actions of an attacker.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{CIS RAM}
+
+\begin{quote}
+CIS Risk Assessment Method is a free information security risk assessment method that helps organizations implement and assess their security posture against the CIS Controls™ cybersecurity best practices. CIS RAM provides instructions, examples, templates, and exercises for conducting a cyber risk assessment.
+\end{quote}
+
+\begin{list1}
+\item Tools are available, sometimes tool is just a spreadsheet for recording data
+\item
+\item
+\item
+\end{list1}
+
+
+
+
+
+
+\slide{Payment Card Industry Data Security Standard}
+
+\begin{list1}
+\item PCI Best Practices grew out of credit card leaks becoming a huge problem
+\item Partnership between Master Card, VISA and others
+\item Version  1.0 release in December, 2004
+\item Version 3.2.1 was released in May 2018\\ \link{https://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard}
+\end{list1}
+
+
+
+\slide{PCI DSS Control Objectives}
+
+\begin{list1}
+\item High level objectives:
+\begin{list2}
+\item Build and Maintain a Secure Network and Systems
+\item Protect Cardholder Data
+\item Maintain a Vulnerability Management Program
+\item Implement Strong Access Control Measures
+\item Regularly Monitor and Test Networks
+\item Maintain an Information Security Policy
+\end{list2}
+\end{list1}
+
+\slide{PCI DSS Resources}
+
+
+The PCI Security Standards Council (PCI SSC) website (www.pcisecuritystandards.org) contains a number of additional resources to assist
+organizations with their PCI DSS assessments and validations, including:
+
+\begin{list1}
+\item Document Library, including:
+\begin{list2}
+\item PCI DSS – Summary of Changes from PCI DSS version 2.0 to 3.0
+\item PCI DSS Quick Reference Guide
+\item PCI DSS and PA-DSS Glossary of Terms, Abbreviations, and Acronyms
+\item Information Supplements and Guidelines
+\item Prioritized Approach for PCI DSS
+\item Report on Compliance (ROC) Reporting Template and Reporting Instructions
+\item Self-assessment Questionnaires (SAQs) and SAQ Instructions and Guidelines
+\item Attestations of Compliance (AOCs)
+\end{list2}
+
+\eject
+\item Frequently Asked Questions (FAQs)
+\item PCI for Small Merchants website
+\item PCI training courses and informational webinars
+\item List of Qualified Security Assessors (QSAs) and Approved Scanning Vendors (ASVs)
+\item List of PTS approved devices and PA-DSS validated payment applications
+\end{list1}
+Note: Information Supplements
+complement the PCI DSS and identify
+additional considerations and
+recommendations for meeting PCI DSS
+requirements — they do not supersede,
+replace or extend the PCI DSS or any of its
+requirements.
+Please refer to www.pcisecuritystandards.org for information about these and other resources.
+
+Source: Payment Card Industry (PCI)
+Data Security Standard version 3.2.1 May 2018
+
+
+\slide{Challenges to Maintaining Compliance}
+
+\hlkimage{18cm}{pci-compliance-curve.png}
+
+Source:
+\emph{Information Supplement:
+Best Practices for Maintaining
+PCI DSS Compliance}, 2.0
+Date: January 2019, Maintaining PCI DSS Compliance Special Interest Group
+PCI Security Standards Council
+
+
+\slide{Requirements for Building and Maintaining Security}
+
+\begin{list1}
+\item Installing and maintaining a firewall configuration to protect cardholder data. The purpose of a firewall is to scan all network traffic, block untrusted networks from accessing the system.
+\item Changing vendor-supplied defaults for system passwords and other security parameters. These passwords are easily discovered through public information and can be used by malicious individuals to gain unauthorized access to systems.
+\item Protecting stored cardholder data. Encryption, hashing, masking and truncation are methods used to protect card holder data.
+\item Encrypting transmission of cardholder data over open, public networks. Strong encryption, including using only trusted keys and certifications reduces risk of being targeted by malicious individuals through hacking.
+\end{list1}
+Source:
+\emph{Information Supplement:
+Best Practices for Maintaining
+PCI DSS Compliance}, 2.0
+Date: January 2019, Maintaining PCI DSS Compliance Special Interest Group
+PCI Security Standards Council
+
+\slide{Requirements for Building and Maintaining Security, cont}
+
+\begin{list1}
+\item Protecting all systems against malware and performing regular updates of anti-virus software. Malware can enter a network through numerous ways, including Internet use, employee email, mobile devices or storage devices. Up-to-date anti-virus software or supplemental anti-malware software will reduce the risk of exploitation via malware.
+\item Developing and maintaining secure systems and applications. Vulnerabilities in systems and applications allow unscrupulous individuals to gain privileged access. Security patches should be immediately installed to fix vulnerability and prevent exploitation and compromise of cardholder data.
+\end{list1}
+Source:
+\emph{Information Supplement:
+Best Practices for Maintaining
+PCI DSS Compliance}, 2.0
+Date: January 2019, Maintaining PCI DSS Compliance Special Interest Group
+PCI Security Standards Council
+
+\slide{Requirements for Building and Maintaining Security, cont}
+
+\begin{list1}
+  \item Restricting access to cardholder data to only authorized personnel. Systems and processes must be used to restrict access to cardholder data on a “need to know” basis.
+  \item Identifying and authenticating access to system components. Each person with access to system components should be assigned a unique identification (ID) that allows accountability of access to critical data systems.
+  \item Restricting physical access to cardholder data. Physical access to cardholder data or systems that hold this data must be secure to prevent the unauthorized access or removal of data.
+\item Tracking and monitoring all access to cardholder data and network resources. Logging mechanisms should be in place to track user activities that are critical to prevent, detect or minimize impact of data compromises.
+\end{list1}
+Source:
+\emph{Information Supplement:
+Best Practices for Maintaining
+PCI DSS Compliance}, 2.0
+Date: January 2019, Maintaining PCI DSS Compliance Special Interest Group
+PCI Security Standards Council
+
+
+\slide{Requirements for Building and Maintaining Security, cont}
+
+
+\begin{list1}
+\item Testing security systems and processes regularly. New vulnerabilities are continuously discovered. Systems, processes and software need to be tested frequently to uncover vulnerabilities that could be used by malicious individuals.
+\item Maintaining an information security policy for all personnel. A strong security policy includes making personnel understand the sensitivity of data and their responsibility to protect it.
+\end{list1}
+
+
+Source:
+\emph{Information Supplement:
+Best Practices for Maintaining
+PCI DSS Compliance}, 2.0
+Date: January 2019, Maintaining PCI DSS Compliance Special Interest Group
+PCI Security Standards Council
+
+
+\slide{Benefits of PCI DSS}
+
+\begin{list1}
+\item My opinion:
+\item Before PCI theres was a LOT of breaches
+\item Minimum requirements for credit card companies, should be minimum requirements for personal data
+\item Good requirements, a library of tested requirements
+
+\end{list1}
+
+\exercise{ex:PCI-evaluation}
+
+
+
+\slidenext
+
+\end{document}

@@ -1,0 +1,201 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+
+\externaldocument{system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{4. Security Policies}
+{KEA Kompetence Computer Systems Security \the\year}
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item
+\end{list2}
+
+  Photo by Thomas Galler on Unsplash
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+  \item Security policy
+  \item Discretionary Access Control (DAC)
+  \item Mandatory Access Control (MAC)
+  \item Example Acceptable Use Policies
+  \item Example Academic Computer Security Policy from the book
+  \item Confidentiality Policies Bell-LaPadula Model
+\end{list2}
+\item Exercises
+\begin{list2}
+\item A look at SELinux an example Mandatory Access Control system
+\item Find your AUP for the ISPs we use, you use, your company uses
+\end{list2}
+\end{list1}
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item DSH chapter 3:
+\item DSH chapter 4:
+\item DSH chapter 5:
+\item MLSH chapter 3:
+\item MLSH chapter 4: - NOT firewalld part!
+
+\item Browse: Campus Network Security: High Level Overview , Network Startup Resource Center\\
+Campus Operations Best Current Practice, Network Startup Resource Center\\
+Mutually Agreed Norms for Routing Security (MANRS)
+\end{list1}
+
+
+\slide{Security policy}
+
+\begin{quote}
+A security policy defines \emph{secure} for a system or a set of systems.\\
+Matt Bishop, Computer Security 2019
+\end{quote}
+
+\begin{list1}
+\item Secure states
+\item Transitions between states, what is allowed
+\item Breach of security - system enters an unauthorized state
+\item Is it possible to return from insecure to a secure state?
+\item Book also defines Confidentiality, Integrity and Availability more precisely
+\item \emph{Origin integrity} authentication
+\item Military security policy (coinfidentiality) vs commercial security policy (integrity)
+\end{list1}
+
+\slide{Assumptions}
+
+\begin{quote}
+Any security policy, mechanism, or procedure is based on assumptions that, if incorrect, destroy the superstructure on which it is built.\\
+Matt Bishop, Computer Security 2019
+\end{quote}
+
+\begin{list1}
+\item Example, vendor patches
+\item Important points:
+\begin{list2}
+\item Is patch correct? Example Spectre and heartbleed
+\item Vendor test environments equal to intended environments
+\item Installed correctly - including operator skills
+\end{list2}
+\end{list1}
+
+\slide{Types of Access Control}
+
+\begin{quote}
+{\bf Definition 4-13.} If an individual user can set an access control mechanism to allow or deny access to an object, that mechanism is a \emph{discretionary access control (DAC)}, also called an \emph{identity-based access control (IBAC)}
+
+{\bf Definition 4-14.}  When a system mechanism controls access to an object and an individual user cannot alter that access, the control is a \emph{mandatory access control (MAC)}, occasionally cale a \emph{rule-based access control}
+\end{quote}
+
+Quote from Matt Bishop, Computer Security 2019
+
+\slide{Examples from real life systems}
+
+Example systems implementing DAC/MAC:
+\begin{list2}
+\item Unix file permissions - DAC
+\item SELinux - Mandatory Access Control architecture to the Linux Kernel
+\item Sun's Trusted Solaris uses a mandatory and system-enforced access control mechanism
+\end{list2}
+
+See also:
+\url{https://en.wikipedia.org/wiki/Discretionary_access_control}\\
+\url{https://en.wikipedia.org/wiki/Mandatory_access_control}
+
+\slide{Role-based Access Control (RBAC)}
+
+\begin{quote}
+In computer systems security, {\bf role-based access control (RBAC)}[1][2] or role-based security[3] is an approach to restricting system access to unauthorized users. It is used by the majority of enterprises with more than 500 employees,[4] and can implement mandatory access control (MAC) or discretionary access control (DAC).
+
+Role-based access control (RBAC) is a policy-neutral access-control mechanism defined around {\bf roles and privileges}. The components of RBAC such as role-permissions, user-role and role-role relationships make it simple to perform user assignments. A study by NIST has demonstrated that RBAC addresses many needs of commercial and government organizations[citation needed]. RBAC can be used to facilitate administration of security in large organizations with hundreds of users and thousands of permissions. Although RBAC is different from MAC and DAC access control frameworks, it can enforce these policies without any complication.
+\end{quote}
+Quote from \url{https://en.wikipedia.org/wiki/Role-based_access_control}
+
+\slide{Confidentiality Policies Bell-LaPadula Model}
+
+\begin{quote}
+The BellLa--Padula Model (BLP) is a state machine model used for enforcing access control in government and military applications.[1] It was developed by David Elliott Bell [2] and Leonard J. LaPadula, subsequent to strong guidance from Roger R. Schell, to formalize the U.S. Department of Defense (DoD) multilevel security (MLS) policy.[3][4][5] The model is a formal state transition model of computer security policy that describes a set of access control rules which use security labels on objects and clearances for subjects. Security labels range from the most sensitive (e.g., "Top Secret"), down to the least sensitive (e.g., "Unclassified" or "Public").
+\end{quote}
+
+Quote from:
+\url{https://en.wikipedia.org/wiki/Bell%E2%80%93LaPadula_model}
+
+Note: models like this have often been used in CISSP certification.
+
+See also Orange Book reference:\\ \link{https://en.wikipedia.org/wiki/Trusted_Computer_System_Evaluation_Criteria}
+
+\slide{Security Enhanced Linux}
+
+\begin{quote}
+Security-Enhanced Linux (SELinux) is a Linux kernel security module that provides a mechanism for supporting access control security policies, including mandatory access controls (MAC).
+\end{quote}
+From:
+\link{https://en.wikipedia.org/wiki/Security-Enhanced_Linux}
+
+\exercise{ex:se-linux-intro}
+
+\slide{Policy languages}
+
+Our book uses Ponder, here is a Juniper Junos example:
+\begin{alltt}\footnotesize
+  system \{
+      host-name born-core-01;
+      time-zone Europe/Copenhagen;
+      login \{
+          class rancid \{
+              permissions [ access admin firewall interface routing secret security snmp system trace view view-configuration ];
+          \}
+          user rancid \{
+                   uid 2005;
+                   class rancid;
+                   authentication \{
+                       encrypted-password "..."; ## SECRET-DATA
+                   \}
+               \}
+           \}
+\end{alltt}
+
+\slide{Linux Aide}
+
+\begin{list1}
+\item Book mentions Tripwire, an alternative is Aide
+\item Advanced Intrusion Detection Environment
+\item open source host based file and directory integrity checker
+\item detects changes to files on the local system
+\item Short example available from:\\
+{\footnotesize\link{https://blog.rapid7.com/2017/06/30/how-to-install-and-configure-aide-on-ubuntu-linux/}}
+\item \link{https://en.wikipedia.org/wiki/Advanced_Intrusion_Detection_Environment}
+\end{list1}
+
+
+\slide{Example Academic Computer Security Policy from the book}
+
+\hlkimage{4cm}{old_book_lumen_design_st_01.png}
+
+Lets discuss the example from the book, as well as other policies
+
+Campus Network Security: High Level Overview , Network Startup Resource Center
+
+Campus Operations Best Current Practice, Network Startup Resource Center
+
+Mutually Agreed Norms for Routing Security (MANRS)
+
+\link{https://informationssikkerhed.ku.dk/}
+\exercise{ex:example-AUP}
+
+
+
+
+\slidenext
+
+\end{document}

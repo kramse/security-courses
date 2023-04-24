@@ -1,0 +1,510 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+
+\externaldocument{system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{11. Incident Response / Computer Forensics}
+{KEA Kompetence Computer Systems Security \the\year}
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Attack and Response
+\item Attack graphs
+\item Attack surfaces, and reducing them
+\item Intrusion Handling, phases
+\item Incident Response
+\item Digital Forensics / Computer Forensics
+\item Honeypots
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Clean or rebuild a server, use example Debian with your cron job vuln as example
+
+\item Cloud environments influence on incident response
+\end{list2}
+\end{list1}
+
+
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item DSH chapter 6:
+\item DSH chapter 7:
+\item Skim: Incident Handler's Handbook by Patrick Kral  - ca 18 pages
+\end{list1}
+
+
+\slide{Attack and Response}
+
+\begin{list1}
+\item {\bf Definition 27-1} \emph{Attack} is a sequence of actions that create a violation of a security policy.
+\item {\bf Definition 27-2} A \emph{goal} is that which the attacker hopes to achieve.
+\item {\bf Definition 27-3} A \emph{target} of an attack is the entity that the attacker wishes to affect.
+\item {\bf Definition 27-4} A \emph{multistage attack} is an attack that requires several steps to achieve it's goal.
+\item Most attacks are multistage.
+\item Example goals: access to systems for learning, stealing,  for spamming, for embarrassment
+\end{list1}
+
+
+\slide{Attack trees}
+
+\hlkimage{7cm}{paper-attacktrees-fig1.png}
+
+\begin{list2}
+\item Attacks can be said to be based on a chain of dependencies, or graphs
+\item To achieve goal, need to achieve sub goal x, y, and z -- Break the chain and the attack fails!
+\item Simple example, installing updates remove a dependency for a vulnerability
+\item Attack trees, picture from Bruce Schneier Attack Trees article December 1999:\\ {\footnotesize\link{https://www.schneier.com/academic/archives/1999/12/attack_trees.html}}
+\end{list2}
+
+
+
+\slide{Attack surfaces, and reducing them}
+
+\begin{list2}
+\item Incident prevention
+\item Real-time intrusion detection systems (IDS/IPS)
+\item {\bf Definition 27-7} An \emph{attack surface} is the set of entry points and data that attackers can use to compromise a system.
+\item Reducing the chance of success also helps, randomization
+\item Address space layout randomization (ASLR) is a host-level moving target defense.
+\item OpenBSD even randomizes the kernel on install -- kernel address randomized link (KARL)
+\end{list2}
+
+
+
+\slide{Remember the MITRE ATT\&CK framework}
+
+\hlkimage{14cm}{mitre-attack.png}
+
+\link{https://attack.mitre.org/}
+
+
+\slide{Penetration testing}
+
+
+\begin{list1}
+\item Verification of the system in place
+\item Examines procedural and operational controls
+\item Is the system in fact installed and operated as expected
+\item Example, is the firewall even enabled?
+\item Penetration testing methodologies\\
+\url{https://www.owasp.org/index.php/Penetration_testing_methodologies}
+\end{list1}
+
+
+
+
+\slide{Security Assessment Frameworks}
+
+
+\begin{list2}
+\item Structured approach to testing, finding and eliminating security flaws
+\item Information Systems Security Assessment Framework ISSAF
+\item Penetration Testing Execution Standard (PTES)
+\item PCI Penetration testing guide, Payment Card Industry Data Security Standard (PCI DSS)
+\item Technical Guide to Information Security Testing and Assessment (NIST800-115) (GISTA)
+\item Open Source Security Testing Methodology Manual (OSSTMM)
+\item CREST Penetration Testing Guide
+\end{list2}
+
+Which one to choose?
+
+From the book Bishop and \link{https://www.owasp.org/index.php/Penetration_testing_methodologies}
+
+
+
+
+\slide{Coordinating Response}
+
+\begin{list2}
+\item {\bf Definition 27-8} A \emph{computer security incident response team} (CSIRT) is a team established to assist and coordinate responses to a security incident among a defined constituency
+\item Constituency may be a company, an organization, a sector (academic institutions), or even broader
+\item Morris internet worm lead to the formation of the Computer Emergency Response Team (CERT/CC) coordination center at Carnegie Mellon University \\
+\link{https://en.wikipedia.org/wiki/CERT_Coordination_Center}
+\item The main danish CERT/CSIRT is \link{https://www.cert.dk/en} unfortunately it only covers forskningsnettet the National Research and Educational Networks (NREN) in Denmark!
+\item In Denmark we also had GovCERT, which is now part of Center for Cyber Security (CfCS)
+\item There is an internet standard document about Incident Response\\
+\emph{Expectations for Computer Security Incident Response
+}
+\link{https://www.ietf.org/rfc/rfc2350.txt}
+\end{list2}
+
+
+\slide{Method in Practice}
+
+\begin{list2}
+\item 1. Capture and preserve the current state of the system and network data
+\item 2. Extract information about that state and about prior states
+\item 3. Analyze the data gathered to determine the sequence of actions, which objects they affected, and how
+\item 4. Prepare and report the results of the analysis to the intended audience
+\vskip 1cm
+\item Example steps:
+\item Create list of all files
+\item Create timeline of all changes
+\item Find all deleted files
+\item Check free space, previously deleted files, use file-carving tools
+\item Check other sources, system logs, intrusion detection systems etc.
+\end{list2}
+
+\slide{Example incident response procedures}
+
+\begin{quote}
+  5.4  Handling an Incident
+
+     Certain steps are necessary to take during the handling of an
+     incident.  In all security related activities, the most important
+     point to be made is that all sites should have policies in place.
+     Without defined policies and goals, activities undertaken will remain
+     without focus. The goals should be defined by management and legal
+     counsel in advance.
+\end{quote}
+
+\begin{list2}
+\item \emph{Incident Handler's Handbook}
+  by Patrick Kral, SANS Information Security Reading Room\\
+  {\footnotesize \link{https://www.sans.org/reading-room/whitepapers/incident/paper/33901}}
+  \item \emph{Computer Security
+Incident Handling Guide}, NIST Paul Cichonski,
+Tom Millar,
+TimGrance,
+Karen Scarfone\\ {\footnotesize\link{https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf}}
+\item Quote from RFC2196 \emph{Site Security Handbook} September 1997, IETF\\
+{\footnotesize\url{https://tools.ietf.org/html/rfc2196#section-5.4}}
+\item \link{https://cloud.google.com/security/incident-response/}
+\item Microsoft Azure
+\link{https://medium.com/@cloudyforensics/azure-forensics-and-incident-response-c13098a14d8d}
+\end{list2}
+
+
+\slide{Intrusion Handling, phases}
+
+\begin{list2}
+\item \emph{Preparation} for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\item \emph{Identification} of an attack, notice the attack is ongoing
+\item \emph{Containment} (confinement) of the attack, limit effects of the attack as much as possible
+\item \emph{Eradication} of the attack, stop attacker, block further similar attacks
+\item \emph{Recovery} from the attack, restore system to a secure state
+\item \emph{Follow-up} to the attack, include lessons learned -- improve environment
+\end{list2}
+
+This method list is from the International Workshop on Incident Response at the Software Engineering Institute in Pittsburgh, Pennsylvania in July 1989.
+
+These are very high-level. Multiple books and courses exist on this subject alone. A short example for today was the \emph{Incident Handler's Handbook}
+by Patrick Kral
+
+
+\slide{Checklist from NIST.SP.800-61r2.pdf}
+
+\hlkimage{12cm}{incident-handling-checklist.png}
+
+\exercise{ex:clean-or-rebuild}
+
+
+\slide{Counter Attacks}
+
+\begin{list2}
+\item General rule, never \emph{hack back}
+\item Usually not the real source of the attacks
+\item End up attacking random innocent victims
+\item Unintended consequences -- hacking back medical equipment? SCADA or ICS?
+\item Ethically not sound
+\end{list2}
+
+
+
+
+
+\slide{Digital Forensics -- Computer Forensics}
+
+\begin{list2}
+\item {\bf Definition 27-9} \emph{Digital forensics} is the science of identifying and anlyzing entities, states, and state transitions of events that have occurred or are occurring.
+\item 1. Consider the entire system -- access to at least the information that the intruder had before and during attack
+\item 2. Assumptions should not control what is logged
+\item 3. Consider the effects of actions as well as the actions
+\item 4. Context assists in understanding meaning
+\item 5. Information must be processed and presented in an understandable way
+\end{list2}
+
+
+\slide{Definition}
+
+\vskip 4cm
+
+\begin{quote}
+{\hlkbig
+Computer Forensics involves the preservation, identification,
+extraction, documentation and interpretation of computer data.}
+
+\vskip 1 cm
+
+\emph{Computer Forensics: Incident Response Essentials}, Warren
+G. Kruse II og Jay G. Heiser, Addison-Wesley, 2002
+\end{quote}
+
+
+\slide{TASK og Autopsy}
+
+\hlkimage{7cm}{images/sleuthkit.png}
+
+\begin{list1}
+\item Inspired by The Coroners Toolkit (TCT) by  Dan Farmer and Wietse Venema
+\item Created by Brian Carrier
+\item Official home TASK and autopsy \link{www.sleuthkit.org}
+\item TASK are the command line tools, replace TCT
+\item Autopsy is a Forensic Browser -- interface to TASK
+\end{list1}
+
+
+
+\slide{Most Basic Network Forensics Chaosreader}
+
+\hlkimage{18cm}{chaosreader2.png}
+\begin{list1}
+\item Older tool chaosreader, can open network dump and provide HTML output
+\item HTML show sessions, pictures etc.
+\item \link{http://chaosreader.sourceforge.net/}
+\item Example output \link{http://chaosreader.sourceforge.net/Chaos01/index.html}
+\end{list1}
+
+Extremely simple, but a good example - quick to demo.
+
+\slide{Case: Maltrail}
+
+\hlkimage{15cm}{maltrail.png}
+
+\link{https://github.com/stamparm/maltrail}
+
+\slide{Packet sniffing tools}
+
+\begin{list1}
+\item Tcpdump for capturing packets
+\item Wireshark for dissecting packets manually with GUI
+\item Zeek Network Security Monitor
+\item Snort, old timer Intrusion Detection Engine (IDS)
+\item Suricata, modern robust capable of IDS and IPS (prevention)
+\item ntopng High-speed web-based traffic analysis
+\item Maltrail Malicious traffic detection system \url{https://github.com/stamparm/MalTrail}
+\end{list1}
+
+\vskip 5mm
+\centerline{Often a combination of tools and methods used in practice}
+
+Full packet capture big data tools also exist
+
+\slide{NetFlow}
+
+\begin{slidelist}
+\item NetFlow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item NetFlow sampling is vital information - 123Mbit, but what kind of traffic
+\item Currently also investigating sFlow - hopefully more fine grained
+\end{slidelist}
+
+
+\slide{Honeypot Definition}
+
+\vskip 1cm
+\begin{quote}
+In computer terminology, a {\bf honeypot} is a computer security mechanism set to detect, deflect, or, in some manner, counteract attempts at unauthorized use of information systems. Generally, a honeypot consists of data (for example, in a network site) that appears to be a legitimate part of the site, but is actually isolated and monitored, and that seems to contain information or a resource of value to attackers, who are then blocked.
+\end{quote}
+
+Source:
+\link{https://en.wikipedia.org/wiki/Honeypot_(computing)}
+
+also used as Honeynet - monitored network infrastructure
+
+\begin{list1}
+\item En honeypot består typisk af:
+  \begin{list2}
+    \item Et eller flere sårbare systemer
+\item Et eller flere systemer der logger traffik til og fra honeypot
+  systemerne
+  \end{list2}
+\item Meningen med en honeypot er at den bliver angrebet og brudt ind
+  i, se også Canary Tokens
+\end{list1}
+
+
+\slide{History of honeypots -- An Evening with Berferd}
+
+\hlkimage{5cm}{honeypots-tracking-hackers-2003.jpg}
+
+\begin{list1}
+\item Artikel om en hacker der lokkes, vurderes, overvåges
+\item Et tidligt eksempel på en honeypot
+\item Senere kom The Honeynet Project \link{http://www.honeynet.org}
+\item Billede er: \emph{Honeypots: Tracking Hackers}
+af Lance Spitzner, 2003
+\end{list1}
+
+
+\slide{Honeypot High interaction and low interaction}
+
+\begin{quote}
+{\bf High-interaction} honeypots imitate the activities of the production systems that host a variety of services and, therefore, an attacker may be allowed a lot of services to waste their time. By employing virtual machines, multiple honeypots can be hosted on a single physical machine. Therefore, even if the honeypot is compromised, it can be restored more quickly. In general, high-interaction honeypots provide more security by being difficult to detect, but they are expensive to maintain. If virtual machines are not available, one physical computer must be maintained for each honeypot, which can be exorbitantly expensive. Example: Honeynet.
+
+{\bf Low-interaction} honeypots simulate only the services frequently requested by attackers. Since they consume relatively few resources, multiple virtual machines can easily be hosted on one physical system, the virtual systems have a short response time, and less code is required, reducing the complexity of the virtual system's security. Example: Honeyd.
+\end{quote}
+
+Source:
+\link{https://en.wikipedia.org/wiki/Honeypot_(computing)}
+
+\slide{Honeynets - Why use them research, production}
+
+\hlkimage{6cm}{honeynet-figureA.jpg}
+
+Creating a network architecture with multiple systems become a honeynet.
+
+\begin{list2}
+\item Lessons Learned from \link{http://old.honeynet.org/papers/edu/}
+\item Out of all of this were a variety of lessons learned things to do and NOT to do. Hopefully this short list can help you avoid some common mistakes.
+\end{list2}
+
+\slide{Honeynets - Why use them research, production}
+\begin{list2}
+\item Start Small - If you are going to install a honeynet within your enterprise, start small. Begin initially with two machines (in order to detect sweep scans of your honeynet) with operating systems that you are familiar with installed behind the reverse firewall.
+\item Maintain good relations with your enterprise administrators. THIS IS CRITICAL! Inform your network administrators of the types of exploits that you are seeing. In some cases, they will already be aware of these exploits, but in other cases, you will have been the first person to notice them.
+\end{list2}
+
+\slide{Honeynets - Why use them research, production}
+\begin{list2}
+\item Focus on attacks and exploits originating from within your enterprise network. Theses are the attacks that can do the most damage to your enterprise. Inform your enterprise administrators immediately of these types of attacks since they indicate machines that have already been compromised within the enterprise.
+\item Don't publish the IP address range of the honeynet. There is no need to do this. Hackers and worms are constantly scanning across the Internet for machines to exploit. You honeynet will be found and attacked.
+\item Don't underestimate the amount of time required to analyze the data collected from the honeynet. This data must be analyzed every day. You will be collecting lots of information and it must be analyzed to provide any benefit.
+\item Powerful machines are not necessary to establish the honeynet. The Georgia Tech Honeynet did not use state of the art machines and it functioned as intended. Everything we needed to establish our honeynet was already available on campus.
+\end{list2}
+
+Source: \emph{Know Your Enemy: Honeynets in Universities Deploying a Honeynet at an Academic Institution}
+
+\slide{Honeypot vs NIDS}
+
+\begin{list1}
+\item NIDS
+\begin{list2}
+\item + See all traffic
+\item $-$ see and need to process ALL TRAFFIC
+\item + Known and understood by management
+\end{list2}
+\item Honeypot
+\begin{list2}
+\item + See only attack traffic
+\item + Few false positives
+\item + Require less ressources
+\end{list2}
+\end{list1}
+
+
+
+\slide{Myth: laptop passwords protect data}
+
+Now that we are talking about reading disk and file systems.
+
+\begin{list1}
+\item Myth:
+\item Some still believe passwords on laptops protect data
+\item Truth:
+\item They are only a minor nuisance
+\item The login prompt does not protect the data
+\item It is possible to boot from another disk, or remove disk
+\end{list1}
+
+
+\slide{Are your data secure - data at rest}
+
+\hlkimage{12cm}{images/data-integrity-1.pdf}
+
+\begin{list1}
+\item Stolen laptop, tablet, phone - can anybody read your data?
+\item Do you trust "remote wipe"
+\item How do you in fact wipe data securely off devices, and SSDs?
+\item Encrypt disk and storage devices before using them in the first place!
+\end{list1}
+
+
+\slide{Single user mode boot}
+\begin{list1}
+\item Unix systems often allow single user mode boot\\
+Previously holding command-s on Mac OS X gave single user boot
+\item Laptops can often be booted using PXE network or CD boot
+\item Macbooks boot from CDROM press c
+\item Macbooks can also be turned into \emph{firewire} hard discs\\
+Press t during boot, firewire target mode - same with Thunderbolt now
+\item Unrestricted access to un-encrypted data
+\item Moving hard drive to another computer is also easy
+\end{list1}
+\pause
+\centerline{Physical access to a system -- {\bf game over}}
+
+\slide{Full Disk Encryption (FDE)}
+
+\hlkimage{9cm}{images/apple-filevault.png}
+
+\begin{list1}
+\item Full Disk Encryption protect data from physical access
+\item Available in the most popular client operating systems
+\begin{list2}
+\item Microsoft Windows Bitlocker
+\item Apple Mac OS X - FileVault
+\item FreeBSD GEOM og GBDE - encryption framework
+\item Linux LUKS distributions like Ubuntu ask to encrypt home dir during installation
+\item Some vendors have BIOS passwords, or disk passwords
+\end{list2}
+\end{list1}
+
+\slide{Attacks on disk encryption}
+
+\begin{list2}
+\item Firewire, DMA \& Windows, Winlockpwn via FireWire\\
+Hit by a Bus: Physical Access Attacks with Firewire Ruxcon 2006
+\item Removing memory from live system - data is not immediately lost, and can be read under some circumstances\\
+Lest We Remember: Cold Boot Attacks on Encryption Keys\\
+\link{http://citp.princeton.edu/memory/}
+\item This is very CSI or Hollywoord like - but a real threat
+\item VileFault decrypts encrypted Mac OS X disk image files\\ \link{https://code.google.com/p/vilefault/}
+\item  FileVault Drive Encryption (FVDE) (or FileVault2) encrypted volumes\\
+\link{https://code.google.com/p/libfvde/}
+\end{list2}
+
+\centerline{So perhaps use both hard drive encryption AND turn off computer after use?}
+
+\slide{... and deleting data}
+
+{~}
+\hlkrightpic{8cm}{0cm}{dban-screenshot.png}
+
+\begin{list1}
+\item Getting rid of data from old devices is a pain
+\item Some tools will not overwrite data, leaving it vulnerable to recovery
+\item Even secure erase programs might not work on SSD\\
+ - due to reallocation of blocks
+\item I have used Darik's Boot and Nuke ("DBAN")\\
+\link{http://www.dban.org/}
+\end{list1}
+
+
+\slide{2018 attack}
+
+\hlkimage{12cm}{ssd-attack-2018.png}
+\emph{self-encrypting deception: weakness in the encryption of solid state drives (SSDs)}\\
+\link{https://www.ru.nl/publish/pages/909282/draft-paper.pdf}
+
+
+
+
+
+
+\exercise{ex:cloud-incident-response}
+
+\slidenext
+
+\end{document}

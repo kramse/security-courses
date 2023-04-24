@@ -1,0 +1,568 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+
+\externaldocument{system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{7. Secure Systems Design and Implementation}
+{KEA Kompetence Computer Systems Security}
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Principle of least privilege, fail-safe defaults, separation of privilege etc.
+\item Files, objects, users, groups and roles
+\item Naming and Certificates
+\item Access Control Lists
+\item DNSSEC
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Data types -- small programs with errors
+\item Real vulnerabilities found in Exim
+\item DNSSEC, SPF, DMARC - DNS based updates to your email domain security
+\end{list2}
+\end{list1}
+
+
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item MLSH chapter 7:
+\item MLSH chapter 8:
+\item Skim, Setuid demystified
+\item Some thoughts on security after ten years of qmail 1.0
+\item Wedge: Splitting Applications into Reduced-Privilege Compartments
+\end{list1}
+
+\slide{Goals for today}
+
+Todays goals:
+\begin{list2}
+\item Know the most important Design Principles, underpinning the whole of our industry
+\item Know what DNSSEC is, Know references to standards like DANE
+\item Inspire you to enable DNSSEC
+\item Discuss Access Control Lists vs capabilities vs setuid programs
+\item List Wedge, Pledge and Unveil as examples of containment
+\item Work with DNS, SMTPD settings - make recommendations for YOUR networks
+\end{list2}
+
+
+
+\slide{Book examples}
+
+
+\begin{alltt}\footnotesize
+  # This rule ensures that all local mail is delivered using the
+  # smtp transport, everything else will go via the smart host.
+  R$* < @ $* .$m. > $*	$#smtp $@ $2.$m. $: $1 < @ $2.$m. > $3
+  dnl
+  #
+  FEATURE(rbl)
+  FEATURE(access_db)
+  # end
+\end{alltt}
+
+Source: snippet from \link{https://www.tldp.org/LDP/nag2/x14661.html}
+
+\begin{list1}
+\item Our book chapter 14 starts out with some examples:
+\item Sendmail M4 macro language - compiling config files
+\item College privacy and cheating
+\item Prisoner communication - Attorney–client privilege
+\item Bernstein and Woodward - 1-bit phone calls
+\end{list1}
+
+
+
+\slide{Principle of Least Privilege}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+
+\slide{Principle of Least Authority}
+
+\begin{list1}
+\item
+\item {\bf Definition 14-2} The \emph{principle of least authority} states that a subject should be given only the authority that it needs in order to complete its task.
+\item Closely related to principle of least privilege
+\item Depend if there is distinction between \emph{permission} and \emph{authority}
+\item Permission - what actions a process can take on objects directly
+\item Authority - as determining what effects a process may have on an object, either directly or indirectly through its interactions with other processes or subsystems
+\item Book uses the example of information flow, passing information to second subject that can write
+\end{list1}
+
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
+
+\slide{Principle of Economy of Mechanism}
+
+\begin{list1}
+\item {\bf Definition 14-4} The \emph{principle of economy of mechanism} states that security mechanisms should be as simple as possible.
+\item Simple $->$ fewer complications $->$ fewer security errors
+\item Use WPA passphrase instead of MAC address based authentication
+\item
+\end{list1}
+
+
+\slide{Principle of Complete Mediation}
+
+\begin{list1}
+\item {\bf Definition 14-5} The \emph{principle of complete mediation} requires that all accesses to objects be checked to ensure that they are allowed.
+\item Always perform check
+\item Time of check, time of use
+\item Example Unix file descriptors - access check first, then can be reused in the future
+\item Caching can be bad.
+\end{list1}
+
+
+\slide{Principle of Open Design}
+
+\hlkimage{8cm}{debath-stego.png}
+
+Source: picture from \link{https://www.cs.cmu.edu/~dst/DeCSS/Gallery/Stego/index.html}
+\begin{list1}
+\item {\bf Definition 14-6} The \emph{principle of open design} states that the security of a mechanism should not depend on the secrecy of its design or implementation.
+\item Content Scrambling System (CSS) used on DVD movies
+\item Mobile data encryption  A5/1 key - see next page
+\end{list1}
+
+\slide{Mobile data encryption  A5/1 key}
+
+\begin{quote}
+  Real Time Cryptanalysis of A5/1 on a PC
+Alex Biryukov * Adi Shamir ** David Wagner ***
+
+  Abstract. A5/1 is the strong version of the encryption algorithm used by about 130 million GSM customers in Europe to protect the over-the-air privacy of their cellular voice and data communication. The best published attacks against it require between 240 and 245 steps. ...
+  In this paper we describe new attacks on A5/1, which are based on subtle flaws in the tap structure of the registers, their noninvertible clocking mechanism, and their frequent resets. After a 248 parallelizable data preparation stage (which has to be carried out only once), the actual attacks can be {\bf carried out in real time on a single PC.}
+
+  The first attack requires the output of the A5/1 algorithm during the first two minutes of the conversation, and computes the key in about one second. The second attack requires the output of the A5/1 algorithm during about two seconds of the conversation, and computes the key in several minutes.
+  ...
+  The approximate design of A5/1 was leaked in 1994, and the exact design of both A5/1 and A5/2 was reverse engineered by Briceno from an actual GSM telephone in 1999 (see [3]).
+\end{quote}
+Source: \link{http://cryptome.org/a51-bsw.htm}
+
+
+
+\slide{Principle of Separation of Privilege}
+
+\hlkimage{4cm}{security-layers-1-uk.pdf}
+\begin{list1}
+\item {\bf Definition 14-7} The \emph{principle of separation of privilege} states that a system should not grant permission based on a single condition.
+\item Company checks, CEO fraud
+\item Programs like \emph{su} and \emph{sudo} often requires specific group membership and password
+\end{list1}
+
+
+\slide{Principle of Least Common Mechanism}
+
+\begin{list1}
+\item {\bf Definition 14-8} The \emph{principle of least common mechanism} states that mechanisms used to access resources should not be shared.
+\item Minimize number of shared mechanisms and resources
+\item Also mentions stack protection, randomization
+\end{list1}
+
+
+
+\slide{Principle of Least Astonishment}
+
+\begin{list1}
+\item {\bf Definition 14-9} The \emph{principle of least astonishment} states that security mechanisms should be designed so that users understand the reason that the mechanism works they way it does and that using the mechanism is simple.
+\item Security model must be easy to understand and targetted towards users and system administrators
+\item Confusion may undermine the security mechanisms
+\item Make it easy and as intuitive as possible to use
+\item Make output clear, direct and useful\\
+Exception user supplies wrong password, tell login failed but not if user or password was wrong
+\item Make documentation correct, but the program best
+\item Psychological acceptability - should not make resource more difficult to access
+\end{list1}
+
+
+
+
+
+\slide{Files, objects, users, groups and roles}
+\begin{list1}
+\item
+\item {\bf Definition 15-1} A \emph{principal} is a unique entity. An \emph{identity} specifies a principal.
+\item Authentication binds a principal to a representation of identity internal to a computer.
+\item Example files and URLs
+\item Users represented by user IDs
+\item Groups and roles, sets of entities
+
+\end{list1}
+
+
+\slide{Naming and Certificates}
+
+\begin{list1}
+\item Naming and certificates, certificates binds cryptographic keys to identifiers
+\item Book describes CA policies and processes in some detail
+\item I recommend using Lets Encrypt \link{https://letsencrypt.org/}
+\item Our main printed book uses these to describe NAT: 10.1.3.241 and 101.43.21.241\\
+101.40/13 belongs to APNIC and was assigned to a real network!\\
+Use the prefixes specifically documented for documentation when writing documentation🙏see RFC3849 and RFC5737
+\item The book also describes problems trusting IP addresses and DNS information, with some references to \emph{cache poisoning} etc.
+\end{list1}
+
+\slide{Domain Name System Security Extensions (DNSSEC)}
+\begin{list1}
+\item Domain Name System Security Extensions (DNSSEC)
+\item DNSSEC was originally specified in the following three RFCs:
+\item RFC 4033 – DNS Security Introduction and Requirements
+\item RFC 4034 – Resource Records for the DNS Security Extensions
+\item RFC 4035 – Protocol Modifications for the DNS Security Extensions\\
+ \link{https://www.internetsociety.org/resources/deploy360/2011/dnssec-rfcs-3/}
+\item Using DNSSEC we can put keys into DNS, not trusting the usual browser root CAs
+\item Using the wrong NSEC can mean you can \emph{walk the zone} and get all names! May or may not lead to finding testing and development systems - use NSEC3
+\end{list1}
+
+
+\slide{DNSSEC trigger}
+
+\hlkimage{7cm}{dnssec-trigger.png}
+
+DNSSEC-trigger secure local DNS server for your Windows or Mac laptop.
+
+\begin{list2}
+\item DNSSEC Validator for Firefox\\ \link{https://addons.mozilla.org/en-us/firefox/addon/dnssec-validator/}
+\item OARC tools \link{https://www.dns-oarc.net/oarc/services/odvr}
+\item \link{http://www.nlnetlabs.nl/projects/dnssec-trigger/}
+\end{list2}
+
+\slide{DNSSEC get started now}
+
+\hlkimage{12cm}{cz-nic-dnssec-tlsa-validator.png}
+
+\begin{quote}
+"TLSA records store hashes of remote server TLS/SSL certificates. The authenticity of a TLS/SSL certificate for a domain name is verified by DANE protocol (RFC 6698). DNSSEC and TLSA validation results are displayer by using several icons."
+\end{quote}
+
+
+\slide{DNSSEC and DANE}
+
+\begin{quote}
+"Objective:
+
+Specify mechanisms and techniques that allow Internet applications to
+establish cryptographically secured communications by using information
+distributed through DNSSEC for discovering and authenticating public
+keys which are associated with a service located at a domain name."
+\end{quote}
+
+\begin{list1}
+\item DNS-based Authentication of Named Entities (dane)
+\end{list1}
+
+\slide{Tor project anonym webbrowsing}
+
+\hlkimage{19cm}{tor-project.png}
+
+\centerline{\link{https://www.torproject.org/}}
+
+\centerline{Der findes alternativer, men Tor er mest kendt}
+
+\slide{Tor project - how it works 1}
+
+\hlkimage{16cm}{how-tor-works-1.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 2}
+
+\hlkimage{16cm}{how-tor-works-2.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+\slide{Tor project - how it works 3}
+
+\hlkimage{16cm}{how-tor-works-3.png}
+
+\centerline{pictures from \link{https://www.torproject.org/about/overview.html.en}}
+
+
+%\slide{Torbrowser - outdated}
+
+%\hlkimage{18cm}{torbrowser-outdated.png}
+
+%\centerline{\color{red}Hov den mangler opdatering!}
+
+\slide{Torbrowser - anonym browser}
+
+\hlkimage{14cm}{torbrowser-main-window.png}
+
+\centerline{\color{titlecolor} Mere anonym browser - Firefox i forklædning}
+
+
+\slide{Hidden Service web site}
+
+\hlkimage{14cm}{sample-tor-site.png}
+
+\centerline{\color{titlecolor} .onion er Tor adresser - hidden sites}
+
+%\centerline{Den viste side er SecureDrop hos Radio24syv}\\
+\link{http://www.radio24syv.dk/dig-og-radio24syv/securedrop/} - now defunct
+
+
+\slide{Access Control Mechanisms}
+
+\begin{list1}
+\item Access control lists (ACL)
+\item Used for file systems, as described in the book
+\item Also used for firewall and router filters, network ACLs
+\item Capabilities - used for docker in the Linux kernel
+\item Privileges
+\item \emph{Capsicum: practical capabilities for UNIX} Robert N. M. Watson - for next time!
+\item Ring-based access control supported by CPUs for many years\\
+Compare kernel mode vs user mode
+\end{list1}
+
+
+
+
+\slide{Setuid demystified}
+
+\begin{quote}
+Access control in Unix systems is mainly based on user
+IDs, yet the system calls that modify user IDs (uid-setting
+system calls), such as setuid, are poorly designed, insufficiently documented, and widely misunderstood and
+misused. This has caused many security vulnerabilities
+in application programs.
+\end{quote}
+
+\emph{Setuid Demystified} Hao Chen, David Wagner, and Drew Dean,
+Proceedings of the 11th USENIX Security Symposium,
+August 05 - 09, 2002
+
+
+\begin{list2}
+\item Sometimes a user need to modify resources not owned by themselves
+\item Most common example is changing their password in the user database
+\item So while the program \verb+passwd+ runs it has the privileges of the root user, setuid-root program
+\item Previously Unix systems would have several 100s of setuid programs, \\
+today OpenBSD has less than 30 I think, and privilege seperated see OpenSSH
+\item Note also the many differences in Unix variants!
+\end{list2}
+
+\slide{Setuid differences in Unix variants}
+
+\begin{quote}
+{\bf setuid()} Although setuid is the only uid-setting sys-
+tem call standardized in POSIX 1003.1-1988, it is also
+the most confusing one. First, the required permission
+differs among Unix systems. {\bf Both Linux and Solaris}
+require the parameter newuid to be equal to either the
+real uid or saved uid if the effective uid is not zero. As
+a surprising result, setuid(geteuid()), which a programmer might reasonably expect to be always permitted, can fail in some cases, e.g., when ruid=100, euid=200, and
+suid=100. On the other hand, setuid(geteuid()) always
+succeeds in FreeBSD. {\bf Second, the action of setuid differs not only among different operating systems but also
+between privileged and unprivileged processes.} In Solaris and Linux, if the effective uid is zero, a successful
+setuid(newuid) call sets all three user IDs to newuid; oth-
+erwise, it sets only the effective user ID to newuid. On
+the other hand, {\bf in FreeBSD a successful setuid(newuid)
+call sets all three user IDs to newuid} regardless of the
+effective uid.
+\end{quote}
+\emph{Setuid Demystified} Hao Chen, David Wagner, and Drew Dean,
+Proceedings of the 11th USENIX Security Symposium,
+August 05 - 09, 2002
+
+This is reality, and very confusing.
+
+\slide{Setuid example CVE-2018-14665}
+
+The three required commands, Hickey said, are:
+\begin{alltt}
+cd /etc; Xorg -fp
+"Root::16431:0:99999:7:::" -logfile
+shadow  :1;su
+\end{alltt}
+Source: Matthew Hickey, cofounder of security firm Hacker House
+
+\begin{list2}
+\item The X11 Window System is often setuid root
+\item Requires access to screen memory, keyboard, mouse etc.
+\item Not the only problem found in X11 over the years, incomplete list at:\\
+\link{https://www.cvedetails.com/vulnerability-list/vendor_id-88/product_id-147/X.org-X11.html}
+\end{list2}
+
+\slide{Formal verification}
+
+\begin{quote}
+Fortunately, we can note that there is a lot of symmetry present. If we have {\bf a non-root user ID, the behavior of the operating system is essentially independent
+of the actual value of this user ID}, and depends only
+on the fact that it is non-zero. For example, the states
+(ruid, euid, suid) = (100, 100, 100) and (200, 200, 200)
+are isomorphic up to a substitution of the value 100 by
+the value 200, since the OS will behave similarly in both
+cases (e.g., setuid(0) will fail in both cases).
+\end{quote}
+\emph{Setuid Demystified} Hao Chen, David Wagner, and Drew Dean,
+Proceedings of the 11th USENIX Security Symposium,
+August 05 - 09, 2002
+
+\begin{list2}
+\item The Setuid Demystified paper moves on to a formal model,
+but Reality bites again:\\
+\link{https://thehackernews.com/2018/12/linux-user-privilege-policykit.html}
+\item \emph{Red Hat has recommended system administrators not to allow any negative UIDs or UIDs greater than 2147483646 in order to mitigate the issue until the patch is released.}
+\item \verb+\fliptable+ everything is insecure
+\end{list2}
+
+
+
+
+
+
+\slide{Qmail Security }
+
+\begin{quote}
+The qmail security guarantee
+In March 1997, I took the unusual step of publicly offering
+\$500 to the first person to publish a verifiable security hole
+in the latest version of qmail: for example, a way for a user
+to exploit qmail to take over another account. My offer still
+stands. Nobody has found any security holes in qmail. I
+hereby increase the offer to \$1000.
+\end{quote}
+\emph{Some thoughts on security after ten years of qmail 1.0},
+Daniel J. Bernstein
+
+\begin{list2}
+\item Started out of need and security problems in existing Sendmail
+\item Bug bounty early on. Donald Knuth has similar for his books
+\end{list2}
+
+\slide{Qmail Security Paper, some answers}
+
+\begin{list2}
+\item Answer 1: eliminating bugs $->$ Enforcing explicit data flow, Simplifying integer semantics, Avoiding parsing
+\item Answer 2: eliminating code  $->$ Identifying common functions, Reusing network tools, Reusing access controls, Reusing the filesystem
+\item Answer 3: eliminating trusted code $->$ Accurately measuring the TCB, Isolating single-source transformations, Delaying multiple-source merges, Do we really need a small TCB?
+\end{list2}
+
+\slide{Qmail vs Postfix}
+
+\begin{quote}
+I failed to place any of the qmail code into untrusted prisons. Bugs anywhere in the code could have been security holes. The way that qmail survived this failure was by having very few bugs, as discussed in Sections 3 and 4.
+\end{quote}
+\emph{Some thoughts on security after ten years of qmail 1.0},
+Daniel J. Bernstein
+
+\begin{list2}
+\item This is NOT a comlete comparison of Qmail and Postfix \link{http://www.postfix.org/}!
+\item Postfix is comprised of many processes and modules. These modules typically are also chrooted and report back status only through very restricted interfaces
+\item It is also possible to turn off many components, allowing the system run with less code
+\item No Postfix program is setuid, all things are run by a master control process. A small setgid program used for mail submission - writing into the queue directory
+\end{list2}
+
+Source: being a Postfix user and \emph{Secure Coding: Principles and Practices}
+Eftir Mark Graff, Kenneth R. Van Wyk, June 2009
+
+
+\slide{Wedge Reduced-Privilege Compartments}
+
+\begin{quote}
+We present Wedge, a system well suited to the
+splitting of complex, legacy, monolithic applications into
+fine-grained, least-privilege compartments. Wedge consists of two synergistic parts: OS primitives that create
+compartments with default-deny semantics, which force
+the programmer to make compartments’ privileges ex-
+plicit; and Crowbar, a pair of run-time analysis tools
+that assist the programmer in determining which code
+needs which privileges for which memory objects.
+\end{quote}
+
+\emph{Wedge: Splitting Applications into Reduced-Privilege Compartments}
+Andrea Bittau, Petr Marchenko, Mark Handley, Brad Karp
+NSDI'08 Proceedings of the 5th USENIX Symposium on Networked Systems Design and Implementation, San Francisco, California — April 16 - 18, 2008
+
+\slide{Pledge, and Unveil, in OpenBSD}
+
+Compare to Pledge, and Unveil, in OpenBSD
+\begin{list2}
+\item Applies to multiple different sorts of programs, privsep, privdrop
+unpriviledged
+\item Illegal operations crash the program. (SIGABRT)
+\item Pledge: Realistic subsets of POSIX functionality
+\item The pledge system call forces the current process into a restricted-service operating mode\\
+ \link{https://man.openbsd.org/pledge.2}
+\item Ping pledges “stdio inet dns” - only need these, no read,write,create-path need to access file system!
+\item Unveil limit filesystem access. Many very simple: unveil(“/dev”, “rw”)
+\item The first call to unveil removes visibility of the entire filesystem from all other filesystem-related system calls (such as open(2), chmod(2) and rename(2)), except for the specified path and permissions.\\ \link{https://man.openbsd.org/unveil.2}
+\end{list2}
+
+Source: man-pages and\\ \link{https://www.openbsd.org/papers/BeckPledgeUnveilBSDCan2018.pdf}
+
+
+
+
+
+\slide{Hardenize - web sites with testing}
+
+\begin{list1}
+\item Multiple sites provide testing of domains and configurations
+\item \link{https://www.hardenize.com/}
+\item \link{https://internet.nl/}
+\item \link{https://observatory.mozilla.org/} - try www.zencurity.dk which fails
+\item \link{https://www.ssllabs.com/}
+\item \link{https://securityheaders.com/}
+\item \link{https://webbkoll.dataskydd.net/en}
+\item Using the available protocols can make your \emph{cookies} better protected, use the \emph{secure} and \emph{http only} along with HSTS, strict transport etc.
+\end{list1}
+
+Now we will check our own sites, and create plans. Which parts are most interesting to you? Not having your domains abused for spamming or headers and security of your own web sites?
+
+
+\slide{Bonus: OpenBSD OpenSMTPD vulnerabilities}
+
+\begin{quote}
+The OpenBSD project produces a FREE, multi-platform 4.4BSD-based UNIX-like operating system. Our efforts emphasize portability, standardization, correctness, proactive security and integrated cryptography. As an example of the effect OpenBSD has, the popular OpenSSH software comes from OpenBSD.
+
+OpenBSD is freely available from our download sites.
+\end{quote}
+
+\begin{list2}
+\item OpenBSD does a fantastic job in securing systems and software, but some ugly bugs have haunted OpenSMTPD
+\item Bonus: look at 2020 OpenSMTPD vulns
+\item LPE and RCE in OpenSMTPD (CVE-2020-7247)\\{\footnotesize
+\url{https://www.openwall.com/lists/oss-security/2020/01/28/3}\\
+\url{https://blog.qualys.com/laws-of-vulnerabilities/2020/01/29/openbsd-opensmtpd-remote-code-execution-vulnerability-cve-2020-7247}}
+\item Local information disclosure in OpenSMTPD (CVE-2020-8793), and others CVE-2020-8794\\{\footnotesize
+\url{https://www.openwall.com/lists/oss-security/2020/02/24/4}}
+
+\end{list2}
+
+
+\exercise{ex:c-types}
+
+
+\exercise{ex:real-vulns-exim}
+\exercise{ex:email-security}
+
+
+
+\slidenext
+
+\end{document}

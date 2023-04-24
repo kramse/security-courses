@@ -1,0 +1,407 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+
+\externaldocument{system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{2. Overview of Enterprise Attacks}
+{KEA Kompetence Computer Systems Security \the\year}
+
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item
+\end{list2}
+
+  Photo by Thomas Galler on Unsplash
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Get an idea of the MITRE ATT\&CK framework
+\item Do a little hacking using Kali and Metasploit
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Quick port scan intro with Nmap
+\item Run Armitage against Metasploitable, describe attacks\\
+that succeeded in relation to MITRE ATT\&CK framework
+\end{list2}
+\end{list1}
+
+
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item Read ATT\&CK 101 Blog Post\\
+\link{https://medium.com/mitre-attack/att-ck-101-17074d3bc62}
+\item and browse MITRE ATT\&CK web site\\ \link{https://attack.mitre.org/}
+\end{list1}
+
+
+\slide{Vulnerabilities - CVE}
+
+\begin{list1}
+\item Common Vulnerabilities and Exposures (CVE):
+  \begin{list2}
+  \item classification
+  \item identification
+  \end{list2}
+\item When discovered each vuln gets a CVE ID
+\item CVE maintained by MITRE - not-for-profit
+org for research and development in the USA.
+\item National Vulnerability Database search for CVE.
+\item Sources: \link{http://cve.mitre.org/} og \link{http://nvd.nist.gov}
+\item also checkout OWASP Top-10 \link{http://www.owasp.org/}
+\end{list1}
+
+\slide{Sample vulnerabilities}
+
+\begin{list1}
+\item \small CVE-2000-0884\\
+IIS 4.0 and 5.0 allows remote attackers to read documents outside of
+the web root, and possibly execute arbitrary commands, via malformed
+URLs that contain UNICODE encoded characters, aka the "Web Server
+Folder Traversal" vulnerability.
+
+\item \small CVE-2002-1182\\
+IIS 5.0 and 5.1 allows remote attackers to cause a denial of service
+(crash) via malformed WebDAV requests that cause a large amount of
+memory to be assigned.
+
+\item Source:\\
+\link{http://cve.mitre.org/ - CVE}
+\end{list1}
+
+\centerline{And updates from vendors reference these too! A closed loop}
+
+\slide{CWE Common Weakness Enumeration}
+
+\hlkimage{18cm}{cwe-mitre-org.png}
+\link{http://cwe.mitre.org/}
+
+\slide{CWE/SANS Monster mitigations}
+
+\hlkimage{13cm}{cwe-monster-mitigations.png}
+
+Source:
+\link{http://cwe.mitre.org/top25/index.html}
+
+
+\slide{Hacker tools}
+
+\begin{list1}
+\item \emph{Improving the Security of Your Site by Breaking Into it}\\ by
+Dan Farmer and Wietse Venema in 1993
+\item Later in 1995 release the software SATAN\\
+\emph{Security Administrator Tool for Analyzing Networks}
+\item Caused some commotion, panic and discussions, every script kiddie can hack, the internet will melt down!
+\vskip 5mm
+\begin{quote}
+We realize that SATAN is a two-edged sword -- like
+many tools, it can be used for good and for evil
+purposes. We also realize that intruders (including
+wannabees) have much more capable (read intrusive)
+tools than offered with SATAN.
+\end{quote}
+\end{list1}
+
+\vskip 1cmlabel
+Source:
+\link{http://www.fish2.com/security/admin-guide-to-cracking.html}
+
+
+\slide{Use hacker tools!}
+
+\begin{list1}
+\item Port scan can reveal holes in your defense
+\item Web testing tools can crawl through your site and find problems
+\item Pentesting is a verification and proactively finding problems
+\item Its not a silverbullet and mostly find known problems in existing systems
+\item Combined with honeypots they may allow better security
+\end{list1}
+
+
+\slide{Agreements for testing networks}
+
+\begin{quote}\small
+Danish Criminal Code\\
+Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem.
+\end{quote}
+
+Hacking can result in:
+\begin{list2}
+\item Getting your devices confiscated by the police
+\item Paying damages to persons or businesses
+\item If older getting a fine and a record -- even jail perhaps
+\item Getting a criminal record, making it hard to travel to some countries and working in security
+\item Fear of terror has increased the focus -- so dont step over bounds!
+\end{list2}
+
+Asking for permission and getting an OK before doing invasive tests, always!
+
+\slide{ISC2 code of ethics}
+
+\hlkimage{23cm}{isc2-code-of-ethics.png}
+
+CISSP certified people sign papers to this extent.\\
+\link{https://www.isc2.org/ethics/default.aspx}
+
+
+\slide{What happens today?}
+
+\begin{list1}
+\item Think like a blue team member find vulnerable systems
+\item Get basic tools running
+\begin{list2}
+\item ping sweep, port scan
+\item OS detection -- TCP/IP or banner grab
+\item Service scan -- rpcinfo, netbios, ...
+\item telnet/netcat interact with services
+\end{list2}
+\item Exploit: Metasploit, Nikto, exploit programs
+\item Cleanup/hardening not shown but in practice:
+\begin{list2}
+\item Make a report
+\item Change and improve systems
+\item Follow up on critical vulnerabilities
+\item Change configuration, architecture etc.
+\end{list2}
+\item Remember to document process, need to show others what you do
+\end{list1}
+
+
+
+
+\slide{Trinity breaking in}
+
+\hlkimage{14cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+Very realistic:\\
+\link{https://nmap.org/movies/}\\
+\link{https://youtu.be/51lGCTgqE_w}
+
+
+\slide{Kali Linux the pentest toolbox}
+
+\hlkimage{14cm}{kali-linux.png}
+
+\begin{list1}
+\item  Kali \link{http://www.kali.org/}
+\item 100.000s of videos on youtube alone, searching for kali and \$TOOL
+\item Also versions for Raspberry Pi, mobile and other small computers
+\end{list1}
+
+\slide{Really do Nmap your world}
+
+\hlkimage{8cm}{nmap-zenmap.png}
+
+\begin{list2}
+\item Nmap is a port scanner, but does more
+\item Finding your own infrastructure available from the guest network?
+\item See your printers having all the protocols enabled AND a wireless?
+\end{list2}
+
+
+\slide{Basal Portscanning}
+
+\begin{list1}
+\item Hvad er portscanning
+\item Afprøvning af alle porte fra 0/1 og op til 65535
+\item Målet er at identificere åbne porte -- sårbare services
+\item Typisk TCP og UDP scanning
+\item TCP scanning er ofte mere pålidelig end UDP scanning
+\item TCP handshake er nemmere at identificere, skal svare SYN
+\item UDP applikationer svarer forskelligt -- hvis overhovedet\\
+Svarer på rigtige forespørgsler, uden firewall svares ICMP på lukkede porte
+\item Brug GUI programmet Zenmap mens i lærer Nmap at kende
+\end{list1}
+
+
+\slide{TCP three-way handshake}
+
+\hlkimage{5cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item Tidligere loggede systemer kun når der var etableret en fuld TCP
+  forbindelse\\
+  -- dette kan/kunne udnyttes til \emph{stealth}-scans
+\item Hvis en maskine modtager mange SYN pakker kan dette fylde
+  tabellen over connections op -- og derved afholde nye forbindelser
+  fra at blive oprette -- {\bfseries SYN-flooding}
+\end{list2}
+
+
+\slide{Nmap port sweep efter webservere}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries  nmap -p80,443 172.29.0.0/24}
+
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:31 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00016s latency).
+PORT    STATE    SERVICE
+{\color{darkgreen}80/tcp  open     http}
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00012s latency).
+PORT    STATE  SERVICE
+{\color{darkgreen}80/tcp  open   http}
+443/tcp closed https
+MAC Address: 00:0C:29:46:22:FB (VMware)
+
+\end{alltt}
+
+\slide{Nmap port sweep efter SNMP port 161/UDP}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries nmap -sU -p 161 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:30 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00015s latency).
+PORT    STATE         SERVICE
+{\color{darkgreen}161/udp open|filtered snmp}
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00011s latency).
+PORT    STATE  SERVICE
+{\bf{161/udp closed snmp}}
+MAC Address: 00:0C:29:46:22:FB (VMware)
+...
+Nmap done: 256 IP addresses (5 hosts up) scanned in 2.18 seconds
+\end{alltt}
+
+\slide{Nmap Advanced OS detection}
+\begin{alltt}\footnotesize
+root@cornerstone:~#{\bfseries nmap -A -p80,443 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:37 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00027s latency).
+PORT    STATE    SERVICE VERSION
+80/tcp  open     http    Apache httpd 2.2.26 ((Unix) DAV/2 mod_ssl/2.2.26 OpenSSL/0.9.8zc)
+|_http-title: Site doesn't have a title (text/html).
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+Device type: media device|general purpose|phone
+Running: Apple iOS 6.X|4.X|5.X, Apple Mac OS X 10.7.X|10.9.X|10.8.X
+OS details: Apple iOS 6.1.3, Apple Mac OS X 10.7.0 (Lion) - 10.9.2 (Mavericks)
+or iOS 4.1 - 7.1 (Darwin 10.0.0 - 14.0.0), Apple Mac OS X 10.8 - 10.8.3 (Mountain Lion)
+or iOS 5.1.1 - 6.1.5 (Darwin 12.0.0 - 13.0.0)
+OS and Service detection performed.
+Please report any incorrect results at http://nmap.org/submit/
+\end{alltt}
+
+\begin{list2}
+\item Lavniveau måde at identificere operativsystemer på, prøv også
+  \verb+nmap -A+
+\item Send pakker med \emph{anderledes} indhold, observer svar
+\item En tidlig og detaljeret reference: \emph{ICMP Usage In Scanning} Version 3.0,
+  Ofir Arkin, 2001 %\link{https://web.archive.org/web/20050210093427/http://www.sys-security.com/html/projects/icmp.html} % Original side er død
+\end{list2}
+
+
+\slide{Heartbleed CVE-2014-0160}
+
+\hlkimage{19cm}{heartbleed-com.png}
+
+Source: \link{http://heartbleed.com/}
+
+
+
+\slide{Scan for Heartbleed and SSLv2/SSLv3}
+
+\hlkimage{6cm}{nmap-sslv2.png}
+
+\begin{list1}
+\item \verb+nmap -p 443 --script ssl-heartbleed <target>+\\
+\link{https://nmap.org/nsedoc/scripts/ssl-heartbleed.html}
+\item \verb+masscan 0.0.0.0/0 -p0-65535  --heartbleed+\\
+\link{https://github.com/robertdavidgraham/masscan}
+\end{list1}
+
+\centerline{Almost every new vulnerability will have Nmap recipe}
+
+
+\exercise{ex:nmap-pingsweep}
+
+\exercise{ex:nmap-synscan}
+
+% Optional
+\exercise{ex:nmap-os}
+
+\exercise{ex:nmap-service}
+
+\exercise{ex:nmap-strategy}
+
+\exercise{ex:nmap-html}
+
+\exercise{ex:nmap-nse}
+
+
+\slide{Local vs. remote exploits}
+
+\begin{list1}
+\item {\bfseries Local vs. remote}
+angiver om et exploit er rettet mod
+en sårbarhed lokalt på maskinen, eksempelvis
+opnå højere privilegier, eller beregnet
+til at udnytter sårbarheder over netværk
+\item {\bfseries Remote root exploit}
+- den type man frygter mest, idet
+det er et exploit program der når det afvikles giver
+angriberen fuld kontrol, root user er administrator
+på Unix, over netværket.
+\item {\bfseries Zero-day exploits} dem som ikke offentliggøres -- dem
+  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
+  til dem før de offentliggøres og ofte er der umiddelbart ingen
+  rettelser til de sårbarheder
+\end{list1}
+
+
+
+\slide{Metasploit and Armitage Still rocking the internet}
+
+
+\hlkimage{14cm}{metasploit-about.png}
+
+\begin{list1}
+
+\item \link{http://www.metasploit.com/}
+\item Armitage GUI fast and easy hacking for Metasploit\\
+\link{http://www.fastandeasyhacking.com/}
+\link{http://www.offensive-security.com/metasploit-unleashed/Main_Page}
+\item Bog: Metasploit: The Penetration Tester's Guide, No Starch Press\\
+ISBN-10: 159327288X - ældre bog, kan undværes
+\end{list1}
+
+\slide{Demo: Metasploit Armitage }
+
+\hlkimage{10cm}{armitage-overview.png}
+
+
+
+\slide{Get an idea of the MITRE ATT\&CK framework}
+
+\hlkimage{14cm}{mitre-attack.png}
+
+\link{https://attack.mitre.org/}
+
+
+\exercise{ex:armitage-basic}
+
+\slidenext
+
+\end{document}

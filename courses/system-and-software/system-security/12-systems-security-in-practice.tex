@@ -1,0 +1,402 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+
+\externaldocument{system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{12. System Security in Practice}
+{KEA Kompetence Computer Systems Security \the\year}
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Network security
+\item Infrastructure security
+\item Implement a small scale enterprise network
+\end{list2}
+\item Exercises -- System Security in Practice
+\begin{list2}
+\item Configure VLAN
+\item Talk more about centralized logging
+\item Configure SSH keys for more secure access
+\end{list2}
+\end{list1}
+
+
+\slide{Reading Summary}
+
+\begin{list1}
+\item DSH chapter 21:
+\end{list1}
+
+Note: Matt Bishop refers to older tools, which I cannot recommend. TCP wrappers, Apache web server, r-protocols rlogin etc. Dont use those -- we have better and more modern alternatives!
+
+\slide{Goals for today: }
+
+Todays goals:
+\begin{list2}
+\item System security in a larger context
+\item Talk about infrastructure security as a whole -- a holistic view
+\item Try using our knowledge in a made up setting
+\end{list2}
+
+
+
+\slide{Network Security}
+
+\begin{list2}
+\item Goals of the Drib's security policy
+\item Data related to company plans is to be kept secret. In particular sensitive corporate data. available only to those who need to know.
+\item When a customer provides data to the Drib as part of a purchase, the data and all information about the customer, are to be available only to those who fill the order. Company analysts may obtain statistics about a number of orders for planning purposes.
+\item Releasing sensitive data requires the consent of the company's officials and lawyers.
+\end{list2}
+
+Shortened a bit from the book.
+
+\slide{Steps done by the book}
+
+\begin{list1}
+\item Describe the organization - three main internal organizations: CSG, DG, CG
+\item Define data classes:
+\begin{list2}
+\item Public data,
+\item Development data for existing products
+\item Development data for future products
+\item Corporate data
+\item Customer data
+\end{list2}
+\item User classes: Outsiders, Developers, Corporation executives, Employees
+\item Rules for data and user access to data
+\end{list1}
+
+
+\slide{The classes of users, data and their allowed accesses}
+
+The classes of users, data and their allowed accesses
+
+\begin{table}[]
+\begin{tabular}{lcccc}
+  & {\bf Outsiders} & {\bf Developers} & {\bf Corporation Executives} & {\bf Employees }\\
+Public data  & Read & Read & Read &  Read\\
+Development data existing products &  & Read & Read &  \\
+Development data for future products &  & Read, Write & Read &  \\
+Corporate data &  &  & Read, Write &  \\
+Customer data & Write &  & Read & Read, Write
+\end{tabular}
+\end{table}
+
+This is an access control matrix combining elements of confidentiality and integrity, compare to our models from earlier chapters.
+
+Book defines transformation rules how specific classes of people can move data from one class to another.
+
+Corporate officers want the systems to be available for 99\% of the time, leaving the last 1\% for planned maintenance and unexpected downtimes.
+
+\slide{Network Organization -- the DMZ }
+
+\hlkimage{13cm}{firma-netvaerk.pdf}
+\begin{list1}
+\item {\bf Definition 28-1} The \emph{DMZ} is a portion of the network that separates a purely internal network from an external network.
+\item The drawing in the book was how people did it before year 2000 \smiley
+\end{list1}
+
+\slide{Network separation}
+
+\hlkimage{13cm}{firma-netvaerk-wlan.pdf}
+
+
+\begin{list1}
+\item Often even more DMZ like networks needed: guests, partners, support from vendors, Voice over IP systems etc.
+\item {\bf BTW NAT is NOT a security feature}
+\end{list1}
+
+
+\slide{Network Servers}
+
+\begin{list1}
+\item Mail servers , local mailserver gets internet mail through 3rd party - does filtering, anti-spam etc. OR outsourced email at some vendor
+\item Web serves - most companies with basic web pages outsource these to some hosting company
+\item Companies which provide service over internet has a whole infrastructure separated from their local network, most likely at hosting provider or cloud provider
+\item DMZ DNS server, split DNS etc. Dont run authoritative DNS yourself, not worth the time. Do run local resolvers for your clients. DNS resolver can also be configured with block lists, blocked Top-level Domains etc.
+\item DMZ log server - do run log servers, or at least local forwarding proxies that can collect data even when network is down and forward
+\item Above is how I see this most often -- in Denmark at least
+\end{list1}
+
+
+\slide{User Security}
+
+\begin{list1}
+\item User accounts and named users are required for good security
+\item Less shared user accounts, more accountability
+\item System accounts are needed though
+\end{list1}
+
+
+\slide{January 2013: Github Public passwords?}
+
+
+\hlkimage{15cm}{github-credentials.png}
+
+ Sources:\\
+{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
+\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
+\link{http://www.leakedin.com/}\\
+\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
+}
+
+\vskip 5mm
+\centerline{Use different passwords for different sites, yes - every site!}
+
+\slide{Simple Network Management Protocol}
+
+\begin{list1}
+\item SNMP er en protokol der supporteres af de fleste professionelle
+  netværksenheder, såsom switche, routere
+\item hosts - skal slås til men følger som regel med
+\item SNMP bruges til:
+  \begin{list2}
+    \item \emph{network management}
+    \item statistik
+    \item rapportering af fejl - SNMP traps
+  \end{list2}
+\item {\bfseries sikkerheden baseres på community strings der sendes
+    som klartekst ...}
+\item det er nemmere at brute-force en community string end en
+  brugerid/kodeord kombination
+\end{list1}
+
+\slide{Are passwords dead?}
+
+\hlkimage{5cm}{rip-passwords.pdf}
+
+Can we stop using passwords?
+
+Alec Muffett on Passwords has a long list of password related information, from the author of crack \link{http://en.wikipedia.org/wiki/Crack_(password_software)}
+
+\link{http://dropsafe.crypticide.com/muffett-passwords}
+
+\link{https://en.wikipedia.org/wiki/Alec_Muffett}
+
+
+
+\slide{Cain og Abel}
+
+%\hlkimage{10cm}{cain_brute_attack.jpg}
+\hlkimage{14cm}{cain-win.png}
+
+\begin{list1}
+\item Cain og Abel \emph{anbefales til demoer}  \link{http://www.oxid.it}
+\item Bruger selv John the Ripper eller Hashcat hvis jeg skal lave brute forcing
+\end{list1}
+
+\slide{John the ripper}
+
+\begin{quote}
+John the Ripper is a fast password cracker, currently available for
+many flavors of Unix (11 are officially supported, not counting
+different architectures), Windows, DOS, BeOS, and OpenVMS. Its primary
+purpose is to detect weak Unix passwords. Besides several crypt(3)
+password hash types most commonly found on various Unix flavors,
+supported out of the box are Kerberos AFS and Windows NT/2000/XP/2003
+LM hashes, plus several more with contributed patches.
+\end{quote}
+
+\begin{list1}
+\item UNIX passwords kan knækkes med alec Muffets kendte Crack program
+  eller eksempelvis John The Ripper \link{http://www.openwall.com/john/}
+\end{list1}
+
+
+
+\slide{Cracking passwords}
+
+\begin{list2}
+\item Hashcat is the world's fastest CPU-based password recovery tool.
+\item oclHashcat-plus is a GPGPU-based multi-hash cracker using a brute-force attack (implemented as mask attack), combinator attack, dictionary attack, hybrid attack, mask attack, and rule-based attack.
+\item oclHashcat-lite is a GPGPU cracker that is optimized for cracking performance. Therefore, it is limited to only doing single-hash cracking using Markov attack, Brute-Force attack and Mask attack.
+\item John the Ripper password cracker old skool men stadig nyttig
+\end{list2}
+
+Source:\\
+\link{http://hashcat.net/wiki/}\\
+\link{http://www.openwall.com/john/}
+
+
+\slide{Parallella John}
+
+\hlkimage{20cm}{parallella-john.png}
+
+\link{https://twitter.com/solardiz/status/492037995080712192}
+
+Expect specialized hardware to be used by NSA, GCHQ, and perhaps even organised crime
+
+\slide{Stacking Parallella boards}
+\hlkimage{13cm}{4BoardStack.jpg}
+
+\link{http://www.parallella.org/power-supply/}
+
+
+\slide{Passwords vælges ikke tilfældigt}
+
+\hlkimage{20cm}{50-most-used-passwords.png}
+
+Source:
+\link{https://wpengine.com/unmasked/}
+
+
+
+
+\slide{Pass the hash}
+
+Lots of tools in pentesting pass the hash, reuse existing credentials and tokens
+\emph{Still Passing the Hash 15 Years Later}\\
+\link{http://passing-the-hash.blogspot.dk/2013/04/pth-toolkit-for-kali-interim-status.html}
+
+\begin{quote}
+If a domain is built using only modern Windows OSs and COTS products (which know how to operate within these new constraints), and configured correctly with no shortcuts taken, then these protections represent a big step forward.
+\end{quote}
+
+Source:\\
+{\small\link{http://www.harmj0y.net/blog/penetesting/pass-the-hash-is-dead-long-live-pass-the-hash/}
+\link{https://samsclass.info/lulz/pth-8.1.htm}}
+
+
+\slide{Produktionsmodning af miljøer}
+
+\begin{list1}
+\item Tænk på det miljø som servere og services skal udsættes for
+\item Sørg for hærdning og tænk generel sikring:
+  \begin{list2}
+  \item Opdateret software - ingen kendte sikkerhedshuller eller
+  sårbarheder
+\item Fjern {\bfseries single points of failure} - redundant strøm, ekstra enheder, to DNS servere fremfor en
+\item Adskilte servere - interne og eksterne til forskellige formål\\
+Eksempelvis den interne postserver hvor alle e-mail opbevares og en
+DMZ-postserver til ekstern post
+\item Lav filtre på netværket, eller på data - firewalls og proxy
+  funktioner
+\item Begræns adgangen til at læse information
+\item Begræns adgangen til at skrive information - eksempelvis databaser
+\item Brug {\bfseries least privileges} - sørg for at programmer og brugere
+  kun har de nødvendige rettigheder til at kunne udføre opgaver
+\item Følg med på områderne der har relevans for virksomheden og
+  \emph{jeres} installation
+  \end{list2}
+  \item Meld jer på security mailinglister for de produkter I benytter, også open source
+\end{list1}
+
+
+\slide{Change management}
+
+\begin{list1}
+\item Er der tilstrækkeligt med fokus på software i produktion
+\item Kan en vilkårlig server nemt reetableres
+\item Foretages rettelser direkte på produktionssystemer
+\item Er der fall-back plan
+\item Burde være god systemadministrator praksis
+\end{list1}
+
+
+
+\slide{Fundamentet skal være iorden}
+
+\begin{list1}
+\item Sørg for at den infrastruktur som I bygger på er sikker:
+\begin{list2}
+ \item redundans
+       \item opdateret
+        \item dokumenteret
+        \item nem at vedligeholde
+\end{list2}
+
+\item  Husk tilgængelighed er også en sikkerhedsparameter
+\end{list1}
+\slide{Fokus \the\year}
+
+\begin{list2}
+\item Brugerstyring
+\item Asset management
+\item Laptop sikkerhed
+\item VPN alle steder
+\item Penetration testing
+\item Firewalls og segmentering
+\item TLS og VPN indstillinger
+\item DNS og email
+\item Syslog og monitorering
+\item Incident Response og reaktion
+\end{list2}
+
+Check eventuelt IT sikkerhedsupdate 2019 præsentationen:\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/presentations/misc/it-sikkerhedsupdate-2019}}
+
+\slide{Design a robust network Isolation and segmentation}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+\slide{Basic Network Security Pattern Isolate in VLANs}
+
+\hlkimage{10cm}{images/demo-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter trafik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\item Brug port security til at sikre basale services DHCP, Spanning Tree osv.
+\end{list1}
+
+
+\slide{Our Networks}
+
+We will now design a network, using a sample switch TP-Link T1500G-10PS
+
+\begin{list1}
+\item Consider a regular business network, small scale
+\end{list1}
+\begin{list2}
+\item A switch TP-Link T1500G-10PS L2 features - default config
+\item VLAN compatible virtualization network
+\item Linux and Windows servers
+\end{list2}
+
+
+\slide{Exercises -- security in practice}
+
+\begin{list1}
+\item Work on our model network, each team has a server and an attacker - reduce attack surface on the server by configuration.
+\begin{list2}
+\item Configure VLAN on switch
+\item Enable central logging
+\item Configure SSH keys for more secure access
+\end{list2}
+\item We will research using the emulator from TP-Link
+\item \link{https://emulator.tp-link.com/Emulator_T1500G-10PS(UN)2.0/index.html}
+\item Remember these are options available even in a cheap switch
+\end{list1}
+
+Use the guides from:\\
+{\small \link{https://www.tp-link.com/uk/support/download/t1500g-10ps/\#Related-Documents}}
+
+
+\exercise{ex:switch-config-vlan}
+
+\exercise{ex:config-ssh-keys}
+
+
+\slidenext
+
+\end{document}

@@ -913,6 +913,120 @@ Some scripts also require, or allow arguments into them:
 
 
 
+
+\chapter{\faExclamationTriangle\ Configure a Database - 20 min}
+\label{ex:mariadb-createdb}
+
+
+{\bf Objective:}\\
+Try creating a database and add a few users. We will use MariaDB as an example. You can read more about MariaDB at \link{https://mariadb.org/}
+
+
+{\bf Purpose:}\\
+Show that creating a database is very easy, and adding a new user cost literally nothing.
+
+So why aren't more developers concerned with security, least privilege, creating read-only users etc.
+
+{\bf Suggested method:}\\
+Get an overview of the LibreNMS install instructions located at:\\
+\link{https://docs.librenms.org/Installation/Install-LibreNMS/}
+
+We are running Debian 11, and since we only need to play with the database, only install that part:
+
+\begin{alltt}
+apt install mariadb-client mariadb-server
+\end{alltt}
+
+and follow only the instructions in \emph{Configure MariaDB} -- the ones with Debian 11!
+
+Repeated here for completeness, but \verb+vi+ changed into \emph{edit}.
+
+{\bf Configure MariaDB -- Debian 11}
+
+Edit \verb+/etc/mysql/mariadb.conf.d/50-server.cnf+
+
+Within the [mysqld] section add:
+
+\begin{alltt}
+innodb_file_per_table=1
+lower_case_table_names=0
+\end{alltt}
+
+Start the database
+\begin{alltt}
+systemctl enable mariadb
+systemctl restart mariadb
+\end{alltt}
+
+As root run the database client program \verb+mysql+
+\begin{alltt}
+mysql -u root
+\end{alltt}
+
+NOTE: Change the 'password' below to something secure.
+
+Add a user for the system:
+\begin{alltt}
+CREATE DATABASE librenms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'librenms'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON librenms.* TO 'librenms'@'localhost';
+FLUSH PRIVILEGES;
+exit
+\end{alltt}
+
+Add another user, with read only:
+\begin{alltt}
+CREATE USER 'my_readonly'@'localhost' IDENTIFIED BY 'secret_password';
+GRANT SELECT ON librenms.* TO 'my_readonly'@'localhost';
+FLUSH PRIVILEGES;
+\end{alltt}
+
+Such a user would be able to see into the database, fetch statistics etc.
+
+{\bf Solution:}\\
+When you have a running database with two users, you are done.
+
+
+{\bf Discussion:}\\
+Lots of systems need \emph{access to data}, but if noone ask -- what permissions, we often default to read AND write. We should default to read-only.
+
+
+
+\chapter{\faExclamationTriangle\ RBAC Access permissions on GitHub 30-45min}
+\label{ex:github-perms}
+
+{\bf Objective:}\\
+See actual real life example of permissions.
+
+Note: This exercise requires a GitHub account, so make sure your group has one. Maybe do groups of 3-4 for more discussion.
+
+{\bf Purpose:}\\
+GitHub is a very popular code sharing site.
+
+{\bf Suggested method:}\\
+Go to GitHub web page:\\
+\link{https://help.github.com/en/articles/access-permissions-on-github}
+
+Follow links to other pages, like:\\
+\link{https://help.github.com/en/articles/permission-levels-for-an-organization}
+
+
+{\bf Hints:}\\
+Some might already have an account on GitHub - maybe work through adding a repository and adding collaborators.
+
+If you have an organisation, even better.
+
+{\bf Solution:}\\
+When you have discussed GitHub permissions and played with a repository you are done.
+
+{\bf Discussion:}\\
+The internet is decentralized, but recent years see more centralization - GitHub, DNS Google DNS, Cloudflare.
+
+What are some problems in this?
+
+
+
+
 \chapter{\faInfoCircle\ SELinux Introduction up to 60min}
 \label{ex:se-linux-intro}
 
@@ -1123,120 +1237,6 @@ When you have seen at least two different policies you are done.
 
 {\bf Discussion:}\\
 How do you both write AND create awareness about a policy?
-
-
-
-\chapter{\faExclamationTriangle\ Configure a Database - 20 min}
-\label{ex:mariadb-createdb}
-
-
-{\bf Objective:}\\
-Try creating a database and add a few users. We will use MariaDB as an example. You can read more about MariaDB at \link{https://mariadb.org/}
-
-
-{\bf Purpose:}\\
-Show that creating a database is very easy, and adding a new user cost literally nothing.
-
-So why aren't more developers concerned with security, least privilege, creating read-only users etc.
-
-{\bf Suggested method:}\\
-Get an overview of the LibreNMS install instructions located at:\\
-\link{https://docs.librenms.org/Installation/Install-LibreNMS/}
-
-We are running Debian 11, and since we only need to play with the database, only install that part:
-
-\begin{alltt}
-apt install mariadb-client mariadb-server
-\end{alltt}
-
-and follow only the instructions in \emph{Configure MariaDB} -- the ones with Debian 11!
-
-Repeated here for completeness, but \verb+vi+ changed into \emph{edit}.
-
-{\bf Configure MariaDB -- Debian 11}
-
-Edit \verb+/etc/mysql/mariadb.conf.d/50-server.cnf+
-
-Within the [mysqld] section add:
-
-\begin{alltt}
-innodb_file_per_table=1
-lower_case_table_names=0
-\end{alltt}
-
-Start the database
-\begin{alltt}
-systemctl enable mariadb
-systemctl restart mariadb
-\end{alltt}
-
-As root run the database client program \verb+mysql+
-\begin{alltt}
-mysql -u root
-\end{alltt}
-
-NOTE: Change the 'password' below to something secure.
-
-Add a user for the system:
-\begin{alltt}
-CREATE DATABASE librenms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'librenms'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON librenms.* TO 'librenms'@'localhost';
-FLUSH PRIVILEGES;
-exit
-\end{alltt}
-
-Add another user, with read only:
-\begin{alltt}
-CREATE USER 'my_readonly'@'localhost' IDENTIFIED BY 'secret_password';
-GRANT SELECT ON librenms.* TO 'my_readonly'@'localhost';
-FLUSH PRIVILEGES;
-\end{alltt}
-
-Such a user would be able to see into the database, fetch statistics etc.
-
-{\bf Solution:}\\
-When you have a running database with two users, you are done.
-
-
-{\bf Discussion:}\\
-Lots of systems need \emph{access to data}, but if noone ask -- what permissions, we often default to read AND write. We should default to read-only.
-
-
-
-\chapter{\faExclamationTriangle\ RBAC Access permissions on GitHub 30-45min}
-\label{ex:github-perms}
-
-{\bf Objective:}\\
-See actual real life example of permissions.
-
-Note: This exercise requires a GitHub account, so make sure your group has one. Maybe do groups of 3-4 for more discussion.
-
-{\bf Purpose:}\\
-GitHub is a very popular code sharing site.
-
-{\bf Suggested method:}\\
-Go to GitHub web page:\\
-\link{https://help.github.com/en/articles/access-permissions-on-github}
-
-Follow links to other pages, like:\\
-\link{https://help.github.com/en/articles/permission-levels-for-an-organization}
-
-
-{\bf Hints:}\\
-Some might already have an account on GitHub - maybe work through adding a repository and adding collaborators.
-
-If you have an organisation, even better.
-
-{\bf Solution:}\\
-When you have discussed GitHub permissions and played with a repository you are done.
-
-{\bf Discussion:}\\
-The internet is decentralized, but recent years see more centralization - GitHub, DNS Google DNS, Cloudflare.
-
-What are some problems in this?
-
-
 
 
 

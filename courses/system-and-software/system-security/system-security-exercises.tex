@@ -1027,8 +1027,63 @@ What are some problems in this?
 
 
 
+\chapter{\faInfoCircle\ Example AUPs up to 30min}
+\label{ex:example-AUP}
+
+{\bf Objective:}\\
+See real world high level policies
+
+{\bf Purpose:}\\
+When writing your first policy it may be hard to know what to include. Starting from an example is often easier.
+
+{\bf Suggested method:}\\
+Find your AUP for the ISPs we use, you use, your company uses.
+
+{\bf Hints:}\\
+Policies for different environments are often very different in scope and goals.
+
+Book mentions military and commercial, but an ISP, University and a commercial enterprise have very different methods and requirements.
+
+Example, how do you handle BYOD Bring your own devices, University you expect students to bring them, in a secure enterprise only company devices may be allowed.
+
+{\bf Solution:}\\
+When you have seen at least two different policies you are done.
+
+{\bf Discussion:}\\
+How do you both write AND create awareness about a policy?
+
+
+
+
+\chapter{\faExclamationTriangle\ Example Password policies on Linux up to 30min}
+\label{ex:mlsh-pwquality}
+
+{\bf Objective:}\\
+See an example of how to implement password policy on Linux
+{\bf Purpose:}\\
+
+{\bf Suggested method:}\\
+Follow the book example starting at page 63, \emph{Installing and configuring pwquality}
+
+You don't have to install this software, but read the example.
+
+{\bf Hints:}\\
+This is not the only way, and other operating systems might have this built-in.
+
+
+{\bf Solution:}\\
+When you have seen this example, you are done. I recommend reading the next examples to about expiration and brute-force too.
+
+{\bf Discussion:}\\
+Are there cases where password and account expiration still makes sense?
+
+Sure, consultants hired for a shorter period of time should definitely have accounts that expire.
+
 \chapter{\faInfoCircle\ SELinux Introduction up to 60min}
 \label{ex:se-linux-intro}
+
+\hlkimage{5cm}{315px-SELinux.png}
+
 
 {\bf Objective:}\\
 Check out the SELinux system\\
@@ -1212,32 +1267,6 @@ It is easy to have multiple hours disappear when working with SELinux.
 Yes, the root user can disable the SELinux protection :-D
 
 I had Firefox crash at least once during this exercise, so beware - fancy and bigger applications may crash when using this!
-
-\chapter{\faInfoCircle\ Example AUPs up to 30min}
-\label{ex:example-AUP}
-
-{\bf Objective:}\\
-See real world high level policies
-
-{\bf Purpose:}\\
-When writing your first policy it may be hard to know what to include. Starting from an example is often easier.
-
-{\bf Suggested method:}\\
-Find your AUP for the ISPs we use, you use, your company uses.
-
-{\bf Hints:}\\
-Policies for different environments are often very different in scope and goals.
-
-Book mentions military and commercial, but an ISP, University and a commercial enterprise have very different methods and requirements.
-
-Example, how do you handle BYOD Bring your own devices, University you expect students to bring them, in a secure enterprise only company devices may be allowed.
-
-{\bf Solution:}\\
-When you have seen at least two different policies you are done.
-
-{\bf Discussion:}\\
-How do you both write AND create awareness about a policy?
-
 
 
 \chapter{\faExclamationTriangle\ SSL/TLS scanners 15min}
@@ -1485,6 +1514,108 @@ A better tool might be hashcat, found at:\\
 This tool can be used with GPUs Graphical Processing Units / graphic cards for more speed.
 
 Still I find John is often sufficient to crack bad passwords, and also for verification purposes it works great.
+
+
+\chapter{\faInfoCircle\ Configure SSH keys for more secure access}
+\label{ex:config-ssh-keys}
+
+{\bf Objective:}\\
+See how SSH keys can be used.
+
+{\bf Purpose:}\\
+Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
+
+Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
+
+{\bf Suggested method:}\\
+
+\begin{enumerate}
+\item First generate a SSH key, using \verb+ssh-keygen+
+\item Copy the public key onto a system, using \verb+ssh-copy-id+
+\item Test using the ssh command
+\end{enumerate}
+
+Generate key:
+\begin{alltt}
+\$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/hlk/.ssh/id_rsa.
+Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
+The key's randomart image is:
++---[RSA 2048]----+
+|      .          |
+|   . o           |
+|   .=            |
+| ..=.      o .   |
+|o.*o. . S o +    |
+|oB==+o   . o     |
+|+*B=.o.   o .    |
+|=++.o +. o o     |
+|oEo=oo .ooo      |
++----[SHA256]-----+
+\end{alltt}
+
+Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
+\begin{alltt}
+\$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\vskip 5mm
+
+\centerline{This is the best tool for the job!}
+
+The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
+
+{\bf Hints:}\\
+You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
+
+You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
+
+\begin{alltt}
+\$ ssh-add .ssh/kramse
+// Passphrase here
+Identity added: .ssh/kramse (.ssh/kramse)
+\$ ssh-add -l
+4096 SHA256:YsR+HhK7u7045ZL8ZDZnlgEnrv+RQG4eJI5oBJAEacs .ssh/kramse (RSA)
+\end{alltt}
+
+
+{\bf Solution:}\\
+When you can login using key you are done.
+
+{\bf Discussion:}\\
+We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
+
+You should remove the possibility for root logins and logins using password, when keys work!
+
+This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
+\begin{alltt}
+#PermitRootLogin prohibit-password
+PermitRootLogin no
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
+\end{alltt}
+
 
 \chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}
 \label{ex:priv-esc-cron}
@@ -2610,106 +2741,6 @@ When your Debian server can reach the course network 10.0.45.0/24 you are done.
 VLAN separation using the IEEE 802.1q standard is a common method to isolate servers from each other. Commonly used in DMZ networks in server parts, and in Voice over IP networks in LAN setup with clients.
 
 
-
-\chapter{\faInfoCircle\ Configure SSH keys for more secure access}
-\label{ex:config-ssh-keys}
-
-{\bf Objective:}\\
-See how SSH keys can be used.
-
-{\bf Purpose:}\\
-Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
-
-Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
-
-{\bf Suggested method:}\\
-
-\begin{enumerate}
-\item First generate a SSH key, using \verb+ssh-keygen+
-\item Copy the public key onto a system, using \verb+ssh-copy-id+
-\item Test using the ssh command
-\end{enumerate}
-
-Generate key:
-\begin{alltt}
-\$ ssh-keygen
-Generating public/private rsa key pair.
-Enter file in which to save the key (/root/.ssh/id_rsa):
-Created directory '/root/.ssh'.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in /home/hlk/.ssh/id_rsa.
-Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
-The key fingerprint is:
-SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
-The key's randomart image is:
-+---[RSA 2048]----+
-|      .          |
-|   . o           |
-|   .=            |
-| ..=.      o .   |
-|o.*o. . S o +    |
-|oB==+o   . o     |
-|+*B=.o.   o .    |
-|=++.o +. o o     |
-|oEo=oo .ooo      |
-+----[SHA256]-----+
-\end{alltt}
-
-Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
-\begin{alltt}
-\$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
-/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
-The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
-ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
-Are you sure you want to continue connecting (yes/no)? yes
-/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
-to filter out any that are already installed
-/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
-are prompted now it is to install the new keys
-hlk@10.0.42.147's password:
-
-Number of key(s) added:        1
-
-Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
-and check to make sure that only the key(s) you wanted were added.
-\end{alltt}
-
-\vskip 5mm
-
-\centerline{This is the best tool for the job!}
-
-The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
-
-{\bf Hints:}\\
-You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
-
-You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
-
-\begin{alltt}
-\$ ssh-add .ssh/kramse
-// Passphrase here
-Identity added: .ssh/kramse (.ssh/kramse)
-\$ ssh-add -l
-4096 SHA256:YsR+HhK7u7045ZL8ZDZnlgEnrv+RQG4eJI5oBJAEacs .ssh/kramse (RSA)
-\end{alltt}
-
-
-{\bf Solution:}\\
-When you can login using key you are done.
-
-{\bf Discussion:}\\
-We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
-
-You should remove the possibility for root logins and logins using password, when keys work!
-
-This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
-\begin{alltt}
-#PermitRootLogin prohibit-password
-PermitRootLogin no
-# To disable tunneled clear text passwords, change to no here!
-PasswordAuthentication no
-\end{alltt}
 
 
 \chapter{\faInfoCircle\ Evaluate Scope Towards PCI}

@@ -3,7 +3,7 @@
 This is a description for the mandatory assignment 1 in
 KEA Kompetence System Security F2023
 
-To be handed in at latest May 30, 2023 by email to xhek@kea.dk or hlk@zencurity.com
+To be handed in at latest Juni 13, 2023 by email to xhek@kea.dk or hlk@zencurity.com
 
 Note: this will be the 2nd mandatory assignment.
 

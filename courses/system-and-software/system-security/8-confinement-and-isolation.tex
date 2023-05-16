@@ -56,7 +56,7 @@
 
 Todays goals:
 \begin{list2}
-\item Known the problem of keeping applications and data confined
+\item Identify the problem of keeping applications and data confined
 \item Discuss isolation - including sandboxes, virtual machines and capabilities
 \item Introduce network isolation, VLAN, firewalls
 \end{list2}
@@ -375,16 +375,6 @@ ISBN-13:
 \hlkimage{15cm}{medieval-clipart-5}
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
 
-\slide{Defense in depth - layered security}
-
-\hlkimage{6cm}{security-layers-1-uk.pdf}
-
-\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
-
-
-\slide{Small networks}
-
-\hlkimage{18cm}{images/kursus-netvaerk.pdf}
 
 
 \slide{Firewall er ikke alene}
@@ -392,11 +382,6 @@ ISBN-13:
 \hlkimage{15cm}{network-layers-1.png}
 
 \centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
-
-\slide{Unified communications}
-
-\hlkimage{19cm}{firma-netvaerk-wlan}
-
 
 \slide{Firewallrollen idag}
 
@@ -410,30 +395,6 @@ ISBN-13:
   strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
 \end{list2}
 \item Det kræver overblik!
-\end{list1}
-
-
-
-\slide{Modern Firewalls}
-
-\begin{list1}
-\item Basalt set et netværksfilter - det yderste fæstningsværk
-\item Indeholder typisk:
-  \begin{list2}
-   \item Grafisk brugergrænseflade til konfiguration - er det en
-   fordel?
-\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
-  ind/ud, porte, protokol, ...
-\item både IPv4 og IPv6
-\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
-  at tilføje/åbne en usikker protokol?
-\item typisk NAT funktionalitet indbygget
-\item typisk mulighed for nogle serverfunktioner: kan agere
-  DHCP-server, DNS caching server og lignende
-  \end{list2}
-\item En router med Access Control Lists - kaldes ofte netværksfilter,
-  mens en dedikeret maskine kaldes firewall
-%  funktionen er reelt den samme - der filtreres traffik
 \end{list1}
 
 
@@ -489,125 +450,6 @@ pass out
 \item Idag inkluderer de fleste stateful inspection
 \end{list1}
 
-\slide{Kommercielle firewalls}
-\begin{list2}
-\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
-\item Cisco ASA \link{http://www.cisco.com}
-\item Clavister firewalls \link{http://www.clavister.com}
-\item Juniper SRX \link{http://www.juniper.net}
-\item Palo Alto \link{https://www.paloaltonetworks.com/}
-\item Fortinet \link{https://www.fortinet.com/}
-\end{list2}
-
-Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
-
-Der findes også mange gode open source baserede firewalls
-
-
-\slide{Hardware eller software}
-
-
-\begin{list1}
-\item Man hører indimellem begrebet \emph{hardware firewall}
-\item Det er dog et faktum at en firewall består af:
-\begin{list2}
-\item Netværkskort - som er hardware
-\item Filtreringssoftware - som er \emph{software}!
-\end{list2}
-\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
-  og en APU2C4 med OpenBSD for en software firewall!
-\item Man kan til gengæld godt argumentere for at en dedikeret
-  firewall som en separat enhed kan give bedre sikkerhed
-  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
-\end{list1}
-
-
-
-
-
-
-
-\slide{firewall koncepter}
-
-\begin{list1}
-\item Rækkefølgen af regler betyder noget!
-\begin{list2}
-\item To typer af firewalls:
- First match - når en regel matcher, gør det som angives block/pass
- Last match  - marker pakken hvis den matcher, til sidst afgøres block/pass
-\end{list2}
-\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
-    man bruger!}
-\item OpenBSD PF er last match
-\item FreeBSD IPFW er first match
-\item Linux iptables/netfilter er last match
-\end{list1}
-
-\slide{First or Last match firewall?}
-
-\hlkimage{18cm}{images/first-last-match-1.pdf}
-
-
-
-\slide{First match - IPFW}
-
-\begin{alltt}
-\hlksmall
-00100 16389  1551541 allow ip from any to any via lo0
-00200     0        0 deny log ip from any to 127.0.0.0/8
-00300     0        0 check-state
-...
-{\bfseries
-65435    36     5697 deny log ip from any to any}
-65535   865    54964 allow ip from any to any
-\end{alltt}
-
-\vskip 2 cm
-
-\centerline{Den sidste regel nås aldrig!}
-
-\slide{Last match - OpenBSD PF}
-
-\begin{alltt}\small
-ext_if="ext0"
-int_if="int0"
-{\bf
-block in}
-pass out keep state
-
-pass quick on \{ lo $int_if \}
-
-# Tillad forbindelser ind på port 80=http og port 53=domain
-# på IP-adressen for eksterne netkort ($ext_if) syntaksen
-pass in on $ext_if proto tcp to ($ext_if) port http keep state
-pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
-\end{alltt}
-
-
-Pakkerne markeres med block eller pass indtil sidste regel\\
-nøgleordet \emph{quick} afslutter match - god til store regelsæt
-
-
-
-\slide{Firewalls og ICMP}
-
-\begin{alltt}
-ipfw add allow icmp from any to any icmptypes 3,4,11,12
-\end{alltt}
-
-\begin{list1}
-\item Ovenstående er IPFW syntaks for at tillade de interessant ICMP beskeder igennem
-\item Tillad ICMP types:
-\begin{list2}
-\item 3 Destination Unreachable
-\item 4 Source Quench Message
-\item 11 Time Exceeded
-\item 12 Parameter Problem Message
-\end{list2}
-
-\item Der er helt tilsvarende nogle  ICMPv6 beskeder som bør tillades i firewalls
-\end{list1}
-
 \slide{Firewall konfiguration}
 
 \begin{list1}
@@ -642,18 +484,6 @@ ipfw add allow icmp from any to any icmptypes 3,4,11,12
 \end{list1}
 
 
-\slide{Anti-pattern dobbelt NAT i eget netværk}
-
-\hlkimage{16cm}{nat-double.pdf}
-
-\begin{list1}
-\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
-ud på internet.
-\vskip 1cm
-\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
-\end{list1}
-
-
 \slide{IPsec og Andre VPN features}
 
 \begin{list1}
@@ -683,6 +513,7 @@ These issues are corrected either through applying mitigations or kernel patches
 
 Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tcpsack}}
 
+Even firewalls and security devices have security issues!
 
 \slide{2019 ERNW White Paper 68 -- Cisco ACI}
 

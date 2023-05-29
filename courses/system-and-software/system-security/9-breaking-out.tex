@@ -17,7 +17,10 @@
 
 Todays goals:
 \begin{list2}
-\item
+\item Discuss Kernel Hardening and Process Isolation
+\item Methods for keeping systems secure -- Lynis
+\item Patch Management
+\item Rowhammer -- depending on your interest
 \end{list2}
 
   Photo by Thomas Galler on Unsplash
@@ -27,11 +30,15 @@ Todays goals:
 \begin{list1}
 \item Subjects
 \begin{list2}
-\item
+\item MLSH chapter 11: Discuss Kernel Hardening and Process Isolation
+\item Methods for keeping systems secure -- Lynis
+\item DSH chapter 16: Patch Management
+\item Rowhammer -- if we got time, but related to sandboxing, capabilities and VM escape
 \end{list2}
 \item Exercises
 \begin{list2}
-\item
+\item Lynis
+\item DDoS testing
 \end{list2}
 \end{list1}
 
@@ -43,6 +50,157 @@ Todays goals:
 \item DSH chapter 16: Vulnerability Management
 \item Browse: Using Memory Errors to Attack a Virtual Machine paper, An Experimental Study of DRAM Disturbance Errors, Exploiting the DRAM rowhammer bug to gain kernel privileges \url{https://en.wikipedia.org/wiki/Row_hammer}
 \end{list1}
+
+
+
+\slide{MLSH Chapter 11: Kernel Hardening and Process Isolation}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Kernel Hardening and Process Isolation}\\
+Although the Linux kernel is already fairly secure by design, there are still a few ways to lock it down even more. It’s simple to do, once you know what to look for. Tweaking the kernel can help prevent certain network attacks and certain types of information leaks. (But fear not – you don’t have to recompile a whole new kernel to take advantage of this.)
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\begin{list2}
+\item Secure by design might not be my wording, well understood and mature might be better
+\item A lot of more secure designs exist
+\end{list2}
+
+\slide{MLSH Chapter 11: Kernel Hardening and Process Isolation}
+
+%\hlkimage{}{}
+
+\begin{quote}
+With process isolation, our aim is to prevent malicious users from performing either a {\bf vertical} or a {\bf horizontal privilege escalation}. By isolating processes from each other, we can help prevent someone from taking control of either a {\bf root user process} or a process that belongs to some other user. Either of these types of privilege escalation could help an attacker either {\bf take control of a system} or {\bf access sensitive information}.
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+
+\begin{list2}
+\item Remember the CIA model, but most likely if there are cracks an attacker can exploit it
+\end{list2}
+
+
+\slide{MLSH Chapter 11: Topics covered in this chapter}
+
+%\hlkimage{}{}
+
+\begin{quote}
+In this chapter, we’ll take a quick tour of the /proc filesystem ...
+
+\begin{list2}
+\item Understanding the /proc filesystem
+\item Setting kernel parameters with sysctl / Configuring the sysctl.conf file
+\item An overview of process isolation
+\item Control groups / Namespace isolation / Kernel capabilities
+\item SECCOMP and system calls
+\item Using process isolation with Docker containers
+\item Sandboxing with Firejail
+\item Sandboxing with SnappyKernel Hardening and Process Isolation
+\item Sandboxing with Flatpak
+\end{list2}
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+We will not go into all the details from this chapter
+
+\slide{MLSH Chapter 11: Linux /proc}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Understanding the /proc filesystem}\\
+If you cd into the /proc/ directory of any Linux distro and take a look around, you’ll be excused for thinking that there’s nothing special about it. You’ll see files and directories, so it looks like it could just be another directory. In reality, though, it’s very special. It’s one of several different {\bf pseudo-filesystems} on the Linux system. (The definition of the word pseudo is fake, so you can also think of it as a \emph{fake} filesystem.)
+
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+Can we spot the:
+\begin{list2}
+\item In Unix \emph{everything} is a file
+\item Init was the old \emph{System V init} with \emph{run-levels}
+\item Systemd is used in most Linux distributions today
+\item Other Unix systems, like BSD still use an init process
+\end{list2}
+
+\slide{MLSH Chapter 11: Configuring the sysctl.conf file}
+
+
+%\hlkimage{}{}
+
+\begin{quote}
+If you look in the /etc/sysctl.d/10-network-security.conf file, you’ll see
+it enabled there. So, there’s no need to uncomment these two lines.
+Next, we see this:
+\begin{alltt}
+# Uncomment the next line to enable TCP/IP SYN cookies
+# See http://lwn.net/Articles/277146/
+# Note: This may impact IPv6 TCP sessions too
+#net.ipv4.tcp_syncookies=1
+\end{alltt}
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\begin{list2}
+\item The main file used to be \verb+/etc/sysctl.conf+, check on your various distributions
+\item Today I mostly use Ansible to configure this
+\item You can read more about SYN cookies at: \url{https://en.wikipedia.org/wiki/SYN_cookies}
+\item In older times we also tuned our TCP and UDP memory space, but mostly use default values today
+\end{list2}
+
+\exercise{ex:lynis-first}
+
+
+\slide{Understanding Control Groups (cgroups)}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Control Groups, more commonly called {\bf cgroups}, were introduced back in 2010 in Red Hat Enterprise Linux 6. Originally, they were just an add-on feature, and a user had to jump through some hoops to manually create them. Nowadays, with the advent of the systemd init system, cgroups are an integral part of the operating system, and each process runs in its own cgroup by default.
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\begin{list2}
+    \item Docker and other containers use cgroups along with namespaces to provide isolation and resource constraints
+\end{list2}
+
+
+\slide{Understanding namespace isolation}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Namespaces are a kernel security feature that was introduced in Linux kernel version 2.4.19, all the way back in 2002. A namespace allows a process to have its own set of computer resources that other processes can’t see. They’re especially handy for times when you might have multiple customers sharing resources on the same server. The processes for each user will have their own namespaces.
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\begin{list2}
+\item Kubernetes also use and provide namespaces as a concept to isolate applications
+\end{list2}
+
+
+\slide{Understanding kernel capabilities}
+
+%\hlkimage{}{}
+
+\begin{quote}
+However, having services run with full root privileges can be a bit of a security problem. For-
+tunately, there are some ways to mitigate that.\\
+For example, any web server service, such as Apache or NGINX, needs to {\bf start with root privileges} in order to {\bf bind to ports 80 and 443} , which are {\bf privileged ports}. However, both Apache and Nginx mitigate this problem by either dropping root privileges once the service has started or by {\bf spawning child processes} that belong to a {\bf non-privileged user}.\\
+...\\
+{\bf Capabilities allow the Linux kernel to divide what the root user can do into distinct units.}
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\begin{list2}
+\item Book uses example capabilities with Python 2: \verb+python2 -m SimpleHTTPServer 80+
+\item I recommend using only Python 3 now, and instead would use: \verb+python3 -m http.server 8000+
+\item Example with capabilities for ping can be compared to running setuid in the old days
+\end{list2}
+
+
 
 
 \slide{Availability Policies}
@@ -63,6 +221,27 @@ Todays goals:
 Cooperative multitasking vs pre-emptive multitasking
 \end{list1}
 
+
+\slide{DSH Chapter 16: Vulnerability Management}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+Contrary to what some vendors’ marketing material would have us believe, {\bf a huge quantity of successful breaches do not occur because of complex 0-day vulnerabilities}, lovingly handcrafted by artisanal exploit writers. Although this does happen, a {\bf lack of patching}, failure to {\bf follow good practices} for configuration, or {\bf neglecting} to change {\bf default passwords} are to blame for a far {\bf larger number of successful attacks} against corporate environments. Even those capable of deploying tailor-made exploits against your infrastructure will prefer to make use of these types of vulnerabilities.
+
+Vulnerability management is the terminology used to describe the overall program of activities that oversees vulnerability scanning and detection through to remediation. This is a program that ultimately raises the security of your network by removing potential flaws.
+
+\end{quote}
+Source: \emph{Defensive Security Handbook} (DSH), Lee Brotherston, Amanda Berlin
+ISBN: 978-1-491-96038-7
+
+\begin{list2}
+\item Lynis is a nice example of a tool that can look into configuration also
+\item Patch management is a task that should be prioritized
+\end{list2}
+
+
+
 \slide{Availability and Network flooding attacks}
 
 \begin{list2}
@@ -79,12 +258,31 @@ Cooperative multitasking vs pre-emptive multitasking
 \end{list2}
 \end{list2}
 
-There is a presentation about DDoS protection with low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+See also DDoS protection with low level technical measures to implement at\\
+{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/ddos-test-troopers22}}
 
 
 \exercise{ex:syn-flood-101}
 
+
+\slide{Rowhammer}
+
+Sorry, I referenced too much with papers and web sites
+\begin{list2}
+\item It is enough to browse the wikipedia page! \url{https://en.wikipedia.org/wiki/Row_hammer}
+
+\item \emph{Using Memory Errors to Attack a Virtual Machine paper}
+by Sudhakar Govindavajhala and Andrew Appel \verb+memerr.pdf+
+
+\item \emph{Flipping Bits in Memory Without Accessing Them: An Experimental Study of DRAM Disturbance Errors} Yoongu Kim, Ross Daly, Jeremie Kim, Chris Fallin, Ji Hye Lee, Donghyuk Lee, Chris Wilkerson, Konrad Lai, Onur Mutlu
+\verb+kim-isca14-flipping-bits.pdf+
+
+\item \emph{Exploiting the DRAM rowhammer bug to gain kernel privileges} \\
+ \verb+Project Zero_ Exploiting the DRAM rowhammer bug to gain kernel privileges.pdf+
+
+\end{list2}
+
+You should recognize the name rowhammer, see the complexity and remember that such complex attacks do exist too!
 
 \slidenext
 

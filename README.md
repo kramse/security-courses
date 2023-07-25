@@ -1,11 +1,11 @@
 
 
-## README is not updated very often
+## README -- not updated very often
 
 Welcome to security-courses a free template and security courses
 written in LaTeX code, but assumed to be useful for others.
 
-It contains LaTeX slides I use for presenting various subjects.
+It contains slides and exercise booklets I use for presenting various subjects.
 
 You are welcome to copy from it.
 
@@ -30,6 +30,9 @@ with this please contact me.
 
 I try to reference all sources in the presentations, and IANAL but quoting seems OK in most jurisdictions.
 
+I use some pictures from Unsplash https://unsplash.com/ and try to remember to include references, sorry for any pictures were I forgot.
+
+
 ## How to get the sources
 You need to use Github to get the sources, try cloning it.
 
@@ -38,10 +41,14 @@ You need to use Github to get the sources, try cloning it.
 You need some installation of LaTeX, for instance the TeXLive
 See this reference: http://www.tug.org/texlive/
 
-I have moved to latexmk, so you may want to add the following to your $HOME/.latexmkrc
+I have moved to latexmk, so you may want to add settings similar to your $HOME/.latexmkrc
 
 ```
-  $pdf_mode = 1;
+$pdf_mode = 1;
+$pdf_previewer = 'evince';
+
+$pdflatex="lualatex -shell-escape -synctex=1 %O %S";
+$aux_dir = 'build';
 ```
 
 This should make it easy to produce PDF files just by doing:
@@ -50,6 +57,22 @@ This should make it easy to produce PDF files just by doing:
   Latexmk: This is Latexmk, John Collins, 5 February 2015, version: 4.43a.
   Latexmk: applying rule 'pdflatex'...
 ```
+
+Warning: shell escape is needed for the minted package providing syntax highlighting. If you don't trust me, leave it out.
+
+Speaking of the minted package, it needs a small option, if you opt to use the build dir aux_dir above.
+
+Normally you would use:
+```
+\usepackage{minted}
+```
+
+but with aux_dir enabled as above:
+```
+\usepackage[outputdir=build]{minted}
+```
+
+I think having all the misc files from LaTeX'ing in another dir is nicer.
 
 I have decided to use ONLY UTF-8 too, so some files need to be converted - work in progress
 ```

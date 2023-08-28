@@ -795,9 +795,9 @@ References that were useful:
 
 \slide{Example Network Policy}
 
-\begin{alltt}\tiny
+\begin{alltt}\scriptsize
 apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
+kind: NetworkPolicy    see more at \url{https://docs.cilium.io/en/v1.8/concepts/kubernetes/policy/}
 metadata:
   name: example-policy
 spec:
@@ -820,8 +820,29 @@ spec:
 \end{alltt}
 
 
+\slide{Cilium for Host Firewall}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Deploy Cilium release via Helm:
+
+\begin{alltt}\footnotesize
+helm install cilium ./cilium   --namespace kube-system  --set hostFirewall.enabled=true    --set devices='{ethX,ethY}'
+\end{alltt}
+The devices flag refers to the network devices Cilium is configured on such as eth0. Omitting this option leads Cilium to auto-detect what interfaces the host firewall applies to.
+
+At this point, the Cilium-managed nodes are ready to enforce network policies.
+
+\end{quote}
+Source: \url{https://docs.cilium.io/en/latest/security/host-firewall/}
 
 
+\begin{list2}
+\item I find it cleaner to use Cilium for all network policies, ignoring IPtables
+\item You need only a few CiliumClusterwideNetworkPolicy resources defined for the cluster to work, and then you can allow Secure Shell from only a few places
+\item Note: While booting there might be a very short time where Cilium is starting, where packets are allowed YMMV
+\end{list2}
 
 
 
@@ -989,7 +1010,7 @@ This article is relevant, talking about malicious docker images\\
 \slide{Keeping Container Images secure}
 
 \begin{list2}
-\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images 
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
 \link{https://github.com/anchore/anchore-engine}\\
 "As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype."
 \item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype}
@@ -1106,8 +1127,6 @@ We can also consider doing focused work days with Kubernetes -- I would love tha
 I have previously done NWWC see nwwc.dk, Hacker days at PROSA, KEA etc.
 
 Do you want to meet up?
-
-Don't forget to add BornHack August 2.-9. 2023 to your calendars
 
 \slide{Threat modelling -- maybe do your own threat modelling?}
 - my presentation based on "minimum" and Best Current Practice

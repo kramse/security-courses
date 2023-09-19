@@ -146,7 +146,7 @@ Note: We investigate protocols, so we can see what is sent, so we can design \em
 
 
 
-\slide{Vigtigste protokoller}
+\slide{Most Important Network Protocols in TCP/IP}
 
 
 \begin{list1}
@@ -158,7 +158,7 @@ Note: We investigate protocols, so we can see what is sent, so we can design \em
 \item DNS Domain Name System
 \end{list1}
 \vskip 1cm
-\centerline{Ovenstående er omtrent minimumskrav for at komme på internet}
+\centerline{Basically the ones you need to get online on the Internet}
 
 \slide{Binary Protocols}
 
@@ -167,7 +167,7 @@ Note: We investigate protocols, so we can see what is sent, so we can design \em
 \item Example DNS, which is a complex protocol
 \item When parsing DNS use standard libraries!
 \item When attacking DNS applications, use standard libraries! \smiley
-\item DNS is just an example, new protocols may not be implemented - but someone might have analyzed it or parts already!
+\item DNS is just an example, new protocols may not be implemented in easy to use tools\\ -- but someone might have analyzed it or parts already!
 \end{list2}
 
 
@@ -180,16 +180,18 @@ Note: We investigate protocols, so we can see what is sent, so we can design \em
 \end{quote}
 
 \begin{list2}
-\item Sometimes people add network functionality to existing applications
-\item - and do this badly
+\item Sometimes people add network functionality to existing applications\\
+-- and do this badly
 \item We have seen applications like IPMI and others
+\item Is this a network problem, server problem, hardware problem? -- {\bf discuss}
 \end{list2}
 
 Source: \url{https://blog.rapid7.com/2013/07/02/a-penetration-testers-guide-to-ipmi/}
 
-\slide{ISAKMP example}
+\slide{Even securiy protocols and software have problems}
 
 \begin{list2}
+\item ISAKMP example
 \item IKE(v1) has been critized as being overly complex
 \item Needed bake-off sessions where vendors meet and tried negotiating
 \item Searching for CVE ISAKMP show multiple vulnerabilities in various implementations, including firewalls and tcpdump
@@ -236,7 +238,7 @@ Source: \url{https://en.wikipedia.org/wiki/Type-length-value}
 
 \begin{list2}
 \item Type Length Value is an encoding used in data communication
-\item For example in Link Layer Discovery Protocol (LLDP)
+\item For example in Link Layer Discovery Protocol (LLDP), SSH, RADIUS
 \end{list2}
 
 
@@ -255,10 +257,10 @@ ERNW WHITEPAPER 68, SECURITY ASSESSMENT OF CISCO ACI, 2019\\
 
 
 \begin{list2}
-\item Cisco Nexus 9000 Series Fabric Switches ACI Mode Fabric Infrastructure VLAN Unauthorized Access
-Vulnerability (CVE-2019-1890)
-\item Cisco Nexus 9000 Series Fabric Switches Application Centric Infrastructure Mode Link Layer Discovery
-Protocol Buffer Overflow Vulnerability (CVE-2019-1901)
+\item Cisco Nexus 9000 Series Fabric Switches ACI Mode Fabric Infrastructure VLAN\\
+Unauthorized Access Vulnerability (CVE-2019-1890)
+\item Cisco Nexus 9000 Series Fabric Switches Application Centric Infrastructure Mode\\
+{\bf Link Layer Discovery Protocol Buffer Overflow Vulnerability} (CVE-2019-1901)
 \end{list2}
 
 \slide{DNS problems}
@@ -276,30 +278,13 @@ Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin 198
 \item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
 \begin{list2}
 \item DNS must allow both UDP and TCP port 53
-\item Your DNS servers must have updated software, see DNS flag day\\
-\link{https://dnsflagday.net/} after which kludges will be REMOVED!
+\item Your DNS servers must have updated software, which use updated protocol behaviour \\
+see DNS flag day \link{https://dnsflagday.net/}
 \item DNS is unencrypted
 \end{list2}
 \end{list1}
 
-
-\slide{DNS server software}
-
-\begin{list1}
-\item Berkeley Internet Name Daemon server used to be the de facto name server\\
-Still available and multiple versions
-\item Now I recommend using NSD for authoritative servers and Unbound for recursive, both from NLnetlabs \link{https://www.nlnetlabs.nl/}
-\end{list1}
-
-\begin{list2}
-\item Older reference, but great book about DNS:\\
-\emph{DNS and BIND}, Paul Albitz \& Cricket Liu, O'Reilly, 5th
-  edition Maj 2006
-\item BIND has had sooo many vulnerabilities across versions and releases
-\end{list2}
-
-
-\slide{Unbound and NSD}
+\slide{Recommended Software -- Unbound and NSD}
 
 \begin{quote}
 Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
@@ -309,7 +294,7 @@ To help increase online privacy, Unbound supports DNS-over-TLS which allows clie
 
 \link{https://www.nlnetlabs.nl/projects/unbound/about/}
 
-My preferred local DNS server.
+My preferred local DNS server
 
 Also check out uncensored DNS and his DNS over TLS setup!\\
 Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
@@ -353,64 +338,12 @@ Mark Dowd, John McDonald, Justin Schuh ISBN: 9780321444424
 \centerline{Labels and pointers within packets save bytes, but make it more complex!}
 
 
-\slide{Postfix postserveren}
-
-\hlkimage{6cm}{postfix-mouse.png}
-
-\begin{list1}
-\item Lavet af Wietse Venema for IBM
-\item Nem at konfigurere og sikker
-\item \verb+main.cf+ findes typisk i kataloget \verb+/etc/postfix+
-\end{list1}
-
-\slide{Audit af postservere}
-
-\begin{list1}
-\item Typisk findes konfigurationsfilerne til postservere under
-  \verb+/etc+
-\begin{list2}
-\item \verb+/etc/mail+
-\item \verb+/etc/postfix+
-\end{list2}
-\item Det vigtigste er at den er opdateret og IKKE tillader relaying
-\item Der findes diverse test-scripts til relaycheck på internet
-\item Husk også at checke domæne records, MX og A
-\end{list1}
-
-\slide{Test af e-mail server}
-
-\begin{alltt}\tiny
-[hlk]$ {\bfseries telnet localhost 25}
-Connected.
-Escape character is '^]'.
-220 server ESMTP Postfix
-{\bfseries helo test}
-250 server
-{\bfseries mail from: postmaster@pentest.dk}
-250 Ok
-{\bfseries rcpt to: root@pentest.dk}
-250 Ok
-{\bfseries data}
-354 End data with <CR><LF>.<CR><LF>
-{\bfseries skriv en kort besked}
-.
-250 Ok: queued as 91AA34D18
-{\bfseries quit}
-\end{alltt}
-%$
-
-Skal ikke tillade relaying, og vil blive misbrugt meget hurtigt.
-
-Idag benyttes ofte en stjålet brugerkonto med brugernavn og kodeord til at sende spam.
-
-
-
 \slide{Networks today}
 \hlkimage{13cm}{overview-routing-customer-2015.pdf}
 
 \begin{list1}
-\item Conclusion: Do as much as possible with your existing devices
-\item Tuning and using features like stateless router filters works wonders
+\item Conclusion: networks are complex
+\item Many places where you can block, filter, restrict, limit, avoid, process, change, observe
 \end{list1}
 
 \slide{Book: Applied Network Security Monitoring (ANSM)}
@@ -526,41 +459,6 @@ mulighed for flere pakker på en given router
 \end{alltt}
 
 
-\slide{IPv6 pakken - extension headers RFC-2460}
-
-\begin{list1}
-\item Fuld IPv6 implementation indeholder:
-\begin{list2}
-\item Hop-by-Hop Options
-\item Routing (Type 0) - deprecated
-\item Fragment - fragmentering KUN i end-points!
-\item Destination Options
-\item Authentication
-\item Encapsulating Security Payload
-\end{list2}
-\item Ja, IPsec er en del af IPv6!
-\end{list1}
-
-\slide{Hvordan bruger man IPv6}
-
-\begin{center}
-\vskip 2 cm
-www.zencurity.com
-
-hlk@zencurity.com
-
-\end{center}
-
-\pause
-DNS AAAA record tilføjes
-
-\begin{alltt}
-www     IN A    91.102.91.17
-        IN AAAA 2001:16d8:ff00:12f::2
-mail    IN A    91.102.91.17
-        IN AAAA 2001:16d8:ff00:12f::2
-\end{alltt}
-
 \slide{IPv6 addresser og skrivemåde}
 
 \hlkimage{17cm}{ipv6-address-1.pdf}
@@ -672,21 +570,6 @@ Addison-Wesley, 2nd edition
 
 
 
-\slide{Reading about firewalls}
-
-\begin{list1}
-\item \link{http://www.wilyhacker.com/} Cheswick chapter 3 PDF
-\emph{Security Review: The Upper Layers}
-\begin{list2}
-\item How to configure firewalls often boil down to, should we allow protocol X
-\item If we allow SMB through an internet firewall, we are asking for trouble
-\end{list2}
-\end{list1}
-
-Skim chapters from 1st edition:\\
-\link{http://www.wilyhacker.com/1e/chap03.pdf}\\ \link{http://www.wilyhacker.com/1e/chap04.pdf}
-
-
 \slide{Together with Firewalls - VLAN Virtual LAN}
 
 \hlkimage{6cm}{vlan-portbased.pdf}
@@ -721,10 +604,6 @@ Skim chapters from 1st edition:\\
 \hlkimage{15cm}{network-layers-1.png}
 
 \centerline{Forsvaret er som altid - flere lag af sikkerhed! }
-
-\slide{Unified communications}
-
-\hlkimage{19cm}{firma-netvaerk-wlan}
 
 
 \slide{Modern Firewalls}
@@ -802,49 +681,6 @@ pass out
 \item Idag inkluderer de fleste stateful inspection
 \end{list1}
 
-\slide{Kommercielle firewalls}
-\begin{list2}
-\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
-\item Cisco ASA \link{http://www.cisco.com}
-\item Clavister firewalls \link{http://www.clavister.com}
-\item Juniper SRX \link{http://www.juniper.net}
-\item Palo Alto \link{https://www.paloaltonetworks.com/}
-\item Fortinet \link{https://www.fortinet.com/}
-\end{list2}
-
-Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
-
-\slide{Open source baserede firewalls}
-\begin{list2}
-\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
-\item Firewall GUIs ovenpå Linux - mange!
-nogle er kommercielle produkter
-\item OpenBSD PF
-\link{http://www.openbsd.org}
-\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
-\item Mac OS X benytter OpenBSD PF
-\item FreeBSD inkluderer også OpenBSD PF
-\end{list2}
-
-NB: kun eksempler og dem jeg selv har brugt
-
-
-\slide{Hardware eller software}
-
-
-\begin{list1}
-\item Man hører indimellem begrebet \emph{hardware firewall}
-\item Det er dog et faktum at en firewall består af:
-\begin{list2}
-\item Netværkskort - som er hardware
-\item Filtreringssoftware - som er \emph{software}!
-\end{list2}
-\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
-  og en APU2C4 med OpenBSD for en software firewall!
-\item Man kan til gengæld godt argumentere for at en dedikeret
-  firewall som en separat enhed kan give bedre sikkerhed
-  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
-\end{list1}
 
 \slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
 
@@ -867,7 +703,6 @@ Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tc
 \slide{Availability and Network flooding attacks}
 
 \begin{list2}
-\item Our book spends some time on SYN and other flooding attacks
 \item SYN flood is the most basic and very common on the internet towards 80/tcp and 443/tcp
 \item ICMP and UDP flooding are the next targets
 \item Supporting litterature is TCP Synfloods - an old yet current problem, and improving pf's response to it, Henning Brauer, BSDCan 2017

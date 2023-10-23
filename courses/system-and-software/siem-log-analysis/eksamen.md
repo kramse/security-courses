@@ -1,7 +1,9 @@
 
 
 
-Exam subjects, with keywords
+# Exam subjects, with keywords
+
+Course SIEM and Logging teacher Henrik Kramselund xhek@kea.dk hlk@zencurity.com
 
 Key words will not be in the exam setting, only the subject title.
 

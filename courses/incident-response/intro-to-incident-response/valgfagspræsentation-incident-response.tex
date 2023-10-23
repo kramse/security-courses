@@ -1,0 +1,187 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+\externaldocument{build/introduction-to-incident-response-exercises}
+\selectlanguage{english}
+
+% Input:
+% https://www.threathunting.net/reading-list
+
+% Docker image with
+% https://hub.docker.com/r/threathuntproj/hunting/
+% This image contains a complete threat hunting & data analysis environment built on Python, Pandas, PySpark and Jupyter notebook.
+
+\begin{document}
+
+\mytitlepage
+{Introduction to Incident Response Elective, KEA}
+{Henrik Kramselund}
+
+
+\slide{Goals for Course}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{quote}
+Introduction to incident response. what is an incident and a log? We will discuss what happens when someone visits your network. Starting from initial compromise we will demonstrate how we can identify, process and handle incidents in networks.
+\end{quote}
+
+{\hfill \small Photo by Thomas Galler on Unsplash}
+
+\slide{Ransomware Attacks are Common}
+
+
+\hlkimage{13cm}{ransomware_arbor.png}
+
+Make sure to backup your data! Test your backups!\\
+Source: link{https://www.netscout.com/threatreport/global-ddos-attack-trends/}
+
+
+\slide{Course Description}
+
+{\bf Course description}\\
+Introduction to Incident Response is a course that will describe the basics of incident response. This will include the terms, tools and processes used by professionals.
+
+Below are the required parts from studieordningen:
+
+{\bf Viden}
+\begin{list2}
+\item Forskellige cyberangrebs stadier og teknikker
+\item Incident-Response cyklus
+\item Pricipperne i Event logning
+\item Processer i forbindelse med Incident response og Threat hunting
+\end{list2}
+
+\slide{Course Description, continued}
+
+{\bf Færdigheder}
+
+\begin{list2}
+\item Søge i relevante filer, hukommelse og lignende for indicators of compromise (IoC)
+\item Analysere event log, memory og timeline for tegn på security incidents
+\item Viderebringe resultater i form af ekspertrapporter
+\end{list2}
+
+{\bf Kompetencer}
+\begin{list2}
+\item Anvende, udvikle og dele Threat Intelligence
+\item Anvende og udvikle processer til incident håndtering i en organisation
+\end{list2}
+
+\slide{Prerequisites}
+
+\begin{list1}
+\item This course includes exercises and getting the most of the course requires the participants to carry out these practical exercises
+\item We will use Linux for some exercises but previous Linux and Unix knowledge is not needed
+\item It is recommended to use virtual machines for the exercises
+\item Security and most internet related security work has the following requirements:
+\begin{list2}
+\item Network experience
+\item Server experience
+\item TCP/IP principles - often in more detail than a common user
+\item Programming is an advantage, for automating things
+\item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill} for infosec work\\
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+\end{list2}
+\end{list1}
+
+
+\slide{Primary literature}
+
+\hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
+Primary literature:
+\begin{list2}
+\item \emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts. Rebekah Brown, ISBN: 9781098120689 {\bf 2nd edition}- short IDIR
+
+\item \emph{Forensics Discovery} (FD), Dan Farmer, Wietse Venema 2004, Addison-Wesley 240 pages.\\
+ISBN: 9780201634976\\
+This book is currently available for "free":\\
+\link{http://fish2.com/security/} -- also uploaded to Fronter
+
+\item \emph{
+Computer Security Incident Handling Guide}, NIST SP 800-61 Rev. 2, August 2012,\\
+\link{https://doi.org/10.6028/NIST.SP.800-61r2} -- also uploaded to Fronter
+\end{list2}
+
+{\bf Other papers and resources will also be part of the curriculum!}
+
+\slide{Book: Intelligence-Driven Incident Response}
+
+\hlkimage{6cm}{book-intelligence-driven-incident-response.jpg}
+
+\emph{Intelligence-Driven Incident Response} \\
+  Scott Roberts. Rebekah Brown, ISBN: 9781098120689 {\bf 2nd edition}- short IDIR
+
+\slide{Book: Forensics Discovery (FD)}
+
+\hlkimage{8cm}{forensic-discovery.jpg}
+
+\emph{Forensics Discovery}, Dan Farmer, Wietse Venema 2004, Addison-Wesley.
+
+Can be found at \link{http://fish2.com/security/}
+
+\slide{Book: NIST SP800-61rev2}
+
+\hlkimage{12cm}{NIST-SP800-61r2.png}
+
+\link{https://doi.org/10.6028/NIST.SP.800-61r2}
+
+
+\slide{Incident Handling, phases}
+
+The procedures developed for incident response must cover the complete life-cycle
+
+\begin{list2}
+\item  Preparation for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\item  Identification of an attack, notice the attack is ongoing
+\item  Containment (confinement) of the attack, limit effects of the attack as much as possible
+\item  Eradication of the attack, stop attacker, block further similar attacks
+\item  Recovery from the attack, restore system to a secure state
+\item  Follow-up to the attack, include lessons learned  improve environment
+\end{list2}
+
+\slide{Incident Response Checklists}
+\hlkimage{9cm}{incident-handling-checklist.png}
+
+This checklist is from the NIST document
+\emph{Computer Security Incident Handling Guide: Recommendations of the National Institute
+of Standards and Technology}, NIST Special Publication 800-61
+Revision 2, August 2012.
+
+
+\slide{Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
+\slide{Tools on Linux, Mac and Windows }
+
+
+\begin{alltt}\scriptsize
+hlk@debian-lab-11:~/Downloads$ sudo vol -f cridex.vmem windows.pstree.PsTree
+Volatility 3 Framework 2.4.1
+Progress:  100.00		PDB scanning finished
+PID	PPID	ImageFileName	Offset(V)	Threads	Handles	SessionId	Wow64	CreateTime	ExitTime
+
+4	0	System	0x823c89c8	53	240	N/A	False	N/A	N/A
+* 368	4	smss.exe	0x822f1020	3	19	N/A	False	2012-07-22 02:42:31.000000 	N/A
+** 584	368	csrss.exe	0x822a0598	9	326	0	False	2012-07-22 02:42:32.000000 	N/A
+** 608	368	winlogon.exe	0x82298700	23	519	0	False	2012-07-22 02:42:32.000000 	N/A
+*** 664	608	lsass.exe	0x81e2a3b8	24	330	0	False	2012-07-22 02:42:32.000000 	N/A
+*** 652	608	services.exe	0x81e2ab28	16	243	0	False	2012-07-22 02:42:32.000000 	N/A
+**** 1056	652	svchost.exe	0x821dfda0	5	60	0	False	2012-07-22 02:42:33.000000 	N/A
+**** 1220	652	svchost.exe	0x82295650	15	197	0	False	2012-07-22 02:42:35.000000 	N/A
+...
+\end{alltt}
+
+\begin{list2}
+\item We will find and run various tools within the incident response space
+\item Memory analysis, disk analysis, logging, network dissecting, intelligence feeds
+\item After course is done, you will have started a toolbox for incident response and know a few from running them
+\end{list2}
+
+\end{document}

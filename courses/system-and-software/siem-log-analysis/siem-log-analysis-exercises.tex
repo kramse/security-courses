@@ -288,7 +288,8 @@ When you have performed a REST call from within this tool, you are done.
 
 Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
 
-If you have Elasticsearch installed and running try: \link{http://127.0.0.1:9200}
+If you have Elasticsearch installed and running try: \link{https://127.0.0.1:9200}
+Note: this is using a self-signed certificate, and also requires user login in version 8.
 
 {\bf Discussion:}\\
 Multiple applications and plugins can perform similar functions. This is a standalone app.
@@ -408,6 +409,13 @@ We will run Elasticsearch, either using the method from:\\{\footnotesize
 
 or by the method described below using Ansible - your choice.
 
+{\bf I have tested my Ansible configuration with Debian 12 Bookworm and Elasticsearch version 8.10.} The settings for this server are:
+\begin{itemize}
+\item 50Gb disk -- about 15Gb used
+\item 8Gb memory -- 1Gb free shortly after rebooting first time
+\item 4 virtual CPUs -- for speed, less can be used
+\end{itemize}
+
 Ansible used below is a configuration management tool \url{https://www.ansible.com/} and you can adjust them for production use!
 
 I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
@@ -428,7 +436,7 @@ git clone https://github.com/kramse/kramse-labs
 
 We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
 
-Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
+Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will also need to run as root later)
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 cd kramse-labs/suricatazeek
@@ -470,6 +478,93 @@ When you have a updated VM and Ansible running, then we are good.
 Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
 
 When installing applications it is recommended to install the repository definition, as that will allow you to update more easily later by using \verb+apt update && apt upgrade+
+
+\chapter{\faExclamationTriangle\ Configure Elasticsearch passwords -- 15 min}
+\label{ex:elastic-password}
+
+{\bf Objective:}\\
+Make sure we can use and connect to Elasticsearch after installing it.
+
+{\bf Purpose:}\\
+Elasticsearch is being configured with more security settings on by default. One such setting are the usernames and passwords for built-in users.
+
+{\bf Suggested method:}\\
+Run the programs below from your Linux VM after installing Elasticsearch with Ansible.
+
+When starting Elasticsearch after installing the Apt packages using Ansible you can find in the logs, \verb+/var/log/elasticsearch/elasticsearch.log+ :
+\begin{alltt}
+[//timestamp//][INFO ][o.e.x.s.InitialNodeSecurityAutoConfiguration] [debian-lab-12] Auto-configuration will not generate a password for the elastic built-in superuser, as we cannot  determine if there is a terminal attached to the elasticsearch process. You can use the `bin/elasticsearch-reset-password` tool to set the password for the elastic user.
+\end{alltt}
+
+This tool is located in a directory which is probably not in your PATH, so execute it directly:\\
+\verb+/usr/share/elasticsearch/bin/elasticsearch-reset-password+ like this, interactive and resetting the password for the elastic user.
+
+\begin{alltt}
+root@debian-lab-12:/var/log/elasticsearch# /usr/share/elasticsearch/bin/elasticsearch-reset-password -i -u elastic
+This tool will reset the password of the [elastic] user.
+You will be prompted to enter the password.
+Please confirm that you would like to continue [y/N]y
+
+
+Enter password for [elastic]:
+Re-enter password for [elastic]:
+Password for the [elastic] user successfully reset.
+\end{alltt}
+
+{\bf Hints:}\\
+You can confirm the password change using a browser for \url{https://127.0.0.1:9200}
+
+
+{\bf Solution:}\\
+When you have used the tool and seen Elasticsearch working in the browser you are done.
+
+{\bf Discussion:}\\
+I think we can all agree that logging data is security critical. So the strategy of configuring security settings by default should be applauded. Even if it makes bootstrapping harder, it ensure that the resulting setup is more \emph{production ready}.
+
+\chapter{\faExclamationTriangle\ Configure Kibana -- 15 min}
+\label{ex:kibana-enrollment}
+
+{\bf Objective:}\\
+We also need to connect Kibana -- the web application.
+
+{\bf Purpose:}\\
+Elasticsearch and Kibana is being configured with more security settings on by default. One such setting are the enrollment process for Kibana.
+
+{\bf Suggested method:}\\
+Run the programs below from your Linux VM after installing Elasticsearch with Ansible.
+
+Check that Kibana is running, using a browser visit \url{http://127.0.0.1:5601}\\
+Note: this is NOT using HTTPS \smiley
+
+When starting Kibana after installing the application asks for an enrollment token. This can be created using a tool \verb+elasticsearch-create-enrollment-token+.
+
+This tool is located in a directory which is probably not in your PATH, so execute it directly:\\
+\verb+/usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token+ like this:
+
+
+\begin{alltt}
+root@debian-lab-12:/root# /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+eyJ2ZXIiOiI4LjE...0Q5USJ9 // token of several lines
+\end{alltt}
+
+Then after pasting this into Kibana, it needs a verification code,
+
+\begin{alltt}
+root@debian-lab-12:~# /usr/share/kibana/bin/kibana-verification-code
+Your verification code is:  835 291 // your code will be different
+\end{alltt}
+
+After this the service is ready for our adventures into SIEM using Elasticsearch as an example.
+
+{\bf Hints:}\\
+You can confirm the password change using a browser for \url{https://127.0.0.1:5601}
+
+
+{\bf Solution:}\\
+When you have used the tool and seen Kibana working in the browser you are done.
+
+{\bf Discussion:}\\
+{\LARGE Make sure to create a backup when everything is working. Most virtualization software allow you to do a backup of the virtual disk, or create a \emph{snapshot}}
 
 
 \chapter{\faInfoCircle\ Install JupyterLab -- up to 30min}
@@ -542,7 +637,7 @@ The main reason for installing it in this course is to make R and Python availab
 
 
 
-\chapter{\faExclamationTriangle\ Making requests to Elasticsearch -- 15-75min}
+\chapter{\faInfoCircle\ Making requests to Elasticsearch -- 15-75min}
 \label{ex:es-rest-api}
 
 %\hlkimage{10cm}{kali-linux.png}
@@ -560,6 +655,55 @@ Go to the list of exposed Elasticsearch REST APIs:\\
 The Elasticsearch REST APIs are exposed using JSON over HTTP.
 
 Select a category example, Cluster APIs, then select Nodes Info APIs. This will show URLs you can use:
+
+Warning: since Elasticsearch version 8 the main protocol used is HTTPS, and requires user login. The cURL program can work with username and password, but you need to add them:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@debian-lab-12:~$ curl http:/127.0.0.1:9200
+curl: (52) Empty reply from server
+# fails because it should use https
+
+hlk@debian-lab-12:~$ curl https:/127.0.0.1:9200
+curl: (60) SSL certificate problem: self-signed certificate in certificate chain
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+# fails due to self-signed certificate, add -k to curl command
+
+hlk@debian-lab-12:~$ curl -k https:/127.0.0.1:9200
+{"error":{"root_cause":[{"type":"security_exception","reason":"missing authentication credentials
+ for REST request [/]","header":{"WWW-Authenticate":["Basic realm=\"security\"
+ charset=\"UTF-8\"","Bearer realm=\"security\"","ApiKey"]}}],"type":"security_exception",
+ "reason":"missing authentication credentials for REST request [/]",
+ "header":{"WWW-Authenticate":["Basic realm=\"security\" charset=\"UTF-8\"",
+ "Bearer realm=\"security\"", "ApiKey"]}},"status":401}
+ / fails due to missing username and password
+
+hlk@debian-lab-12:~$ curl -k https:/127.0.0.1:9200 --basic -u elastic
+Enter host password for user 'elastic':
+{
+  "name" : "debian-lab-12",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "2xQz_VUJS2eJCvDCuI_3ow",
+  "version" : {
+    "number" : "8.10.4",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+    "build_hash" : "b4a62ac808e886ff032700c391f45f1408b2538c",
+    "build_date" : "2023-10-11T22:04:35.506990650Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.7.0",
+    "minimum_wire_compatibility_version" : "7.17.0",
+    "minimum_index_compatibility_version" : "7.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+# works, and you can add it after username with :
+# curl -k https:/127.0.0.1:9200 --basic -u elastic:henrik42
+
+\end{minted}
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 # return just process

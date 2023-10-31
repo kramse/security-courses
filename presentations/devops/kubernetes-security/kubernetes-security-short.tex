@@ -1,0 +1,1136 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% Kubernetes Security
+
+% Vi ser på Kubernetes med sikkerhedsbrillerne på.
+
+% Kubernetes er blevet en af de mest populære cloud teknologier både til self-hosted og hos cloud leverandører. Vi vil i dette foredrag se på infrastrukturen i cloud med Kubernetes som eksempel. Det er emner som netværksovervågning, stresstest, muligheder for beskyttelse og isolering samt forensic og opklaring af hændelser.
+
+% Deltagerne vil efterfølgende kunne opsætte miljø tilsvarende underviserens og træne sikkerhed i et lukket miljø.
+
+% Fokus vil være på best current practice med rigeligt med referencer til dokumenter og teknisk know-how, hvordan det kan gøres hos jer selv i praksis bagefter.
+
+% Målgruppe: alle der er interesserede i overvågning af cloud, men primært Kubernetes.
+
+% Varighed: 4 timer inkl pauser
+
+% Nøgleord:
+% Cloud security, DDoS protection, load balancing, logs and audit, cloud monitoring, performance testing
+
+% Dato: Mandag 6. februar kl. 17.00-21.00
+% Sted: Online. Direkte link bliver sendt pr. mail på dagen.
+% Pris: Gratis for medlemmer af PROSA. 525 kr. for ikke-medlemmer
+
+
+
+% Husk
+% Ideer til indledning og struktur, emner i min præsentation
+
+% Describe €THING and then security settings and features for €THING
+% Make tools stand out with font awesome icon "tools"
+% https://fontawesome.com/v5/icons/tools?style=regular&s=solid&f=classic
+
+% Production K8s
+% https://learning.oreilly.com/library/view/production-kubernetes/9781492092292/
+
+% Case: Cheesehub, husk Securing Cheesehub paper og mine valg til min installation
+
+\begin{document}
+
+%\rm
+\selectlanguage{english}
+
+\mytitlepage
+{PROSA Kubernetes Security}
+{A holistic approach to running K8s in production}
+\LogoOn
+
+\slide{Goals for today}
+\vskip 1 cm
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+\item Create an understanding of Kubernetes attack surface
+\item Get an idea of the work needed to create a secure Kubernets deployment
+\item Present some parts of the solution -- including specific tools \faWrench
+%\item Show a Kubernetes lab and run some tools
+\item Point you towards resources, so you can get started with Kubernetes more securely
+\item Lay out a plan for a modern featureful reasonably secure K8s bare-metal install
+\end{list2}
+
+\slide{Security is a Concern in Kubernetes Deployments}
+
+\hlkimage{15cm}{the_new_stack_k8s_top_security.png}
+
+Source: \link{https://thenewstack.io/top-challenges-kubernetes-users-face-deployment/}
+
+\slide{I come from Security -- Security engineering a job role}
+
+\begin{alltt}\small
+On any given day, you may be challenged to:
+        Create new ways to solve existing production security issues
+        Configure and install firewalls and intrusion detection systems
+        Perform vulnerability testing, risk analyses and security assessments
+        Develop automation scripts to handle and track incidents
+        Investigate intrusion incidents, conduct forensic investigations and incident responses
+        Collaborate with colleagues on authentication, authorization and encryption solutions
+        Evaluate new technologies and processes that enhance security capabilities
+        Test security solutions using industry standard analysis criteria
+        Deliver technical reports and formal papers on test findings
+        Respond to information security issues during each stage of a project’s lifecycle
+        Supervise changes in software, hardware, facilities, telecommunications and user needs
+        Define, implement and maintain corporate security policies
+        Analyze and advise on new security technologies and program conformance
+        Recommend modifications in legal, technical and regulatory areas that affect IT security
+\end{alltt}
+
+Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
+also
+\url{https://en.wikipedia.org/wiki/Security_engineering}
+
+
+
+\slide{My Intentions}
+
+\hlkimage{7cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
+
+I suspect you want to work with Kubernetes, maybe you already do, but:
+\begin{list2}
+\item You are responsible for all of it
+\item You don't have the resources, knowledge, time, etc. for getting to know it all
+\item You have to create an architecture, as well as implement it
+\item ... and monitor it, ... and secure it
+\end{list2}
+My intention is to be your sparring partner today, list all the parts I think must be considered.
+
+\slide{Target Audience}
+
+\hlkimage{9cm}{nesa-by-makers-IgUR1iX0mqM-unsplash.jpg}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Overall target audience: operators, and developers becoming operators -- devops
+\item Maybe secdevops - security personnel that needs some scalable systems running on K8s
+    - like myself
+\item People being told to setup a K8s cluster -- for some app
+\end{list2}
+
+
+\slide{Disclaimer: I am not an expert in EVERYTHING Kubernetes}
+
+\begin{quote}
+\large \bf I am not an EXPERT \\
+-- but I have read a lot and watched youtube videos. \smiley
+\end{quote}
+
+\begin{list1}
+\item Kubernetes is such a big ecosystem
+\item The list is long, and an incomplete list contains:
+\begin{list2}
+\item Kubernetes core components -- software written by the project RBAC etc.
+\item Kubernetes supported container technologies, docker etc.
+\item Kubernetes dependencies -- etcd software used for storing data
+\item Operating systems -- and that lies below, storage
+\item Kubernetes networking providers -- multiple exist, which one to choose -- like Cilium
+\item Monitoring solutions -- logging solutions
+\end{list2}
+\item and on top all the applications in and around Kubernetes -- NGINX, PostgreSQL, ...
+\end{list1}
+
+\slide{Why are we here today then?!}
+\hlkrightimage{10cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
+
+We are here to get an overview:
+\begin{list2}
+\item Identify what we \emph{need} for a Kubernetes production environment
+\item Consider more parts of the picture than \emph{just Kubernetes core}
+\item Find a solution that works, with some example technologies
+\item Provide a kind of check list for your deployment
+\end{list2}
+
+\vskip 5mm
+\begin{center}
+In general I want to take a more holistic approach to\\
+Kubernetes Security which I hope can help you
+\end{center}
+
+
+\slide{More Disclaimers}
+
+\begin{list2}
+\item Disclaimer: {\bf We cover security today}\\
+We will not cover all parts of K8s  - only the ones that we need for security, as few as possible.\\
+This slideshow is not a replacement for the official docs, and we also recommend multiple\\ resources books, articles and papers detailing specific parts
+
+\item Disclaimer: {\bf Deprecation}\\
+Things are built, and later deprecated. Even while preparing this a few things were deprecated! Core things even change from time to time, which is good. In general I don't trust older references, but verify with newest official docs
+
+\item Disclaimer: {\bf New features}\\
+New and very useful features are added with every new version. If you have an older setup which is not updated, you might not have the same features. New features can also have interesting bugs, and may not work as intended right away. For this presentation I recommend some features that are newer
+
+\item Disclaimer: {\bf Single tenant only}\\
+Running a K8s cluster for your organization is hard enough, I don't claim I could run a production multi-tenancy setup or public cloud
+\end{list2}
+
+\slide{Materials -- where to start}
+
+\begin{list2}
+\item This presentation -- slides for today, start here
+\item \emph{Kubernetes: Up and Running}, 3rd Edition, Brendan Burns, Joe Beda, Kelsey Hightower,
+August 2022\\
+Introduces containers and Kubernetes, books in 3rd ed also has been fixed and updated
+\item \emph{Container Security}, (CS) Liz Rice, O'Reilly, Apr 2020\\
+A classic text about containers and a must read for everyone
+\item \emph{Networking and Kubernetes: A Layered Approach}, James Strong, Vallery Lancey, O'Reilly, 2021\\
+K8s uses a lot of intricate networking -- great for understanding this more
+\item \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde, Packt, July 2020\\
+This is a very complete and detailed view at K8s security, covering many many parts
+\item Advanced security practioners will enjoy security focused books like:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
+\item \emph{Kubernetes Best Practices: Blueprints for Building Successful Applications on Kubernetes}, Brendan Burns, Eddie Villalba, Dave Strebel and Lachlan Evenson, O'Reilly 2020
+\end{list2}
+
+\slide{Creating a lab is not expensive}
+
+\hlkrightimage{8cm}{internet-in-a-box.jpeg}
+
+I use ordinary IT-equipment like switches, PCs and servers, with some additional 10Gbps network devices -- nothing really special running Debian Linux
+
+The main purposes for showing this box, is to show
+\begin{list2}
+\item These are standard network devices, bought the Arista 7150 24-port 10G used on ebay
+\item This specific switch does VXLAN VTEP and BGP, which I use in my labs
+\item OpenBSD which I use for routing also has built-in VXLAN and BGP
+\end{list2}
+
+You should have similar (or better) devices in your production network, and they can be
+configured to do a LOT more than you use them for right now
+
+
+\slide{Before your first K8s Production Deployment}
+
+%\hlkimage{}{}
+
+
+\begin{list2}
+\item Run K8s locally, as in your laptop!
+\item Get it up and running, deploy a sample container
+\item Configure \faWrench\ \verb+kubectl+
+\end{list2}
+
+I don't remember when I ran K8s first, or how many times I have run it locally or in various example labs on the internet. Recently I ran some K8s BGP labs in my browser
+
+Trying out K8s on your laptop:
+
+\begin{list2}
+\item Smallest demo with single node minikube running inside Debian 11
+    "start and run a hello world"
+\item Next one might be multiple VMs running K8s nodes -- multi node with OpenBSD VM for BGP
+\item I can run all of this inside Qubes as HVM
+\end{list2}
+
+\slide{Kubernetes: Production-Grade Container Orchestration}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Kubernetes, also known as K8s, is an open-source system for automating deployment, scaling, and management of containerized applications.
+
+It groups containers that make up an application into logical units for easy management and discovery. Kubernetes builds upon 15 years of experience of running production workloads at Google, combined with best-of-breed ideas and practices from the community.
+\end{quote}
+Source: \link{https://kubernetes.io/}
+
+Basics:
+\begin{list2}
+\item Create Cluster, Deploy App, Expose your app, Scale up, Update your app
+
+\item Plus a thousand buzz words -- scaling, micro-services,
+\end{list2}
+
+Don't get me wrong, I really like Kubernetes!
+
+\slide{K8s Run Programs, Processes and Applications}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Kubernetes is a platform for creating, deploying, and managing distributed applications. These applications come in many different shapes and sizes, but ultimately, they are all comprised of one or more programs that run on individual machines.
+\end{quote}
+Source: \emph{Kubernetes: Up and Running}, 3rd Edition, Brendan Burns, Joe Beda, Kelsey Hightower
+
+\begin{list2}
+\item Containers -- running processes and container images
+\item Interfaces API -- management interfaces are of special interest, including things like Service accounts
+\item Ports and Services -- running applications, what is exposed
+\item {\bf K8s security is software security}
+\end{list2}
+
+
+
+
+\slide{Initial security advice, read the documentation}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Learn Kubernetes Basics}
+\begin{list2}
+\item Apply Pod Security Standards at the Cluster Level
+\item Apply Pod Security Standards at the Namespace Level
+\item Restrict a Container's Access to Resources with AppArmor
+\item Restrict a Container's Syscalls with seccomp
+\end{list2}
+\end{quote}
+Source: tutorial  linked from front page of \link{https://kubernetes.io/},\\
+\link{https://kubernetes.io/docs/tutorials/kubernetes-basics/}
+
+\begin{list2}
+\item I like that security is listed within the first tutorial!
+\item This links to further documentation
+\item Security is also being added continuously
+\end{list2}
+
+\slide{Pod Security Standards (PSA)}
+
+\hlkimage{14cm}{k8s-pod-security-std.png}
+Source: \link{https://kubernetes.io/docs/concepts/security/pod-security-standards/}
+
+\begin{list2}
+\item Note: versions from 1.23, with varying features added later\\
+"Pod Security admission (PSA) is enabled by default in v1.23 and later, as it graduated to beta."
+\end{list2}
+
+\slide{Restricting the Kubernetes API}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS}. In a typical production Kubernetes cluster, the API serves on port 443. The port can be changed with the --secure-port, and the listening IP address with the --bind-address flag.
+
+...
+
+If your cluster uses a {\bf private certificate authority, you need a copy of that CA certificate configured into your ~/.kube/config on the client}, so that you can trust the connection and be confident it was not intercepted.
+\end{quote}
+
+\begin{list2}
+\item If an attacker can run Kubectl with credentials -- they can do anything
+\item Defense in Depth is suggested -- so restrict at multiple levels
+\item Only allow connections from specific network -- firewall filtering
+\item Use TLS and verify/copy certificates
+\end{list2}
+
+\slide{Security From low level and outside}
+
+Now you have built a cluster -- great, is it secure? Does it even work, can you run it?
+
+Keeping it short on purpose:
+\begin{list2}
+\item Hardware - DRAC, ILO, KVM, IPMI etc.
+\item Connections - how to connect your clusters
+% maybe find some blueprints, add management network
+\item Have some jump host, perhaps OpenBSD with wireguard VPN
+\end{list2}
+
+Consider threats and access from the outside and inwards, from bottom and upwards
+
+
+\slide{Document or it didn't happen}
+
+\hlkimage{12cm}{mythical-man-month-documentary.png}
+
+\begin{list2}
+\item Make sure to document!
+\item There are so many parts, so many decisions, soo many places thing can mess up
+\item Have a minimum of documentation -- and the YAML files are not enough
+\item Hint:  you can read the Mythical Man Month at \link{https://archive.org/details/MythicalManMonth}
+\end{list2}
+
+
+\slide{Role-based Access Control (RBAC)}
+
+One thing you should document, create a policy for is access and permissions.
+
+\begin{quote}
+In computer systems security, {\bf role-based access control (RBAC)}[1][2] or role-based security[3] is an approach to restricting system access to unauthorized users. It is used by the majority of enterprises with more than 500 employees,[4] and can implement mandatory access control (MAC) or discretionary access control (DAC).
+
+Role-based access control (RBAC) is a policy-neutral access-control mechanism defined around {\bf roles and privileges}. The components of RBAC such as role-permissions, user-role and role-role relationships make it simple to perform user assignments. A study by NIST has demonstrated that RBAC addresses many needs of commercial and government organizations[citation needed]. RBAC can be used to facilitate administration of security in large organizations with hundreds of users and thousands of permissions. Although RBAC is different from MAC and DAC access control frameworks, it can enforce these policies without any complication.
+\end{quote}
+Quote from \url{https://en.wikipedia.org/wiki/Role-based_access_control}
+
+\slide{Kubernetes Initial RBAC}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The \verb+admin.conf+ file gives the user superuser privileges over the cluster. This file should be used sparingly. For normal users, it's recommended to generate an unique credential to which you grant privileges. You can do this with the \verb+kubeadm alpha kubeconfig user --client-name <CN>+ command. That command will print out a KubeConfig file to STDOUT which you should save to a file and distribute to your user. After that, grant privileges by using \verb+kubectl create (cluster)rolebinding+.
+\end{quote}
+
+\begin{list2}
+\item Right after install you can run \faWrench\ \verb+kubectl+ -- great
+\item Age old advice do not use shared administration accounts -- have individual accounts
+\end{list2}
+
+\slide{Adding administrators}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+kubeadm config print init-defaults > kubeadm.conf
+kubeadm kubeconfig user --client-name=hlkadmin --config=kubeadm.conf > hlkadmin.conf
+\end{minted}
+
+\begin{list2}
+\item I would recommend having multiple configs, even for yourself
+\item hlkadmin config used for administration
+\item hlkdeploy for deploying
+\item hlktester maybe even a testing user
+\item Read more about \link{https://kubernetes.io/docs/reference/access-authn-authz/rbac/}
+\end{list2}
+
+\slide{RBAC, groups and Namespace}
+
+\begin{quote}
+Kubernetes starts with three initial namespaces:
+\begin{list2}
+\item[*] default The default namespace for objects with no other namespace
+\item[*] kube-system The namespace for objects created by the Kubernetes system
+\item[*] kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
+\end{list2}
+\end{quote}
+Source: \link{https://kubernetes.io/docs/tasks/administer-cluster/namespaces/}
+
+\begin{list2}
+\item I like namespaces, easy way to isolate stuff
+\item Allow for quotas -- don't allow a test application to use all resources
+\item Easy network segregation -- network policies
+\item Allows easy data isolation -- who can access sensitive data
+\item I recommend groups, namespaces and roles for granting access -- {\bf do not grant permission to named users!}
+\end{list2}
+
+
+\slide{Installing tools and plugins}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@k8s-1:~$ kubectl krew update
+Updated the local copy of plugin index.
+hlk@k8s-1:~$ kubectl krew install rbac-view
+Updated the local copy of plugin index.
+Installing plugin: rbac-view
+Installed plugin: rbac-view
+\
+ | Use this plugin:
+ | 	kubectl rbac-view
+ | Documentation:
+ | 	https://github.com/jasonrichardsmith/rbac-view
+ | Caveats:
+ | \
+ |  | Run "kubectl rbac-view" to open a browser with an html view of your permissions.
+ | /
+/
+\end{minted}
+
+\begin{list2}
+\item "This project is considered prerelease and is under active development."
+\item What I have found in many books -- tools, hints and tips, above from:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas
+\end{list2}
+
+
+\slide{Example tool RBAC-view}
+
+\hlkimage{18cm}{k8s-rbac-view-1.png}
+
+\link{https://github.com/jasonrichardsmith/rbac-view}
+
+
+
+\slide{RBAC Audit tools}
+
+Multiple tools exist -- I most often only link open source tools in my presentations, feel free to suggest others
+\begin{list2}
+\item \faWrench\ \verb+rbac-view+ -- view RBAC data interactively and search as shown above
+\link{https://github.com/jasonrichardsmith/rbac-view} via:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas
+
+\item \faWrench\ \verb+rback+ -- generates a graph representation (in Graphviz dot format) of a Kubernetes cluster’s RBAC settings \link{https://github.com/team-soteria/rback}
+
+\item \faWrench\ \verb+rbac-tool+ -- A collection of Kubernetes RBAC tools to sugar coat Kubernetes RBAC complexity\\
+\link{https://github.com/alcideio/rbac-tool} via Rapid7
+
+\item \faWrench\ \verb+KubiScan+ -- a tool by Eviatar Gerzi to scan Kubernetes cluster for risky RBAC permissions \link{https://github.com/cyberark/KubiScan}
+\item \faWrench\ \verb+krane+ -- a Kubernetes RBAC static analysis and visualisation tool \link{https://github.com/appvia/krane}
+
+\item What is best current practice? More tools and articles available at:
+\link{https://rbac.dev/}
+
+\end{list2}
+
+You MUST control your permissions, so find the tools that work for you!
+
+% More about this subject?
+% HK p 216 +/- Open Policy Agent (OPA) directly or gatekeeper
+% HK p205 simple RBAC example with role
+
+
+\slide{Goals: Data Security}
+
+\hlkimage{18cm}{anderson-nine-principles-of-data-security.png}
+
+
+Source:
+\emph{Clinical system security: Interim guidelines}, Ross Anderson, 1996
+
+
+
+\slide{Principle of Least Privilege}
+
+\begin{quote}
+Every program and every privileged user of the system should operate using the least amount of privilege necessary to complete the job. — Jerome Saltzer, Communications of the ACM
+\end{quote}
+
+\begin{list1}
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+Read more in the 1975 article by Saltzer and Schroeder\\
+\url{https://en.wikipedia.org/wiki/Principle_of_least_privilege}\\
+\url{https://en.wikipedia.org/wiki/Saltzer_and_Schroeder%27s_design_principles}
+
+\slide{Principle of Fail-Safe defaults}
+
+\begin{list1}
+\item {\bf Definition 14-3} The \emph{principle of fail-safe defaults} states that, unless a subject is given explicit access to an object, it should be denied access to that object.\\
+Definition from \emph{Computer Security}, Matt Bishop
+\item Default access \emph{none}
+\item In firewalls default-deny - that which is not allowed is prohibited
+\item Newer devices today can come with no administrative users, while older devices often came with default admin/admin users
+\item Real world example, OpenSSH config files that come with \verb+PermitRootLogin no+
+\end{list1}
+
+
+\slide{Soft Multi tenancy}
+
+Depending on your needs, it might be interesting to investigate soft multi tenancy;
+
+\begin{quote}
+The level of isolation offered is sometimes described using terms like “hard” multi-tenancy, which implies strong isolation, and “soft” multi-tenancy, which implies weaker isolation. In particular, "hard" multi-tenancy is often used to describe cases where the tenants do not trust each other, often from security and resource sharing perspectives (e.g. guarding against attacks such as data exfiltration or DoS). Since data planes typically have much larger attack surfaces, "hard" multi-tenancy often requires extra attention to isolating the data-plane, though control plane isolation also remains critical.
+\end{quote}
+Source: \link{https://kubernetes.io/docs/concepts/security/multi-tenancy/}
+
+% Also described in HK chapter 7 p 177
+% easier than hard multitenancy
+
+Goal prevent some avoidable accidents and problems, breaking other groups services, but easier to maintain
+
+
+\slide{Network parts}
+
+Lets move to networking and CNI plugin alternatives
+
+\begin{list2}
+\item Container Network Interface (CNI) and Cloud Native Computing Foundation (CNCF) project\\
+\link{https://github.com/containernetworking/cni}
+\item Multiple options -- popular and common ones Calico, Flannel, Weave and Cilium
+\item Calico - available multiple places
+\item What does changing CNI plugin bring? and importantly what do you need!
+\item Usually some tunneling and encapsulation between nodes, VXLAN, IP in IP
+\item Allow dynamic routing like Border Gateway Protocol (BGP)
+\item Often more advanced features for filtering, observability, ...
+\item Cilium - I have followed Cilium for a while, so I choose that
+\end{list2}
+
+Focus on your needs, and not what their marketing materials say
+
+\slide{Compare CNI Features }
+
+\hlkimage{14cm}{lks-cni-compare.png}
+Source: \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde
+
+\begin{list2}
+\item Can you live with kube-router really, probably not
+\end{list2}
+
+\slide{Compare CNI Performance}
+
+\hlkimage{25cm}{k8s-cni-compare-benchmark.png}
+Source:  \link{https://platform9.com/blog/the-ultimate-guide-to-using-calico-flannel-weave-and-cilium/}
+
+\begin{list2}
+\item What is most important for you, features or performance? I cannot tell you which CNI to choose!
+\end{list2}
+
+\slide{Installing Cilium}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+helm repo add cilium https://helm.cilium.io/
+
+API_SERVER_IP=<your_api_server_ip>
+# Kubeadm default is 6443
+API_SERVER_PORT=<your_api_server_port>
+helm install cilium cilium/cilium --version 1.12.5 \
+    --namespace kube-system \
+    --set kubeProxyReplacement=strict \
+    --set k8sServiceHost=${API_SERVER_IP} \
+    --set k8sServicePort=${API_SERVER_PORT}
+\end{minted}
+
+\begin{list2}
+\item Note: I ended up deciding to run without the kube-proxy, only Cilium
+\item Document!
+\end{list2}
+
+
+
+\slide{Document what you did, what it did}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cilium install --version=1.13.0-rc4 \
+		--helm-set ipam.mode=kubernetes --helm-set tunnel=disabled \
+		--helm-set ipv4NativeRoutingCIDR="10.0.0.0/8" --helm-set bgpControlPlane.enabled=true \
+		--helm-set k8s.requireIPv4PodCIDR=true --helm-set kube-proxy-replacement=strict
+ℹ️  Using Cilium version 1.13.0-rc4
+🔮 Auto-detected cluster name: kubernetes
+🔮 Auto-detected datapath mode: tunnel
+🔮 Auto-detected kube-proxy has not been installed
+ℹ️  Cilium will fully replace all functionalities of kube-proxy
+ℹ️  helm template --namespace kube-system cilium cilium/cilium --version 1.13.0-rc4 --set bgpControlPlane.enabled=true,
+cluster.id=0,cluster.name=kubernetes,encryption.nodeEncryption=false,ipam.mode=kubernetes,
+ipv4NativeRoutingCIDR=10.0.0.0/8,k8s.requireIPv4PodCIDR=true,k8sServiceHost=10.137.0.26,
+k8sServicePort=6443,kube-proxyreplacement=strict,kubeProxyReplacement=strict,operator.replicas=1,
+serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator,tunnel=disabled
+...
+⌛ Waiting for Cilium to be installed and ready...
+✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+\end{minted}
+
+
+How I ran the kubeadm for building cluster - note the skip:\\
+\verb+sudo kubeadm init --pod-network-cidr=10.50.0.0/16 --skip-phases=addon/kube-proxy+
+
+\slide{After install Cilium}
+
+\begin{alltt}\footnotesize
+root@k8s-1:~# kubectl get po -n kube-system
+NAME                               READY   STATUS    RESTARTS       AGE
+cilium-2287c                       1/1     Running   1 (161m ago)   3d
+cilium-9kjhv                       1/1     Running   1 (160m ago)   3d
+cilium-operator-5589744cf4-7mwqx   1/1     Running   1 (160m ago)   3d
+coredns-f74b98ccc-4hg4n            1/1     Running   1 (161m ago)   3d
+coredns-f74b98ccc-ts55j            1/1     Running   1 (160m ago)   3d
+etcd-k8s-1                         1/1     Running   4 (161m ago)   5d
+kube-apiserver-k8s-1               1/1     Running   4 (161m ago)   5d
+kube-controller-manager-k8s-1      1/1     Running   4 (161m ago)   5d
+kube-scheduler-k8s-1               1/1     Running   4 (161m ago)   5d
+\end{alltt}
+
+
+\slide{Cilium CLI tool}
+
+\hlkimage{24cm}{k8s-cilium-status.png }
+
+\begin{list2}
+\item Many tools are executed via \verb+kubectl+
+\item Others have their own command
+\item This can be very confusing, and again -- document which tools you use!
+\item Having a jump host with updated tools installed might help -- helps me!
+\end{list2}
+
+\slide{Cilium overview}
+
+\hlkimage{12cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+
+\slide{Security is more than blocking!}
+
+\hlkimage{22cm}{cilium-features.png}
+
+\begin{list2}
+\item A lot of features relate to \emph{security}
+\end{list2}
+
+
+\slide{Testing Connectivity}
+
+Cilium has a very nice built-in connectivity test:
+\begin{alltt}\footnotesize
+root@k8s-1:~# cilium connectivity test
+ℹ️  Monitor aggregation detected, will skip some flow validation steps
+✨ [kubernetes] Creating namespace cilium-test for connectivity check...
+✨ [kubernetes] Deploying echo-same-node service...
+✨ [kubernetes] Deploying DNS test server configmap...
+✨ [kubernetes] Deploying same-node deployment...
+✨ [kubernetes] Deploying client deployment...
+✨ [kubernetes] Deploying client2 deployment...
+✨ [kubernetes] Deploying echo-other-node service...
+✨ [kubernetes] Deploying other-node deployment...
+⌛ [kubernetes] Waiting for deployments [client client2 echo-same-node] to become ready...
+⌛ [kubernetes] Waiting for deployments [echo-other-node] to become ready...
+...
+✅ All 31 tests (232 actions) successful, 0 tests skipped, 0 scenarios skipped.
+root@k8s-1:~#
+\end{alltt}
+
+\slide{Checking your Kubernetes deployment}
+
+\hlkimage{5cm}{testing.pdf}
+
+\begin{list2}
+\item It can actually be hard to check your Kubernetes installation
+\item Especially networking in detail
+\item I would recommend spending a little time investigating Maximum Transmission Unit (MTU)\\
+\link{https://en.wikipedia.org/wiki/Maximum_transmission_unit}
+\item Your devices -- switches and network cards can probably also offload some features to hardware
+\item Advanced users could dive deeper into \emph{BPF and XDP Reference Guide} \link{https://docs.cilium.io/en/latest/bpf/}
+\end{list2}
+
+
+
+\slide{External IPs}
+
+Jumping directly in, I am running on bare metal. Getting external access into K8s is a bit hard. I decided to use Cilium, BGP, and IP pools
+
+\begin{alltt}\footnotesize
+$ cat pool-zencurity.yaml
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "pool"
+spec:
+  cidrs:
+  - cidr: "185.129.62.144/28"
+  - cidr: "2a06:d380:0:85::0/64"
+\end{alltt}
+
+\begin{list2}
+\item \link{https://docs.cilium.io/en/latest/network/lb-ipam/}
+\item I run a LIR (Local Internet Registry) with network AS57860 which have these addresses
+\end{list2}
+
+
+\slide{Result in my setup}
+
+%\hlkimage{}{}
+
+\begin{alltt}\footnotesize
+root@k8s-1:/home/hlk/bin# k get svc
+NAME           TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)          AGE
+kubernetes     ClusterIP      10.96.0.1       <none>           443/TCP          5d
+service-test   LoadBalancer   10.108.127.95   185.129.62.154   1234:30378/TCP   4d22h
+\end{alltt}
+
+References that were useful:
+\begin{list2}
+\item \link{https://sue.eu/blogs/expose-loadbalanced-kubernetes-services-with-bgp-cilium/}
+\item \link{https://nicovibert.com/2022/07/21/bgp-with-cilium/}
+\item \link{https://isovalent.com/resource-library/labs/} - has labs where you can try running BGP
+\end{list2}
+
+
+\slide{Network Policy Editor for Kubernetes}
+
+\hlkimage{18cm}{cilium-editor-ui.png}
+
+\begin{list2}
+\item Nice Editor for Policies \link{https://editor.cilium.io/}
+\item Recommendation: always specify a Network Policy - be specific, who CAN access
+\item Make positive lists - as normally only a limited number of other resources will need access
+\item Then also make sure to specify an egress policy - so both ingress and egress rules
+\end{list2}
+
+\slide{Example Network Policy}
+
+\begin{alltt}\scriptsize
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy    see more at \url{https://docs.cilium.io/en/v1.8/concepts/kubernetes/policy/}
+metadata:
+  name: example-policy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  ingress:
+    - from: - ipBlock: cidr: 185.129.60.123/32
+      ports:
+        - port: 80
+        - port: 443
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53          protocol: UDP
+\end{alltt}
+
+
+\slide{Cilium for Host Firewall}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Deploy Cilium release via Helm:
+
+\begin{alltt}\footnotesize
+helm install cilium ./cilium   --namespace kube-system  --set hostFirewall.enabled=true    --set devices='{ethX,ethY}'
+\end{alltt}
+The devices flag refers to the network devices Cilium is configured on such as eth0. Omitting this option leads Cilium to auto-detect what interfaces the host firewall applies to.
+
+At this point, the Cilium-managed nodes are ready to enforce network policies.
+
+\end{quote}
+Source: \url{https://docs.cilium.io/en/latest/security/host-firewall/}
+
+
+\begin{list2}
+\item I find it cleaner to use Cilium for all network policies, ignoring IPtables
+\item You need only a few CiliumClusterwideNetworkPolicy resources defined for the cluster to work, and then you can allow Secure Shell from only a few places
+\item Note: While booting there might be a very short time where Cilium is starting, where packets are allowed YMMV
+\end{list2}
+
+
+
+\slide{Monitoring and updating -- upgrades}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Since Kubernetes is a complex system, I recommend making an initial deployment plan which is longer than a release cycle of Kubernetes. Currently new releases are coming out rapidly, so a 3-4 month plan should suffice.
+
+{\bf Main goal is to try upgrading the cluster \emph{before} you have production running!}
+\end{quote}
+
+\link{https://kubernetes.io/releases/}
+
+You need to upgrade all parts, so remember which parts you use:
+\begin{list2}
+\item Firmwares and supporting systems, routers, switches, server control, storage, ...
+\item Operating systems
+\item Kubernetes core components
+\item Cilium upgrade and various other plugins
+\end{list2}
+
+
+\slide{Performing upgrades}
+
+%\hlkimage{}{}
+\begin{quote}
+When rolling out an upgrade with Kubernetes, Kubernetes will first terminate the pod followed by pulling the new image version and then finally spin up the new image. In order to reduce the downtime of the agent and to prevent ErrImagePull errors during upgrade, the pre-flight check pre-pulls the new image version.
+\end{quote}
+
+\begin{alltt}\footnotesize
+root@gouda01:~# cilium upgrade
+🔮 Auto-detected datapath mode: tunnel
+🚀 Upgrading cilium-operator to version quay.io/cilium/operator-generic:v1.12.5...
+🚀 Upgrading cilium to version quay.io/cilium/cilium:v1.12.5...
+⌛ Waiting for Cilium to be upgraded...
+
+\end{alltt}
+
+\begin{list2}
+\item Cilium recommend a pre-flight check -- pulls images beforehand etc:\\
+\link{https://docs.cilium.io/en/v1.12/operations/upgrade/}
+\item A good example of how to prepare upgrades
+\end{list2}
+
+\slide{Resource monitoring and capacity planning}
+
+\begin{quote}
+\emph{Metrics} A series of numbers measured over a period of time
+
+\emph{Logs} Used for exploratory analysis of a system
+\end{quote}
+Source: \emph{Kubernetes Best Practices: Blueprints for Building Successful Applications on Kubernetes}, Brendan Burns, Eddie Villalba, Dave Strebel and Lachlan Evenson, O'Reilly 2020
+
+\begin{list2}
+\item The book is mostly interested in poorly performing applications, but the same data is used in security
+\item I always install Kubernetes dashboard, and I am going to use \faWrench\ \verb+Prometheus+ a lot more
+\end{list2}
+
+\slide{Security monitoring and auditing}
+
+Why isn't K8s secure?!
+\begin{quote}
+We will cover the following topics in this chapter:
+\begin{list2}
+\item The path traversal issue in kubectl cp—CVE-2019-11246
+\item The DoS issue in JSON parsing—CVE-2019-1002100
+\item The DoS issue in YAML parsing—CVE-2019-11253
+\item The privilege-escalation issue in role parsing—CVE-2019-11247
+\item Scanning known vulnerabilities using \faWrench\ \verb+kube-hunter+
+\end{list2}
+\end{quote}
+Source: Chapter 13 \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde, Packt, July 2020
+
+% Include refs to LKS book chapter 13 CVEs, and HK p133 CVEs plus p 275 CVEs
+TL;DR look at previous problems -- which ones would have hurt our design and architecture?
+
+
+\slide{Cloud and Container Forensics}
+
+I am definitely not an expert here!
+
+\begin{quote}
+Tools like kube-forensics “create checkpoint snapshots of the state of running pods for later off-line analysis,” so malicious workloads can be dumped and killed, and the system returned to use.
+\end{quote}
+Source: \emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
+
+
+\begin{list2}
+\item Sysdig - advanced logging and inspection
+\item \faWrench\ \verb+sysdig+ and \faWrench\ \verb+sysdig-inspect+
+\link{https://github.com/draios/sysdig}
+\link{https://github.com/draios/sysdig-inspect}
+\end{list2}
+
+Monitoring Networking
+
+\begin{list2}
+\item Cilium has Setting up Hubble Observability \\
+\url{https://docs.cilium.io/en/stable/gettingstarted/hubble_setup/#hubble-setup}
+\item Attack types DDoS slow and fast, volumetric and PPS based
+\item Pro/cons with having another layer - manually configured, only allow few protocols and ports 80, 443, 8080
+\item If you have allow lists only, you will reduice noise
+\end{list2}
+
+
+\slide{Kubernetes Security is more than just the core}
+
+\hlkimage{12cm}{rice-container-security-1.png}
+Source: \emph{Container Security}, (CS) Liz Rice, O'Reilly, Apr 2020
+
+\begin{list2}
+\item Attacks from inside, attacks inside containers
+\item Some just use up resources, some attacks others, some attack the system from the inside
+\item Hacking Kubernetes have a whole \emph{Chapter 3 Container Runtime Isolation}
+\end{list2}
+
+
+\slide{Analysis on Docker Hub malicious images: Attacks through public container images}
+
+\hlkimage{10cm}{sysdig-malicious-images.png}
+This article is relevant, talking about malicious docker images\\
+\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
+
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
+\link{https://github.com/anchore/anchore-engine}\\
+"As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype."
+\item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype}
+\item Allow direct download from the internet into your cluster, may become a problem
+\item Malicious people are typosquatting popular containers!
+\item Suply chain attacks in general are a problem
+\end{list2}
+
+\slide{Harden Container Images and Update Your Procedures}
+
+\begin{list2}
+\item Change the goddamn passwords!\\
+Container postgresql with user postgres and password *postgres*, REALLY!!!!!!1111
+\item and NO MORE ROOT! Dont run as root, we realized this was bad in the 1990s!
+\item CIS Docker Benchmarking also Learn Kubernetes Security \emph{Chapter 8: Securing Kubernetes Pods}
+\item Hacking Kubernetes \emph{Chapter 8: Policy} - describe things like Resource Quotas, Runtime Policies
+\end{list2}
+
+\slide{Recommendations from CIS Docker Benchmark}
+
+\hlkimage{14cm}{cis-docker-1.png}
+Summary from: \link{https://www.aquasec.com/cloud-native-academy/docker-container/docker-cis-benchmark/}
+
+\begin{list2}
+\item Latest version: CIS Docker Benchmark v1.5.0 - 12-28-2022
+\end{list2}
+
+
+\slide{Benchmarking tools}
+
+\begin{quote}
+\faWrench\ \verb+Kube-bench+ is the industry-standard tool to automate checking Kubernetes compliance with the Center for Internet Security (CIS) Benchmark.
+
+Kube-bench makes it easy for operators to check whether each node in their Kubernetes cluster is configured according to security best practices.
+\end{quote}
+Source: \link{https://info.aquasec.com/open-source}
+
+\begin{list2}
+\item CIS Kubernetes V1.24 Benchmark v1.0.0 - 09-21-2022 -- other versions exist
+\item CIS Docker Benchmark v1.5.0 - 12-28-2022
+\end{list2}
+
+%\slide{Benchmarking and keeping up to date}
+
+% Try it out \faWrench\ \verb+kube-bench+ - make some bad changes, like LKS p95 allow anonymous authentication, show why layered defense works, and how kube-bench marks it. Another example token based access, initially we have token while installing, remember to remove!
+% \faWrench\ \verb+kube-hunter+ and kube-bench
+
+\slide{Tool example kube-bench}
+
+%\hlkimage{}{}
+
+\begin{alltt}\scriptsize
+hlk@timon:~/bin/kube-bench/kube-bench$ {\bf kubectl logs kube-bench-gdf62}
+[PASS] 1.1.7 Ensure that the etcd pod specification file permissions are set to 600 or more restrictive (Automated)
+[PASS] 1.1.8 Ensure that the etcd pod specification file ownership is set to root:root (Automated)
+[WARN] 1.1.9 Ensure that the Container Network Interface file permissions are set to 600 or more restrictive (Manual)
+[WARN] 1.1.10 Ensure that the Container Network Interface file ownership is set to root:root (Manual)
+[PASS] 1.1.11 Ensure that the etcd data directory permissions are set to 700 or more restrictive (Automated)
+[FAIL] 1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)
+...
+== Summary policies ==
+0 checks PASS
+0 checks FAIL
+35 checks WARN
+0 checks INFO
+
+== Summary total ==
+63 checks PASS
+10 checks FAIL
+58 checks WARN
+0 checks INFO
+
+\end{alltt}
+
+\begin{list2}
+\item \url{https://github.com/aquasecurity/kube-bench} also check out Lynis \url{https://cisofy.com/lynis/}
+\end{list2}
+
+
+
+
+\slide{Kubernetes lab setup -- proof of concept}
+
+\hlkimage{4cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: any modern PC with modern CPU and virtualisation\\
+Don't forget to enable it in the BIOS
+\item Software: your favourite Linux distribution, I choose Debian
+\item Container software: pick your poison
+\item Hacker software: Kali as a Virtual Machine \link{https://www.kali.org/}
+\item Smallest Kubernetes: Minikube -  I run this on Debian 11
+\item Production deployment probably would use better tools like \faWrench\ \verb+Kubeadm+
+\end{list2}
+
+
+
+\slide{Conclusion Kubernetes Security}
+
+\hlkimage{4cm}{network-layers-2022.pdf}
+
+\begin{list2}
+\item It is hard!
+\item Multiple books have checklist -- depending on your interests, some for developers, some for ops
+\item Example: Hacking Kubernetes chapter 10. has good advice too, including a small checklist for On-Premises Environments
+links on p249 to Build K8s Bare-metal cluster with external access\\
+\link{https://medium.com/swlh/on-premise-kubernetes-clusters-b36660ca6914}\\
+\link{https://www.datapacket.com/blog/build-kubernetes-cluster}\\
+\link{https://medium.com/@apiotrowski312/bare-metal-kubernetes-with-helm-rook-ingress-prometheus-grafana-6a74857cc74c}
+\end{list2}
+
+
+\myquestionspage
+
+\slide{Let's talk about a case Cheesehub.dk}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf CHEESE: Cyber Human Ecosystem of Engaged Security Education}
+
+CHEESE (Cyber Human Ecosystem of Engaged Security Education) is an NSF-funded initiative to develop a learning ecosystem for cybersecurity education. The project consists of the following:
+
+\begin{list2}
+\item Easy to access, dynamic, web-based learning platform
+\item Community-contributed catalog of cybersecurity training materials
+\item Community-driven platform to request, develop, share, evaluate and learn about content
+\item Learning ecosystem that is continuously updated
+\end{list2}
+\end{quote}
+
+\begin{list2}
+\item I found a system based on Kubernetes \\
+\emph{CHEESE: Cyber Human Ecosystem of Engaged Security Education}\\
+\link{https://docs.cheesehub.org/}
+\item Educational sessions using containers being spun up for the students
+\item Decided to give it a shot
+\end{list2}
+
+
+\slide{Hacker Days and NWWC}
+
+Due to time restrictions and my knowledge, some things have moved to Advanced Subjects
+
+We can also consider doing focused work days with Kubernetes -- I would love that!
+
+I have previously done NWWC see nwwc.dk, Hacker days at PROSA, KEA etc.
+
+Do you want to meet up?
+
+\slide{Threat modelling -- maybe do your own threat modelling?}
+- my presentation based on "minimum" and Best Current Practice
+
+Make sure to do recommended basic security before considering advanced attacks
+
+
+\slide{Advanced subjects}
+
+\begin{list2}
+\item Secrets in K8s vaults Various methods for keeping secrets -- considered a developer problem, sorry
+\item High availability Moved to advanced subject, but of course important
+\item Multi tenancy Moved to advanced subject, perhaps HK chapter 7 can help you
+\item Sandboxing see HK Chapter 3. Sandboxing
+\item Honeypots Moved to advanced - time constraints
+\end{list2}
+
+\slide{Books and educational materials}
+
+We could keep recommending books, articles, papers and official documentation.
+These are examples, and even if some details are changed, may be good to read
+\begin{list2}
+\item \emph{Kubernetes Security and Observability} Brendan Creane, Amit Gupta % Er på Oreilly.com
+Mastering Kubernetes, {\bf Third Edition}, Gigi Sayfan, Packt 2020
+\item \emph{kubectl: Command-Line Kubernetes in a Nutshell}, Rimantas Mocevicius, Packt, 2020
+\item \emph{The Kubernetes Workshop},Zachary Arnold, Sahil Dua, Wei Huang, Faisal Masood, Melony Qin,
+and Mohammed Abu Taleb, Packt, 2020
+\item \emph{Kubernetes A Complete DevOps Cookbook}, Murat Karslioglu, Packt, 2020
+\item \emph{Cloud Native with Kubernetes}, Alexander Raul, Packt, 2020
+\item \emph{Kubernetes and Docker – An Enterprise Guide}, Scott Surovich, Marc Boorshtein, Packt, 2020
+\item \emph{Kubernetes in Production Best Practices: Build and manage highly available production-ready
+Kubernetes clusters}, Aly Saleh, Murat Karslioglu, Packt 2021
+\end{list2}
+
+These are the ones I selected for \emph{my Kubernetes education} some via a Humble Ultimate Devops bundle
+
+\slide{Linux and Internet Resources}
+
+Let's face it, K8s is Unix, so basic Linux and Internet Security resources help too:
+\begin{list2}
+\item \emph{The Linux Command Line: A Complete Introduction}, 2nd Edition\\
+ by William Shotts, internet edition \link{https://sourceforge.net/projects/linuxcommand}
+\item \emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, 5. ed. Allen Harper and others ISBN: 978-1-260-10841-5
+\item \emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}, Lee Brotherston, Amanda Berlin ISBN: 978-1-491-96038-7 284 pages
+\item \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+\item \emph{Practical Packet Analysis, Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd ed, ISBN: 978-1-59327-802-1
+\end{list2}
+
+We teach using these books and others! Diploma in IT-security at KEA Kompetence\\
+ \link{https://zencurity.gitbook.io/}
+
+\end{document}

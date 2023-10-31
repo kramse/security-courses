@@ -1,10 +1,14 @@
 \documentclass[a4paper,11pt,notitlepage]{report}
-% Henrik Kramselund Jereminsen, February 2001
-\usepackage{zencurity-network-exercises}
+% Henrik Kramselund, February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{kea-exercises}
 
 \begin{document}
 
-\rm
+%\rm
+\selectlanguage{english}
+
 \selectlanguage{english}
 \newcommand{\subject}[1]{SIEM and Log Analysis course}
 \mytitle{SIEM and Log Analysis}{exercises}
@@ -311,6 +315,18 @@ Git is the name of the tool, and Github is a popular site for hosting git reposi
 
 {\bf Suggested method:}\\
 Run the program from your Linux VM. You can also clone from your Windows or Mac OS X computer. Multiple graphical front-end programs exist too.
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has Git, ansible and my playbooks: (as root run, or with sudo as shown)
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt -y install ansible git
+\end{minted}
 
 Most important are Git clone and pull:
 \begin{minted}[fontsize=\footnotesize]{shell}
@@ -758,6 +774,146 @@ Similar to this:
 % 1-overview starts here
 
 
+\chapter{\faExclamationTriangle\ Mitre ATT\&CK Framework 10 min}
+\label{ex:mitre-attack}
+
+
+\hlkimage{14cm}{mitre-attack.png}
+
+Source:  Great resource for attack categorization
+
+
+
+{\bf Objective:}\\
+See examples of attack methods used by real actors.
+
+
+{\bf Purpose:}\\
+When analyzing incidents we often need to understand how they gained acccess, moved inside the network, what they did to escalate privileges and finally exfiltrate data.
+
+{\bf Suggested method:}\\
+Go to the web site \url{https://attack.mitre.org/}, browse the matrix and read a bit here and there.
+
+Browse the ATT\&CK 101 Blog Post\\
+\url{https://medium.com/mitre-attack/att-ck-101-17074d3bc62}
+
+
+{\bf Hints:}\\
+The columns can be thought of as a progression. An attacker might perform recon first, then gain initial access etc. all the way to the right most columns.
+
+{\bf Solution:}\\
+When you have researched a few details in the model you are done.
+
+{\bf Discussion:}\\
+This is a large model which evolved over many years. You are not expected to remember it all, or understand it all.
+
+
+
+\chapter{\faInfoCircle\ Brim desktop app 20 min}
+\label{ex:brim-security}
+
+\hlkimage {7cm}{brim-nitroba.png}
+
+{\bf Objective:}\\
+Try running Zeek through a desktop app. Zeek is an advanced open source network security monitoring tool that can decode network packets, either live or using packet capture files. \url{https://zeek.org/}
+
+{\bf Purpose:}\\
+You might be presented with a packet capture file, that must be analyzed. Brim is packaged as a desktop app, built with Electron just like many other applications. Once installed, you can open a pcap with Brim and it will transform the pcap into Zeek logs in the ZNG format.
+
+{\bf Suggested method:}\\
+Use either your normal operating system or the Debian VM. Then download the Brim desktop application from:
+\url{https://www.brimdata.io/download/}
+
+Download a sample packet capture:\\
+\url{http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap}
+
+
+{\bf Hints:}\\
+Download the .deb file for your Debian and install using:
+\verb+$ sudo dpkg -i brim_amd64.deb+
+
+Then open a packet capture, nitroba.pcap is a common example used.
+
+{\bf Solution:}\\
+When you have browsed the Brim web site you are done, better if you managed to run it.
+
+{\bf Discussion:}\\
+We often need a combination of tools, like Wireshark with GUI and Tcpdump with command line.
+
+Here we have Brim with GUI and Zeek for command line and production use.
+
+Use the tool you like best for the task at hand.
+
+
+
+\chapter{\faInfoCircle\ Run small programs: Python, Shell script 20min}
+\label{ex:small-python}
+
+{\bf Objective:}\\
+Be able to create small scripts using Python and Unix shell.
+
+{\bf Purpose:}\\
+Often it is needed to automate some task. Using scripting languages allows one to quickly automate.
+
+Python is a very popular programming language. The Python language
+is an interpreted, high-level, general-purpose programming language. Created by Guido van Rossum and first released in 1991.
+
+
+You can read more about Python at:\\
+\url{https://www.python.org/about/gettingstarted/} and \\
+\url{https://en.wikipedia.org/wiki/Python_(programming_language)}
+
+Shell scripting is another method for automating things on Unix. There are a number of built-in shell programs available.
+
+You should aim at using basic shell scripts, to be used with \verb+/bin/sh+ - as this is the most portable Bourne shell.
+
+
+
+{\bf Suggested method:}\\
+Both shell and Python is often part of Linux installations.
+
+Use and editor, leafpad, atom, VI/VIM, joe, EMACS, Nano ...
+
+Create two files, I named them \verb+python-example.py+ and \verb+shell-example.sh+:
+
+\VerbatimInput{python-example.py}
+
+\VerbatimInput{shell-example.sh}
+
+Unix does not require the file type .py or .sh, but it is often recommended to use it. To be able to run these programs you need to make them executable. Use the commands to set execute bit and run them:
+
+
+
+Note: Python is available in two versions, version 2 and version 3. You should aim at running only version 3, as the older one is deprecated.
+
+{\bf Hints:}\\
+\begin{alltt}
+$ chmod +x python-example.py shell-example.sh
+
+$ ./python-example.py
+21
+
+$ ./shell-example.sh
+Todays date in ISO format is: 2019-08-29
+This system has 32 /etc/passwd users
+
+\end{alltt}
+
+{\bf Solution:}\\
+When you have tried making both a shell script and a python program, you are done.
+
+{\bf Discussion:}\\
+If you want to learn better shell scripting there is an older but very recommended book,
+
+\emph{Classic Shell Scripting
+Hidden Commands that Unlock the Power of Unix}
+By Arnold Robbins, Nelson Beebe. Publisher: O'Reilly Media
+Release Date: December 2008
+ \url{http://shop.oreilly.com/product/9780596005955.do}
+
+You can also decide to always use PowerShell for your scripting needs, your decision.
+
+
 
 
 \chapter{\faInfoCircle\ Use a XML library in Python -- up to 30min}
@@ -955,6 +1111,48 @@ The functionality Grok debugging is included in the tool Kibana from Elastic:\\
 
 % 2-hello-world starts here
 
+
+\chapter{\faExclamationTriangle\ IP address research 30 min}
+\label{ex:ip-address-research}
+
+{\bf Objective:}\\
+Work with IP addresses
+
+{\bf Purpose:}\\
+What is an IP address?
+
+Investigate the following IP addresses
+\begin{list2}
+\item 192.168.1.1
+\item 192.0.2.0/24
+\item 172.25.0.1
+\item 182.129.62.63
+\item 185.129.62.63
+\end{list2}
+
+Write down everything you can about them!
+
+{\bf Suggested method:}\\
+Search for the addresses, look for web sites that may help.
+
+{\bf Hints:}\\
+Download the fun guide from Julia Evans (b0rk) \url{https://jvns.ca/networking-zine.pdf}
+
+Pay attention to Notation Time page
+
+Lookup \url{ripe.net} they may have a service called stats or stat -- something like that.
+
+What is the Torproject? good, bad, neutral?
+
+{\bf Solution:}\\
+When you have found some information about each of the above, say 2-3 facts about each you are done.
+
+{\bf Discussion:}\\
+IP addresses are much more than an integer used for addressing system interfaces and routing packets.
+
+We will later talk more about \emph{IP reputation}
+
+
 \chapter{\faExclamationTriangle\ Data types: IP addresses -- 15min}
 \label{ex:data-types-ip-address}
 
@@ -1031,6 +1229,43 @@ When you have understood that data from others can help your identification effo
 {\bf Discussion:}\\
 We also have used reputation a lot in fighting spam and scam emails.
 
+
+
+\chapter{\faInfoCircle\ Install MISP Project 45min}
+\label{ex:misp-install}
+
+\hlkimage{9cm}{misp-project-visualization.png}
+
+{\bf Objective:}\\
+Try installing the application MISP Project locally on your workstation
+
+Evaluate if this is something you would like to have permanently or during an incident.
+
+{\bf Purpose:}\\
+Running MISP Project is  will allow you to analyse
+
+{\bf Suggested method:}\\
+Run the program from a Linux VM
+
+OR use a VM image from \url{https://vm.misp-project.org/}
+
+Credentials are:
+\begin{alltt}\footnotesize
+For the MISP web interface -> admin@admin.test:admin
+For the system -> misp:Password1234
+\end{alltt}
+
+Either way go to the web site and decide an installation path:\\
+\url{https://www.misp-project.org/download/}
+
+{\bf Hints:}\\
+A VM images is probably fastest, and there may also be Docker images available YMMV.
+
+{\bf Solution:}\\
+When you have seen the installation instructions and considered installing it you are done. If you can manage to get it running with the allotted time, great!
+
+{\bf Discussion:}\\
+Downloading VM images can be fine for testing, but can be harder to run later. May not be based on the operating system your organisation prefer, can monitor etc.
 
 
 \chapter{\faExclamationTriangle\ Zeek on the web 10min}

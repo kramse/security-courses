@@ -1029,6 +1029,191 @@ What are some problems in this?
 
 
 
+\chapter{\faExclamationTriangle\ Password Cracking 15min}
+\label{ex:pwcrack-101}
+
+{\bf Objective:}\\
+Crack your own passwords using John the Ripper
+
+
+{\bf Purpose:}\\
+See how fast hashes from bad algorithms can be cracked, and how new ones are slow to crack.
+
+{\bf Suggested method:}\\
+John the Ripper is available from the web page, but also as a package:\\
+\url{https://www.openwall.com/john/}
+
+You should install from the package system using apt install, do apt search first to find the package name.
+
+\begin{enumerate}
+\item Install John, if not already there
+\item Copy the local password database, as root: \verb+cp /etc/shadow /root/mypasswords+
+\item Start cracking: \verb+john --single /root/mypasswords+
+\item Restart with incremental mode, bruteforce: \verb+john --incremental /root/mypasswords+
+\end{enumerate}
+
+You can make it easier if you add a few users with bad passwords first.
+
+{\bf Hints:}\\
+You can download other sample hashes from\\
+ \url{https://hashcat.net/wiki/doku.php?id=example_hashes}
+
+
+
+{\bf Solution:}\\
+When you have cracked at least one password then you are done.
+
+{\bf Discussion:}\\
+A better tool might be hashcat, found at:\\
+\link{http://hashcat.net/wiki/}
+
+This tool can be used with GPUs Graphical Processing Units / graphic cards for more speed.
+
+Still I find John is often sufficient to crack bad passwords, and also for verification purposes it works great.
+
+
+\chapter{\faInfoCircle\ Configure SSH keys for more secure access}
+\label{ex:config-ssh-keys}
+
+{\bf Objective:}\\
+See how SSH keys can be used.
+
+{\bf Purpose:}\\
+Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
+
+Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
+
+{\bf Suggested method:}\\
+
+\begin{enumerate}
+\item First generate a SSH key, using \verb+ssh-keygen+
+\item Copy the public key onto a system, using \verb+ssh-copy-id+
+\item Test using the ssh command
+\end{enumerate}
+
+Generate key:
+\begin{alltt}
+\$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/hlk/.ssh/id_rsa.
+Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
+The key's randomart image is:
++---[RSA 2048]----+
+|      .          |
+|   . o           |
+|   .=            |
+| ..=.      o .   |
+|o.*o. . S o +    |
+|oB==+o   . o     |
+|+*B=.o.   o .    |
+|=++.o +. o o     |
+|oEo=oo .ooo      |
++----[SHA256]-----+
+\end{alltt}
+
+Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
+\begin{alltt}
+\$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\vskip 5mm
+
+\centerline{This is the best tool for the job!}
+
+The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
+
+{\bf Hints:}\\
+You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
+
+You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
+
+\begin{alltt}
+\$ ssh-add .ssh/kramse
+// Passphrase here
+Identity added: .ssh/kramse (.ssh/kramse)
+\$ ssh-add -l
+4096 SHA256:YsR+HhK7u7045ZL8ZDZnlgEnrv+RQG4eJI5oBJAEacs .ssh/kramse (RSA)
+\end{alltt}
+
+
+{\bf Solution:}\\
+When you can login using key you are done.
+
+{\bf Discussion:}\\
+We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
+
+You should remove the possibility for root logins and logins using password, when keys work!
+
+This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
+\begin{alltt}
+#PermitRootLogin prohibit-password
+PermitRootLogin no
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
+\end{alltt}
+
+
+
+\chapter{CIS Benchmarks teaser}
+\label{ex:CIS-benchmarks-teaser}
+
+{\bf Objective:}\\
+Checkout CIS benchmarks
+
+{\bf Purpose:}\\
+We have talked about operating system security, starting with user accounts on Linux. There are much more to security than users, and there are multiple tools available. One such framework is the Center for Internet Security (CIS) Benchmarks.
+
+Their benchmarks are also implemented in multiple tools, which can help automate checking of the settings.
+
+We will now take a quick look at the CIS benchmarks, and more benchmarking will be discussed later.
+
+{\bf Suggested method:}\\
+Choose your operating system/solution and check out at least the general CIS benchmark description and a specific one.
+
+Main site \url{https://www.cisecurity.org/} and some example benchmarks, suggestions:
+
+\begin{list2}
+\item Microsoft Windows Server   \url{https://www.cisecurity.org/benchmark/microsoft_windows_server}
+\item Microsoft Azure https://www.cisecurity.org/benchmark/azure
+\item Azure Linux \url{https://www.cisecurity.org/benchmark/azure_linux}
+\item Debian Linux \url{https://www.cisecurity.org/benchmark/debian_linux}
+\item Kubernetes \url{https://www.cisecurity.org/benchmark/kubernetes}
+\end{list2}
+
+{\bf Hints:}\\
+Center for Internet Security (CIS) Benchmarks are also available for Windows, so checkout their offerings:
+
+\url{https://learn.microsoft.com/en-us/compliance/regulatory/offering-cis-benchmark}
+
+
+{\bf Solution:}\\
+When you have seen the CIS web site, read about a specific benchmark you are done.
+
+
+{\bf Discussion:}\\
+We will discuss other tools in class.
+
+
 \chapter{\faInfoCircle\ Example AUPs up to 30min}
 \label{ex:example-AUP}
 
@@ -1473,149 +1658,6 @@ PORT      STATE SERVICE VERSION
 |   compression_algorithms: (2)
 |       none
 |_      zlib@openssh.com
-\end{alltt}
-
-\chapter{\faExclamationTriangle\ Password Cracking 15min}
-\label{ex:pwcrack-101}
-
-{\bf Objective:}\\
-Crack your own passwords using John the Ripper
-
-
-{\bf Purpose:}\\
-See how fast hashes from bad algorithms can be cracked, and how new ones are slow to crack.
-
-{\bf Suggested method:}\\
-John the Ripper is available from the web page, but also as a package:\\
-\url{https://www.openwall.com/john/}
-
-You should install from the package system using apt install, do apt search first to find the package name.
-
-\begin{enumerate}
-\item Install John, if not already there
-\item Copy the local password database, as root: \verb+cp /etc/shadow /root/mypasswords+
-\item Start cracking: \verb+john --single /root/mypasswords+
-\item Restart with incremental mode, bruteforce: \verb+john --incremental /root/mypasswords+
-\end{enumerate}
-
-You can make it easier if you add a few users with bad passwords first.
-
-{\bf Hints:}\\
-You can download other sample hashes from\\
- \url{https://hashcat.net/wiki/doku.php?id=example_hashes}
-
-
-
-{\bf Solution:}\\
-When you have cracked at least one password then you are done.
-
-{\bf Discussion:}\\
-A better tool might be hashcat, found at:\\
-\link{http://hashcat.net/wiki/}
-
-This tool can be used with GPUs Graphical Processing Units / graphic cards for more speed.
-
-Still I find John is often sufficient to crack bad passwords, and also for verification purposes it works great.
-
-
-\chapter{\faInfoCircle\ Configure SSH keys for more secure access}
-\label{ex:config-ssh-keys}
-
-{\bf Objective:}\\
-See how SSH keys can be used.
-
-{\bf Purpose:}\\
-Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
-
-Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
-
-{\bf Suggested method:}\\
-
-\begin{enumerate}
-\item First generate a SSH key, using \verb+ssh-keygen+
-\item Copy the public key onto a system, using \verb+ssh-copy-id+
-\item Test using the ssh command
-\end{enumerate}
-
-Generate key:
-\begin{alltt}
-\$ ssh-keygen
-Generating public/private rsa key pair.
-Enter file in which to save the key (/root/.ssh/id_rsa):
-Created directory '/root/.ssh'.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in /home/hlk/.ssh/id_rsa.
-Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
-The key fingerprint is:
-SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
-The key's randomart image is:
-+---[RSA 2048]----+
-|      .          |
-|   . o           |
-|   .=            |
-| ..=.      o .   |
-|o.*o. . S o +    |
-|oB==+o   . o     |
-|+*B=.o.   o .    |
-|=++.o +. o o     |
-|oEo=oo .ooo      |
-+----[SHA256]-----+
-\end{alltt}
-
-Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
-\begin{alltt}
-\$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
-/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
-The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
-ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
-Are you sure you want to continue connecting (yes/no)? yes
-/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
-to filter out any that are already installed
-/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
-are prompted now it is to install the new keys
-hlk@10.0.42.147's password:
-
-Number of key(s) added:        1
-
-Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
-and check to make sure that only the key(s) you wanted were added.
-\end{alltt}
-
-\vskip 5mm
-
-\centerline{This is the best tool for the job!}
-
-The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
-
-{\bf Hints:}\\
-You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
-
-You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
-
-\begin{alltt}
-\$ ssh-add .ssh/kramse
-// Passphrase here
-Identity added: .ssh/kramse (.ssh/kramse)
-\$ ssh-add -l
-4096 SHA256:YsR+HhK7u7045ZL8ZDZnlgEnrv+RQG4eJI5oBJAEacs .ssh/kramse (RSA)
-\end{alltt}
-
-
-{\bf Solution:}\\
-When you can login using key you are done.
-
-{\bf Discussion:}\\
-We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
-
-You should remove the possibility for root logins and logins using password, when keys work!
-
-This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
-\begin{alltt}
-#PermitRootLogin prohibit-password
-PermitRootLogin no
-# To disable tunneled clear text passwords, change to no here!
-PasswordAuthentication no
 \end{alltt}
 
 

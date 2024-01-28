@@ -262,6 +262,11 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 \chapter{\faExclamationTriangle\ Enable UFW firewall - 10min}
 \label{ex:debian-firewall}
 
+\hlkimage{12cm}{2048px-Eilan_Donan_Castle_Entrance.jpg}
+
+Source: Picture is Eilean Donan castle entrance\\
+\verb+2048px-Eilan_Donan_Castle_Entrance.jpg+ from \url{https://en.wikipedia.org/wiki/Eilean_Donan}
+
 {\bf Objective:}\\
 Turn on a firewall and configure a few simple rules.
 
@@ -400,6 +405,7 @@ see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 \chapter{\faInfoCircle\ Use Ansible to install Elastic Stack}
 \label{ex:basicansible}
 
+\hlkimage{2cm}{Ansible_logo.png}
 
 {\bf Objective:}\\
 See how a real deployment of a large application could happen with Ansible, installing Elasticsearch
@@ -515,6 +521,9 @@ This is a large model which evolved over many years. You are not expected to rem
 \chapter{\faExclamationTriangle\ Create Lab network 15min}
 \label{ex:virtualbox-network}
 
+\hlkimage{8cm}{sample-ip-network.pdf}
+Sample IP lab network, not the one you are configuring.
+
 {\bf Objective:}\\
 Make sure your two (or more) virtual machines can see each other.
 
@@ -589,6 +598,7 @@ We will now assume port 80/443 are open, as well as a few UDP services - maybe w
 \chapter{\faExclamationTriangle\ Execute nmap TCP and UDP port scan 20 min}
 \label{ex:nmap-synscan}
 
+\hlkimage{3cm}{tcp-three-way.jpg}
 
 {\bf Objective:} \\
 Use nmap to discover important open ports on active systems
@@ -1072,8 +1082,10 @@ This tool can be used with GPUs Graphical Processing Units / graphic cards for m
 Still I find John is often sufficient to crack bad passwords, and also for verification purposes it works great.
 
 
-\chapter{\faInfoCircle\ Configure SSH keys for more secure access}
+\chapter{\faInfoCircle\ Configure SSH keys for more secure access 30min}
 \label{ex:config-ssh-keys}
+
+\hlkimage{10cm}{openssh-banner.png}
 
 {\bf Objective:}\\
 See how SSH keys can be used.
@@ -1174,7 +1186,7 @@ PasswordAuthentication no
 
 
 
-\chapter{CIS Benchmarks teaser}
+\chapter{\faExclamationTriangle\ CIS Benchmarks teaser 30min}
 \label{ex:CIS-benchmarks-teaser}
 
 {\bf Objective:}\\
@@ -1247,8 +1259,7 @@ needs. At the time of writing, its list of topics are:
 \item Security Response Plan Policy
 \item End User Encryption Key Protection Policy
 \item Acquisition Assessment Policy
-28
-| Chapter 3: Policies\item Bluetooth Baseline Requirements Policy
+\item Bluetooth Baseline Requirements Policy
 \item Remote Access Policy
 \item Remote Access Tools Policy
 \item Router and Switch Security Policy
@@ -1494,6 +1505,8 @@ I had Firefox crash at least once during this exercise, so beware - fancy and bi
 \chapter{\faExclamationTriangle\ SSL/TLS scanners 15min}
 \label{ex:sslscan}
 
+\hlkimage{10cm}{ncsc-tls-version-detail.png}
+
 {\bf Objective:}\\
 Try the Online Qualys SSLLabs scanner \link{https://www.ssllabs.com/}
 Try the command line tool sslscan checking servers - can check both HTTPS and non-HTTPS protocols!
@@ -1505,7 +1518,7 @@ Learn how to efficiently check TLS settings on remote services.
 Run the tool against a couple of sites of your choice.
 
 \begin{alltt}\small
-root@kali:~# sslscan --ssl2 web.kramse.dk
+root@kali:~# sslscan www.kramse.org
 Version: 1.10.5-static
 OpenSSL 1.0.2e-dev xx XXX xxxx
 
@@ -1520,7 +1533,9 @@ Altnames: DNS:*.kramse.dk, DNS:kramse.dk
 Issuer:   AlphaSSL CA - SHA256 - G2
 \end{alltt}
 
-Also run it without \verb+--ssl2+ and against SMTPTLS if possible.
+Also run it against SMTPTLS if possible. Choose a mail server,\\
+ \verb+mail.kramse.org+ can work like this:\\
+\verb+sslscan   --starttls-smtp mail.kramse.org:25+
 
 {\bf Hints:}\\
 Originally sslscan is from \link{http://www.titania.co.uk} but use the version on Kali, install with apt if not installed.
@@ -1599,6 +1614,8 @@ Paper:\\
 
 \chapter{\faInfoCircle\ SSH scanners 15min}
 \label{ex:nmap-ssh-scanner}
+
+\hlkimage{10cm}{openssh-banner.png}
 
 {\bf Objective:}\\
 Try ssh scanners, similar to sslscan and Nmap sshscan
@@ -1699,6 +1716,8 @@ PORT      STATE SERVICE VERSION
 \chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}
 \label{ex:priv-esc-cron}
 
+\hlkimage{10cm}{df20030604.jpg}
+
 {\bf Objective:}\\
 Perform a simple privilege escalation attack
 
@@ -1709,14 +1728,12 @@ Try and test a back door script.
 
 \begin{enumerate}
 \item Create a shell copy with SUID bit set as privileged user
-\item Run the command as non-privileged user to see it works
+\item Run the command as non-privileged user to see if it works
 %\item Create root cronjob without path
 %\item Insert a malicious script as one of the commands from the root cron job
 \end{enumerate}
 
 {\bf Hints:}\\
-A cron job runs scheduled commands. They usually perform cleanup functions, removing old files, doing a backup or similar
-
 In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
 
 \begin{alltt}
@@ -1737,9 +1754,9 @@ uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cd
 #
 \end{alltt}
 
-The effective user id should be 0 which is root.
+The effective user id should be 0 which is root. It might not work as intended, due to enhanced security in the shell programs! Namely it wont work with Bourne Again Shell (bash) but maybe with dash. If dash is not installed, try installing it.
 
-When this manual process work. Then automate it, make it into a script like in the book. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
+When this manual process work. Then automate it, make it into a small script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
 
 This happens in a lot of devices and hosts today.
 
@@ -1750,15 +1767,22 @@ When you have created the script for doing the shell copy you are done.
 
 Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
 
- Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
+Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
 
 
 
 {\bf Discussion:}\\
-This was chosen as I found a similar vulnerability in a professional product, in 2019
+Why is the file named with a dot as the first character?
+
+Does the /tmp folder need to be a place to run scripts? No, but many applications unfortunately require exactly this.
+
+What is defense in depth? Does it apply here?
+
+Finish off the exercise by running, and looking at the output from:
+\verb+find / -perm -4000 -o -prm -60000+
 
 
-\chapter{\faInfoCircle\ Anti-virus and "endpoint security" 20min}
+\chapter{\faInfoCircle\ Anti-virus and "endpoint security" 30min}
 \label{ex:anti-virus-end-point-security}
 
 {\bf Objective:}\\
@@ -1774,6 +1798,18 @@ Sit in groups 3-5 -- discuss among yourselves. Write down plus and minus for usi
 
 {\bf Hints:}\\
 In some cases people have installed AV products for check-mark security, the check-list said to have AV, so we installed a mail scanner on this web server -- bad security.
+
+Where do we install anti-malware defenses?
+
+\begin{list2}
+\item Mailscanners
+\item Proxy systems -- web proxies, incoming, outgoing, problems with TLS?
+\item On firewalls -- what is a firewall, can we do inspection, really?!
+\item File systems -- network shares servers, storage systems
+\item What about virtualized systems
+\item ...
+\end{list2}
+
 
 {\bf Solution:}\\
 When we have done a collected talk and discussion we are done.
@@ -2034,6 +2070,8 @@ Source: \url{https://en.wikipedia.org/wiki/IEEE_754}
 \chapter{\faExclamationTriangle\ Real Vulnerabilities up to 30min}
 \label{ex:real-vulns-exim}
 
+\hlkimage{5cm}{log4j-logo.png}
+
 {\bf Objective:}\\
 Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
 
@@ -2058,7 +2096,8 @@ When done with these think about your own dependencies. What software do you dep
 \link{https://github.com/fullhunt/log4j-scan}
 \end{list2}
 
-What is CVSS -- Common Vulnerability Scoring System?
+What is CVSS -- Common Vulnerability Scoring System?\\
+\url{https://nvd.nist.gov/vuln-metrics/cvss}
 
 I depend on the OpenBSD operating system, and it has flaws too:\\
 \url{https://www.openbsd.org/errata65.html}
@@ -2277,7 +2316,7 @@ See for example: \\
 \url{https://docs.docker.com/engine/security/}
 
 
-\chapter{\faExclamationTriangle\ Lynis Auditing, System hardening, and Compliance testing}
+\chapter{\faExclamationTriangle\ Lynis Auditing, System hardening, and Compliance testing 20min}
 \label{ex:lynis-first}
 
 \hlkimage{10cm}{lynis.png}
@@ -2657,6 +2696,8 @@ Some are targetted at recovering data, like lost photos on USB devices, others a
 \chapter{\faInfoCircle\ Clean or rebuild a server 20min}
 \label{ex:clean-or-rebuild}
 
+\hlkimage{10cm}{df20030604.jpg}
+
 {\bf Objective:}\\
 Think about a hacked system, how can you clean such a system?
 
@@ -2679,12 +2720,15 @@ root@debian:~# chmod +sw /tmp/.xxsh
 
 Is this the only file left by the attacker?
 
-Did he change other files, configurations, added users, changed user passwords?
+Did they change other files, configurations, added users, changed user passwords?
 
 {\bf Hints:}\\
 A forensics investigation might perform a complete dump of the file systems and use TASK/Autopsy. Then by generating a timeline it might be possible to find the back door files. Perhaps.
 
 {\bf Solution:}\\
+Remove the back door, and associated hacked accounts.
+
+In real life you would:
 Rebuild your Debian server.
 Automate the setup of critical systems.
 Have good backup of critical data.

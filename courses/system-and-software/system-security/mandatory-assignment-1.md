@@ -1,11 +1,10 @@
 # Mandatory Assignment 1 for System Security course
 
 This is a description for the mandatory assignment 1 in
-KEA Kompetence System Security F2023
+KEA Kompetence System Security F2024
 
-To be handed in at latest Juni 13, 2023 by email to xhek@kea.dk or hlk@zencurity.com
+To be handed in at latest March 14, 2024 by email to xhek@kea.dk or hlk@zencurity.com
 
-Note: this will be the 2nd mandatory assignment.
 
 # Overall goal
 
@@ -15,14 +14,14 @@ Demonstrate knowledge about
 
 Teacher will provide image made in this way:
 * Install a Debian using a small disk size ~10G
-* Install a "root-kit" using the chmod +s on a copy of dash as described in Bishop book page 775. Using dash since sh is bash which prevents this!
+* Hack the system -- how is not detailed, maybe easy to guess password
 * Create extra users not usually found on Debian, copies of root with uid 0 or new users with sudo rights
 
 Students use forensics tools for analyzing this:
 * Suggest using Sleuthkit and Autopsy browser based tool, simple and free
 * Search for your evidence, MAKE SURE to demonstrate how a user would find these - searching for SUID files is one method to document, looking into sudo config and user database is another
 * Present a timeline of when the "hack" occurred, perhaps relate to when system was installed
-* Present as much information as possible about the "malware" (the file found with SUID bit)
+* Present as much information as possible about the "malicious bits"
 
 The process should be possible to complete in less than 10 hours, but you are welcome to do more.
 

@@ -20,7 +20,7 @@ Hand-inn assignment hints and walk-through
 Chatting, doing exercises, questions about Linux
 
 
-Henrik Jereminsen is inviting you to a scheduled Zoom meeting.
+Henrik   is inviting you to a scheduled Zoom meeting.
 
 Topic: System Integration
 Time: May 4, 2020 08:00 AM Copenhagen

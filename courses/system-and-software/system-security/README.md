@@ -5,7 +5,7 @@ English: Computer Systems Security
 
 Part of the Diploma in IT-security at KEA Kompetence.
 
-Teacher: Henrik Kramselund Jereminsen hkj@zencurity.com +45 2026 6000
+Teacher: Henrik Kramselund   hkj@zencurity.com +45 2026 6000
 
 During development I found materials for the course CS f361: Summer 2017
 Introduction to Computer Security and materials at

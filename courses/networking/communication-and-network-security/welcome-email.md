@@ -2,7 +2,7 @@ Hej Allesammen
 
 Velkommen til netværk og kommunikationssikkerhed på KEA Kompetence som starter idag, 14. april 2021.
 
-Jeg hedder Henrik Kramselund Jereminsen og vil være underviser på hele kurset. Min email adresse er enten xhek@kea.dk eller hkj@zencurity.com. Mit telefon nr er: 2026 6000
+Jeg hedder Henrik Kramselund   og vil være underviser på hele kurset. Min email adresse er enten xhek@kea.dk eller hkj@zencurity.com. Mit telefon nr er: 2026 6000
 
 Bøgerne til kurset er:
 * Applied Network Security Monitoring Collection, Detection, and Analysis, 2014 Chris Sanders ISBN: 9780124172081 - shortened ANSM

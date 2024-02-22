@@ -37,9 +37,9 @@ PID	PPID	ImageFileName	Offset(V)	Threads	Handles	SessionId	Wow64	CreateTime	Exit
 \end{alltt}
 
 \begin{list2}
-\item Live Response
-\item Memory analysis
+\item Live Response and Memory analysis
 \item Get annoyed -- memory analysis is tricky, and why we practice!
+\item Note how the book and processes {\bf break down the problems into smaller bits, FOCUS}
 \end{list2}
 
 \slide{Plan for today}
@@ -78,8 +78,7 @@ Exercise theme:
 Once you have identified the threats that you are facing and investigated how those
 threats have accessed and moved through your network, it is time to remove the
 threats. This phase is known as Finish and involves not only eradicating the footholds
-that malicious actors have put in your network, but also working to remediate what‐
-ever enabled them to get access in the first place.
+that malicious actors have put in your network, but also working to remediate whatever enabled them to get access in the first place.
 \end{quote}
 
 \begin{list2}
@@ -226,7 +225,7 @@ Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
 %\hlkimage{}{}
 
 \begin{quote}
-The Finish phase has three stages: mitigate, remediate, and rearchitect. These stages acknowledge that you can’t do everything at once. Even after a comprehensive investigation, some tactical response actions can take place quickly, but many strategic response actions, such as rearchitecting, will take longer. We will discuss the three phases next.
+The Finish phase has three stages: {\bf mitigate, remediate, and rearchitect}. These stages acknowledge that you {\bf can’t do everything at once}. Even after a comprehensive investigation, some tactical response actions can take place quickly, but many {\bf strategic response actions, such as rearchitecting, will take longer}. We will discuss the three phases next.
 \end{quote}
 Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
 
@@ -257,11 +256,8 @@ Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
 %\hlkimage{}{}
 
 \begin{quote}
-Remediation is the process of removing all adversary capabilities and invalidating any
-compromised resources so that they can no longer be used by the adversary to con‐
-duct operations. Remediation generally focuses on a different set of kill-chain phases
-than mitigation does, most notably exploitation, installation, and actions over target,
-which we will break down in this section.
+Remediation is the process of {\bf removing all adversary capabilities and invalidating any compromised resources} so that they can no longer be used by the adversary to conduct operations. {\bf Remediation} generally focuses on a different set of kill-chain phases
+than mitigation does, most notably {\bf exploitation, installation, and actions over target}, which we will break down in this section.
 \end{quote}
 Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
 
@@ -291,6 +287,15 @@ Source: Source: \emph{Intelligence-Driven Incident Response} (IDIR)
 
 \slide{Taking action}
 
+\begin{quote}
+Active defense is frequently equated with the idea of {\bf hack back}, or attempting to attack
+a malicious actor directly. Although this qualifies as one aspect of active defense, five
+other useful pieces of active defense are {\bf far more common}. This mix-up is based on a
+fundamental misunderstanding of the purpose of active defense.
+\end{quote}
+
+I do NOT recommend hacking back! Please do inform the administrators responsible for computing resources that attacks you!
+
 Active Defense (5D)
 \begin{list2}
 \item Deny
@@ -298,6 +303,90 @@ Active Defense (5D)
 \item Degrade
 \item Deceive
 \item Destroy
+\end{list2}
+
+\slide{Deny}
+
+\begin{quote}
+The idea of denying an adversary is so straightforward and common that most organizations wouldn’t even imagine it’s a type of active defense; most are actively doing deny-style actions. If we go by our traditional definition of disrupting the adversary’s tempo, though, this is a perfect example. {\bf Denying can be simple, such as implementing a new firewall rule to block an adversary’s command and control}, applying a
+system patch for a vulnerability, or shutting down access for a compromised email
+account. The key to denial is {\bf preemptively excluding} a capability or infrastructure from
+the malicious actor.
+\end{quote}
+
+\begin{list2}
+\item Most likely what you want to do
+\item Use intelligence feeds to know what to block
+\item Systems like CrowdSec can also be used \url{https://www.crowdsec.net/}
+\item The log4j case is an example where a list of systems performing scanning was shared in real time by CrowdSec\\
+\url{https://www.crowdsec.net/blog/detect-block-log4j-exploitation-attempts}
+
+\end{list2}
+
+
+\slide{Disrupt}
+
+%\hlkimage{}{}
+
+\begin{quote}
+If the deny action preemptively excludes a capability or infrastructure from the
+malicious actor, then {\bf disrupt actively excludes a resource from the malicious actor}. In most cases, disruption requires active observation of an adversary in order to know when they’re active so that they can be disrupted in real time. This could mean
+{\bf cutting off a command-and-control channel while it’s being used or interrupting the
+exfiltration of a large archive file}.
+\end{quote}
+
+\begin{list2}
+\item There are systems to actively monitor the network for exfiltration, NDR, XDR \\
+\url{https://en.wikipedia.org/wiki/Network_detection_and_response}\\
+\url{https://en.wikipedia.org/wiki/Extended_detection_and_response}
+\end{list2}
+
+\slide{Degrade}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Closely related to disrupting and denying an adversary, {\bf degrade focuses on marginal
+reduction} of an adversary’s resources while they’re actively being used. An easily understandable {\bf example is throttling an adversary’s bandwidth during exfiltration}, causing a large file to upload over an extremely slow time frame. This degradation of access attempts to frustrate adversaries, ideally driving them to attempt to access the data in a different way and expose additional infrastructure, tools, or TTPs.
+\end{quote}
+
+\begin{list2}
+\item If you mostly receive data over some connection, could you implement throttling before attacks start?
+\end{list2}
+
+\centerline{\large Active defense conclusion, Implementing multiple tools before they are needed is recommended}
+
+\slide{Deceive}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Easily the most advanced of available techniques, the deceive active defense action
+is based on the counter-intelligence concept of {\bf deliberately feeding adversaries false
+information} with the hopes they’ll treat it as truth and make decisions based on it.
+This ranges from planting false documents with incorrect values to hosting honeypot
+systems or even networks.
+\end{quote}
+
+\begin{list2}
+    \item The Cuckoos Egg book has a few examples where the defender tried getting the attacker to spend more time and resources
+\end{list2}
+
+
+\slide{Destroy}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Destroy actions do {\bf actual harm, whether kinetic or virtual, to an adversary’s tools,
+infrastructure, or operators}. In most cases, this is the purview of law enforcement,
+intelligence, or military operators that have the legal authority to commit such acts
+(in the US, these are Title 10 and Title 50 organizations). For a {\bf commercial or private
+organization to do so is not only generally accepted to be illegal but also dangerous.}
+\end{quote}
+
+\begin{list2}
+    \item See the LockBit example, currently in the news -- search and you will quickly find it
 \end{list2}
 
 

@@ -1130,12 +1130,14 @@ Try doing some live response locally on your workstation
 
 
 {\bf Purpose:}\\
-Running live repsonse will allow you to analyse your current system, hopefully it does not have any malware, virus or other problems.
+Running live response will allow you to analyse your current system, hopefully it does not have any malware, virus or other problems.
 
 This will help your get an understanding of the normal data to be found. Later if you analyze and find something different, it may be something to investigate.
 
+Also this is a complicated exercise, many things might not work on \emph{your operating system} - better to know this beforehand, so you can research alternatives.
+
 {\bf Suggested method:}\\
-First run built-in tools for investigating your system.
+First run built-in tools for investigating your system. They are typically there, and work!
 
 For your Debian it would be tools like: (apt install if not already there):
 
@@ -1154,13 +1156,15 @@ Use the manual pages! Then try tools found in the book, and recommended by instr
 \item Lynis \url{https://cisofy.com/lynis/} audit your system
 \end{list2}
 
+{\bf NOTE: there are often problems running older code. Buying tools may run easier, but has a cost. YMMV. Maybe try searching for newer or alternatives for your platforms. I would imagine that most of the open source tools do NOT support Mac M1 or M2 CPU architectures, what to do!}
+
 You can also try more advanced tools, if you know the above ones:
 \begin{list2}
 \item osquery \url{https://www.osquery.io/}
 \item Ansible show facts -- try \verb+ansible -m setup localhost+
 \end{list2}
 
-
+These tools may not seem like forensics or incident response tools, byt getting information is a large part of response.
 
 
 
@@ -1201,7 +1205,7 @@ Run the program from your Debian Linux VM, or if you prefer your normal work sta
 
 \url{https://github.com/volatilityfoundation/volatility/wiki/Installation}
 
-If running on the recommended Debian 11 VM -- try this:
+If running on the recommended Debian VM -- try this:
 \begin{alltt}\scriptsize
 sudo apt install -y python3 python3-dev libpython3-dev python3-pip python3-setuptools python3-wheel
 sudo python3 -m pip install -U distorm3 yara yara-python pycrypto pillow openpyxl ujson pytz ipython capstone
@@ -1303,6 +1307,8 @@ A colleague uses this one:\\
 
 with the \emph{Cridex} memory sample.
 
+Did you notice that if you know your platform well and the programming language, it will be easier to run these tools! Like seeing a library is not loaded correctly, and being able to fix it.
+
 
 
 \chapter{\faInfoCircle\ Use Ansible to install programs 10-60min}
@@ -1314,7 +1320,7 @@ Running Ansible can save a lot of time!
 
 This exercise is from the course SIEM and Log Analysis, and is considered informational in this course.
 
-However, it can be useful if you want to run Elasticsearch
+It can install a lot of dependencies and a tool, Zeek
 
 {\bf Purpose:}\\
 See an example tool used for many projects, Elasticsearch from the Elastic Stack
@@ -1323,7 +1329,7 @@ See an example tool used for many projects, Elasticsearch from the Elastic Stack
 If you want to run Elasticsearch, you can either use the method from:\\{\footnotesize
 \url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
 
-or by the method described below using Ansible - your choice. The automated process usually finish within 10-15minutes!
+or by the method described below using Ansible - your choice. The automated process usually finish within 10-15minutes! We will not run the whole Ansible with Elasticsearch.
 
 Ansible used below is a configuration management tool \url{https://www.ansible.com/} and you can adjust them for production use!
 
@@ -1349,8 +1355,10 @@ Then it should be easy to run Ansible playbooks, like this: (again as root, most
 
 \begin{minted}[fontsize=\footnotesize]{shell}
 cd kramse-labs/suricatazeek
-ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml 4-configuration.yml
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml
 \end{minted}
+
+Note: Do NOT run the next playbooks \verb+3-elasticstack.yml 4-configuration.yml+ unless you have sufficient memory and time. Especially ES version 8 requires a lot of configuration to be usefull.
 
 Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
 
@@ -1383,8 +1391,13 @@ apt:
 {\bf Solution:}\\
 When you have a updated VM and Ansible running, then we are good.
 
+If you managed to install Zeek it will be in:\\
+\verb+/opt/zeek/bin+
+
+So you will need to add the PATH to your setup to actually use it.
+
 {\bf Discussion:}\\
-Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+Linux is free and everywhere. Many tools we will run in this course are made for Unix, so they run great on Linux.
 
 When installing applications it is recommended to install the repository definition, as that will allow you to update more easily later by using \verb+apt update && apt upgrade+
 

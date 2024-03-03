@@ -17,6 +17,7 @@
 
 \setcounter{tocdepth}{0}
 
+
 \normal
 
 {\color{titlecolor}\tableofcontents}
@@ -28,7 +29,7 @@
 \chapter*{\color{titlecolor}Preface}
 \markboth{Preface}{}
 
-This material is prepared for use in \emph{\kursus} and was prepared by
+This material is prepared for use in courses and was prepared by
 Henrik Kramselund, \link{http://www.zencurity.com} .
 It describes the networking setup and
 applications for trainings and workshops where hands-on exercises are needed.
@@ -2625,6 +2626,54 @@ You can read more about Elasticsearch at the wikipedia page:\\
 \url{https://en.wikipedia.org/wiki/Elasticsearch}
 
 
+\chapter{\faInfoCircle\ Run Elasticsearch in Containers 30min}
+\label{ex:selks}
+
+{\bf Objective:}\\
+Run an Elasticsearch stack with Suricata IDS in containers
+
+{\bf Purpose:}\\
+See how easy it is to test various solutions, even if they are complicated
+
+{\bf Suggested method:}\\
+Use the kickstart-2-selks.pdf document in Fronter.
+
+The steps are also outlined in their repository \url{https://github.com/StamusNetworks/SELKS.git}
+
+I would like for you to install Docker and try out SELKS \url{https://www.stamus-networks.com/selks}
+
+If you want to use the same as me with Debian VM, which installs in less than 30minutes:
+\begin{list1}
+\item[\faSquareO] Install a basic Debian 12 Bookworm with Sudo configured
+\item[\faSquareO] Install git and Ansible, see our exercise:\\
+\verb+sudo apt install git ansible+
+\item[\faSquareO] Clone the Github repo: \link{https://github.com/kramse/kramse-labs}\\
+\verb+git clone https://github.com/kramse/kramse-labs+
+\item[\faSquareO] Go into this repository and install Docker, there is a small README.md too:\\
+\verb+cd kramse-labs/docker-install+ and then \verb+ansible-playbook 1-dependencies.yml+
+\item[\faSquareO] Enable Docker: \verb+systemctl enable docker+ and reboot the VM
+\item[\faSquareO] Check docker, \verb+docker run hello-world+
+\item[\faSquareO] Clone the SELKS repository:\\
+\verb+git clone https://github.com/StamusNetworks/SELKS.git+
+\item[\faSquareO] Go into this and run docker-compose as described in the instructions:\\
+\url{https://github.com/StamusNetworks/SELKS/wiki/Docker}\\
+{\bf  make sure to select the right network interface, so Suricata can sniff packets}
+{\bf I did NOT install Portainer}
+\item[\faSquareO] Use a browser to access the platform on \url{https://127.0.0.1} -- and enjoy!
+\end{list1}
+
+This will provide a basic Elasticsearch version 7, with Kibana and Suricata
+
+
+{\bf Hints:}\\
+Make sure your Debian has enough memory, 8Gb will run, less will be tough, more will be better.
+
+{\bf Solution:}\\
+When you have seen the system on the instructors PC your are done.
+
+{\bf Discussion:}\\
+There are lots of projects that allow you to test solution from containers. This is often much easier and faster then following the instructions for installing the project.
+On the other hand, you may want to follow install instructions if it for a production setup.
 
 \chapter{\faInfoCircle\ Create Kibana Dashboard 15min}
 \label{ex:kibana-dashboard}
@@ -2640,7 +2689,7 @@ Kibana is a very popular system for creating dashboards from data in elasticsear
 Learning how to create and import dashboards is a good exercise.
 
 {\bf Suggested method:}\\
-Instructor will provide a running Elasticsearch and Kibana for this exercise.
+Instructor will provide a method for running Elasticsearch and Kibana for this exercise. See the previous exercise \smiley
 
 Note: usually Kibana should be available on port 5601 on localhost (127.0.0.1) only! It is recommended to keep this configuration and then add a web server like Nginx or Apache in front. This will further allow authentication and other features.
 
@@ -2649,17 +2698,6 @@ Using Firefox visit Kibana on the link provided by the instructor.
 If this is the first time you need to
  select \verb+logstash-*+ as a default index. Note: Kibana is an advanced and powerful tool in itself.
 
-Read how dashboards can be loaded using shell command, example the ones from:
-\link{https://github.com/StamusNetworks/KTS6}
-
-The commands are similar to
-\begin{alltt}
-git clone https://github.com/StamusNetworks/KTS7.git
-cd KTS7
-bash load.sh
-\end{alltt}
-
-Note: KTS version needs to match Elasticsearch version! So for ES version 7, use KTS7
 
 {\bf Hints:}\\
 Logstash and Elastic stack are a great way to get started with dashboarding.
@@ -2674,6 +2712,20 @@ Making dashboard are an art form. We will NOT start creating beautiful dashboard
 
 If you want, there is a SELKS LiveCD dedicated to suricata which also includes more tools for administration of rules and getting alerts:\\
 \link{https://www.stamus-networks.com/open-source/}
+
+Dashboards can be exported as JSON into files, and can be loaded using shell commands, example the ones from:
+\link{https://github.com/StamusNetworks/KTS7}
+
+The commands are similar to
+\begin{alltt}
+git clone https://github.com/StamusNetworks/KTS7.git
+cd KTS7
+bash load.sh
+\end{alltt}
+
+Note: KTS version needs to match Elasticsearch version! So for ES version 7, use KTS7
+
+
 
 
 \chapter{\faExclamationTriangle\ File System Forensics 30min}
@@ -2831,6 +2883,45 @@ Cleaning systems and whole environments is very hard.
 An attacker may have spent only 30 minutes, but the investigation might take 100 hours. This is a huge difference in resources spent.
 
 No such thing as \emph{Was just browsing the system}
+
+
+\chapter{\faInfoCircle\ Install MISP Project 45min}
+\label{ex:misp-install}
+
+\hlkimage{9cm}{misp-project-visualization.png}
+
+{\bf Objective:}\\
+Try installing the application MISP Project locally on your workstation
+
+Evaluate if this is something you would like to have permanently or during an incident.
+
+{\bf Purpose:}\\
+Running MISP Project is  will allow you to analyse
+
+{\bf Suggested method:}\\
+Run the program from a Linux VM
+
+OR use a VM image from \url{https://vm.misp-project.org/}
+
+Credentials are:
+\begin{alltt}\footnotesize
+For the MISP web interface -> admin@admin.test:admin
+For the system -> misp:Password1234
+\end{alltt}
+
+Either way go to the web site and decide an installation path:\\
+\url{https://www.misp-project.org/download/}
+
+{\bf Hints:}\\
+A VM images is probably fastest, and there may also be Docker images available YMMV.
+
+{\bf Solution:}\\
+When you have seen the installation instructions and considered installing it you are done. If you can manage to get it running with the allotted time, great!
+
+{\bf Discussion:}\\
+Downloading VM images can be fine for testing, but can be harder to run later. May not be based on the operating system your organisation prefer, can monitor etc.
+
+
 
 \chapter{\faInfoCircle\ Cloud environments influence on incident response 20min}
 \label{ex:cloud-incident-response}

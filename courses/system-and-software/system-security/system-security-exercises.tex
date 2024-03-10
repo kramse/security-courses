@@ -2973,14 +2973,62 @@ Cloud computer forensics seem immature, but must be researched.
 If you organization relies on cloud computing it is critcal to update incident handling procedures for these new challenges.
 
 
+\chapter{\faInfoCircle\ Evaluate Scope Towards PCI}
+\label{ex:compliance-evaluation}
+
+{\bf Objective:}\\
+Evaluate your infrastructure, quick gap analysis for becoming CIS/PCI compliant
+
+{\bf Purpose:}\\
+Consider the term scope and influence on securing an environment.
+
+{\bf Suggested method:}\\
+Consider a small network like the one used for exercises. Consider the requirements for running exercises, why did we isolate this part from the rest of the network.
+
+What are the parts used:
+\begin{itemize}
+\item Router(s), switches, network equipment
+\item Firewall(s)
+\item Design DMZ, LAN, WLAN
+\item "Servers" - your laptops with Debian
+\item Larger systems and evironments used web servers, email services
+\end{itemize}
+
+Write down the current status, What are the network parts, organization and applications.
+
+Consider the impact of adding wireless network to this setup. Is this a requirement, could we do without it.
+
+Consider if firewalls would be best practice or an actual requirement, how to implement this requirement for your organization.
+
+Which email security standards do you implement now, which ones should you consider.
+
+{\bf Hints:}\\
+Running a host firewall seldom hurts performance today. So turn on the firewall as described in exercise \nameref{ex:debian-firewall}
+
+{\bf Solution:}\\
+When you have browsed the CIS web site and documents, and documented the scope in 3-5 sentences or a small table. You are done.
+
+{\bf Discussion:}\\
+
+What is more important:
+
+\begin{itemize}
+\item Personal data, non-biometric
+\item Financial data, like credit card data
+\item Biometric data iris, DNA etc.
+\item Password data
+\end{itemize}
+
+What if they are leaked, how to recover?
+
 
 \chapter{\faInfoCircle\ Switch configuration and uplink}
 \label{ex:switch-config-vlan}
 
-We will now perform multiple exercises as part of the System Security in Practice.
+We will now discuss multiple exercises as part of the System Security in Practice.
 
 {\bf Overall Objective:}\\
-Try some of the security mechanisms used in real networks today.
+Consider some of the security mechanisms used in real networks today. One huge win can be found in VLAN isolation, isolated systems cannot communicate, aka hacker cannot jump from one to the other.
 
 First is to configure VLAN. This feature is well-known in network.
 
@@ -2990,7 +3038,11 @@ You can read more about the technology at\\ \url{https://en.wikipedia.org/wiki/I
 Learn that a few changes make a huge difference.
 
 {\bf Suggested method:}\\
-Work on our model network, each team has a server and an attacker - reduce attack surface on the server by configuration.
+Consider a systems environment with multiple servers and LAN segments. How would you secure this?
+
+Draw a quick network and use that as an example. Work on this model network, each team has a server and an attacker - reduce attack surface on the server by configuration.
+
+Imagine each team had a switch, and wanted to implement network segragation, isolation:
 
 \begin{itemize}
 \item Configure VLAN on switch for the uplink
@@ -3003,16 +3055,16 @@ Work on our model network, each team has a server and an attacker - reduce attac
 
 Each team has a switch they \emph{own}
 \begin{list2}
-\item Add VLAN 2770 to switch
+\item Add VLAN 3390 to switch
 \item Configure uplink port to be a tagged VLAN trunk - port 8
 \item Configure port to connect to local Debian server, port 1.\\ Note: if tagged Debian must be configured with tag too! You can instead configure as Access port without tag. You decide.
 \item Insert USB Ethernet into Debian server virtual machine
 \end{list2}
 
+This is an exercise that you could actually do on a lab table at home with a few devices.
+
 \eject
 \section*{Switch config initial steps to get started}
-
-{\bf Only connect switch ports when told to do so!}
 
 \begin{enumerate}
 \item First -- install the VLAN support on your Debian server!\\
@@ -3022,10 +3074,10 @@ Each team has a switch they \emph{own}
 \item Reset the switch to default setting - press reset for 15 seconds before doing any configuration
 \item Cable a laptop to any port, except the first one - port 1/0/1 or last one port 1/0/8
 \item Take control of the switch, default settings are in place, see label on bottom and use Ethernet
-\item Add VLAN with ID: 2770 Name: KramsIX
+\item Add VLAN with ID: 3390 Name: KramsIX
 
-\item Configure the Uplink port 1/0/8 with VLAN tag: 2770
-\item Configure the first port 1/0/1 with VLAN tag: 2770\\
+\item Configure the Uplink port 1/0/8 with VLAN tag: 3390
+\item Configure the first port 1/0/1 with VLAN tag: 3390\\
 If you keep the port in VLAN 1 you should be able to connect to the switch management via this port using tagged or untagged, as you prefer \smiley
 \item Configure VLAN interface on your server with the IP in the LAN 10.10.10.45.0/24 - if your team ID is 14, then your IP is 10.10.10.14/24
 \item Add 10.10.10.1 as your default gateway
@@ -3054,8 +3106,8 @@ iface enx00249b1b2991 inet static
   address 192.168.0.2
   netmask 255.255.255.0
 
-auto vlan2770
-iface vlan2770 inet static
+auto vlan3390
+iface vlan3390 inet static
 	vlan-raw-device enx00249b1b2991
 	address 10.10.10.14
 	netmask 255.255.255.0
@@ -3075,51 +3127,6 @@ VLAN separation using the IEEE 802.1q standard is a common method to isolate ser
 
 
 
-
-\chapter{\faInfoCircle\ Evaluate Scope Towards PCI}
-\label{ex:PCI-evaluation}
-
-{\bf Objective:}\\
-Evaluate our network, quick gap analysis for becoming PCI compliant
-
-{\bf Purpose:}\\
-Consider the term scope and influence on securing an environment.
-
-{\bf Suggested method:}\\
-Consider a small network like the one used for exercises. Consider the requirements for running exercises, why did we isolate this part from the rest of the network.
-
-What are the parts used:
-\begin{itemize}
-\item Router(s), switches, network equipment
-\item Firewall(s)
-\item Design DMZ, LAN, WLAN
-\item "Servers" - your laptops with Debian
-\end{itemize}
-
-Write down the current status, What are the network parts, organization and applications (Nginx running on single Debian server?).
-
-Consider the impact of adding wireless network to this setup. Is this a requirement, could we do without it.
-
-Consider if firewalls would be best practice or an actual requirement, how to implement this requirement for your organization.
-
-{\bf Hints:}\\
-Running a host firewall seldom hurts performance today. So turn on the firewall as described in exercise \nameref{ex:debian-firewall}
-
-{\bf Solution:}\\
-When you have browsed the PCI web site and documents, and documented the scope in 3-5 sentences or a small table. You are done.
-
-{\bf Discussion:}\\
-
-What is more important:
-
-\begin{itemize}
-\item Personal data, non-biometric
-\item Financial data, like credit card data
-\item Biometric data iris, DNA etc.
-\item Password data
-\end{itemize}
-
-What if they are leaked, how to recover?
 
 \end{document}
 

@@ -11,11 +11,11 @@
 {KEA Kompetence Computer Systems Security \the\year}
 
 
-\slide{Goals for today}
+\slide{Goals for part II}
 
 \hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
 
-Todays goals:
+
 \begin{list2}
 \item Introduce Encryption
 \item Present the common algorithms, protocols, and tools used
@@ -24,7 +24,7 @@ Todays goals:
 
 {\small Photo by Thomas Galler on Unsplash}
 
-\slide{Plan for today}
+\slide{Plan for part II}
 
 {~}
 \hlkrightpic{8cm}{0cm}{Encrypt_all_the_things.png}
@@ -138,6 +138,21 @@ Hvorfor skal vi kryptere?
 Når vi krypterer hjælper vi andre! {\bf Solidaritetskryptering}
 
 
+
+\slide{Person in the middle attacks}
+
+\begin{list1}
+\item ARP spoofing, ICMP redirects, the classics
+\item Used to be called Man in The Middle MiTM
+\begin{list2}
+\item ICMP redirect
+\item ARP spoofing
+\item Wireless listening and spoofing higher levels like  airpwn-ng \link{https://github.com/ICSec/airpwn-ng}
+\end{list2}
+\item Usually aimed at unencrypted protocols
+\item Today we only talk about getting the data, not how to perform higher level attacks
+\end{list1}
+
 \slide{Basic cryptography}
 
 {~}
@@ -175,9 +190,22 @@ Source: \link{https://en.wikipedia.org/wiki/Cryptography}
 \hlkimage{6cm}{book-ce-150w.jpg}
 
 \emph{Cryptography Engineering} by
-Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
+Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno, 2010\\
 \link{https://www.schneier.com/book-ce.html}
 
+
+\slide{Serious Cryptography}
+
+\hlkimage{5cm}{serious_crypto_cover-front-final.png}
+
+
+\emph{Serious Cryptography
+A Practical Introduction to Modern Encryption}
+by Jean-Philippe Aumasson
+November 2017, 312 pp.
+ISBN-13:
+978-1-59327-826-7
+\link{https://nostarch.com/seriouscrypto}
 
 \slide{Encryption Decryption}
 
@@ -190,29 +218,6 @@ Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
 \item Kryptografi benytter algoritmer som sammen med nøgler giver en
   ciffertekst
 \item  - der kun kan læses ved hjælp af den tilhørende nøgle
-\end{list1}
-
-\slide{Public key kryptografi - 1}
-
-\hlkimage{12cm}{images/crypto-public-key.pdf}
-
-\begin{list1}
-\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
-  nøgle til kryptering og dekryptering
-\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
-  separate nøgler til kryptering og dekryptering
-\end{list1}
-
-\slide{Public key kryptografi - 2}
-
-\hlkimage{12cm}{images/crypto-public-key-2.pdf}
-
-\begin{list1}
-\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
-  nøgle til at dekryptere
-\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
-  signere dokumenter\\ - som så verificeres med den offentlige nøgle
-\item NB: Kryptering alene sikrer ikke anonymitet
 \end{list1}
 
 
@@ -272,6 +277,65 @@ In RSA, this asymmetry is based on the practical difficulty of the factorization
 \item  Quote from: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
 \end{list2}
 
+
+\slide{RSA operation}
+
+\begin{quote}\small
+The RSA algorithm involves four steps: key generation, key distribution, encryption and decryption.
+
+A basic principle behind RSA is the observation that it is practical to find three very large positive integers e, d and n such that with modular exponentiation for all integers $m$ (with $0 ≤ m < n$):
+
+${\displaystyle (m^{e})^{d}\equiv m{\pmod {n}}} {\displaystyle (m^{e})^{d}\equiv m{\pmod {n}}}$
+
+and that knowing e and n, or even m, it can be extremely difficult to find d. The triple bar (≡) here denotes modular congruence.
+
+In addition, for some operations it is convenient that the order of the two exponentiations can be changed and that this relation also implies:
+
+${\displaystyle (m^{d})^{e}\equiv m{\pmod {n}}} {\displaystyle (m^{d})^{e}\equiv m{\pmod {n}}}$
+
+RSA involves a public key and a private key. The public key can be known by everyone, and it is used for encrypting messages. The intention is that messages encrypted with the public key can only be decrypted in a reasonable amount of time by using the private key. The public key is represented by the integers n and e; and, the private key, by the integer d (although n is also used during the decryption process. Thus, it might be considered to be a part of the private key, too). m represents the message (previously prepared with a certain technique explained below).
+\end{quote}
+
+Source: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+
+
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{12cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{12cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter\\ - som så verificeres med den offentlige nøgle
+\item NB: Kryptering alene sikrer ikke anonymitet
+\end{list1}
+
+
+\slide{Elliptic Curve }
+
+\begin{quote}
+Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
+\end{quote}
+
+\begin{list2}
+\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\end{list2}
+
+
+
 \slide{Hashing - MD5 message digest funktion}
 
 \hlkimage{16cm}{images/message-digest-1.pdf}
@@ -292,6 +356,18 @@ In RSA, this asymmetry is based on the practical difficulty of the factorization
 \item Både MD5 og SHA-1 er idag gamle og skal ikke bruges mere
 \item Idag benyttes eksempelvis \link{https://en.wikipedia.org/wiki/PBKDF2}
 \end{list1}
+
+\slide{Base64}
+
+\begin{quote}
+In computer science, Base64 is a group of binary-to-text encoding schemes that represent binary data in an ASCII string format by translating it into a radix-64 representation. The term Base64 originates from a specific MIME content transfer encoding. Each Base64 digit represents exactly 6 bits of data. Three 8-bit bytes (i.e., a total of 24 bits) can therefore be represented by four 6-bit Base64 digits.
+\end{quote}
+
+\begin{list2}
+	\item Encoding data is not secure, can be decoded
+	\item \link{https://en.wikipedia.org/wiki/Base64}
+\end{list2}
+
 
 
 \slide{Old skool NT hashes}
@@ -370,7 +446,7 @@ Source:\\
 \link{https://samsclass.info/lulz/pth-8.1.htm}}
 
 
-\slide{Diffie Hellman exchange}
+\slide{Encryption on the web -- Diffie Hellman exchange}
 
 {~}
 \hlkrightpic{7cm}{-15mm}{800px-Diffie-Hellman_Key_Exchange.png}
@@ -384,17 +460,6 @@ Diffie–Hellman key exchange (DH)[nb 1] is a method of securely exchanging cryp
 \item Quote from: {\small \link{https://en.wikipedia.org/wiki/Diffie-Hellman_key_exchange}}
 \item Today we also use elliptic curves with DH \\{\small \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}}
 \end{list2}
-
-\slide{Elliptic Curve }
-
-\begin{quote}
-Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
-\end{quote}
-
-\begin{list2}
-\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
-\end{list2}
-
 
 
 \slide{Transport Layer Security (TLS)}
@@ -411,6 +476,29 @@ TLS er baseret på SSL Version 3.0
 \item Det er svært!
 \item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
 \end{list1}
+
+\slide{Which TLS version}
+
+\hlkimage{8cm}{ncsc-tls-versions.png}
+
+Source: \emph{IT Security Guidelines for
+Transport Layer Security (TLS)} v2.1, National Cyber Security Centre, 2021\\{\scriptsize
+\url{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+\begin{list2}
+\item Danish datatilsynet and CfCS.dk also has some guidance
+\end{list2}
+
+\slide{TLS version 1.2 and 1.3 details}
+
+\hlkimage{17cm}{ncsc-tls-version-detail.png}
+
+Source: \emph{IT Security Guidelines for
+Transport Layer Security (TLS)} v2.1, National Cyber Security Centre, 2021\\{\scriptsize
+\url{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+
+
 
 
 \slide{SSL/TLS udgaver af protokoller}
@@ -470,6 +558,64 @@ TLS er baseret på SSL Version 3.0
 \centerline{En sikker krypteret email er beskyttet undervejs}
 
 
+\slide{kryptering, OpenPGP}
+
+\begin{list1}
+  \item kryptering er den eneste måde at sikre:
+    \begin{list2}
+      \item fortrolighed
+      \item autenticitet
+    \end{list2}
+\item kryptering består af:
+  \begin{list2}
+    \item Algoritmer - eksempelvis RSA
+    \item \emph{protokoller} - måden de bruges på
+\item programmer - eksempelvis PGP
+\end{list2}
+\item fejl eller sårbarheder i en af komponenterne kan formindske
+  sikkerheden
+\item PGP = mail sikkerhed, se eksempelvis Enigmail plugin til Mozilla Thunderbird
+
+\end{list1}
+
+\slide{PGP/GPG verifikation af integriteten}
+
+\begin{list1}
+\item Pretty Good Privacy PGP
+\item Gnu Privacy Guard GPG
+\item Begge understøtter OpenPGP - fra IETF RFC-2440
+\item Når man har hentet og verificeret en nøgle kan man fremover nemt
+checke integriteten af software pakker
+\end{list1}
+
+
+\begin{alltt}
+\small
+hlk@bigfoot:postfix$ gpg --verify  postfix-2.1.5.tar.gz.sig
+gpg: Signature made Wed Sep 15 17:36:03 2004 CEST using RSA key ID D5327CB9
+gpg: Good signature from "wietse venema <wietse@porcupine.org>"
+gpg:                 aka "wietse venema <wietse@wzv.win.tue.nl>"
+\end{alltt}
+%$
+
+\slide{Opportunistic TLS}
+
+%\hlkimage{}{}
+
+Today most email is protected using Opportunistic TLS
+\begin{quote}\small
+Opportunistic TLS (Transport Layer Security) refers to extensions in plain text communication protocols, which offer a way to upgrade a plain text connection to an encrypted (TLS or SSL) connection instead of using a separate port for encrypted communication. Several protocols use a command named "STARTTLS" for this purpose. It is a form of opportunistic encryption and is primarily intended as a countermeasure to passive monitoring.
+
+The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses an upgrade header.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Opportunistic_TLS}
+
+\begin{list2}
+\item Easy to setup using Lets Encrypt
+\item SMTP MTA Strict Transport Security (MTA-STS) also exist, enforce and only accept email using encryption
+\end{list2}
+
+
 \slide{Fokus: TLS og VPN indstillinger}
 
 \hlkimage{16cm}{bettercrypto-nginx.png}
@@ -478,6 +624,7 @@ TLS er baseret på SSL Version 3.0
 \item De fleste har https nu, men er det konfigureret optimalt
 \item Vi bruger også VPN til at forbinde sites, kontorer
 \item Anbefaler at alle indstillingerne gennemgås!
+\item Note: settings shown are insecure by now, must update this regularly!
 \end{list2}
 
 \slide{Nmap efter SSL og TLS}
@@ -615,7 +762,7 @@ check you own site \link{https://www.ssllabs.com/ssltest/}
 
 
 
-\slide{Feb 2015 Decrypting TLS Browser Traffic With Wireshark }
+\slide{Decrypting TLS Browser Traffic With Wireshark }
 
 \hlkimage{16cm}{wireshark-decrypt-ssl.png}
 
@@ -655,7 +802,7 @@ Vi skal kryptere, men desværre så skjuler vores HTTPS ikke hvad site vi tilgå
 
 \slide{TLS Server Name Indication example}
 
-\hlkimage{13cm}{wireshark-sni-twitter.png}
+\hlkimage{12cm}{wireshark-sni-twitter.png}
 
 
 
@@ -1013,45 +1160,6 @@ Source: Henri Nurmi, 21 December 2020\\
 
 
 
-\slide{kryptering, OpenPGP}
-
-\begin{list1}
-  \item kryptering er den eneste måde at sikre:
-    \begin{list2}
-      \item fortrolighed
-      \item autenticitet
-    \end{list2}
-\item kryptering består af:
-  \begin{list2}
-    \item Algoritmer - eksempelvis RSA
-    \item \emph{protokoller} - måden de bruges på
-\item programmer - eksempelvis PGP
-\end{list2}
-\item fejl eller sårbarheder i en af komponenterne kan formindske
-  sikkerheden
-\item PGP = mail sikkerhed, se eksempelvis Enigmail plugin til Mozilla Thunderbird
-
-\end{list1}
-
-\slide{PGP/GPG verifikation af integriteten}
-
-\begin{list1}
-\item Pretty Good Privacy PGP
-\item Gnu Privacy Guard GPG
-\item Begge understøtter OpenPGP - fra IETF RFC-2440
-\item Når man har hentet og verificeret en nøgle kan man fremover nemt
-checke integriteten af software pakker
-\end{list1}
-
-
-\begin{alltt}
-\small
-hlk@bigfoot:postfix$ gpg --verify  postfix-2.1.5.tar.gz.sig
-gpg: Signature made Wed Sep 15 17:36:03 2004 CEST using RSA key ID D5327CB9
-gpg: Good signature from "wietse venema <wietse@porcupine.org>"
-gpg:                 aka "wietse venema <wietse@wzv.win.tue.nl>"
-\end{alltt}
-%$
 
 \slide{Secure Shell - SSH og SCP}
 

@@ -17,6 +17,7 @@
 
 \setcounter{tocdepth}{0}
 
+
 \normal
 
 {\color{titlecolor}\tableofcontents}
@@ -28,7 +29,7 @@
 \chapter*{\color{titlecolor}Preface}
 \markboth{Preface}{}
 
-This material is prepared for use in \emph{\kursus} and was prepared by
+This material is prepared for use in courses and was prepared by
 Henrik Kramselund, \link{http://www.zencurity.com} .
 It describes the networking setup and
 applications for trainings and workshops where hands-on exercises are needed.
@@ -262,6 +263,11 @@ Linux is free and everywhere. The tools we will run in this course are made for 
 \chapter{\faExclamationTriangle\ Enable UFW firewall - 10min}
 \label{ex:debian-firewall}
 
+\hlkimage{12cm}{2048px-Eilan_Donan_Castle_Entrance.jpg}
+
+Source: Picture is Eilean Donan castle entrance\\
+\verb+2048px-Eilan_Donan_Castle_Entrance.jpg+ from \url{https://en.wikipedia.org/wiki/Eilean_Donan}
+
 {\bf Objective:}\\
 Turn on a firewall and configure a few simple rules.
 
@@ -400,18 +406,21 @@ see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 \chapter{\faInfoCircle\ Use Ansible to install Elastic Stack}
 \label{ex:basicansible}
 
+\hlkimage{2cm}{Ansible_logo.png}
 
 {\bf Objective:}\\
-Run Elasticsearch
+See how a real deployment of a large application could happen with Ansible, installing Elasticsearch
 
 {\bf Purpose:}\\
 See an example tool used for many integration projects, Elasticsearch from the Elastic Stack
 
 {\bf Suggested method:}\\
-We will run Elasticsearch, either using the method from:\\{\footnotesize
+We will not run Elasticsearch,
+
+If you wanted to run Elasticsearch you could either be using the method from:\\{\footnotesize
 \url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
 
-or by the method described below using Ansible - your choice.
+or by the method described below using Ansible - your choice. The latter would take less than 30min, the copy paste method could take hours.
 
 Ansible used below is a configuration management tool \url{https://www.ansible.com/}
 
@@ -513,6 +522,9 @@ This is a large model which evolved over many years. You are not expected to rem
 \chapter{\faExclamationTriangle\ Create Lab network 15min}
 \label{ex:virtualbox-network}
 
+\hlkimage{8cm}{sample-ip-network.pdf}
+Sample IP lab network, not the one you are configuring.
+
 {\bf Objective:}\\
 Make sure your two (or more) virtual machines can see each other.
 
@@ -587,6 +599,7 @@ We will now assume port 80/443 are open, as well as a few UDP services - maybe w
 \chapter{\faExclamationTriangle\ Execute nmap TCP and UDP port scan 20 min}
 \label{ex:nmap-synscan}
 
+\hlkimage{3cm}{tcp-three-way.jpg}
 
 {\bf Objective:} \\
 Use nmap to discover important open ports on active systems
@@ -1027,11 +1040,199 @@ What are some problems in this?
 
 
 
-\chapter{\faInfoCircle\ Example AUPs up to 30min}
+\chapter{\faExclamationTriangle\ Password Cracking 15min}
+\label{ex:pwcrack-101}
+
+{\bf Objective:}\\
+Crack your own passwords using John the Ripper
+
+
+{\bf Purpose:}\\
+See how fast hashes from bad algorithms can be cracked, and how new ones are slow to crack.
+
+{\bf Suggested method:}\\
+John the Ripper is available from the web page, but also as a package:\\
+\url{https://www.openwall.com/john/}
+
+You should install from the package system using apt install, do apt search first to find the package name.
+
+\begin{enumerate}
+\item Install John, if not already there
+\item Copy the local password database, as root: \verb+cp /etc/shadow /root/mypasswords+
+\item Start cracking: \verb+john --single /root/mypasswords+
+\item Restart with incremental mode, bruteforce: \verb+john --incremental /root/mypasswords+
+\end{enumerate}
+
+You can make it easier if you add a few users with bad passwords first.
+
+{\bf Hints:}\\
+You can download other sample hashes from\\
+ \url{https://hashcat.net/wiki/doku.php?id=example_hashes}
+
+
+
+{\bf Solution:}\\
+When you have cracked at least one password then you are done.
+
+{\bf Discussion:}\\
+A better tool might be hashcat, found at:\\
+\link{http://hashcat.net/wiki/}
+
+This tool can be used with GPUs Graphical Processing Units / graphic cards for more speed.
+
+Still I find John is often sufficient to crack bad passwords, and also for verification purposes it works great.
+
+
+\chapter{\faInfoCircle\ Configure SSH keys for more secure access 30min}
+\label{ex:config-ssh-keys}
+
+\hlkimage{10cm}{openssh-banner.png}
+
+{\bf Objective:}\\
+See how SSH keys can be used.
+
+{\bf Purpose:}\\
+Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
+
+Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
+
+{\bf Suggested method:}\\
+
+\begin{enumerate}
+\item First generate a SSH key, using \verb+ssh-keygen+
+\item Copy the public key onto a system, using \verb+ssh-copy-id+
+\item Test using the ssh command
+\end{enumerate}
+
+Generate key:
+\begin{alltt}
+\$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/hlk/.ssh/id_rsa.
+Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
+The key's randomart image is:
++---[RSA 2048]----+
+|      .          |
+|   . o           |
+|   .=            |
+| ..=.      o .   |
+|o.*o. . S o +    |
+|oB==+o   . o     |
+|+*B=.o.   o .    |
+|=++.o +. o o     |
+|oEo=oo .ooo      |
++----[SHA256]-----+
+\end{alltt}
+
+Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
+\begin{alltt}
+\$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+\vskip 5mm
+
+\centerline{This is the best tool for the job!}
+
+The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
+
+{\bf Hints:}\\
+You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
+
+You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
+
+\begin{alltt}
+\$ ssh-add .ssh/kramse
+// Passphrase here
+Identity added: .ssh/kramse (.ssh/kramse)
+\$ ssh-add -l
+4096 SHA256:YsR+HhK7u7045ZL8ZDZnlgEnrv+RQG4eJI5oBJAEacs .ssh/kramse (RSA)
+\end{alltt}
+
+
+{\bf Solution:}\\
+When you can login using key you are done.
+
+{\bf Discussion:}\\
+We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
+
+You should remove the possibility for root logins and logins using password, when keys work!
+
+This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
+\begin{alltt}
+#PermitRootLogin prohibit-password
+PermitRootLogin no
+# To disable tunneled clear text passwords, change to no here!
+PasswordAuthentication no
+\end{alltt}
+
+
+
+\chapter{\faExclamationTriangle\ CIS Benchmarks teaser 30min}
+\label{ex:CIS-benchmarks-teaser}
+
+{\bf Objective:}\\
+Checkout CIS benchmarks
+
+{\bf Purpose:}\\
+We have talked about operating system security, starting with user accounts on Linux. There are much more to security than users, and there are multiple tools available. One such framework is the Center for Internet Security (CIS) Benchmarks.
+
+Their benchmarks are also implemented in multiple tools, which can help automate checking of the settings.
+
+We will now take a quick look at the CIS benchmarks, and more benchmarking will be discussed later.
+
+{\bf Suggested method:}\\
+Choose your operating system/solution and check out at least the general CIS benchmark description and a specific one.
+
+Main site \url{https://www.cisecurity.org/} and some example benchmarks, suggestions:
+
+\begin{list2}
+\item Microsoft Windows Server   \url{https://www.cisecurity.org/benchmark/microsoft_windows_server}
+\item Microsoft Azure https://www.cisecurity.org/benchmark/azure
+\item Azure Linux \url{https://www.cisecurity.org/benchmark/azure_linux}
+\item Debian Linux \url{https://www.cisecurity.org/benchmark/debian_linux}
+\item Kubernetes \url{https://www.cisecurity.org/benchmark/kubernetes}
+\end{list2}
+
+{\bf Hints:}\\
+Center for Internet Security (CIS) Benchmarks are also available for Windows, so checkout their offerings:
+
+\url{https://learn.microsoft.com/en-us/compliance/regulatory/offering-cis-benchmark}
+
+
+{\bf Solution:}\\
+When you have seen the CIS web site, read about a specific benchmark you are done.
+
+
+{\bf Discussion:}\\
+We will discuss other tools in class.
+
+
+
+\chapter{\faInfoCircle\ Example Policies up to 45min}
 \label{ex:example-AUP}
 
 {\bf Objective:}\\
-See real world high level policies
+See real world high level policies and discuss where to start
 
 {\bf Purpose:}\\
 When writing your first policy it may be hard to know what to include. Starting from an example is often easier.
@@ -1042,9 +1243,42 @@ Find your AUP for the ISPs we use, you use, your company uses.
 {\bf Hints:}\\
 Policies for different environments are often very different in scope and goals.
 
-Book mentions military and commercial, but an ISP, University and a commercial enterprise have very different methods and requirements.
+\begin{quote}
+SANS, for example, publishes a list of template policies that you can edit for your own
+needs. At the time of writing, its list of topics are:
+\begin{list2}
+\item Acceptable Encryption Policy
+\item Acceptable Use Policy
+\item Clean Desk Policy
+\item Disaster Recovery Plan Policy
+\item Digital Signature Acceptance Policy
+\item Email Policy
+\item Ethics Policy
+\item Pandemic Response Planning Policy
+\item Password Construction Guidelines
+\item Password Protection Policy
+\item Security Response Plan Policy
+\item End User Encryption Key Protection Policy
+\item Acquisition Assessment Policy
+\item Bluetooth Baseline Requirements Policy
+\item Remote Access Policy
+\item Remote Access Tools Policy
+\item Router and Switch Security Policy
+\item Wireless Communication Policy
+\item Wireless Communication Standard
+\item Database Credentials Policy
+\item Technology Equipment Disposal Policy
+\item Information Logging Standard
+\item Lab Security Policy
+\item Server Security Policy
+\item Software Installation Policy
+\item Workstation Security (For HIPAA) Policy
+\item Web Application Security Policy
+\end{list2}
+\end{quote}
+Source: \url{https://www.sans.org/information-security-policy/}
 
-Example, how do you handle BYOD Bring your own devices, University you expect students to bring them, in a secure enterprise only company devices may be allowed.
+Example, how do you handle BYOD Bring your own devices, educational institutions you expect students to bring them, in a secure enterprise only company devices may be allowed.
 
 {\bf Solution:}\\
 When you have seen at least two different policies you are done.
@@ -1272,6 +1506,8 @@ I had Firefox crash at least once during this exercise, so beware - fancy and bi
 \chapter{\faExclamationTriangle\ SSL/TLS scanners 15min}
 \label{ex:sslscan}
 
+\hlkimage{10cm}{ncsc-tls-version-detail.png}
+
 {\bf Objective:}\\
 Try the Online Qualys SSLLabs scanner \link{https://www.ssllabs.com/}
 Try the command line tool sslscan checking servers - can check both HTTPS and non-HTTPS protocols!
@@ -1283,7 +1519,7 @@ Learn how to efficiently check TLS settings on remote services.
 Run the tool against a couple of sites of your choice.
 
 \begin{alltt}\small
-root@kali:~# sslscan --ssl2 web.kramse.dk
+root@kali:~# sslscan www.kramse.org
 Version: 1.10.5-static
 OpenSSL 1.0.2e-dev xx XXX xxxx
 
@@ -1298,7 +1534,9 @@ Altnames: DNS:*.kramse.dk, DNS:kramse.dk
 Issuer:   AlphaSSL CA - SHA256 - G2
 \end{alltt}
 
-Also run it without \verb+--ssl2+ and against SMTPTLS if possible.
+Also run it against SMTPTLS if possible. Choose a mail server,\\
+ \verb+mail.kramse.org+ can work like this:\\
+\verb+sslscan   --starttls-smtp mail.kramse.org:25+
 
 {\bf Hints:}\\
 Originally sslscan is from \link{http://www.titania.co.uk} but use the version on Kali, install with apt if not installed.
@@ -1377,6 +1615,8 @@ Paper:\\
 
 \chapter{\faInfoCircle\ SSH scanners 15min}
 \label{ex:nmap-ssh-scanner}
+
+\hlkimage{10cm}{openssh-banner.png}
 
 {\bf Objective:}\\
 Try ssh scanners, similar to sslscan and Nmap sshscan
@@ -1473,152 +1713,11 @@ PORT      STATE SERVICE VERSION
 |_      zlib@openssh.com
 \end{alltt}
 
-\chapter{\faExclamationTriangle\ Password Cracking 15min}
-\label{ex:pwcrack-101}
-
-{\bf Objective:}\\
-Crack your own passwords using John the Ripper
-
-
-{\bf Purpose:}\\
-See how fast hashes from bad algorithms can be cracked, and how new ones are slow to crack.
-
-{\bf Suggested method:}\\
-John the Ripper is available from the web page, but also as a package:\\
-\url{https://www.openwall.com/john/}
-
-You should install from the package system using apt install, do apt search first to find the package name.
-
-\begin{enumerate}
-\item Install John, if not already there
-\item Copy the local password database, as root: \verb+cp /etc/shadow /root/mypasswords+
-\item Start cracking: \verb+john --single /root/mypasswords+
-\item Restart with incremental mode, bruteforce: \verb+john --incremental /root/mypasswords+
-\end{enumerate}
-
-You can make it easier if you add a few users with bad passwords first.
-
-{\bf Hints:}\\
-You can download other sample hashes from\\
- \url{https://hashcat.net/wiki/doku.php?id=example_hashes}
-
-
-
-{\bf Solution:}\\
-When you have cracked at least one password then you are done.
-
-{\bf Discussion:}\\
-A better tool might be hashcat, found at:\\
-\link{http://hashcat.net/wiki/}
-
-This tool can be used with GPUs Graphical Processing Units / graphic cards for more speed.
-
-Still I find John is often sufficient to crack bad passwords, and also for verification purposes it works great.
-
-
-\chapter{\faInfoCircle\ Configure SSH keys for more secure access}
-\label{ex:config-ssh-keys}
-
-{\bf Objective:}\\
-See how SSH keys can be used.
-
-{\bf Purpose:}\\
-Secure Shell is a very powerful administration tool. Administrators use this for managing systems. If an attacker gains access they can perform the same tasks.
-
-Using SSH keys for access and disabling password based logins effectively prevents brute-force login attacks from succeeding.
-
-{\bf Suggested method:}\\
-
-\begin{enumerate}
-\item First generate a SSH key, using \verb+ssh-keygen+
-\item Copy the public key onto a system, using \verb+ssh-copy-id+
-\item Test using the ssh command
-\end{enumerate}
-
-Generate key:
-\begin{alltt}
-\$ ssh-keygen
-Generating public/private rsa key pair.
-Enter file in which to save the key (/root/.ssh/id_rsa):
-Created directory '/root/.ssh'.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in /home/hlk/.ssh/id_rsa.
-Your public key has been saved in /home/hlk/.ssh/id_rsa.pub.
-The key fingerprint is:
-SHA256:l5esp66lQArFOlXqOoHnxpg8zRS6shK8nx9KGf+oSp4 root@debian01
-The key's randomart image is:
-+---[RSA 2048]----+
-|      .          |
-|   . o           |
-|   .=            |
-| ..=.      o .   |
-|o.*o. . S o +    |
-|oB==+o   . o     |
-|+*B=.o.   o .    |
-|=++.o +. o o     |
-|oEo=oo .ooo      |
-+----[SHA256]-----+
-\end{alltt}
-
-Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
-\begin{alltt}
-\$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
-/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
-The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
-ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
-Are you sure you want to continue connecting (yes/no)? yes
-/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
-to filter out any that are already installed
-/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
-are prompted now it is to install the new keys
-hlk@10.0.42.147's password:
-
-Number of key(s) added:        1
-
-Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
-and check to make sure that only the key(s) you wanted were added.
-\end{alltt}
-
-\vskip 5mm
-
-\centerline{This is the best tool for the job!}
-
-The public must exist in the \verb+authorized_keys+ file, in the right directory, with the correct permissions ... use \verb+ssh-copy-id+
-
-{\bf Hints:}\\
-You can publish the public part of your SSH keys in places such as Github and Ubuntu installation can fetch this during install, making the use of SSH keys extremely easy.
-
-You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
-
-\begin{alltt}
-\$ ssh-add .ssh/kramse
-// Passphrase here
-Identity added: .ssh/kramse (.ssh/kramse)
-\$ ssh-add -l
-4096 SHA256:YsR+HhK7u7045ZL8ZDZnlgEnrv+RQG4eJI5oBJAEacs .ssh/kramse (RSA)
-\end{alltt}
-
-
-{\bf Solution:}\\
-When you can login using key you are done.
-
-{\bf Discussion:}\\
-We have not discussed using passphrase on the key, neither how to turn off password based logins by reconfiguring the SSH daemon. This is left as an exercise for the reader.
-
-You should remove the possibility for root logins and logins using password, when keys work!
-
-This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
-\begin{alltt}
-#PermitRootLogin prohibit-password
-PermitRootLogin no
-# To disable tunneled clear text passwords, change to no here!
-PasswordAuthentication no
-\end{alltt}
-
 
 \chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}
 \label{ex:priv-esc-cron}
+
+\hlkimage{10cm}{df20030604.jpg}
 
 {\bf Objective:}\\
 Perform a simple privilege escalation attack
@@ -1630,14 +1729,12 @@ Try and test a back door script.
 
 \begin{enumerate}
 \item Create a shell copy with SUID bit set as privileged user
-\item Run the command as non-privileged user to see it works
+\item Run the command as non-privileged user to see if it works
 %\item Create root cronjob without path
 %\item Insert a malicious script as one of the commands from the root cron job
 \end{enumerate}
 
 {\bf Hints:}\\
-A cron job runs scheduled commands. They usually perform cleanup functions, removing old files, doing a backup or similar
-
 In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
 
 \begin{alltt}
@@ -1652,13 +1749,15 @@ Then test using a normal user, another window:
 \begin{alltt}
 hlk@debian:~$ /tmp/.xxsh
 # id
-uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),
+29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk)
+ context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
 #
 \end{alltt}
 
-The effective user id should be 0 which is root.
+The effective user id should be 0 which is root. It might not work as intended, due to enhanced security in the shell programs! Namely it wont work with Bourne Again Shell (bash) but maybe with dash. If dash is not installed, try installing it.
 
-When this manual process work. Then automate it, make it into a script like in the book. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
+When this manual process work. Then automate it, make it into a small script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
 
 This happens in a lot of devices and hosts today.
 
@@ -1669,15 +1768,22 @@ When you have created the script for doing the shell copy you are done.
 
 Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
 
- Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
+Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
 
 
 
 {\bf Discussion:}\\
-This was chosen as I found a similar vulnerability in a professional product, in 2019
+Why is the file named with a dot as the first character?
+
+Does the /tmp folder need to be a place to run scripts? No, but many applications unfortunately require exactly this.
+
+What is defense in depth? Does it apply here?
+
+Finish off the exercise by running, and looking at the output from:\\
+\verb+find / -perm -4000 -o -perm -6000+
 
 
-\chapter{\faInfoCircle\ Anti-virus and "endpoint security" 20min}
+\chapter{\faInfoCircle\ Anti-virus and "endpoint security" 30min}
 \label{ex:anti-virus-end-point-security}
 
 {\bf Objective:}\\
@@ -1693,6 +1799,18 @@ Sit in groups 3-5 -- discuss among yourselves. Write down plus and minus for usi
 
 {\bf Hints:}\\
 In some cases people have installed AV products for check-mark security, the check-list said to have AV, so we installed a mail scanner on this web server -- bad security.
+
+Where do we install anti-malware defenses?
+
+\begin{list2}
+\item Mailscanners
+\item Proxy systems -- web proxies, incoming, outgoing, problems with TLS?
+\item On firewalls -- what is a firewall, can we do inspection, really?!
+\item File systems -- network shares servers, storage systems
+\item What about virtualized systems
+\item ...
+\end{list2}
+
 
 {\bf Solution:}\\
 When we have done a collected talk and discussion we are done.
@@ -1953,6 +2071,8 @@ Source: \url{https://en.wikipedia.org/wiki/IEEE_754}
 \chapter{\faExclamationTriangle\ Real Vulnerabilities up to 30min}
 \label{ex:real-vulns-exim}
 
+\hlkimage{5cm}{log4j-logo.png}
+
 {\bf Objective:}\\
 Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
 
@@ -1977,7 +2097,8 @@ When done with these think about your own dependencies. What software do you dep
 \link{https://github.com/fullhunt/log4j-scan}
 \end{list2}
 
-What is CVSS -- Common Vulnerability Scoring System?
+What is CVSS -- Common Vulnerability Scoring System?\\
+\url{https://nvd.nist.gov/vuln-metrics/cvss}
 
 I depend on the OpenBSD operating system, and it has flaws too:\\
 \url{https://www.openbsd.org/errata65.html}
@@ -2196,7 +2317,52 @@ See for example: \\
 \url{https://docs.docker.com/engine/security/}
 
 
-\chapter{\faExclamationTriangle\ Lynis Auditing, System hardening, and Compliance testing}
+
+\chapter{\faExclamationTriangle\ Research Cisco ACI security assessment 20min}
+\label{ex:cisco-aci-ernw}
+
+
+{\bf Objective:}\\
+Research how the product from Cisco named Application Centric Infrastructure was assessed by german security company ERNW.
+
+{\bf Purpose:}\\
+Research ACI vulnerabilities -- understand what when isolation and separation is not implemented. Think about how to design systems with this in mind. Perhaps security infrastructure should be built using modern methods. Say not using the root user for EVERYTHING, like we found out in the 1990s.
+
+{\bf Suggested method:}\\
+Download the white paper 68 from ERNW:\\
+\url{https://ernw.de/en/whitepapers/issue-68.html}
+
+\begin{itemize}
+\item Browse table of contents
+\item Look into one or more of the vulns, read about it
+\item Perhaps look it up in the CVE databases, and find CVSS
+\item Search for Cisco ACI and see if further vulns have been found over the years since 2019 (there have)
+\end{itemize}
+
+{\bf Hints:}\\
+There are these vulnerabilities to select from:
+\begin{list2}
+\item Remote Code Execution on Leaf Switches over IPv6 via Local SSH Server (CVE-2019-1836, CVE2019-1803, and CVE-2019-1804)
+\item Cisco Nexus 9000 Series Fabric Switches ACI Mode Fabric Infrastructure VLAN Unauthorized
+  Access Vulnerability (CVE-2019-1890)
+\item Cisco Nexus 9000 Series Fabric Switches Application Centric Infrastructure Mode Link Layer
+  Discovery Protocol Buffer Overflow Vulnerability (CVE-2019-1901)\\
+  This specific daemon is running as root
+\item Cisco Application Policy Infrastructure Controller REST API Privilege Escalation Vulnerability (CVE-2019-1889)
+\end{list2}
+
+
+{\bf Solution:}\\
+When you have read about one of the vulnerabilities found and understood it, you are done.
+
+{\bf Discussion:}\\
+Shouldn't a product by Cisco for security purposes using Linus use the most basic of controls?
+
+I found it horrible and inside the system there were many examples of insecure scripting, bad habits, no security designed or implemented -- rather the opposite.
+
+Running everything as root make every little mistake become a serious issue.
+
+\chapter{\faExclamationTriangle\ Lynis Auditing, System hardening, and Compliance testing 20min}
 \label{ex:lynis-first}
 
 \hlkimage{10cm}{lynis.png}
@@ -2219,6 +2385,53 @@ Use the web site for the tool Lynis \url{https://cisofy.com/lynis/} and audit yo
 When you have run the tool you are done. Better if you have browsed some of the output
 
 {\bf Discussion:}\\
+
+
+\chapter{\faExclamationTriangle\ DNSSEC KeyTrap 20min}
+\label{ex:dnssec-keytrap}
+
+%\hlkimage{10cm}{lynis.png}
+
+\begin{quote}\footnotesize
+A reminder of the value and relevance of DNS-OARC  (https://dns-oarc.net/) in helping improve the security, and reliability of the Internet's Domain Name System:
+
+A critical denial-of-service vulnerability, known as KeyTrap (CVE-2023-50387 and the related CVE-2023-50868), would have allowed  attackers to exhaust CPU resources on DNS resolvers across the Internet. Shortly after it was identified in late 2023, key personnel from all major DNS operators and vendors used OARC's facilities to coordinate the work to mitigate this vulnerability, with the last software patches being released just a couple of days ago. Amazing work from everyone, and just like Bill I'm proud of the community for getting this sorted before anything was leaked.
+
+\end{quote}
+Source: Phil Regnauld\\
+ \url{https://www.linkedin.com/posts/philregnauld_lovedns-dns-dnsoarc-activity-7164303186424537088-PVCu}
+
+{\bf Objective:}\\
+Research the DNSSEC related KeyTrap vulnerability -- CVE-2023-50387
+
+{\bf Purpose:}\\
+See how a real life vulnerability can affect systems, the implicationsm and how it was coordinated.
+
+{\bf Suggested method:}\\
+First look up the vulnerability using the CVE id. Then do some investigation into vulnerable products (most of the DNS resolver software) and discuss how this could affect a network.
+
+{\bf Hints:}\\
+The DNSSEC vulnerability is affecting the design of the protocol, so many implementations would have similar code implemented. This would make it irresponsible for the researchers to just publish their findings.
+It ended up being DNS OARC that coordinated response and DNS vendors.\\
+\url{https://www.dns-oarc.net/}
+
+{\bf Solution:}\\
+When you have read about the vulnerability and discussed how to handle it a little, you are done.
+
+{\bf Discussion:}\\
+Look up responsible disclosure. Why do we have a need for that.\\
+Further links, posted by Bill Woodcock Executive Director at Packet Clearing House:
+\begin{list2}
+\item \url{https://www.athene-center.de/en/news/press/key-trap}
+\item \url{https://nlnetlabs.nl/news/2024/Feb/13/unbound-1.19.1-released/}
+\item ISC has disclosed six vulnerabilities in BIND 9 (CVE-2023-4408, CVE-2023-5517, CVE-2023-5679, CVE-2023-6516, CVE-2023-50387, CVE-2023-50868)\\
+\url{https://seclists.org/oss-sec/2024/q1/125}
+\item \url{https://pi-hole.net/blog/2024/02/13/fixing-two-new-dnssec-vulnerabilities/#page-content}
+\item Certain DNSSEC aspects of the DNS protocol (in RFC 4033, 4034, 4035, 6840, and related RFCs) allow remote attackers to cause a denial of service\\
+\url{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-50387}
+\item The Closest Encloser Proof aspect of the DNS protocol (in RFC 5155 when RFC 9276 guidance is skipped) allows remote attackers to cause a denial of service\\
+\url{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-50868}
+\end{list2}
 
 
 \chapter{\faInfoCircle\ SYN flooding 101 - 60min}
@@ -2413,6 +2626,54 @@ You can read more about Elasticsearch at the wikipedia page:\\
 \url{https://en.wikipedia.org/wiki/Elasticsearch}
 
 
+\chapter{\faInfoCircle\ Run Elasticsearch in Containers 30min}
+\label{ex:selks}
+
+{\bf Objective:}\\
+Run an Elasticsearch stack with Suricata IDS in containers
+
+{\bf Purpose:}\\
+See how easy it is to test various solutions, even if they are complicated
+
+{\bf Suggested method:}\\
+Use the kickstart-2-selks.pdf document in Fronter.
+
+The steps are also outlined in their repository \url{https://github.com/StamusNetworks/SELKS.git}
+
+I would like for you to install Docker and try out SELKS \url{https://www.stamus-networks.com/selks}
+
+If you want to use the same as me with Debian VM, which installs in less than 30minutes:
+\begin{list1}
+\item[\faSquareO] Install a basic Debian 12 Bookworm with Sudo configured
+\item[\faSquareO] Install git and Ansible, see our exercise:\\
+\verb+sudo apt install git ansible+
+\item[\faSquareO] Clone the Github repo: \link{https://github.com/kramse/kramse-labs}\\
+\verb+git clone https://github.com/kramse/kramse-labs+
+\item[\faSquareO] Go into this repository and install Docker, there is a small README.md too:\\
+\verb+cd kramse-labs/docker-install+ and then \verb+ansible-playbook 1-dependencies.yml+
+\item[\faSquareO] Enable Docker: \verb+systemctl enable docker+ and reboot the VM
+\item[\faSquareO] Check docker, \verb+docker run hello-world+
+\item[\faSquareO] Clone the SELKS repository:\\
+\verb+git clone https://github.com/StamusNetworks/SELKS.git+
+\item[\faSquareO] Go into this and run docker-compose as described in the instructions:\\
+\url{https://github.com/StamusNetworks/SELKS/wiki/Docker}\\
+{\bf  make sure to select the right network interface, so Suricata can sniff packets}
+{\bf I did NOT install Portainer}
+\item[\faSquareO] Use a browser to access the platform on \url{https://127.0.0.1} -- and enjoy!
+\end{list1}
+
+This will provide a basic Elasticsearch version 7, with Kibana and Suricata
+
+
+{\bf Hints:}\\
+Make sure your Debian has enough memory, 8Gb will run, less will be tough, more will be better.
+
+{\bf Solution:}\\
+When you have seen the system on the instructors PC your are done.
+
+{\bf Discussion:}\\
+There are lots of projects that allow you to test solution from containers. This is often much easier and faster then following the instructions for installing the project.
+On the other hand, you may want to follow install instructions if it for a production setup.
 
 \chapter{\faInfoCircle\ Create Kibana Dashboard 15min}
 \label{ex:kibana-dashboard}
@@ -2428,7 +2689,7 @@ Kibana is a very popular system for creating dashboards from data in elasticsear
 Learning how to create and import dashboards is a good exercise.
 
 {\bf Suggested method:}\\
-Instructor will provide a running Elasticsearch and Kibana for this exercise.
+Instructor will provide a method for running Elasticsearch and Kibana for this exercise. See the previous exercise \smiley
 
 Note: usually Kibana should be available on port 5601 on localhost (127.0.0.1) only! It is recommended to keep this configuration and then add a web server like Nginx or Apache in front. This will further allow authentication and other features.
 
@@ -2437,17 +2698,6 @@ Using Firefox visit Kibana on the link provided by the instructor.
 If this is the first time you need to
  select \verb+logstash-*+ as a default index. Note: Kibana is an advanced and powerful tool in itself.
 
-Read how dashboards can be loaded using shell command, example the ones from:
-\link{https://github.com/StamusNetworks/KTS6}
-
-The commands are similar to
-\begin{alltt}
-git clone https://github.com/StamusNetworks/KTS7.git
-cd KTS7
-bash load.sh
-\end{alltt}
-
-Note: KTS version needs to match Elasticsearch version! So for ES version 7, use KTS7
 
 {\bf Hints:}\\
 Logstash and Elastic stack are a great way to get started with dashboarding.
@@ -2462,6 +2712,20 @@ Making dashboard are an art form. We will NOT start creating beautiful dashboard
 
 If you want, there is a SELKS LiveCD dedicated to suricata which also includes more tools for administration of rules and getting alerts:\\
 \link{https://www.stamus-networks.com/open-source/}
+
+Dashboards can be exported as JSON into files, and can be loaded using shell commands, example the ones from:
+\link{https://github.com/StamusNetworks/KTS7}
+
+The commands are similar to
+\begin{alltt}
+git clone https://github.com/StamusNetworks/KTS7.git
+cd KTS7
+bash load.sh
+\end{alltt}
+
+Note: KTS version needs to match Elasticsearch version! So for ES version 7, use KTS7
+
+
 
 
 \chapter{\faExclamationTriangle\ File System Forensics 30min}
@@ -2576,6 +2840,8 @@ Some are targetted at recovering data, like lost photos on USB devices, others a
 \chapter{\faInfoCircle\ Clean or rebuild a server 20min}
 \label{ex:clean-or-rebuild}
 
+\hlkimage{10cm}{df20030604.jpg}
+
 {\bf Objective:}\\
 Think about a hacked system, how can you clean such a system?
 
@@ -2598,12 +2864,15 @@ root@debian:~# chmod +sw /tmp/.xxsh
 
 Is this the only file left by the attacker?
 
-Did he change other files, configurations, added users, changed user passwords?
+Did they change other files, configurations, added users, changed user passwords?
 
 {\bf Hints:}\\
 A forensics investigation might perform a complete dump of the file systems and use TASK/Autopsy. Then by generating a timeline it might be possible to find the back door files. Perhaps.
 
 {\bf Solution:}\\
+Remove the back door, and associated hacked accounts.
+
+In real life you would:
 Rebuild your Debian server.
 Automate the setup of critical systems.
 Have good backup of critical data.
@@ -2614,6 +2883,45 @@ Cleaning systems and whole environments is very hard.
 An attacker may have spent only 30 minutes, but the investigation might take 100 hours. This is a huge difference in resources spent.
 
 No such thing as \emph{Was just browsing the system}
+
+
+\chapter{\faInfoCircle\ Install MISP Project 45min}
+\label{ex:misp-install}
+
+\hlkimage{9cm}{misp-project-visualization.png}
+
+{\bf Objective:}\\
+Try installing the application MISP Project locally on your workstation
+
+Evaluate if this is something you would like to have permanently or during an incident.
+
+{\bf Purpose:}\\
+Running MISP Project is  will allow you to analyse
+
+{\bf Suggested method:}\\
+Run the program from a Linux VM
+
+OR use a VM image from \url{https://vm.misp-project.org/}
+
+Credentials are:
+\begin{alltt}\footnotesize
+For the MISP web interface -> admin@admin.test:admin
+For the system -> misp:Password1234
+\end{alltt}
+
+Either way go to the web site and decide an installation path:\\
+\url{https://www.misp-project.org/download/}
+
+{\bf Hints:}\\
+A VM images is probably fastest, and there may also be Docker images available YMMV.
+
+{\bf Solution:}\\
+When you have seen the installation instructions and considered installing it you are done. If you can manage to get it running with the allotted time, great!
+
+{\bf Discussion:}\\
+Downloading VM images can be fine for testing, but can be harder to run later. May not be based on the operating system your organisation prefer, can monitor etc.
+
+
 
 \chapter{\faInfoCircle\ Cloud environments influence on incident response 20min}
 \label{ex:cloud-incident-response}
@@ -2665,14 +2973,62 @@ Cloud computer forensics seem immature, but must be researched.
 If you organization relies on cloud computing it is critcal to update incident handling procedures for these new challenges.
 
 
+\chapter{\faInfoCircle\ Evaluate Scope Towards PCI}
+\label{ex:compliance-evaluation}
+
+{\bf Objective:}\\
+Evaluate your infrastructure, quick gap analysis for becoming CIS/PCI compliant
+
+{\bf Purpose:}\\
+Consider the term scope and influence on securing an environment.
+
+{\bf Suggested method:}\\
+Consider a small network like the one used for exercises. Consider the requirements for running exercises, why did we isolate this part from the rest of the network.
+
+What are the parts used:
+\begin{itemize}
+\item Router(s), switches, network equipment
+\item Firewall(s)
+\item Design DMZ, LAN, WLAN
+\item "Servers" - your laptops with Debian
+\item Larger systems and evironments used web servers, email services
+\end{itemize}
+
+Write down the current status, What are the network parts, organization and applications.
+
+Consider the impact of adding wireless network to this setup. Is this a requirement, could we do without it.
+
+Consider if firewalls would be best practice or an actual requirement, how to implement this requirement for your organization.
+
+Which email security standards do you implement now, which ones should you consider.
+
+{\bf Hints:}\\
+Running a host firewall seldom hurts performance today. So turn on the firewall as described in exercise \nameref{ex:debian-firewall}
+
+{\bf Solution:}\\
+When you have browsed the CIS web site and documents, and documented the scope in 3-5 sentences or a small table. You are done.
+
+{\bf Discussion:}\\
+
+What is more important:
+
+\begin{itemize}
+\item Personal data, non-biometric
+\item Financial data, like credit card data
+\item Biometric data iris, DNA etc.
+\item Password data
+\end{itemize}
+
+What if they are leaked, how to recover?
+
 
 \chapter{\faInfoCircle\ Switch configuration and uplink}
 \label{ex:switch-config-vlan}
 
-We will now perform multiple exercises as part of the System Security in Practice.
+We will now discuss multiple exercises as part of the System Security in Practice.
 
 {\bf Overall Objective:}\\
-Try some of the security mechanisms used in real networks today.
+Consider some of the security mechanisms used in real networks today. One huge win can be found in VLAN isolation, isolated systems cannot communicate, aka hacker cannot jump from one to the other.
 
 First is to configure VLAN. This feature is well-known in network.
 
@@ -2682,7 +3038,11 @@ You can read more about the technology at\\ \url{https://en.wikipedia.org/wiki/I
 Learn that a few changes make a huge difference.
 
 {\bf Suggested method:}\\
-Work on our model network, each team has a server and an attacker - reduce attack surface on the server by configuration.
+Consider a systems environment with multiple servers and LAN segments. How would you secure this?
+
+Draw a quick network and use that as an example. Work on this model network, each team has a server and an attacker - reduce attack surface on the server by configuration.
+
+Imagine each team had a switch, and wanted to implement network segragation, isolation:
 
 \begin{itemize}
 \item Configure VLAN on switch for the uplink
@@ -2695,16 +3055,16 @@ Work on our model network, each team has a server and an attacker - reduce attac
 
 Each team has a switch they \emph{own}
 \begin{list2}
-\item Add VLAN 2770 to switch
+\item Add VLAN 3390 to switch
 \item Configure uplink port to be a tagged VLAN trunk - port 8
 \item Configure port to connect to local Debian server, port 1.\\ Note: if tagged Debian must be configured with tag too! You can instead configure as Access port without tag. You decide.
 \item Insert USB Ethernet into Debian server virtual machine
 \end{list2}
 
+This is an exercise that you could actually do on a lab table at home with a few devices.
+
 \eject
 \section*{Switch config initial steps to get started}
-
-{\bf Only connect switch ports when told to do so!}
 
 \begin{enumerate}
 \item First -- install the VLAN support on your Debian server!\\
@@ -2714,10 +3074,10 @@ Each team has a switch they \emph{own}
 \item Reset the switch to default setting - press reset for 15 seconds before doing any configuration
 \item Cable a laptop to any port, except the first one - port 1/0/1 or last one port 1/0/8
 \item Take control of the switch, default settings are in place, see label on bottom and use Ethernet
-\item Add VLAN with ID: 2770 Name: KramsIX
+\item Add VLAN with ID: 3390 Name: KramsIX
 
-\item Configure the Uplink port 1/0/8 with VLAN tag: 2770
-\item Configure the first port 1/0/1 with VLAN tag: 2770\\
+\item Configure the Uplink port 1/0/8 with VLAN tag: 3390
+\item Configure the first port 1/0/1 with VLAN tag: 3390\\
 If you keep the port in VLAN 1 you should be able to connect to the switch management via this port using tagged or untagged, as you prefer \smiley
 \item Configure VLAN interface on your server with the IP in the LAN 10.10.10.45.0/24 - if your team ID is 14, then your IP is 10.10.10.14/24
 \item Add 10.10.10.1 as your default gateway
@@ -2746,8 +3106,8 @@ iface enx00249b1b2991 inet static
   address 192.168.0.2
   netmask 255.255.255.0
 
-auto vlan2770
-iface vlan2770 inet static
+auto vlan3390
+iface vlan3390 inet static
 	vlan-raw-device enx00249b1b2991
 	address 10.10.10.14
 	netmask 255.255.255.0
@@ -2767,51 +3127,6 @@ VLAN separation using the IEEE 802.1q standard is a common method to isolate ser
 
 
 
-
-\chapter{\faInfoCircle\ Evaluate Scope Towards PCI}
-\label{ex:PCI-evaluation}
-
-{\bf Objective:}\\
-Evaluate our network, quick gap analysis for becoming PCI compliant
-
-{\bf Purpose:}\\
-Consider the term scope and influence on securing an environment.
-
-{\bf Suggested method:}\\
-Consider a small network like the one used for exercises. Consider the requirements for running exercises, why did we isolate this part from the rest of the network.
-
-What are the parts used:
-\begin{itemize}
-\item Router(s), switches, network equipment
-\item Firewall(s)
-\item Design DMZ, LAN, WLAN
-\item "Servers" - your laptops with Debian
-\end{itemize}
-
-Write down the current status, What are the network parts, organization and applications (Nginx running on single Debian server?).
-
-Consider the impact of adding wireless network to this setup. Is this a requirement, could we do without it.
-
-Consider if firewalls would be best practice or an actual requirement, how to implement this requirement for your organization.
-
-{\bf Hints:}\\
-Running a host firewall seldom hurts performance today. So turn on the firewall as described in exercise \nameref{ex:debian-firewall}
-
-{\bf Solution:}\\
-When you have browsed the PCI web site and documents, and documented the scope in 3-5 sentences or a small table. You are done.
-
-{\bf Discussion:}\\
-
-What is more important:
-
-\begin{itemize}
-\item Personal data, non-biometric
-\item Financial data, like credit card data
-\item Biometric data iris, DNA etc.
-\item Password data
-\end{itemize}
-
-What if they are leaked, how to recover?
 
 \end{document}
 

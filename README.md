@@ -34,7 +34,7 @@ I use some pictures from Unsplash https://unsplash.com/ and try to remember to i
 
 
 ## How to get the sources
-You need to use Github to get the sources, try cloning it.
+You need to use Git to get the sources, try cloning it. 
 
 ## What you need
 

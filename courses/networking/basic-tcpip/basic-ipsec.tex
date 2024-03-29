@@ -1,15 +1,15 @@
 \slide{IPsec}
 
 \begin{itemize}
-\item Sikkerhed i netværket
+\item Sikkerhed i netvï¿½rket
 \item RFC-2401 Security Architecture for the Internet Protocol
 \item RFC-2402 IP Authentication Header (AH)
 \item RFC-2406 IP Encapsulating Security Payload (ESP)
 \item RFC-2409 The Internet Key Exchange (IKE) - dynamisk keying
-\item Både til IPv4 og IPv6
+\item Bï¿½de til IPv4 og IPv6
 \item {\bfseries MANDATORY} i IPv6! - et krav hvis man implementerer
   fuld IPv6 support
-\item god præsentation på \link{http://www.hsc.fr/presentations/ike/}
+\item god prï¿½sentation pï¿½ \link{http://www.hsc.fr/presentations/ike/}
 \item Der findes IKEscan til at scanne efter IKE
   porte/implementationer\\
 \link{http://www.nta-monitor.com/ike-scan/index.htm}
@@ -42,7 +42,7 @@
 
 \slide{RFC-2402 IP AH}
 
-Indpakning - pakkerne før og efter Authentication Header: 
+Indpakning - pakkerne fï¿½r og efter Authentication Header:
 \begin{alltt}
 \small
                 BEFORE APPLYING AH
@@ -62,9 +62,9 @@ Indpakning - pakkerne før og efter Authentication Header:
 
 \slide{RFC-2406 IP ESP}
 
-Pakkerne før og efter:
+Pakkerne fï¿½r og efter:
 \begin{alltt}
-\small 
+\small
                BEFORE APPLYING ESP
          ---------------------------------------
    IPv6  |             | ext hdrs |     |      |
@@ -79,15 +79,15 @@ Pakkerne før og efter:
          |IP hdr|routing,fragment.|ESP|opt*|TCP|Data|Trailer|Auth|
          ---------------------------------------------------------
                                    |<---- encrypted ---->|
-                               |<---- authenticated ---->| 
+                               |<---- authenticated ---->|
 \end{alltt}
 
 \slide{ipsec konfigurationsfiler}
 
 \begin{list1}
-%\item Der er følgende dokumenter til IPsec på websitet\\
+%\item Der er fï¿½lgende dokumenter til IPsec pï¿½ websitet\\
 % \link{www.security.net/courses/ipsec}:
-\item Der er følgende filer tilgængelige\\
+\item Der er fï¿½lgende filer tilgï¿½ngelige\\
   \begin{list2}
   \item konfigurationsfiler i NetBSD/FreeBSD/Mac OS X format - med
     \verb+setkey+ kommandoen
@@ -112,9 +112,9 @@ Pakkerne før og efter:
 \item Server: OpenBSD - bruger ipsecadm kommando\\
 \verb+rc.ipsec.server+
 
-\item Øvelse til læseren: lav samme i Cisco IOS
-\item Det vil ofte være relevant at se på IOS og IPsec i laboratoriet
-\item Dette setup når vi ikke at demonstrere
+\item ï¿½velse til lï¿½seren: lav samme i Cisco IOS
+\item Det vil ofte vï¿½re relevant at se pï¿½ IOS og IPsec i laboratoriet
+\item Dette setup nï¿½r vi ikke at demonstrere
 \end{list1}
 
 \slide{rc.ipsec.client - client setup - adresser}
@@ -132,7 +132,7 @@ SECCLIENT=10.0.42.53
 #SECCLIENT=2001:618:433:101::153
 ESPKEY=`cat ipsec.esp.key`
 AHKEY=`cat ipsec.ah.key`
-         
+
 # Flush IPsec SAs in case we get called more than once
 setkey -F
 setkey -F -P
@@ -142,15 +142,15 @@ setkey -F -P
 
 \begin{verbatim}
 # Establish Security Associations
-# 1000 is from the server to the client 
-# 1001 is from the client to the server 
+# 1000 is from the server to the client
+# 1001 is from the client to the server
 setkey -c <<EOF
 
 add $SECSERVER $SECCLIENT esp 0x1000 \
--m tunnel -E blowfish-cbc 0x$ESPKEY  -A hmac-sha1 0x$AHKEY; 
+-m tunnel -E blowfish-cbc 0x$ESPKEY  -A hmac-sha1 0x$AHKEY;
 
 add $SECCLIENT $SECSERVER esp 0x1001 \
--m tunnel -E blowfish-cbc 0x$ESPKEY -A hmac-sha1 0x$AHKEY; 
+-m tunnel -E blowfish-cbc 0x$ESPKEY -A hmac-sha1 0x$AHKEY;
 
 spdadd $SECCLIENT $SECSERVER any -P out \
 ipsec esp/tunnel/$SECCLIENT-$SECSERVER/default;
@@ -165,7 +165,6 @@ EOF
 \begin{verbatim}
 #!/bin/sh
 #
-# Henrik Lund Kramshøj
 # /etc/rc.ipsec - IPsec server configuration
 # built from http://rt.fm/~jcs/ipsec_wep.phtml
 # OpenBSD syntaks!
@@ -176,29 +175,29 @@ SECCLIENT=10.0.42.53
 
 ESPKEY=`cat ipsec.esp.key`
 AHKEY=`cat ipsec.ah.key`
-         
+
 # Flush IPsec SAs in case we get called more than once
 ipsecadm flush
 \end{verbatim}
 
-        
+
 \slide{rc.ipsec.server - server setup - SAs}
 
 \begin{verbatim}
 # Establish Security Associations
 #
-# 1000 is from the server to the client 
+# 1000 is from the server to the client
 ipsecadm new esp -spi 1000 -src $SECSERVER -dst $SECCLIENT \
 -forcetunnel -enc blf -key $ESPKEY \
 -auth sha1 -authkey $AHKEY
-         
-# 1001 is from the client to the server 
+
+# 1001 is from the client to the server
 ipsecadm new esp -spi 1001 -src $SECCLIENT -dst $SECSERVER \
 -forcetunnel -enc blf -key $ESPKEY \
 -auth sha1 -authkey $AHKEY
 \end{verbatim}
 
-        
+
 \slide{rc.ipsec.server - server setup - flows}
 
 \small
@@ -211,10 +210,10 @@ ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
 # IPv6
 #ipsecadm flow -out -src $SECSERVER -dst $SECCLIENT -proto esp \
 #-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
-     
+
 # Data going from the client to the outside
 ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
--addr $SECCLIENT 255.255.255.255 0.0.0.0 0.0.0.0 -dontacq                  
+-addr $SECCLIENT 255.255.255.255 0.0.0.0 0.0.0.0 -dontacq
 # IPv6
 #ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
 #-addr :: :: $SECCLIENT ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff -dontacq
@@ -222,7 +221,7 @@ ipsecadm flow -in -src $SECSERVER -dst $SECCLIENT -proto esp \
 
 
 
-%%% Local Variables: 
+%%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t
-%%% End: 
+%%% End:

@@ -27,7 +27,7 @@
 \chapter*{\color{titlecolor}Preface}
 \markboth{Preface}{}
 
-This material is prepared for use in \emph{\kursus} and was prepared by
+This material is prepared for use in \emph{Introduction to Incident Response Elective, KEA} and was prepared by
 Henrik Kramselund, \url{http://www.zencurity.com} .
 It describes the networking setup and
 applications for trainings and courses where hands-on exercises are needed.
@@ -1685,8 +1685,8 @@ Try and test a back door script.
 \begin{enumerate}
 \item Create a shell copy with SUID bit set as privileged user
 \item Run the command as non-privileged user to see it works
-%\item Create root cronjob without path
-%\item Insert a malicious script as one of the commands from the root cron job
+\item Optional: Create root cronjob without path
+\item Optional: Insert a malicious script as one of the commands from the root cron job
 \end{enumerate}
 
 {\bf Hints:}\\
@@ -1705,20 +1705,39 @@ Then test using a normal user, another window:
 \begin{alltt}
 hlk@debian:~$ /tmp/.xxsh
 # id
-uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),
+25(floppy),29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),
+117(scanner),1000(hlk) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
 #
 \end{alltt}
 
-The effective user id should be 0 which is root.
+The effective user id should be 0 which is root. It might not work as intended, due to enhanced security in the shell programs! Namely it wont work with Bourne Again Shell (bash) but maybe with dash. If dash is not installed, try installing it.
 
+When this manual process work. Then automate it, make it into a small script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
+
+This happens in a lot of devices and hosts today.
+
+The main takeaway is that root scripts should ALWAYS have a PATH defined, and ALL directories used by root script should only be writable by root!
 
 {\bf Solution:}\\
-When you have created the script for doing the shell copy you are done.
+When you have created the script for doing the shell copy you are done. Enough for this course.
 
 Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
 
+Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
+
+
 
 {\bf Discussion:}\\
+Why is the file named with a dot as the first character?
+
+Does the /tmp folder need to be a place to run scripts? No, but many applications unfortunately require exactly this.
+
+What is defense in depth? Does it apply here?
+
+Finish off the exercise by running, and looking at the output from:\\
+\verb+find / -perm -4000 -o -perm -6000+
+
 When this manual process work. Then you could automate it, make it into a script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
 
 A cron job runs scheduled commands. They usually perform cleanup functions, removing old files, doing a backup or similar. It could also be that some tool often run by the administrator has no PATH defined, and could be convinced to run your script instead as part of the process.
@@ -1732,7 +1751,117 @@ The main takeaway is that root scripts should ALWAYS have a PATH defined, and AL
 A real example can be found in the document from ERNW: \\
 {\small\url{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}}
 
-\chapter{\faExclamationTriangle\ Disk Image Forensics 45 min}
+
+
+\chapter{\faExclamationTriangle\ File System Forensics 30min}
+\label{ex:file-system-forensics}
+
+\hlkimage{4cm}{sleuthkit.png}
+{\bf Objective:}\\
+ Open a file system dump
+
+{\bf Purpose:}\\
+Learn a bit of computer forensics using a free tool.
+
+{\bf Suggested method:}\\
+We will use a free toolkit, and an older version - easier to install.
+
+The Sleuth Kit® is a collection of command line tools and a C library that allows you to analyze disk images and recover files from them. It is used behind the scenes in Autopsy and many other open source and commercial forensics tools.
+
+Autopsy® is an easy to use, GUI-based program that allows you to efficiently analyze hard drives and smart phones. It has a plug-in architecture that allows you to find add-on modules or develop custom modules in Java or Python.
+
+\link{http://www.sleuthkit.org/}
+
+
+\begin{enumerate}
+\item Install tools
+\item Acquire test images - download file system images
+\item Open test images using tools
+\end{enumerate}
+
+Installing the tools is described on the web page, but using apt on Kali Linux should be OK. Note: this is not the newest version!
+
+Test images can be found at:\\
+\link{http://dftt.sourceforge.net/}
+
+Example, the EXT3FS file system:\\
+\link{http://dftt.sourceforge.net/test4/index.html}
+
+For this do the following - tested on Kali Linux:
+\begin{enumerate}
+\item Install tools\\
+\verb+apt-get install autopsy sleuthkit testdisk+
+\item Acquire test images - download and unzip\\
+\verb+cd ~; mkdir forensic;cd ~/forensic;unzip  +
+\item Start autopsy from command line
+\item Open test images using tools, use a browser \link{http://localhost:9999/autopsy}
+\item Add a new case, fill out wizards case: "My case", investigator: "hlk"
+\item Add host, fill out wizard, name: "host1", time zone: "CEST"
+\item Add image file - location full path to the file containing a file system, choose type: "partition" with symlink is fine
+\item Then use the analyze button to start analyzing this file system
+\item Click and get a feel for the tool
+\end{enumerate}
+
+\begin{alltt}
+user@KaliVM:~$
+user@KaliVM:~$ mkdir forensic
+user@KaliVM:~$ cd forensic/
+user@KaliVM:~/forensic$ unzip ../Downloads/4-kwsrch-ext3.zip
+Archive:  ../Downloads/4-kwsrch-ext3.zip
+  inflating: 4-kwsrch-ext3/COPYING-GNU.txt
+  inflating: 4-kwsrch-ext3/README.txt
+  inflating: 4-kwsrch-ext3/ext3-img-kw-1.dd
+  inflating: 4-kwsrch-ext3/index.html
+user@KaliVM:~/forensic$ pwd
+/home/user/forensic
+user@KaliVM:~/forensic$
+\end{alltt}
+
+Note: I run as user hlk, so note down the full path for the imagefile, in my case \verb+/home/user/forensic/4-kwsrch-ext3/ext3-img-kw-1.dd+
+
+
+\begin{alltt}
+root@KaliVM:~# autopsy
+
+============================================================================
+
+                       Autopsy Forensic Browser
+                  http://www.sleuthkit.org/autopsy/
+                             ver 2.24
+
+============================================================================
+Evidence Locker: /var/lib/autopsy
+Start Time: Wed Jun  5 16:16:12 2019
+Remote Host: localhost
+Local Port: 9999
+
+Open an HTML browser on the remote host and paste this URL in it:
+
+    http://localhost:9999/autopsy
+
+Keep this process running and use <ctrl-c> to exit
+\end{alltt}
+
+
+{\bf Hints:}\\
+Generating a time line of timestamps with date created, modification etc. can sometimes highlight the interesting times. A hacker breaking in and replacing a file would often end up having modified time stamps.
+
+If you want to automate or use the command line for other reasons there are some documentation available, example \url{http://wiki.sleuthkit.org/index.php?title=FS_Analysis}
+
+{\bf Solution:}\\
+When you team has opened at least one file system from an image file, you are done.
+
+Hopefully you should be able reach something like this:
+\hlkimage{16cm}{sleuthkit-2019.png}
+
+{\bf Discussion:}\\
+These tools are quite old, but still very usable. The older tools often came from research, legal and government agencies.
+
+We use them to see the filesystem data directly, without modification -- which is essential for any forensics tool. There are more userfriendly tools these days.
+
+Some are targetted at recovering data, like lost photos on USB devices, others are targetted at enterprise use.
+
+\chapter{\faInfoCircle\  Disk Image Forensics 45 min}
 \label{ex:disk-image-forensics}
 
 {\bf Objective:}\\
@@ -1803,6 +1932,53 @@ What are some problems observed?
 Autopsy does NOT suport LVM! Modern (expensive commercial ones) probably do.
 
 
+
+\chapter{\faInfoCircle\ Clean or rebuild a server 20min}
+\label{ex:clean-or-rebuild}
+
+\hlkimage{10cm}{df20030604.jpg}
+
+{\bf Objective:}\\
+Think about a hacked system, how can you clean such a system?
+
+{\bf Purpose:}\\
+Realize that you can never be completely sure the system really is secure.
+
+{\bf Suggested method:}\\
+Consider the system from exercise \ref{ex:priv-esc-cron}
+
+We created a back door in this system:
+(We created it in /tmp so it may have been deleted, but lets say it was created in /sbin instead)
+
+Commands executed:
+
+\begin{alltt}
+root@debian:~# rm /tmp/.xxsh
+root@debian:~# cp /bin/dash /tmp/.xxsh
+root@debian:~# chmod +sw /tmp/.xxsh
+\end{alltt}
+
+Is this the only file left by the attacker?
+
+Did they change other files, configurations, added users, changed user passwords?
+
+{\bf Hints:}\\
+A forensics investigation might perform a complete dump of the file systems and use TASK/Autopsy. Then by generating a timeline it might be possible to find the back door files. Perhaps.
+
+{\bf Solution:}\\
+Remove the back door, and associated hacked accounts.
+
+In real life you would:
+Rebuild your Debian server.
+Automate the setup of critical systems.
+Have good backup of critical data.
+
+{\bf Discussion:}\\
+Cleaning systems and whole environments is very hard.
+
+An attacker may have spent only 30 minutes, but the investigation might take 100 hours. This is a huge difference in resources spent.
+
+No such thing as \emph{Was just browsing the system}
 
 
 \chapter{\faInfoCircle\ Cloud environments influence on incident response 20min}

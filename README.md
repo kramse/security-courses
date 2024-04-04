@@ -34,7 +34,15 @@ I use some pictures from Unsplash https://unsplash.com/ and try to remember to i
 
 
 ## How to get the sources
-You need to use Git to get the sources, try cloning it. 
+You need to use Git to get the sources, try cloning it.
+
+I am currently moving from Github to Codeberg.org, so my current configuration is:
+```
+$ git remote -v
+origin	git@codeberg.org:kramse/security-courses.git (fetch)
+origin	git@github.com:kramse/security-courses.git (push)
+origin	git@codeberg.org:kramse/security-courses.git (push)
+```
 
 ## What you need
 

@@ -667,11 +667,6 @@ Some scripts also require, or allow arguments into them:
 \end{alltt}
 
 
-\end{document}
-
-
-
-
 \chapter{\faExclamationTriangle\ Configure a Database - 20 min}
 \label{ex:mariadb-createdb}
 
@@ -689,8 +684,16 @@ So why aren't more developers concerned with security, least privilege, creating
 Get an overview of the LibreNMS install instructions located at:\\
 \link{https://docs.librenms.org/Installation/Install-LibreNMS/}
 
-We are running Debian 11, and since we only need to play with the database, only install that part:
+We are running Debian, and since we only need to play with the database, only install the parts metioned here:
 
+\begin{list2}
+\item Install Required Packages -- only Mariadb
+\item Add librenms user
+\item Download LibreNMS
+\item Set permissions
+\end{list2}
+
+Install Required Packages:
 \begin{alltt}
 apt install mariadb-client mariadb-server
 \end{alltt}
@@ -750,7 +753,7 @@ Lots of systems need \emph{access to data}, but if noone ask -- what permissions
 
 
 
-\chapter{\faExclamationTriangle\ RBAC Access permissions on GitHub 30-45min}
+\chapter{\faExclamationTriangle\ RBAC Access permissions on GitHub up to 30min}
 \label{ex:github-perms}
 
 {\bf Objective:}\\
@@ -850,7 +853,7 @@ Using SSH keys for access and disabling password based logins effectively preven
 \end{enumerate}
 
 Generate key:
-\begin{alltt}
+\begin{alltt}\footnotesize
 \$ ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/root/.ssh/id_rsa):
@@ -876,7 +879,7 @@ The key's randomart image is:
 \end{alltt}
 
 Then use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
-\begin{alltt}
+\begin{alltt}\footnotesize
 \$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
 /usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
 The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
@@ -905,7 +908,7 @@ You can publish the public part of your SSH keys in places such as Github and Ub
 
 You can add keys to memory, allowing you to enter a passphrase at the beginning of the session, but no passphrases or passwords after:
 
-\begin{alltt}
+\begin{alltt}\footnotesize
 \$ ssh-add .ssh/kramse
 // Passphrase here
 Identity added: .ssh/kramse (.ssh/kramse)
@@ -923,12 +926,130 @@ We have not discussed using passphrase on the key, neither how to turn off passw
 You should remove the possibility for root logins and logins using password, when keys work!
 
 This is done editing the file \verb+/etc/ssh/sshd_config+ and the options:
-\begin{alltt}
+\begin{alltt}\footnotesize
 #PermitRootLogin prohibit-password
 PermitRootLogin no
 # To disable tunneled clear text passwords, change to no here!
 PasswordAuthentication no
 \end{alltt}
+
+
+
+\chapter{\faExclamationTriangle\ Research Virtual Machine Escapes 20min}
+\label{ex:vm-escape}
+
+
+{\bf Objective:}\\
+Research how exploits can escape from Guest Virtual Machine to Host operating system. Multiple examples exist for both client virtualisation and datacenter virtualisation.
+
+{\bf Purpose:}\\
+Research VM escapes - understand that isolation and separation does not always work. Think about how to design systems with this in mind. Perhaps virtualisation should be built using two clusters, one for external services and one for internal?
+
+{\bf Suggested method:}\\
+Find list of CVE or do internet search. Perform searches using the virtualisation technology used in your networks. Note: even though Virtual box is used as example below other technologies like Microsoft HyperV, VMware, Xen etc. have similar problems!
+
+
+examples:
+
+\begin{itemize}
+\item \link{https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=virtualbox} list multiple vulnerabilities.
+\item \url{https://github.com/MorteNoir1/virtualbox_e1000_0day} \emph{VirtualBox E1000 Guest-to-Host Escape} The E1000 has a vulnerability allowing an attacker with root/administrator privileges in a guest to escape to a host ring3. Then the attacker can use existing techniques to escalate privileges to ring 0 via /dev/vboxdrv.
+\item \url{https://en.wikipedia.org/wiki/Virtual_machine_escape}
+\end{itemize}
+
+{\bf Hints:}\\
+Providing virtualisation is today done using hardware features in the CPU of the system. Along with the hardware features are drivers and features provided by the virtualisation system, which has errors.
+
+Having drivers and kernel modules with errors can sometimes result in flaws exploitable by guest virtual machines.
+
+{\bf Solution:}\\
+There is often no solution other than to patch systems, when new vulnerabilities are found - update your virtualisation NOW if you are missing updates.
+
+Never open virtual machines from untrusted sources on your laptop with confidential data. Don't trust that the security provided is enough for researching live malware on virtual systems.
+
+{\bf Discussion:}\\
+Is it possible to create multiple virtualisation cluster? - yes, some organisations already have multiple clusters for various reasons. Some might have development, staging and production as different clusters.
+
+Also be aware that a lot of malware has checks trying to find out if it is running in a virtual machine, or isolated in a lab.
+
+Update 2024: it seems VMware just released some patches for important updates to their ESXi products. See if you can locate an article either on the internet or at VMware.com describing these problems.
+
+
+
+
+\chapter{\faInfoCircle\ Try running a Docker container 20min}
+\label{ex:docker-run}
+
+
+{\bf Objective:}\\
+Research how Docker containers work.
+
+{\bf Purpose:}\\
+Docker containers are used all around the world, often together with private cloud systems.
+They run in the host OS kernel, and thus requires fewer resources, and provides less isolation.
+
+\begin{quote}\small
+The underlying technology\\
+Docker is written in the Go programming language and takes advantage of several features of the Linux kernel to deliver its functionality. Docker uses a technology called namespaces to provide the isolated workspace called the container. When you run a container, Docker creates a set of namespaces for that container.
+
+These namespaces provide a layer of isolation. Each aspect of a container runs in a separate namespace and its access is limited to that namespace.
+\end{quote}
+Source: \url{https://docs.docker.com/get-started/overview/}
+
+{\bf Suggested method:}\\
+Find the main web page of Docker, \url{https://www.docker.com}
+
+Look at the architecture of Docker, they currently have an article:\\
+\url{https://www.docker.com/resources/what-container}
+
+What is a Container?\\
+A standardized unit of software
+
+Browse the architecture for a bit, and then run docker on your Debian.
+
+The instruction are on the page:\\
+\url{https://docs.docker.com/engine/install/debian/}
+
+{\bf Note: I have added a directory in my kramse-labs with playbooks for installing on Debian -- use them!}
+
+\begin{alltt}\small
+user@Projects:~$ cd projects/github/kramse-labs/
+user@Projects:kramse-labs$ ls
+core-net-lab/	 lab-network/	work-station/  README.md
+docker-install/  suricatazeek/	LICENSE
+user@Projects:kramse-labs$ cd docker-install/
+user@Projects:docker-install$ pwd
+/home/user/projects/github/kramse-labs/docker-install
+user@Projects:docker-install$ ls
+1-dependencies.yml  README.md
+user@Projects:docker-install$ ansible-playbook 1-dependencies.yml
+... about 10 minutes at most
+\end{alltt}
+
+{\bf Hints:}\\
+I recommend using the repositories, as future updates will become available there. This make future apt update/upgrade more simple.
+
+{\bf Solution:}\\
+When you understand the basic architecture of Docker containers, you are done.
+
+or
+
+When you can run a small docker container, you are done.
+
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+docker run hello-world
+\end{minted}
+
+
+{\bf Discussion:}\\
+Many software packages can be used via Docker containers. This allows the programmer to prepare a small image, and the user to run this directly.
+
+Are there any security issues, many, so be careful.
+
+See for example: \\
+\url{https://docs.docker.com/engine/security/}
+
 
 
 
@@ -971,7 +1092,7 @@ When you have seen the CIS web site, read about a specific benchmark you are don
 {\bf Discussion:}\\
 We will discuss other tools in class.
 
-
+\end{document}
 
 \chapter{\faInfoCircle\ Example Policies up to 25min}
 \label{ex:example-AUP}
@@ -1032,6 +1153,77 @@ When you have seen at least two different policies you are done.
 How do you both write AND create awareness about a policy?
 
 
+
+
+\chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}
+\label{ex:priv-esc-cron}
+
+\hlkimage{10cm}{df20030604.jpg}
+
+{\bf Objective:}\\
+Perform a simple privilege escalation attack
+
+{\bf Purpose:}\\
+Try and test a back door script. We will create this ourselves, but could have been left by an attacker.
+
+{\bf Suggested method:}\\
+
+\begin{enumerate}
+\item Create a shell copy with SUID bit set as privileged user
+\item Run the command as non-privileged user to see if it works
+%\item Create root cronjob without path
+%\item Insert a malicious script as one of the commands from the root cron job
+\end{enumerate}
+
+{\bf Hints:}\\
+In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
+
+\begin{alltt}
+root@debian:~# rm /tmp/.xxsh
+root@debian:~# apt install zsh
+...
+root@debian:~# cp /bin/zsh /tmp/.xxsh
+root@debian:~# chmod +sw /tmp/.xxsh
+\end{alltt}
+
+Then test using a normal user, another window:
+\begin{alltt}
+hlk@debian:~$ /tmp/.xxsh
+# id
+uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),
+29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk)
+ context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+#
+\end{alltt}
+
+The effective user id should be 0 which is root. It might not work as intended, due to enhanced security in the shell programs! Namely it wont work with Bourne Again Shell (bash) but maybe with dash. If dash is not installed, try installing it.
+
+{\bf Shell programs are getting better, implement more security. zsh might not work, but try to find another shell program.}
+
+When this manual process work. Then automate it, make it into a small script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
+
+This happens in a lot of devices and hosts today.
+
+The main takeaway is that root scripts should ALWAYS have a PATH defined, and ALL directories used by root script should only be writable by root!
+
+{\bf Solution:}\\
+When you have created the script for doing the shell copy you are done.
+
+Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
+
+Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
+
+
+
+{\bf Discussion:}\\
+Why is the file named with a dot as the first character?
+
+Does the /tmp folder need to be a place to run scripts? No, but many applications unfortunately require exactly this.
+
+What is defense in depth? Does it apply here?
+
+Finish off the exercise by running, and looking at the output from:\\
+\verb+find / -perm -4000 -o -perm -6000+
 
 
 
@@ -1183,77 +1375,6 @@ PORT      STATE SERVICE VERSION
 \end{alltt}
 
 
-\chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}
-\label{ex:priv-esc-cron}
-
-\hlkimage{10cm}{df20030604.jpg}
-
-{\bf Objective:}\\
-Perform a simple privilege escalation attack
-
-{\bf Purpose:}\\
-Try and test a back door script. We will create this ourselves, but could have been left by an attacker.
-
-{\bf Suggested method:}\\
-
-\begin{enumerate}
-\item Create a shell copy with SUID bit set as privileged user
-\item Run the command as non-privileged user to see if it works
-%\item Create root cronjob without path
-%\item Insert a malicious script as one of the commands from the root cron job
-\end{enumerate}
-
-{\bf Hints:}\\
-In this exercise first try out the malicious commands for creating a back door shell program. Login in as root, then:
-
-\begin{alltt}
-root@debian:~# rm /tmp/.xxsh
-root@debian:~# apt install zsh
-...
-root@debian:~# cp /bin/zsh /tmp/.xxsh
-root@debian:~# chmod +sw /tmp/.xxsh
-\end{alltt}
-
-Then test using a normal user, another window:
-\begin{alltt}
-hlk@debian:~$ /tmp/.xxsh
-# id
-uid=1000(hlk) gid=1000(hlk) {\bf euid=0(root) egid=0(root)} groups=0(root),24(cdrom),25(floppy),
-29(audio),30(dip),44(video),46(plugdev),108(netdev),112(lpadmin),117(scanner),1000(hlk)
- context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
-#
-\end{alltt}
-
-The effective user id should be 0 which is root. It might not work as intended, due to enhanced security in the shell programs! Namely it wont work with Bourne Again Shell (bash) but maybe with dash. If dash is not installed, try installing it.
-
-{\bf Shell programs are getting better, implement more security. zsh might not work, but try to find another shell program.}
-
-When this manual process work. Then automate it, make it into a small script. Imagine if the root user was running automated scripts, and you could add yours to a directory used in the PATH for these automated ones.
-
-This happens in a lot of devices and hosts today.
-
-The main takeaway is that root scripts should ALWAYS have a PATH defined, and ALL directories used by root script should only be writable by root!
-
-{\bf Solution:}\\
-When you have created the script for doing the shell copy you are done.
-
-Further advanced steps would be to add this into some PATH writable by you, and letting a cron job escalate.
-
-Then do a cron job that uses this command - a cron job running every 5 minutes using the \verb+ls+ command and introduce your malicious script by putting it before the real command in the PATH.
-
-
-
-{\bf Discussion:}\\
-Why is the file named with a dot as the first character?
-
-Does the /tmp folder need to be a place to run scripts? No, but many applications unfortunately require exactly this.
-
-What is defense in depth? Does it apply here?
-
-Finish off the exercise by running, and looking at the output from:\\
-\verb+find / -perm -4000 -o -perm -6000+
-
-
 
 
 \chapter{\faInfoCircle\ Small programs with data types 15min}
@@ -1341,122 +1462,6 @@ How do you feel about running internet services. Lets discuss how we can handle 
 What other methods can we use to restrict problems caused by similar vulnerabilities.
 A new product will often use a generic small computer and framework with security problems.
 
-
-
-\chapter{\faExclamationTriangle\ Research Virtual Machine Escapes 20min}
-\label{ex:vm-escape}
-
-
-{\bf Objective:}\\
-Research how exploits can escape from Guest Virtual Machine to Host operating system. Multiple examples exist for both client virtualisation and datacenter virtualisation.
-
-{\bf Purpose:}\\
-Research VM escapes - understand that isolation and separation does not always work. Think about how to design systems with this in mind. Perhaps virtualisation should be built using two clusters, one for external services and one for internal?
-
-{\bf Suggested method:}\\
-Find list of CVE or do internet search. Perform searches using the virtualisation technology used in your networks. Note: even though Virtual box is used as example below other technologies like Microsoft HyperV, VMware, Xen etc. have similar problems!
-
-
-examples:
-
-\begin{itemize}
-\item \link{https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=virtualbox} list multiple vulnerabilities.
-\item \url{https://github.com/MorteNoir1/virtualbox_e1000_0day} \emph{VirtualBox E1000 Guest-to-Host Escape} The E1000 has a vulnerability allowing an attacker with root/administrator privileges in a guest to escape to a host ring3. Then the attacker can use existing techniques to escalate privileges to ring 0 via /dev/vboxdrv.
-\item \url{https://en.wikipedia.org/wiki/Virtual_machine_escape}
-\end{itemize}
-
-{\bf Hints:}\\
-Providing virtualisation is today done using hardware features in the CPU of the system. Along with the hardware features are drivers and features provided by the virtualisation system, which has errors.
-
-Having drivers and kernel modules with errors can sometimes result in flaws exploitable by guest virtual machines.
-
-{\bf Solution:}\\
-There is often no solution other than to patch systems, when new vulnerabilities are found - update your virtualisation NOW if you are missing updates.
-
-Never open virtual machines from untrusted sources on your laptop with confidential data. Don't trust that the security provided is enough for researching live malware on virtual systems.
-
-{\bf Discussion:}\\
-Is it possible to create multiple virtualisation cluster? - yes, some organisations already have multiple clusters for various reasons. Some might have development, staging and production as different clusters.
-
-Also be aware that a lot of malware has checks trying to find out if it is running in a virtual machine, or isolated in a lab.
-
-Update 2024: it seems VMware just released some patches for important updates to their ESXi products. See if you can locate an article either on the internet or at VMware.com describing these problems.
-
-
-
-
-\chapter{\faInfoCircle\ Try running a Docker container 20min}
-\label{ex:docker-run}
-
-
-{\bf Objective:}\\
-Research how Docker containers work.
-
-{\bf Purpose:}\\
-Docker containers are used all around the world, often together with private cloud systems.
-They run in the host OS kernel, and thus requires fewer resources, and provides less isolation.
-
-\begin{quote}\small
-The underlying technology\\
-Docker is written in the Go programming language and takes advantage of several features of the Linux kernel to deliver its functionality. Docker uses a technology called namespaces to provide the isolated workspace called the container. When you run a container, Docker creates a set of namespaces for that container.
-
-These namespaces provide a layer of isolation. Each aspect of a container runs in a separate namespace and its access is limited to that namespace.
-\end{quote}
-Source: \url{https://docs.docker.com/get-started/overview/}
-
-{\bf Suggested method:}\\
-Find the main web page of Docker, \url{https://www.docker.com}
-
-Look at the architecture of Docker, they currently have an article:\\
-\url{https://www.docker.com/resources/what-container}
-
-What is a Container?\\
-A standardized unit of software
-
-Browse the architecture for a bit, and then run docker on your Debian.
-
-The instruction are on the page:\\
-\url{https://docs.docker.com/engine/install/debian/}
-
-{\bf Note: I have added a directory in my kramse-labs with playbooks for installing on Debian -- use them!}
-
-\begin{alltt}\small
-user@Projects:~$ cd projects/github/kramse-labs/
-user@Projects:kramse-labs$ ls
-core-net-lab/	 lab-network/	work-station/  README.md
-docker-install/  suricatazeek/	LICENSE
-user@Projects:kramse-labs$ cd docker-install/
-user@Projects:docker-install$ pwd
-/home/user/projects/github/kramse-labs/docker-install
-user@Projects:docker-install$ ls
-1-dependencies.yml  README.md
-user@Projects:docker-install$ ansible-playbook 1-dependencies.yml
-... about 10 minutes at most
-\end{alltt}
-
-{\bf Hints:}\\
-I recommend using the repositories, as future updates will become available there. This make future apt update/upgrade more simple.
-
-{\bf Solution:}\\
-When you understand the basic architecture of Docker containers, you are done.
-
-or
-
-When you can run a small docker container, you are done.
-
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-docker run hello-world
-\end{minted}
-
-
-{\bf Discussion:}\\
-Many software packages can be used via Docker containers. This allows the programmer to prepare a small image, and the user to run this directly.
-
-Are there any security issues, many, so be careful.
-
-See for example: \\
-\url{https://docs.docker.com/engine/security/}
 
 
 

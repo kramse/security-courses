@@ -1,0 +1,710 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{kea-slides}
+\externaldocument{build/intro-to-it-security-system-security-exercises}
+\selectlanguage{english}
+
+\begin{document}
+
+\mytitlepage
+{Systems Security - 2}
+{Intro to IT-security \the\year}
+
+\hlkprofiluk
+
+
+\slide{Goals for Today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+\item User accounts
+\item Authentication and Authorization
+\item Access Control Lists
+\item Confinement and isolation
+\end{list2}
+
+Exercises
+\begin{list2}
+\item Debian Linux exercises {\small\hfill{\small\hfill  Photo by Thomas Galler on Unsplash}}
+\end{list2}
+
+\slide{Plan for part I: User accounts, Authentication and Authorization}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item What are user accounts -- user ID
+\item Securing Administrative User Accounts
+\item Securing Normal User Accounts
+\item Databases: RDBMS, MariaDB
+\end{list2}
+\item Exercises
+\begin{list2}
+\item Databases - discussion about Relational Database Management System RDBMS Model and NoSQL
+\item RBAC on Github
+\item Password cracking
+\item SSH keys
+\end{list2}
+\end{list1}
+
+
+\slide{Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation, 2011\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
+
+\slide{Vulnerabilities - CVE}
+
+\begin{list1}
+\item Common Vulnerabilities and Exposures (CVE):
+  \begin{list2}
+  \item classification
+  \item identification
+  \end{list2}
+\item When discovered each vuln gets a CVE ID
+\item CVE maintained by MITRE - not-for-profit
+org for research and development in the USA.
+\item National Vulnerability Database search for CVE.
+\item Sources: \link{http://cve.mitre.org/} og \link{http://nvd.nist.gov}
+\item also checkout OWASP Top-10 \link{http://www.owasp.org/}
+\end{list1}
+
+\slide{Local vs. remote exploits}
+
+\begin{list1}
+\item {\bfseries Local vs. remote}
+angiver om et exploit er rettet mod
+en sårbarhed lokalt på maskinen, eksempelvis
+opnå højere privilegier, eller beregnet
+til at udnytter sårbarheder over netværk
+\item {\bfseries Remote root exploit}
+- den type man frygter mest, idet
+det er et exploit program der når det afvikles giver
+angriberen fuld kontrol, root user er administrator
+på Unix, over netværket.
+\item {\bfseries Zero-day exploits} dem som ikke offentliggøres -- dem
+  som hackere holder for sig selv. Dag 0 henviser til at ingen kender
+  til dem før de offentliggøres og ofte er der umiddelbart ingen
+  rettelser til de sårbarheder
+\end{list1}
+
+\slide{Separation of duty ns function}
+
+\begin{quote}
+{\bf Separation of duties} (SoD; also known as Segregation of Duties) is the concept of having more than one person required to complete a task. In business the separation by sharing of more than one individual in one single task is an internal control intended to prevent fraud and error.
+\end{quote}
+
+Quote from \url{https://en.wikipedia.org/wiki/Separation_of_duties}
+
+\begin{quote}
+{\bf Separation of function}. Developers do not develop new programs on production systems because of the potential threat to production data.
+\end{quote}
+\emph{Computer Security}, Matt Bishop, 2019
+
+Danish: Funktionsadskillelse
+
+\slide{Lipners Integrity Matrix Model}
+
+\hlkimage{20cm}{lipner-with-integrity.png}
+
+\emph{Non-Discretionary Controls for Commercial Applications}, Steven B. Lipner, IEEE Symposium on Security and Privacy, and Fifth Seminar on the DoD Computer Security Initiative, 1982
+
+
+\slide{MLSH Chapter 2: intro }
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Securing Administrative User Accounts}\\
+Managing users is one of the more {\bf challenging} aspects of IT administration. You need to make sure
+that users can always {\bf access their stuff} and that they can {\bf perform the required tasks} to do their jobs.
+You also need to ensure that users’ stuff is always {\bf secure from unauthorized users} and that users  {\bf can’t perform any tasks that don’t fit their job description}.
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+Can we spot the:
+\begin{list2}
+\item Confidentiality, Integrity and Availability requirements
+\item Principle of Least Privilege
+\end{list2}
+
+
+
+\slide{The dangers of logging in as the root user}
+
+%\hlkimage{}{}
+
+\begin{quote}
+A huge advantage that Unix and Linux operating systems have over Windows is that Unix and Linux do
+a much better job of keeping privileged administrative accounts separated from normal user accounts.
+Indeed, one reason that older versions of Windows were so susceptible to security issues, such as
+drive-by virus infections, was the common practice of setting up user accounts with administrative
+privileges, without having the protection of the User Access Control (UAC) that’s in newer versions of
+Windows.
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\begin{list2}
+\item Agreed, but I may be biased
+\item Mac OS X made it very simple to run administrative tasks, so you didn't need to run as root
+\item Modern Linux user interfaces make similar attempts with \verb+pkexec+, \verb+kdesudo+,  \verb+gksudo+ etc.
+\item Windows is getting better, many organisations in DK are removing administrative access to regular users, even KEA
+\end{list2}
+
+\slide{The advantages of using sudo}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Used properly, the sudo utility can greatly enhance the security of your systems, and it can make an
+administrator’s job much easier. With sudo , you can do the following:
+\begin{list2}
+\item Assign certain users full administrative privileges, while assigning other users only the privi-
+leges they need to perform tasks that are directly related to their respective jobs.
+\item Allow users to perform administrative tasks by entering their own normal user passwords so
+that you don’t have to distribute the root password to everybody and their brother.
+\item Make it harder for intruders to break into your systems. If you implement sudo and disable
+the root user account, would-be intruders won’t know which account to attack because they
+won’t know which one has admin privileges.
+\item Create sudo policies that you can deploy across an entire enterprise network, even if that
+network has a mix of Unix, BSD, and Linux machines.
+\item Improve your auditing capabilities because you’ll be able to see what users are doing with
+their admin privileges.
+\end{list2}
+\end{quote}
+Source: \emph{Mastering Linux Security and Hardening} (MLSH), third edition
+
+\slide{Why use Sudo conclusion}
+
+Main thing about sudo is that you do NOT give out the root password to anybody! They will use their own credentials and can be limited to single commands, scripts and even parameters. You could have a single sudoers file for your own organisation, that includes groups of servers, user groups etc.
+
+Sidenote: sudo also has a number of CVEs unfortunately
+
+\slide{Configure Sudo in the Lab -- no passwd}
+
+%\hlkimage{}{}
+
+Not in sudoers file, cannot run sudo command. This can be fixed quite easily.
+
+If you use the su command first, to switch user to root and run the visudo command:\\
+\verb+$ su -+\\
+\verb+# visudo+
+
+You will get an editor, where you enter below the root line, your username and a similar line:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+# User privilege specification
+root ALL = (ALL:ALL) ALL
+hlk ALL = (ALL:ALL) NOPASSWD: ALL
+
+\end{minted}
+
+Then use ctrl-x if using Nano, and exit the editor - saving this configuration file.
+
+
+\slide{Logging in}
+
+We did a small exercise last time:  Investigate /etc
+
+{\bf Objective:}\\
+We will investigate the /etc directory on Linux
+
+We need a Kali Linux and a Debian Linux VM, to compare
+
+
+{\bf Purpose:}\\
+Start seeing example configuration files, including:
+\begin{itemize}
+  \item User database \verb+/etc/passwd+ and \verb+/etc/group+
+  \item The password database \verb+/etc/shadow+
+\end{itemize}
+
+This database of users is checked everytime someone logs into the system. Everything is tied up to users on Unix
+
+
+\slide{Linux configuration in /etc}
+
+.
+\hlkrightpic{8cm}{0cm}{Unix-vfs.pdf}
+\begin{list2}
+\item Command line is a requirement in the \emph{studieordningen} \smiley
+\item Linux and Unix uses a single virtual file system\\
+\url{https://en.wikipedia.org/wiki/Unix_filesystem}
+\item No drive letters like the ones in MS-DOS and Microsoft Windows
+\item Everything starts at the root of the file system tree \verb+/+ - NOTE: \emph{forward slash}
+\item One special directory is \verb+/etc/+ and sub directories which usually contain a lot of configuration files
+\end{list2}
+
+
+\slide{Principle of Least Privilege}
+
+\begin{list1}
+\item {\bf Definition 14-1} The \emph{principle of least privilege} states that a subject should be given only those privileges that it needs in order to complete the task.
+\item Also drop privileges when not needed anymore, relinquish rights immediately
+\item Example, need to read a document - but not write.
+\item Database systems can often provide very fine grained access to data
+\end{list1}
+
+
+\slide{Unix permissions}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+chown -R librenms:librenms /opt/librenms
+chmod 771 /opt/librenms
+setfacl -d -m g::rwx /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/
+setfacl -R -m g::rwx /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/
+\end{minted}
+Source: Install instructions for LibreNMS\\
+\url{https://docs.librenms.org/Installation/Install-LibreNMS/}
+
+\begin{list2}
+\item Ownership of files -- who owns the files, owner and group\\
+\verb+chown+ -- change owner
+\item Permissions -- read, write and execute\\
+\verb+chmod+ -- change file mode bits
+\item setfacl - set file access control lists
+\end{list2}
+
+Microsoft Windows usually have the advanced file access control lists from NTFS, allowing named users access to files and directories
+
+
+\slide{Relational Database Management System RDBMS}
+
+\hlkimage{7cm}{RDBMS_structure.png}
+
+\begin{list1}
+\item Relational Database Management System RDBMS is a common database architecture
+\item Common examples MS-SQL, MySQL/MariaDB, PostgreSQL
+\item Picture: By Scifipete - Own work, CC BY-SA 3.0,\\ \url{https://commons.wikimedia.org/w/index.php?curid=11506013}
+\item \url{https://en.wikipedia.org/wiki/Relational_database#RDBMS}
+\end{list1}
+
+\slide{PostgreSQL security}
+\hlkimage{15cm}{postgresql-security.png}
+
+Feature overview security features in PostgreSQL\\
+\url{https://www.postgresql.org/about/featurematrix/#security}
+
+
+
+\exercise{ex:mariadb-createdb}
+\exercise{ex:github-perms}
+
+
+
+\slide{Passwords vælges ikke tilfældigt}
+
+\hlkimage{20cm}{50-most-used-passwords.png}
+
+Source:
+\link{https://wpengine.com/unmasked/}
+
+
+
+\slide{Evernote password reset}
+
+What happens when security breaks?
+\hlkimage{16cm}{evernote-password-reset.png}
+
+Sources:\\
+\link{http://evernote.com/corp/news/password_reset.php}
+
+\slide{Twitter password reset}
+
+\hlkimage{13cm}{twitter-250k-users.png}
+
+Sources:\\
+\link{http://blog.twitter.com/2013/02/keeping-our-users-secure.html}
+
+\slide{Saving passwords}
+
+\hlkimage{7cm}{password-window.png}
+
+\vskip 5mm
+\centerline{Use some kind of Password Safe program}
+
+\slide{January 2013: Github Public passwords?}
+
+
+\hlkimage{16cm}{github-credentials.png}
+
+ Sources:\\
+{\footnotesize\link{https://twitter.com/brianaker/status/294228373377515522}\\
+\link{http://www.webmonkey.com/2013/01/users-scramble-as-github-search-exposes-passwords-security-details/}\\
+\link{http://www.leakedin.com/}\\
+\link{http://www.offensive-security.com/community-projects/google-hacking-database/}
+}
+
+\slide{TwoFactor authentication: Example Duosecurity}
+
+\hlkimage{10cm}{duosecurity-overview.png}
+Source:  \link{https://www.duo.com/}
+
+
+\slide{Yubico Yubikey}
+
+\hlkimage{16cm}{yubico-overview.png}
+\begin{quote}
+A Yubico OTP is unique sequence of characters generated every time the YubiKey button is touched. The Yubico OTP is comprised of a sequence of 32 Modhex characters representing information encrypted with a 128 bit AES-128 key
+\end{quote}
+
+\link{http://www.yubico.com/products/yubikey-hardware/} and also \url{https://wiki.debian.org/Smartcards/YubiKey4}
+
+\slide{Storing passwords}
+
+\hlkimage{12cm}{images/passwordsafe-yubico.png}
+
+
+\begin{list1}
+\item Use password managers -- even though they also have security issues the overall improvement is great
+\item PasswordSafe \link{https://pwsafe.org/} -- Note: research for yourself which password manager to use!
+\item Apple Keychain provides an encrypted storage
+\item Browsere, Firefox Master Password, Chrome passwords, ... who do YOU trust
+\end{list1}
+
+
+\slide{Low tech 2-step verification }
+
+\centerline{\Large Printing code on paper, low level pragmatic }
+
+\hlkimage{6cm}{google-backup-codes.png}
+
+\begin{list1}
+\item Login from new devices today often requires two-factor - email sent to user
+\item Google 2-factor auth. SMS with backup codes
+\item Also read about S/KEY developed at Bellcore {\bf in the late 1980s}\\ \link{http://en.wikipedia.org/wiki/S/KEY}
+\end{list1}
+
+\centerline{Conclusion passwords: integrate with authentication, not reinvent}
+
+
+
+\slide{John the ripper}
+
+\begin{quote}
+John the Ripper is a fast password cracker, currently available for
+many flavors of Unix (11 are officially supported, not counting
+different architectures), Windows, DOS, BeOS, and OpenVMS. Its primary
+purpose is to detect weak Unix passwords. Besides several crypt(3)
+password hash types most commonly found on various Unix flavors,
+supported out of the box are Kerberos AFS and Windows NT/2000/XP/2003
+LM hashes, plus several more with contributed patches.
+\end{quote}
+
+\begin{list1}
+\item UNIX passwords kan knækkes med alec Muffets kendte Crack program
+  eller eksempelvis John The Ripper \link{http://www.openwall.com/john/}
+\end{list1}
+
+
+
+\slide{Cracking passwords}
+
+\begin{list2}
+\item Hashcat is the world's fastest CPU-based password recovery tool.
+\item oclHashcat-plus is a GPGPU-based multi-hash cracker using a brute-force attack (implemented as mask attack), combinator attack, dictionary attack, hybrid attack, mask attack, and rule-based attack.
+\item oclHashcat-lite is a GPGPU cracker that is optimized for cracking performance. Therefore, it is limited to only doing single-hash cracking using Markov attack, Brute-Force attack and Mask attack.
+\item John the Ripper password cracker old skool men stadig nyttig
+\end{list2}
+
+Source:\\
+\link{http://hashcat.net/wiki/}\\
+\link{http://www.openwall.com/john/}
+
+\exercise{ex:pwcrack-101}
+\exercise{ex:config-ssh-keys}
+
+
+\slide{End of part I}
+
+\hlkimage{14cm}{chris-benson-nKEARsgmrqc-unsplash.jpg}
+
+\centerline{\Large Take a break!}
+
+
+
+
+\slide{Goals part II: ACLs, Confinement and Isolation}
+
+\hlkimage{5cm}{homer-end-is-near.jpg}
+\begin{list1}
+\item Access Control Lists, Confinement and isolation, Virtual Machines and Sandboxes'
+\end{list1}
+
+\begin{list2}
+\item Identify the problem of keeping applications and data confined
+\item Discuss isolation - including sandboxes, virtual machines and capabilities
+\end{list2}
+
+
+
+
+\slide{Virtual Machines}
+
+\begin{list1}
+\item {\bf Definition 18-4} A \emph{virtual machine} is a program that simulates the hardware of a (possibly abstract) computer system.
+\item Also called hypervisor
+\item Common technologies include VMware, Virtualbox, HyperV, Qemu, KVM
+\item Qubes OS uses the Xen Project h\url{ttps://xenproject.org/}
+\item Also similarities to sandboxes implemented in Java Virtual Machine (JVM) and other places
+\end{list1}
+
+
+
+\slide{Sandbox definition}
+
+\begin{list1}
+\item {\bf Definition 18-6} A \emph{sandbox} is an environment in which the actions of a process are restricted according to a security policy
+\item Mentions firewall, which is why we also discuss these later today
+\end{list1}
+
+
+
+\slide{Chroot, Jails and }
+
+\begin{list1}
+\item Der findes mange typer \emph{jails} på Unix
+\item Ideer fra Unix chroot som ikke er en egentlig sikkerhedsfeature
+\begin{list2}
+\item Unix chroot - bruges stadig, ofte i daemoner som OpenSSH
+\item FreeBSD Jails
+\item SELinux
+\item Solaris Containers og Zones
+\item VMware virtuelle maskiner, er det et jail?
+\end{list2}
+\item Hertil kommer et antal andre måder at adskille processer - sandkasser
+\item Husk også de simple, database som \verb+_postgresql+, Tomcat som \verb+tomcat+, Postfix postsystem som \verb+_postfix+, SSHD som \verb+sshd+ osv. - simple brugere, få rettigheder
+\end{list1}
+
+\slide{JVM security policies}
+
+\begin{minted}[fontsize=\small]{java}
+// ========== WEB APPLICATION PERMISSIONS =====================================
+// These permissions are granted by default to all web applications
+// In addition, a web application will be given a read FilePermission
+// and JndiPermission for all files and directories in its document root.
+grant {
+    // Required for JNDI lookup of named JDBC DataSource's and
+    // javamail named MimePart DataSource used to send mail
+    permission java.util.PropertyPermission "java.home", "read";
+    permission java.util.PropertyPermission "java.naming.*", "read";
+    permission java.util.PropertyPermission "javax.sql.*", "read";
+...
+};
+// The permission granted to your JDBC driver
+// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
+//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
+// \};
+\end{minted}
+
+\begin{list1}
+\item Eksempel fra \verb+apache-tomcat-6.0.18/conf/catalina.policy+
+\end{list1}
+
+
+\slide{Apple sandbox named generic rules}
+
+\begin{minted}[fontsize=\small]{lisp}
+;; named - sandbox profile
+;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
+;;
+;; WARNING: The sandbox rules in this file currently constitute
+;; Apple System Private Interface and are subject to change at any time and
+;; without notice. The contents of this file are also auto-generated and not
+;; user editable; it may be overwritten at any time.
+;;
+(version 1)
+(debug deny)
+
+(import "bsd.sb")
+
+(deny default)
+(allow process*)
+(deny signal)
+(allow sysctl-read)
+(allow network*)
+\end{minted}
+
+
+\slide{Apple sandbox named specific rules }
+
+\begin{minted}[fontsize=\small]{lisp}
+;; Allow named-specific files
+(allow file-write* file-read-data file-read-metadata
+  (regex "^(/private)?/var/run/named\\pid$"
+         "^/Library/Logs/named\\.log$"))
+
+(allow file-read-data file-read-metadata
+  (regex "^(/private)?/etc/rndc\\.key$"
+         "^(/private)?/etc/resolv\\.conf$"
+         "^(/private)?/etc/named\\.conf$"
+         "^(/private)?/var/named/"))
+\end{minted}
+
+\begin{list1}
+\item Eksempel fra \verb+/usr/share/sandbox+ på Mac OS X
+\end{list1}
+
+
+\slide{Capability-based security}
+
+\begin{quote}
+  Capability-based security is a concept in the design of secure computing systems, one of the existing security models. A capability (known in some systems as a key) is a communicable, unforgeable token of authority. It refers to a value that references an object along with an associated set of access rights. A user program on a capability-based operating system must use a capability to access an object. Capability-based security refers to the principle of designing user programs such that they directly share capabilities with each other according to the principle of least privilege, and to the operating system infrastructure necessary to make such transactions efficient and secure. Capability-based security is to be contrasted with an approach that uses hierarchical protection domains.
+\end{quote}
+
+\url{https://en.wikipedia.org/wiki/Capability-based_security}
+
+
+\slide{Linux access control with AppArmor}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Quick introduction}\\
+AppArmor is an effective and easy-to-use Linux application security system. AppArmor proactively protects the operating system and applications from external or internal threats, even zero-day attacks, by enforcing good behavior and preventing both known and unknown application flaws from being exploited.
+
+AppArmor supplements the traditional Unix discretionary access control (DAC) model by providing mandatory access control (MAC). It has been included in the mainline Linux kernel since version 2.6.36 and its development has been supported by Canonical since 2009.
+\end{quote}
+Source: \url{https://apparmor.net/}
+
+
+\slide{Syscall restrictions seccomp}
+
+%\hlkimage{}{}
+
+\begin{quote}{\bf
+Restrict a Container's Syscalls with seccomp}\\
+FEATURE STATE: Kubernetes v1.19 [stable]
+Seccomp stands for secure computing mode and has been a feature of the Linux kernel since version 2.6.12. It can be used to sandbox the privileges of a process, restricting the calls it is able to make from userspace into the kernel. Kubernetes lets you automatically apply seccomp profiles loaded onto a node to your Pods and containers.
+
+Identifying the privileges required for your workloads can be difficult. In this tutorial, you will go through how to load seccomp profiles into a local Kubernetes cluster, how to apply them to a Pod, and how you can begin to craft profiles that give only the necessary privileges to your container processes.
+\end{quote}
+Source: \url{https://kubernetes.io/docs/tutorials/security/seccomp/}
+
+\exercise{ex:vm-escape}
+\exercise{ex:docker-run}
+
+
+\slide{Firewall Flow Controls -- \emph{the firewall infrastructure}}
+
+\hlkimage{13cm}{overview-routing-customer-2015.pdf}
+
+\begin{list1}
+\item Conclusion: Do as much as possible with your existing devices
+\item Tuning and using features like stateless router filters works wonders
+\end{list1}
+
+
+\slide{Firewalls and related issues}
+
+\begin{quote}
+In computing, a firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
+\end{quote} Source: Wikipedia
+
+\begin{list1}
+\item \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+\item \link{http://www.wilyhacker.com/} Cheswick chapter 2 PDF
+\emph{A Security Review of Protocols:
+Lower Layers}
+\begin{list2}
+\item Network layer, packet filters, application level, stateless, stateful
+\end{list2}
+\end{list1}
+
+{\Large Firewalls are by design a choke point, natural place \\
+to do network security monitoring!}
+
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{15cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\item Used in most, if not all, Wi-Fi networks -- each SSID has a VLAN behind it
+\end{list1}
+
+\slide{Network Access Control -- Connecting clients more securely}
+
+Talking about standard, another useful one:\\
+IEEE 802.1x -- Port Based Network Access Control
+
+\hlkimage{7cm}{802.1X_wired_protocols.png}
+
+\begin{list1}
+\item Authentication protocol ensures user validation before port access
+\item Can authenticate using username and then password or certificate
+\item Typically RADIUS and 802.1x which can use LDAP or Active Directory
+\item Already used in Wi-Fi networks, so can be turned on for wired Ethernet ports
+\end{list1}
+
+
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{14cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Cilium overview}
+
+\hlkimage{12cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+
+\slide{Security is more than blocking!}
+
+\hlkimage{22cm}{cilium-features.png}
+
+\begin{list2}
+\item A lot of features relate to \emph{security}
+\end{list2}
+
+
+
+
+\exercise{ex:CIS-benchmarks-teaser}
+
+
+\slidenext{}
+
+
+
+\end{document}

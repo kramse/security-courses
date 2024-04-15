@@ -1053,8 +1053,8 @@ See for example: \\
 
 
 
-\chapter{\faExclamationTriangle\ CIS Benchmarks teaser 30min}
-\label{ex:CIS-benchmarks-teaser}
+\chapter{\faExclamationTriangle\ CIS Benchmarks 30min}
+\label{ex:CIS-benchmarks}
 
 {\bf Objective:}\\
 Checkout CIS benchmarks
@@ -1092,7 +1092,136 @@ When you have seen the CIS web site, read about a specific benchmark you are don
 {\bf Discussion:}\\
 We will discuss other tools in class.
 
-\end{document}
+
+
+\chapter{\faExclamationTriangle\ Lynis Auditing, System hardening, and Compliance testing 30min}
+\label{ex:lynis-first}
+
+\hlkimage{10cm}{lynis.png}
+
+{\bf Objective:}\\
+Try out the Lynis tool for scanning your local Unix server.
+
+{\bf Purpose:}\\
+Lynis is a quick tool to run, and gives concrete advise for things to change.
+
+{\bf Suggested method:}\\
+Install using APT on your Debian and run the tool
+
+
+
+{\bf Hints:}\\
+Use the web site for the tool Lynis \url{https://cisofy.com/lynis/} and audit your system
+
+{\bf Solution:}\\
+When you have run the tool you are done. Better if you have browsed some of the output
+
+{\bf Discussion:}\\
+
+
+
+
+\chapter{\faInfoCircle\ SSH scanners 15min}
+\label{ex:nmap-ssh-scanner}
+
+\hlkimage{10cm}{openssh-banner.png}
+
+{\bf Objective:}\\
+Try ssh scanners, similar to sslscan and Nmap sshscan
+
+{\bf Purpose:}\\
+We often need to find older systems with old settings.
+
+{\bf Suggested method:}\\
+Use Nmap with built-in scripts for getting the authentication settings from SSH servers
+
+{\bf Hints:}\\
+Nmap includes lots of scripts, look into the directory on Kali:
+
+\begin{alltt}\footnotesize
+$ ls /usr/share/nmap/scripts/*ssh*
+/usr/share/nmap/scripts/ssh2-enum-algos.nse   /usr/share/nmap/scripts/ssh-publickey-acceptance.nse
+/usr/share/nmap/scripts/ssh-auth-methods.nse  /usr/share/nmap/scripts/ssh-run.nse
+/usr/share/nmap/scripts/ssh-brute.nse	      /usr/share/nmap/scripts/sshv1.nse
+/usr/share/nmap/scripts/ssh-hostkey.nse
+
+$ sudo nmap -A -p 22 --script "ssh2-enum-algos,ssh-auth-methods" 10.0.45.2
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-02-20 08:46 CET
+Nmap scan report for 10.0.42.6
+Host is up (0.0038s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     Cisco/3com IPSSHd 6.6.0 (protocol 2.0)
+| ssh-auth-methods:
+|   Supported authentication methods:
+|     publickey{\color{red}
+|_    password}
+| ssh2-enum-algos:
+|   kex_algorithms: (1)
+|       diffie-hellman-group1-sha1
+|   server_host_key_algorithms: (1)
+|       ssh-dss
+|   encryption_algorithms: (6)
+|       aes128-cbc
+|       aes192-cbc
+|       aes256-cbc
+|       blowfish-cbc{\color{red}
+|       cast128-cbc
+|       3des-cbc}
+|   mac_algorithms: (4)
+|       hmac-sha1
+|       hmac-sha1-96
+|       hmac-md5
+|       hmac-md5-96
+|   compression_algorithms: (1)
+|_      none
+\end{alltt}
+
+{\bf Solution:}\\
+When you have tried running against one or two SSH servers, you are done.
+
+{\bf Discussion:}\\
+I recommend disabling password login on systems connected to the internet.
+
+Having only public key authentication reduces or even removes the possibility for brute force attacks succeeding.
+
+I also move the service to a random high port, which then requires an attacker must perform port scan to find it - more work.
+
+Thus a better and more modern OpenSSH would look like this:
+\begin{alltt}\footnotesize
+PORT      STATE SERVICE VERSION
+4xxxx/tcp open  ssh     OpenSSH 7.9 (protocol 2.0)
+| ssh-auth-methods:
+|   Supported authentication methods:
+|     publickey
+| ssh2-enum-algos:
+|   kex_algorithms: (4)
+|       curve25519-sha256@libssh.org
+|       diffie-hellman-group16-sha512
+|       diffie-hellman-group18-sha512
+|       diffie-hellman-group14-sha256
+|   server_host_key_algorithms: (4)
+|       rsa-sha2-512
+|       rsa-sha2-256
+|       ssh-rsa
+|       ssh-ed25519
+|   encryption_algorithms: (6)
+|       chacha20-poly1305@openssh.com
+|       aes128-ctr
+|       aes192-ctr
+|       aes256-ctr
+|       aes128-gcm@openssh.com
+|       aes256-gcm@openssh.com
+|   mac_algorithms: (3)
+|       umac-128-etm@openssh.com
+|       hmac-sha2-256-etm@openssh.com
+|       hmac-sha2-512-etm@openssh.com
+|   compression_algorithms: (2)
+|       none
+|_      zlib@openssh.com
+\end{alltt}
+
+
 
 \chapter{\faInfoCircle\ Example Policies up to 25min}
 \label{ex:example-AUP}
@@ -1153,6 +1282,69 @@ When you have seen at least two different policies you are done.
 How do you both write AND create awareness about a policy?
 
 
+\chapter{\faExclamationTriangle\ Centralized syslog 30min}
+\label{ex:centralized-syslog-practical}
+
+{\bf Objective:} \\
+See how server syslog is configured on regular Unix/Linux.
+
+Centralized syslogging and example system can demonstrate how easy it is to get started
+
+{\bf Purpose:}\\
+The main idea of this exercise is to understand how easy network connected systems can send log data.
+
+This should be the common case, sending logs off system - to avoid an attacker being able to hide tracks and logs from exploits performing intrusion and escalation.
+
+{\bf Suggested method:}\\
+Log into your local Linux systems or network devices, see how syslog is configured.
+
+{\bf Hints:}\\
+Look in the config file, may be in /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
+
+Sample output from old-skool syslogd
+\begin{alltt}
+\small
+*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
+*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
+kern.debug;user.info;syslog.info                        /var/log/messages
+auth.info                                               /var/log/authlog
+authpriv.debug                                          /var/log/secure
+...
+# Uncomment to log to a central host named "loghost".
+#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
+#kern.debug,user.info,syslog.info                               @loghost
+#auth.info,authpriv.debug,daemon.info                           @loghost
+\end{alltt}
+
+{\bf Solution:}\\
+When you understand how to configure syslog from a couple of devices and has looked up which protocol and port it uses. (default is 514/udp)
+
+{\bf Discussion:}\\
+There are syslog senders for Windows too. Other systems define their own format for sending, example Beats - lightweight data shippers \link{https://www.elastic.co/products/beats }
+
+I recommend using the elastic stack, previously the ELK stack, \link{https://www.elastic.co/products/}. The products can be used without license and can give a lot of experience with this kind of product. This will enable you to better describe your logging needs for evaluating other products.
+
+This is done using Logstash as the server - can also receive SNMP traps!
+
+Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite “stash.” - often Elasticsearch
+\link{https://www.elastic.co/products/logstash}
+
+Other very popular systems are:
+
+\begin{itemize}
+\item Splunk \link{https://www.splunk.com}
+\item Graylog \link{https://www.graylog.org/}
+\item InfluxDB \link{https://www.influxdata.com/}
+\item Grafana The open platform for analytics and monitoring \link{https://grafana.com/} also includes Grafana Loki now \link{https://grafana.com/oss/loki/}
+\item Prometheus Monitoring system \& time series database \link{https://prometheus.io/}
+\end{itemize}
+
+Remember doing logging og performance metrics can also become a security charateristics. Availability is a critical metric for most commercial systems.
+
+
+
+
+\end{document}
 
 
 \chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}
@@ -1270,109 +1462,6 @@ When you can run and understand what the tool does, you are done.
 
 {\bf Discussion:}\\
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
-
-
-
-
-\chapter{\faInfoCircle\ SSH scanners 15min}
-\label{ex:nmap-ssh-scanner}
-
-\hlkimage{10cm}{openssh-banner.png}
-
-{\bf Objective:}\\
-Try ssh scanners, similar to sslscan and Nmap sshscan
-
-{\bf Purpose:}\\
-We often need to find older systems with old settings.
-
-{\bf Suggested method:}\\
-Use Nmap with built-in scripts for getting the authentication settings from SSH servers
-
-{\bf Hints:}\\
-Nmap includes lots of scripts, look into the directory on Kali:
-
-\begin{alltt}\footnotesize
-$ ls /usr/share/nmap/scripts/*ssh*
-/usr/share/nmap/scripts/ssh2-enum-algos.nse   /usr/share/nmap/scripts/ssh-publickey-acceptance.nse
-/usr/share/nmap/scripts/ssh-auth-methods.nse  /usr/share/nmap/scripts/ssh-run.nse
-/usr/share/nmap/scripts/ssh-brute.nse	      /usr/share/nmap/scripts/sshv1.nse
-/usr/share/nmap/scripts/ssh-hostkey.nse
-
-$ sudo nmap -A -p 22 --script "ssh2-enum-algos,ssh-auth-methods" 10.0.45.2
-Starting Nmap 7.80 ( https://nmap.org ) at 2020-02-20 08:46 CET
-Nmap scan report for 10.0.42.6
-Host is up (0.0038s latency).
-
-PORT   STATE SERVICE VERSION
-22/tcp open  ssh     Cisco/3com IPSSHd 6.6.0 (protocol 2.0)
-| ssh-auth-methods:
-|   Supported authentication methods:
-|     publickey{\color{red}
-|_    password}
-| ssh2-enum-algos:
-|   kex_algorithms: (1)
-|       diffie-hellman-group1-sha1
-|   server_host_key_algorithms: (1)
-|       ssh-dss
-|   encryption_algorithms: (6)
-|       aes128-cbc
-|       aes192-cbc
-|       aes256-cbc
-|       blowfish-cbc{\color{red}
-|       cast128-cbc
-|       3des-cbc}
-|   mac_algorithms: (4)
-|       hmac-sha1
-|       hmac-sha1-96
-|       hmac-md5
-|       hmac-md5-96
-|   compression_algorithms: (1)
-|_      none
-\end{alltt}
-
-{\bf Solution:}\\
-When you have tried running against one or two SSH servers, you are done.
-
-{\bf Discussion:}\\
-I recommend disabling password login on systems connected to the internet.
-
-Having only public key authentication reduces or even removes the possibility for brute force attacks succeeding.
-
-I also move the service to a random high port, which then requires an attacker must perform port scan to find it - more work.
-
-Thus a better and more modern OpenSSH would look like this:
-\begin{alltt}\footnotesize
-PORT      STATE SERVICE VERSION
-4xxxx/tcp open  ssh     OpenSSH 7.9 (protocol 2.0)
-| ssh-auth-methods:
-|   Supported authentication methods:
-|     publickey
-| ssh2-enum-algos:
-|   kex_algorithms: (4)
-|       curve25519-sha256@libssh.org
-|       diffie-hellman-group16-sha512
-|       diffie-hellman-group18-sha512
-|       diffie-hellman-group14-sha256
-|   server_host_key_algorithms: (4)
-|       rsa-sha2-512
-|       rsa-sha2-256
-|       ssh-rsa
-|       ssh-ed25519
-|   encryption_algorithms: (6)
-|       chacha20-poly1305@openssh.com
-|       aes128-ctr
-|       aes192-ctr
-|       aes256-ctr
-|       aes128-gcm@openssh.com
-|       aes256-gcm@openssh.com
-|   mac_algorithms: (3)
-|       umac-128-etm@openssh.com
-|       hmac-sha2-256-etm@openssh.com
-|       hmac-sha2-512-etm@openssh.com
-|   compression_algorithms: (2)
-|       none
-|_      zlib@openssh.com
-\end{alltt}
 
 
 
@@ -1534,66 +1623,6 @@ When you have run the tool you are done. Better if you have browsed some of the 
 {\bf Discussion:}\\
 
 
-
-
-\chapter{\faExclamationTriangle\ Centralized syslog 15min}
-\label{ex:centralized-syslog-practical}
-
-{\bf Objective:} \\
-See how server syslog is configured on regular Unix/Linux.
-
-Centralized syslogging and example system can demonstrate how easy it is to get started
-
-{\bf Purpose:}\\
-The main idea of this exercise is to understand how easy network connected systems can send log data.
-
-This should be the common case, sending logs off system - to avoid an attacker being able to hide tracks and logs from exploits performing intrusion and escalation.
-
-{\bf Suggested method:}\\
-Log into your local Linux systems or network devices, see how syslog is configured.
-
-{\bf Hints:}\\
-Look in the config file, may be in /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
-
-Sample output from old-skool syslogd
-\begin{alltt}
-\small
-*.err;kern.debug;auth.notice;authpriv.none;mail.crit    /dev/console
-*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none /var/log/messages
-kern.debug;user.info;syslog.info                        /var/log/messages
-auth.info                                               /var/log/authlog
-authpriv.debug                                          /var/log/secure
-...
-# Uncomment to log to a central host named "loghost".
-#*.notice;auth,authpriv,cron,ftp,kern,lpr,mail,user.none        @loghost
-#kern.debug,user.info,syslog.info                               @loghost
-#auth.info,authpriv.debug,daemon.info                           @loghost
-\end{alltt}
-
-{\bf Solution:}\\
-When you understand how to configure syslog from a couple of devices and has looked up which protocol and port it uses. (default is 514/udp)
-
-{\bf Discussion:}\\
-There are syslog senders for Windows too. Other systems define their own format for sending, example Beats - lightweight data shippers \link{https://www.elastic.co/products/beats }
-
-I recommend using the elastic stack, previously the ELK stack, \link{https://www.elastic.co/products/}. The products can be used without license and can give a lot of experience with this kind of product. This will enable you to better describe your logging needs for evaluating other products.
-
-This is done using Logstash as the server - can also receive SNMP traps!
-
-Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite “stash.” - often Elasticsearch
-\link{https://www.elastic.co/products/logstash}
-
-Other very popular systems are:
-
-\begin{itemize}
-\item Splunk \link{https://www.splunk.com}
-\item Graylog \link{https://www.graylog.org/}
-\item InfluxDB \link{https://www.influxdata.com/}
-\item Grafana The open platform for analytics and monitoring \link{https://grafana.com/} also includes Grafana Loki now \link{https://grafana.com/oss/loki/}
-\item Prometheus Monitoring system \& time series database \link{https://prometheus.io/}
-\end{itemize}
-
-Remember doing logging og performance metrics can also become a security charateristics. Availability is a critical metric for most commercial systems.
 
 
 \chapter{\faInfoCircle\ Getting started with the Elastic Stack 15min}

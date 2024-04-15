@@ -173,7 +173,587 @@ threats to your organization, quantify risk, identify relevant data feeds, and r
 \end{list2}
 \end{list1}
 
-\slide{Netflow}
+
+
+
+\slide{Best Current Practice }
+
+%\hlkimage{}{}
+
+\begin{quote}
+Lets get this out of the way immediately, you should already be doing
+\end{quote}
+
+\begin{list2}
+\item Network segmentation and filtering -- we could write a book about this! {\myalert}
+\item Monitor your network -- both bandwidth, error, netflow etc. {\myalert}
+\item Take control of your network, no more admin/admin logins on core devices {\myalert}
+\item Turn on authentication for protocols -- routing protocols but also any http service within your org {\myalert}
+\item Configure host-based firewalls {\myalert}
+\item Control DNS -- internally and externally, recursive, authoritative etc. {\myalert}
+\end{list2}
+
+\centerline{This goes for IPv4-only, IPv6-only, and mixed networks!}
+
+
+
+\slide{Internet in a Box}
+
+\hlkrightimage{10cm}{internet-in-a-box.jpeg}
+
+The main purpose of showing this box, are:
+\begin{list2}
+\item These are standard devices, Juniper EX3300 cheap oldish, works great
+\item Managed switches are a must! You can learn by buying cheap ones,\\
+like the TP-Link T1500G-10PS  shown, VLAN, SNMP, Syslog ...
+\item Multiple systems created using PC Engines APU2C4 (really D4)\\
+running OpenBSD, Unbound, Suricata, Zeek, DHCP, \\
+router advertisement, PF firewall - explicit and nice ICMPv6 filtering ...
+\item Attack systems compact PCs or laptop
+\item Creating a home lab is not expensive, \\
+bought the Arista 7150 24-port 10G used on ebay
+\end{list2}
+
+You should have similar (or better) devices in your production network, and they can be
+configured to do a LOT more than you use them for right now
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{16cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item Network traffic is sent using network protocols with fields, values and destinations
+\item Can we inspect this and decide to pass or block traffic, certainly! Does it help, sure!
+\end{list2}
+
+
+\slide{Back in the day: Firewalls and Internet Security, 1994}
+
+\hlkimage{4cm}{images/cheswick-cover2e.jpg}
+\begin{list2}
+\item \emph{Firewalls and Internet Security: Repelling the Wily Hacker} , Second Edition 2003, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, {\bf 2003} \link{http://www.wilyhacker.com/}
+\item The full PDF—and the full LaTeX source of the book.
+Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow certain protocols through a firewall, we are asking for trouble
+\end{list2}
+
+
+\slide{Firewalls defined, multiple definitions}
+
+\begin{quote}
+In computing, a {\bf firewall} is a {\bf network security system} that monitors and controls incoming and outgoing network traffic based on predetermined security rules.[1] A firewall typically establishes a barrier between a trusted internal network and untrusted external network, such as the Internet.[2]
+\end{quote}
+Source: Wikipedia \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+
+\begin{quote}
+Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+\end{quote}
+
+Source: Cheswick 1994 book and 2nd ed 2003
+\emph{Firewalls and Internet Security: Repelling the Wily Hacker} , Second Edition, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, 2003
+
+
+
+
+\slide{Network Segmentation -- Firewalls}
+
+\begin{quote}\small
+\$ firewall\\
+
+1. (I) {\bf An internetwork gateway that restricts data communication traffic to and from one of the connected networks} (the one said to be "inside" the firewall) and thus protects that network's system resources against threats from the other network (the one that is said to be "outside" the firewall). (See: guard, security gateway.)
+
+2. (O) {\bf A device or system that controls the flow of traffic between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41, January 2002.
+
+Tutorial: A firewall typically protects a smaller, secure network (such as a corporate LAN, or even just one host) from a larger network (such as the Internet). The firewall is installed at the point where the networks connect, and the firewall applies policy rules to control traffic that flows in and out of the protected network.
+\end{quote}
+Source: RFC4949 \emph{Internet Security Glossary, Version 2\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\slide{Continued}
+\begin{quote}\small
+{\bf A firewall is not always a single computer.} For example, a firewall may consist of a pair of filtering routers and one or more proxy servers running on one or more bastion hosts, all connected to a small, dedicated LAN (see: buffer zone) between the two routers. The external router blocks attacks that use IP to break security (IP address spoofing, source routing, packet fragments), while proxy servers block attacks that would exploit a vulnerability in a higher-layer protocol or service. The internal router blocks traffic from leaving the protected network except through the proxy servers. The difficult part is defining criteria by which packets are denied passage through the firewall, because a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic pass both in and out.
+\end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\slide{What is a packet filter}
+
+We may want to distinguis between different types of firewalls/devices:
+\begin{list2}
+\item Network layer, we often call them packet filters, stateless
+\item Application level, we often call them, stateful filtering and gateways
+\item Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+%\item Older but still interesting Cheswick chapter 2 PDF
+%\emph{A Security Review of Protocols: Lower Layers}\\
+%\link{http://www.wilyhacker.com/}
+\end{list2}
+
+They are all firewalls -- or firewall devices!
+
+\slide{Definition of firewalls -- Wikipedia}
+
+Another short definition that encapsulates this is found on Wikipedia, and may suffice in many situations. Again there will typically be multiple networks, zones or areas of the networks with varying degrees of trust.
+\begin{quote}
+In computing, a firewall is a {\bf network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules}.[1] A firewall typically establishes a barrier between a trusted network and an untrusted network, such as the Internet.[2]
+\end{quote}
+Source: Wikipedia
+ \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+
+{\bf TL;DR Not necessarily a single device}
+
+
+\slide{A firewall -- in the vendor eyes}
+
+% Single line in firewall - single line out
+% With text device under test, as caption
+\hlkimage{19cm}{Firewall-vendor.pdf}
+
+\begin{quote}
+"{\bf Can your firewall flex in the face of change?}\\
+Does it harmonize your network, workload, and application security? Does it protect apps and employees in your hybrid or multicloud environment? Make sure you're covered."
+\end{quote}
+Source: not shown to protect the audience from further marketing speak
+% Source is Cisco.com
+
+\slide{A firewall -- in the enterprise mindset }
+
+% Single line in firewall,
+% cloud with at-sign Internet on the left,\\
+% cloud with at-sign LAN on the right
+\hlkimage{19cm}{Firewall-enterprise.pdf}
+
+\begin{list2}
+\item Even though some vendors suggest they can do everything in a single box, I don't believe them!
+\item Truth -- yes, we can do almost anything in software
+\item Realization {\bf Your infrastructure is based on multiple components and or devices}
+\end{list2}
+
+
+\slide{Network Protocol Knowledge Needed for Network Security}
+
+To work with network security the following protocols are the bare minimum to know about.
+
+\begin{list2}
+\item ARP Address Resolution Protocol for IPv4
+\item NDP Neighbor Discovery Protocol for IPv6
+\item IPv4 \& IPv6 -- the basic packet fields source, destination,
+\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list2}
+
+These protocols are part of the Internet Protocol suite, or TCP/IP for short. The canonical document describing this is from 1981 RFC-0791 \citetitle{RFC0791}. The protocols were deployed on the internet around 1983.
+
+
+\slide{Unified communications}
+
+\hlkimage{19cm}{firma-netvaerk-wlan}
+
+
+\slide{Modern Firewall Infrastructures}
+
+
+\centerline{\hlkbig A firewall {\color{security6blue}blocks traffic} on a network}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig A firewall {\color{red}allows traffic} on a network}
+{\small The interesting part is typically what it allows!}
+
+\begin{list1}
+\item A firewall infrastructure must:
+\begin{list2}
+\item Prevent attackers from entering
+\item Prevent data exfiltration
+\item Prevent worms, malware, virus from spreading in networks
+\item Be part of an overall solution with ISP, routers, other firewalls, switched infrastructures,\\
+  intrusion detection systems and the rest of the infrastructure
+\end{list2}
+\end{list1}
+
+\vskip 5mm
+\centerline{Difficult -- and requires design and secure operations}
+
+
+\slide{Packet Filtering}
+
+\begin{alltt}\footnotesize
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+
+\begin{list1}
+\item Packet filtering are firewall devices filtering on single packet
+\item Most \emph{specialized firewall devices} do stateful filtering and more
+\item Don't forget IPv6 -- even though you haven't turned it on, it is there
+\end{list1}
+
+
+
+
+\slide{Modern Firewalls}
+
+\begin{list1}
+\item Basically some filtering between networks or network segments
+\item Typically they contain:
+  \begin{list2}
+   \item Some interface, maybe web interface, often command line interface
+\item TCP/IP filtering options -- packets flowing in and out, direction, protocol, ports etc.
+\item Should be able to handle both IPv6 and legacy IPv4
+\item Often they have predefined rules for common use-cases\\
+Is this really a good thing if you can easily configure a bad protocol like Server Message Block to and from the Internet?
+\item Most legacy setups use Network Address Translation (NAT) -- NAT is a kludge and bad!
+\item Most platforms have extra network related features DHCP servers, DNS caching servers etc.
+\end{list2}
+\item The firewall devices are mostly allowing some {\bf stateful filtering} which are much easier to configure than a pure network packet filter
+\end{list1}
+
+Goal is to implement rules -- a security policy for isolation and data flow
+
+\slide{Sample rules from OpenBSD PF}
+
+\begin{alltt}\tiny
+# hosts and networks
+router="192.0.2.1"
+webserver="192.0.2.80"
+homenet="{ 198.51.100.0/24, 203.0.113.0/24 }"
+wlan="198.51.100.0/24
+wireless=wi0
+set skip lo0
+# things not used
+spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
+{\bf
+# default block anything
+block in all }
+# egress and ingress filtering - disallow spoofing, and drop spoofed
+block in quick from $spoofed to any
+block out quick from any to $spoofed
+
+pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
+pass in on $wireless proto tcp from any to $webserver port = 80
+
+pass out
+\end{alltt}
+
+
+\slide{Example Firewall Products}
+\begin{list2}
+\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
+\item Cisco Firewall \link{http://www.cisco.com}
+\item Juniper SRX \link{http://www.juniper.net}
+\item Palo Alto \link{https://www.paloaltonetworks.com/}
+\item Fortinet \link{https://www.fortinet.com/}
+\item Multiple others exist
+\end{list2}
+
+Those listed are the most popular commercial ones I see in Denmark
+
+
+\slide{Open source based firewalls}
+\begin{list2}
+\item Linux firewalls based on the in-kernel Netfilter, recommend using command line tool {\bf ufw Uncomplicated Firewall}!
+\item Firewall GUIs on top of Linux -- lots! Some are also available as commercial ones
+\item OpenBSD PF
+\link{http://www.openbsd.org}
+\item Mac OS X uses OpenBSD PF
+\item NetBSD IPFilter (IPF) by default and has also NPF, their PF version is outdated
+\item FreeBSD PF, IPFW og IPFilter (IPF) \link{http://www.freebsd.org}
+\item The other BSDs Net, Free and Mac OS X has older version of the OpenBSD PF, should really be renamed now
+\end{list2}
+
+\slide{OPNsense GUI based and easy to install}
+
+\hlkimage{8cm}{images/screenshots_OPNsense-1024x518.png}
+
+\begin{list1}
+\item OPNsense \link{https://opnsense.org/}
+\item Firewall built on FreeBSD with web interface
+\item Originally thoughts from m0n0wall and later \link{https://www.pfsense.org/}\\
+\item Danish companies have been using these for many years now
+\end{list1}
+
+
+\slide{Uncomplicated Firewall (UFW)}
+
+\begin{alltt}\small
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+\begin{list2}
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\end{list2}
+
+\slide{Specialized Firewall devices are NOT Alone}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{Use Defense in Depth -- all layers have features}
+
+
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{15cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\item Used in most, if not all, Wi-Fi networks -- each SSID has a VLAN behind it
+\end{list1}
+
+
+
+
+\slide{Network Access Control -- Connecting clients more securely}
+
+Talking about standard, another useful one:\\
+IEEE 802.1x -- Port Based Network Access Control
+
+\hlkimage{7cm}{802.1X_wired_protocols.png}
+
+\begin{list1}
+\item Authentication protocol ensures user validation before port access
+\item Can authenticate using username and then password or certificate
+\item Typically RADIUS and 802.1x which can use LDAP or Active Directory
+\item Already used in Wi-Fi networks, so can be turned on for wired Ethernet ports
+\end{list1}
+
+
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{14cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+
+\slide{Firewall concepts}
+
+\begin{list1}
+\item When writing firewall rules there are differences
+\item Some firewalls are \emph{first match} and some are \emph{last match}
+\begin{list2}
+\item First match -- when the packet being inspected match a rule the action block/pass is performed immediately
+\item  Last match  -- whenever a packet matches a rule, mark the block/pass decision, keep going to the last rule, and {\bf then} perform action
+\end{list2}
+\item So beware which kind of firewall you are working on
+\item FreeBSD IPFW is first match
+\item OpenBSD PF is last match
+\item Linux iptables/netfilter er last match
+\end{list1}
+
+\slide{First or Last match firewall?}
+
+\hlkimage{18cm}{images/first-last-match-1.pdf}
+
+
+
+\slide{First match - example IPFW}
+
+\begin{alltt}
+\hlksmall
+00100 16389  1551541 allow ip from any to any via lo0
+00200     0        0 deny log ip from any to 127.0.0.0/8
+00300     0        0 check-state
+...
+{\bfseries
+65435    36     5697 deny log ip from any to any}
+65535   865    54964 allow ip from any to any
+\end{alltt}
+
+This is a stateful filtering ruleset, rule 300 checks if an existing connection is known matching the packet incoming
+
+The deny rule in bold show that the current configuration is a \emph{best current practice} default deny
+
+\slide{Last match - example OpenBSD PF}
+
+\begin{alltt}\small
+ext_if="ext0"
+int_if="int0"
+{\bf
+block in}
+pass out keep state
+
+pass quick on \{ lo $int_if \}
+
+# Allow port http=80 and port domain=53
+# on the IP of the IP of the external interface ($ext_if)
+pass in on $ext_if proto tcp to ($ext_if) port http keep state
+pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
+\end{alltt}
+
+This is also a default deny, all packets incoming are maked as block, so unless they are allowed by a later rule -- thrown away
+
+\slide{Example Linux iptables/netfilter}
+
+\begin{alltt}\footnotesize
+# Firewall configuration written by system-config-securitylevel
+# Manual customization of this file is not recommended.
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:RH-Firewall-1-INPUT - [0:0]
+-A INPUT -j RH-Firewall-1-INPUT
+-A FORWARD -j RH-Firewall-1-INPUT
+-A RH-Firewall-1-INPUT -i lo -j ACCEPT
+-A RH-Firewall-1-INPUT -p icmp --icmp-type any -j ACCEPT
+-A RH-Firewall-1-INPUT -p 50 -j ACCEPT
+-A RH-Firewall-1-INPUT -p 51 -j ACCEPT
+-A RH-Firewall-1-INPUT -p udp --dport 5353 -d 224.0.0.251 -j ACCEPT
+-A RH-Firewall-1-INPUT -p udp -m udp --dport 631 -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
+-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+-A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+\end{alltt}
+
+
+\slide{Anti-pattern blocking ICMP}
+
+\begin{alltt}\footnotesize
+# Simple stateful network firewall rules for allowing ICMP in IPv6 ICMPv6{\bf
+# Allow ICMPv6 destination unreach
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 1
+# Allow NS/NA/toobig (don't filter it out)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 2
+# Allow timex Time exceeded
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 3
+# Allow parameter problem
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 4}
+# IPv6 ICMP - echo request (128) and echo reply (129)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 128,129
+# IPv6 ICMP - router solicitation (133) and router advertisement (134)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 133,134
+# IPv6 ICMP - neighbour discovery solicitation (135) and advertisement (136)
+        $fwcmd6 add pass ipv6-icmp from any to any icmptypes 135,136
+\end{alltt}
+
+\begin{list2}
+\item Don't throw away anything ICMP, kills functionality like Path MTU
+\item The first four ones in bold are \emph{needed}
+\end{list2}
+
+
+
+\slide{Firewall configuration}
+
+Best firewall starts with the design
+\begin{list2}
+\item Drawings -- lots of drawings and topology
+\item An addressing plan! This is very important
+\item Then use a GUI for your first experience
+\item Plan for long term care
+\item Plan for updates
+\item Systems and services behind the firewall must still be hardened and configured securely
+\end{list2}
+
+
+
+
+\slide{Block outgoing traffic too}
+
+\begin{list1}
+\item Some services should \emph{not} cross firewalls, at least not to the internet
+\item Some services are too \emph{fragile}
+
+\begin{list2}
+\item Windows SMB file sharing is \emph{only} for small internal networks
+\item Unix NFS is like-wise \emph{only} for internal use
+\item Outgoing email should only go via dedicated relays
+\item LDAP outgoing, why?! See the log4j CVE-2021-44228
+\item Create a list, document them and consider them dead!
+\end{list2}
+\item Making a positive list of allowed protocols would be best, but may require too many resources to implement and update
+\end{list1}
+
+\slide{Special features}
+
+\begin{list2}
+\item Network Address Translation - NAT
+\item IPv6 functionality is not an option
+
+\item Rules for bandwidth restriction
+\item VLAN is a requirement
+\item Redundante firewalls -- OpenBSD uses pfsync and CARP
+\item VPN like IPsec, L2TP, TLS VPN, Wireguard features
+\item Deep inspection -- can maybe filter DNS domains, URLs or similar
+\end{list2}
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+\begin{list2}
+\item Filtrering at higher layers is also possible
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists}
+\end{list2}
+
+
+\slide{Netflow and Session Logging}
 
 \begin{list2}
 \item Netflow is getting more important, more data share the same links
@@ -188,28 +768,6 @@ threats to your organization, quantify risk, identify relevant data feeds, and r
 \end{list2}
 
 \centerline{Netflow is often from routers, we dont have any here}
-
-Also look into Elastiflow! \link{https://github.com/robcowart/elastiflow}
-
-
-\slide{Collect Network Evidence from the network}
-
-\begin{list1}
-\item Network Flows originated at Cisco
-\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
-\begin{list2}
-\item Ingress interface (SNMP ifIndex)
-\item IP protocol, Source IP address and Destination IP address
-\item Source port for UDP or TCP, 0 for other protocols
-\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
-\item IP Type of Service
-\end{list2}
-\item today Netflow version 9 or IPFIX support IPv6, and should be used instead of Netflow v5
-\end{list1}
-
-Source: \\{\footnotesize
-\link{https://en.wikipedia.org/wiki/NetFlow}\\
-\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
 
 
 
@@ -239,40 +797,17 @@ Source: \\{\footnotesize
 \end{quote}
 Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
 
+\slide{Akvorado: flow collector, enricher and visualizer}
+
+\hlkimage{8cm}{akvorado-timeseries.png}
+
+\begin{quote}
+This program receives flows (currently Netflow/IPFIX and sFlow), enriches them with interface names (using SNMP), geo information (using IPinfo.io), and exports them to Kafka, then ClickHouse. It also exposes a web interface to browse the collected data.
+\end{quote}
+Source: Picture and text from \url{https://github.com/akvorado/akvorado}
 
 
-\slide{How to get started}
-
-\begin{list1}
-\item How to get started searching for security events?
-\item Collect basic data from your devices and networks
-\begin{list2}
-\item Netflow data from routers
-\item Session data from firewalls
-\item Logging from applications: email, web, proxy systems
-\end{list2}
-\item {\bf Centralize!}
-\item Process data
-\begin{list2}
-\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
-\item {\it ignore}
-\item Bottom 10: least-frequent messages are interesting
-\end{list2}
-\end{list1}
-
-
-
-\slide{View data efficiently}
-
-\hlkimage{10cm}{logstash-search.png}
-
-\begin{list1}
-\item View data by digging into it easily - must be fast
-\item Logstash and Kibana are just examples, but use indexing to make it fast!
-\item Other popular examples include Graylog and Grafana
-\end{list1}
-
-\slide{Big Data tools: Elasticsearch}
+\slide{Big Data tools: Elasticsearch and Kibana}
 
 \hlkimage{10cm}{kibana-basics-with-vega.jpg}
 
@@ -280,555 +815,173 @@ Elasticsearch is an open source distributed, RESTful search and analytics engine
 
 \link{https://www.elastic.co}
 
-\vskip 1cm
 \centerline{We are all Devops now, even security people!}
 
-
-\slide{Kibana}
-
-\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
-
-\centerline{Highly recommended for a lot of data visualisation}
-
-Non-programmers can create, save, and share dashboards
-
-Source:
-\link{https://www.elastic.co/products/kibana}
+Highly recommended for a lot of data visualisation as non-programmers can create, save, and share dashboards
 
 
+\slide{Installing Cloud Firewalls Cilium example}
 
-\slide{Ansible configuration management}
+What about cloud platforms and \emph{firewalls}
 
-\begin{alltt}\small
-- apt: name={{ item }} state=latest
-  with_items:
-        - unzip
-        - elasticsearch
-        - logstash
-        - redis-server
-        - nginx
-- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
-  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
-- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
-  regexp='network.host: localhost' line='network.host: localhost'"
-\end{alltt}
-\vskip 5mm
-\centerline{only requires SSH+python \link{http://www.ansible.com}}
+I use Kubernetes with Cilium
 
-I have a set of files that can install a mostly complete Elastic stack on Debian:\\
-\link{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+\begin{minted}[fontsize=\footnotesize]{shell}
+helm repo add cilium https://helm.cilium.io/
 
-\slide{Network Security Through Data Analysis}
-
-\hlkimage{4cm}{network-security-through-data-analysis.png}
-
-Low page count, but high value! Recommended.
-
-Network Security through Data Analysis, 2nd Edition
-By Michael S Collins
-Publisher: O'Reilly Media
-2015-05-01: Second release, 348 Pages
-
-New Release Date: August 2017
-
-
-
-
-\slide{Unified communications}
-
-\hlkimage{19cm}{firma-netvaerk-wlan}
-
-
-
-
-\slide{Generic IP Firewalls}
-
-\vskip 4 cm
-\centerline{\hlkbig En firewall er noget som {\color{security6blue}blokerer}
-  traffik på Internet}
-
-\vskip 1 cm
-\pause
-
-\centerline{\hlkbig En firewall er noget som {\color{red}tillader}
-  traffik på Internet}
-
-\slide{Firewall historik}
-
-\hlkimage{3cm}{images/cheswick-cover2e.jpg}
-
-\begin{list1}
-\item Firewalls har været kendt siden starten af 90'erne
-\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
-\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
-William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
-Addison-Wesley, 2nd edition
-  %\item Idag findes mange, men findes der en god generel firewall bog?
-\end{list1}
-
-
-
-
-\slide{Firewall er ikke alene}
-
-\hlkimage{15cm}{network-layers-1.png}
-
-\centerline{\hlkbig Forsvaret er som altid - flere lag af sikkerhed! }
-
-
-
-\slide{Firewallrollen idag}
-
-\begin{list1}
-\item Idag skal en firewall være med til at:
-\begin{list2}
-\item Forhindre angribere i at komme ind
-\item Forhindre angribere i at sende traffik ud
-\item Forhindre virus og orme i at sprede sig i netværk
-\item Indgå i en samlet løsning med ISP, routere, firewalls, switchede
-  strukturer, intrusion detectionsystemer samt andre dele af infrastrukturen
-\end{list2}
-\item Det kræver overblik!
-\end{list1}
-
-
-
-\slide{Modern Firewalls}
-
-\begin{list1}
-\item Basalt set et netværksfilter - det yderste fæstningsværk
-\item Indeholder typisk:
-  \begin{list2}
-   \item Grafisk brugergrænseflade til konfiguration - er det en
-   fordel?
-\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
-  ind/ud, porte, protokol, ...
-\item både IPv4 og IPv6
-\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
-  at tilføje/åbne en usikker protokol?
-\item typisk NAT funktionalitet indbygget
-\item typisk mulighed for nogle serverfunktioner: kan agere
-  DHCP-server, DNS caching server og lignende
-  \end{list2}
-\item En router med Access Control Lists - kaldes ofte netværksfilter,
-  mens en dedikeret maskine kaldes firewall
-%  funktionen er reelt den samme - der filtreres traffik
-\end{list1}
-
-
-\slide{Sample rules from OpenBSD PF}
-
-\begin{alltt}\tiny
-# hosts and networks
-router="217.157.20.129"
-webserver="217.157.20.131"
-homenet="{ 192.168.1.0/24, 1.2.3.4/24 }"
-wlan="10.0.42.0/24"
-wireless=wi0
-set skip lo0
-# things not used
-spoofed="{ 127.0.0.0/8, 172.16.0.0/12, 10.0.0.0/16, 255.255.255.255/32 }"
-{\bf
-# default block anything
-block in all }
-# egress and ingress filtering - disallow spoofing, and drop spoofed
-block in quick from $spoofed to any
-block out quick from any to $spoofed
-
-pass in on $wireless proto tcp from \{ $wlan $homenet \} to any port = 22
-pass in on $wireless proto tcp from any to $webserver port = 80
-
-pass out
-\end{alltt}
-
-\slide{netdesign - med firewalls}
-
-\hlkimage{10cm}{images/kut.jpg}
+API_SERVER_IP=<your_api_server_ip>
+# Kubeadm default is 6443
+API_SERVER_PORT=<your_api_server_port>
+helm install cilium cilium/cilium --version 1.15.1 \
+    --namespace kube-system \
+    --set kubeProxyReplacement=strict \
+    --set k8sServiceHost=${API_SERVER_IP} \
+    --set k8sServicePort=${API_SERVER_PORT}
+\end{minted}
 
 \begin{list2}
-\item Hvor skal en firewall placeres for at gøre størst nytte?
-\item Hvad er forudsætningen for at en firewall virker?\\
-At der er konfigureret et sæt fornuftige regler!
-\item Hvor kommer reglerne fra? Sikkerhedspolitikken!
+\item Note: I ended up deciding to run without the kube-proxy, only Cilium
+\item Document!
 \end{list2}
 
 
-{\small Kilde: Billede oprindeligt fra \link{http://www.ranum.com/pubs/a1fwall/} The ULTIMATELY Secure Firewall} (link er dødt)
-%\href
-%{http://www.ranum.com/security/computer\_security/papers/a1-firewall/}
-%{http://www.ranum.com/security/computer_security/papers/a1-firewall/}
-% old link:
 
+\slide{Document what you did, what it did}
 
-
-
-\slide{Packet filtering}
-
-\begin{alltt}\footnotesize
-0                   1                   2                   3
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Version|  IHL  |Type of Service|          Total Length         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identification        |Flags|      Fragment Offset    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Time to Live |    Protocol   |         Header Checksum       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Source Address                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Destination Address                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Options                    |    Padding    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-\begin{list1}
-\item Packet filtering er firewalls der filtrerer på IP niveau
-\item Idag inkluderer de fleste stateful inspection
-\end{list1}
-
-\slide{Kommercielle firewalls}
-\begin{list2}
-\item Checkpoint Firewall-1 \link{http://www.checkpoint.com}
-\item Cisco ASA , Meraki, Firepower\link{http://www.cisco.com}
-\item Fortinet \link{https://www.fortinet.com/}
-\item Juniper SRX \link{http://www.juniper.net}
-\item Palo Alto \link{https://www.paloaltonetworks.com/}
-\item Big-IP F5 \link{https://www.f5.com}
-\end{list2}
-
-Ovenstående er dem som jeg oftest ser ude hos mine kunder i Danmark
-
-\slide{Open source baserede firewalls}
-\begin{list2}
-\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
-\item Firewall GUIs ovenpå Linux - mange!
-nogle er kommercielle produkter
-\item OpenBSD PF
-\link{http://www.openbsd.org}
-\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
-\item Mac OS X benytter OpenBSD PF
-\item FreeBSD inkluderer også OpenBSD PF
-\item \link{https://opnsense.org/}
-\end{list2}
-
-NB: kun eksempler og dem jeg selv har brugt
-
-
-\slide{Hardware eller software}
-
-
-\begin{list1}
-\item Man hører indimellem begrebet \emph{hardware firewall}
-\item Det er dog et faktum at en firewall består af:
-\begin{list2}
-\item Netværkskort - som er hardware
-\item Filtreringssoftware - som er \emph{software}!
-\end{list2}
-\item Det giver ikke mening at kalde en ASA 5501 en hardware firewall\\
-  og en APU2C4 med OpenBSD for en software firewall!
-\item Man kan til gengæld godt argumentere for at en dedikeret
-  firewall som en separat enhed kan give bedre sikkerhed
-  \item Det er også fint at tale om host-firewalls, altså at servere og laptops har firewall slået til
-\end{list1}
-
-
-
-\slide{Together with Firewalls - VLAN Virtual LAN}
-
-\hlkimage{6cm}{vlan-portbased.pdf}
-
-\begin{list1}
-\item Nogle switche tillader at man opdeler portene
-\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
-\item Port 1-4 er et LAN
-\item De resterende er et andet LAN
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\end{list1}
-
-\slide{IEEE 802.1q -- virtual LAN}
-
-\hlkimage{16cm}{vlan-8021q.pdf}
-
-\begin{list1}
-\item Med 802.1q tillades VLAN tagging på Ethernet niveau
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
-\end{list1}
-
-
-\slide{Network Access Control -- Connecting clients more securely}
-
-IEEE 802.1x  Port Based Network Access Control
-
-\hlkimage{7cm}{802.1X_wired_protocols.png}
-
-\begin{list1}
-\item Denne protokol sikrer at man valideres før der gives adgang til porten
-\item Når systemet skal have adgang til porten afleveres brugernavn og kodeord/certifikat
-\item Typisk benyttes RADIUS og 802.1x integrerer således mod både LDAP og Active Directory
-\item Bruges til Wi-Fi netværk, og kan derfor også nemmere bruges til kablede netværk nu
-\end{list1}
-
-
-
-\slide{Defense in depth}
-
-%\hlkimage{10cm}{Bartizan.png}
-\hlkimage{15cm}{medieval-clipart-5}
-\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
-
-\slide{Defense in depth - layered security}
-
-\hlkimage{6cm}{security-layers-1-uk.pdf}
-
-\centerline{\hlkbig\color{security6blue} Multiple layers of security! Isolation!}
-
-
-\slide{Small networks}
-
-\hlkimage{18cm}{images/kursus-netvaerk.pdf}
-
-\exercise{ex:config-ssh-keys}
-
-
-
-
-\slide{m0n0wall}
-
-\hlkimage{8cm}{images/m0n0wall-1.pdf}
-
-\begin{list1}
-\item Firewall bygget på FreeBSD med grafisk web interface -- nu outdated
-\item Idag erstattet af pfSense \link{https://www.pfsense.org/}\\
-og OPNsense \link{https://opnsense.org/}
-\item De nye versioner bruges i produktion i danske firmaer, og kan anbefales hvis man vil prøve en firewall
-\end{list1}
-
-\slide{Firewall koncepter}
-
-\begin{list1}
-\item Rækkefølgen af regler betyder noget!
-\begin{list2}
-\item To typer af firewalls:
- First match - når en regel matcher, gør det som angives block/pass
- Last match  - marker pakken hvis den matcher, til sidst afgøres block/pass
-\end{list2}
-\item {\bf Det er ekstremt vigtigt at vide hvilken type firewall
-    man bruger!}
-\item OpenBSD PF er last match
-\item FreeBSD IPFW er first match
-\item Linux iptables/netfilter er last match
-\end{list1}
-
-\slide{First or Last match firewall?}
-
-\hlkimage{18cm}{images/first-last-match-1.pdf}
-
-
-
-\slide{First match - IPFW}
-
-\begin{alltt}
-\hlksmall
-00100 16389  1551541 allow ip from any to any via lo0
-00200     0        0 deny log ip from any to 127.0.0.0/8
-00300     0        0 check-state
+\begin{minted}[fontsize=\footnotesize]{shell}
+cilium install --version=1.15.1 \
+		--helm-set ipam.mode=kubernetes --helm-set tunnel=disabled \
+		--helm-set ipv4NativeRoutingCIDR="10.0.0.0/8" --helm-set bgpControlPlane.enabled=true \
+		--helm-set k8s.requireIPv4PodCIDR=true --helm-set kube-proxy-replacement=strict
+ℹ️  Using Cilium version 1.15.1
+🔮 Auto-detected cluster name: kubernetes
+🔮 Auto-detected datapath mode: tunnel
+🔮 Auto-detected kube-proxy has not been installed
+ℹ️  Cilium will fully replace all functionalities of kube-proxy
+ℹ️  helm template --namespace kube-system cilium cilium/cilium --version 1.15.1 --set bgpControlPlane.enabled=true,
+cluster.id=0,cluster.name=kubernetes,encryption.nodeEncryption=false,ipam.mode=kubernetes,
+ipv4NativeRoutingCIDR=10.0.0.0/8,k8s.requireIPv4PodCIDR=true,k8sServiceHost=10.137.0.26,
+k8sServicePort=6443,kube-proxyreplacement=strict,kubeProxyReplacement=strict,operator.replicas=1,
+serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator,tunnel=disabled
 ...
-{\bfseries
-65435    36     5697 deny log ip from any to any}
-65535   865    54964 allow ip from any to any
-\end{alltt}
-
-\vskip 2 cm
-
-\centerline{Den sidste regel nås aldrig!}
-
-\slide{Last match - OpenBSD PF}
-
-\begin{alltt}\small
-ext_if="ext0"
-int_if="int0"
-{\bf
-block in}
-pass out keep state
-
-pass quick on \{ lo $int_if \}
-
-# Tillad forbindelser ind på port 80=http og port 53=domain
-# på IP-adressen for eksterne netkort ($ext_if) syntaksen
-pass in on $ext_if proto tcp to ($ext_if) port http keep state
-pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
-\end{alltt}
+⌛ Waiting for Cilium to be installed and ready...
+✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+\end{minted}
 
 
-Pakkerne markeres med block eller pass indtil sidste regel\\
-nøgleordet \emph{quick} afslutter match - god til store regelsæt
+How I ran the kubeadm for building cluster - note the skip:\\
+\verb+sudo kubeadm init --pod-network-cidr=10.50.0.0/16 --skip-phases=addon/kube-proxy+
 
-\slide{Linux iptables/netfilter eksempel}
+\slide{After install Cilium}
 
 \begin{alltt}\footnotesize
-# Firewall configuration written by system-config-securitylevel
-# Manual customization of this file is not recommended.
-*filter
-:INPUT ACCEPT [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-:RH-Firewall-1-INPUT - [0:0]
--A INPUT -j RH-Firewall-1-INPUT
--A FORWARD -j RH-Firewall-1-INPUT
--A RH-Firewall-1-INPUT -i lo -j ACCEPT
--A RH-Firewall-1-INPUT -p icmp --icmp-type any -j ACCEPT
--A RH-Firewall-1-INPUT -p 50 -j ACCEPT
--A RH-Firewall-1-INPUT -p 51 -j ACCEPT
--A RH-Firewall-1-INPUT -p udp --dport 5353 -d 224.0.0.251 -j ACCEPT
--A RH-Firewall-1-INPUT -p udp -m udp --dport 631 -j ACCEPT
--A RH-Firewall-1-INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
--A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
--A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
--A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited
-COMMIT
+root@k8s-1:~# kubectl get po -n kube-system
+NAME                               READY   STATUS    RESTARTS       AGE
+cilium-2287c                       1/1     Running   1 (161m ago)   3d
+cilium-9kjhv                       1/1     Running   1 (160m ago)   3d
+cilium-operator-5589744cf4-7mwqx   1/1     Running   1 (160m ago)   3d
+coredns-f74b98ccc-4hg4n            1/1     Running   1 (161m ago)   3d
+coredns-f74b98ccc-ts55j            1/1     Running   1 (160m ago)   3d
+etcd-k8s-1                         1/1     Running   4 (161m ago)   5d
+kube-apiserver-k8s-1               1/1     Running   4 (161m ago)   5d
+kube-controller-manager-k8s-1      1/1     Running   4 (161m ago)   5d
+kube-scheduler-k8s-1               1/1     Running   4 (161m ago)   5d
 \end{alltt}
 
-\centerline{NB: husk at aktivere IP forwarding, evt. skifte default policy fra ACCEPT til DROP}
 
-\slide{Anbefaler UFW Uncomplicated Firewall}
+\slide{Cilium CLI tool}
 
-\begin{alltt}\footnotesize
-root@debian01:~# ufw allow 22/tcp
-Rules updated
-Rules updated (v6)
-root@debian01:~# ufw enable
-Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
-Firewall is active and enabled on system startup
-root@debian01:~# ufw status numbered
-Status: active
+\hlkimage{24cm}{k8s-cilium-status.png }
 
-     To                         Action      From
-     --                         ------      ----
-[ 1] 22/tcp                     ALLOW IN    Anywhere
-[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
-\end{alltt}
-
-Langt nemmere at bruge
-
-\exercise{ex:debian-firewall}
-
-\slide{Firewalls og ICMP}
-
-\begin{alltt}
-ipfw add allow icmp from any to any icmptypes 3,4,11,12
-\end{alltt}
-
-\begin{list1}
-\item Ovenstående er IPFW syntaks for at tillade de interessante ICMP beskeder igennem
-\item Tillad ICMP types:
 \begin{list2}
-\item 3 Destination Unreachable
-\item 4 Source Quench Message
-\item 11 Time Exceeded
-\item 12 Parameter Problem Message
+\item Many tools are executed via \verb+kubectl+
+\item Others have their own command
+\item This can be very confusing, and again -- document which tools you use!
+\item Having a jump host with updated tools installed might help -- helps me!
 \end{list2}
-\end{list1}
 
-\slide{Firewall konfiguration}
+\slide{Cilium overview}
 
-\begin{list1}
-\item Den bedste firewall konfiguration starter med:
+\hlkimage{12cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+
+\slide{Security is more than blocking!}
+
+\hlkimage{22cm}{cilium-features.png}
+
 \begin{list2}
-\item Papir og blyant
-\item En fornuftig adressestruktur
+\item A lot of features relate to \emph{security}
 \end{list2}
-\item Brug dernæst en firewall med GUI første gang!
-\item Husk dernæst:
-\begin{list2}
-\item En firewall skal passes
-\item En firewall skal opdateres
-\item Systemerne bagved skal hærdes!
-\end{list2}
-\end{list1}
 
-
-
-
-\slide{Bloker indefra og ud}
-
-\begin{list1}
-\item Der er porte og services som altid bør blokeres
-\item Det kan være kendte sårbare services
-\begin{list2}
-\item Windows SMB filesharing - ikke til brug på Internet!
-\item UNIX NFS - ikke til brug på Internet!
-\end{list2}
-\item Kendte problemer som minimum
-\end{list1}
-
-Den generelle anbefaling er at starte med et regelsæt der blokerer ALT og derefter åbner man for services man vil tillade.
 
 \exercise{ex:nmap-service}
 \exercise{ex:nmap-ssh-scanner}
+\exercise{ex:config-ssh-keys}
 \exercise{ex:nmap-strategy}
 \exercise{ex:nmap-html}
 
 
 
-\slide{Specielle features}
+\slide{Bottlenecks exist, but where}
+
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
 
 \begin{list2}
-\item Network Address Translation - NAT
-\item IPv6 funktionalitet
+\item Lower layer attacks Transport Layer Attacks TCP SYN flood -- packet based
+\item Higher layer attacks like Slowloris and web attacks -- keep sessions running
+\item Protect everything without loosing functionality or creating administrative nightmare
+\end{list2}
 
-\item Båndbredde håndtering
-\item VLAN funktionalitet
-\item Redundante firewalls - pfsync og CARP er eksempler
-% pfsync giver et indblik i hvordan den slags kan laves, hvor de
-% kommercielle ``bare kan det''
-\item IPsec og Andre VPN features
-\item inspection - diverse muligheder for at lave deep inspection i protokoller
-\item Eksemplvis DNS inspection
-\item Nogle firewalls kan inspicere mange protokoller og bruger jævnligt betegnelsen \emph{deep packet inspection} (DPI)
+\slide{Availability and Network flooding attacks}
+
+The attacks we are discussing today are:
+\begin{list2}
+\item {\bf SYN flood} is the most basic and very common on the internet towards 80/tcp and 443/tcp
+\item {\bf ICMP and UDP flooding} are the next popular targets -- more similar ones exist
+\item Special packets and protocols -- anything that can create \emph{load on systems} work
+\item All of them try to use up some resources
+\begin{list2}
+\item {\bf Memory space} in specific sections of the {\bf kernel, TCP state, firewalls state, number of concurrent sessions/connections}
+\item {\bf Interrupt processing} of packets - packets per second (pps)
+\item {\bf CPU processing} in firewalls, pps
+\item CPU processing in server software
+\item {\bf Bandwidth} - megabits per second (mbps)
+\item Typically source is spoofed or amplification attacks abusing devices on the Internet
+\end{list2}
 \end{list2}
 
 
-\slide{Anti-pattern dobbelt NAT i eget netværk}
-
-\hlkimage{16cm}{nat-double.pdf}
-
-\begin{list1}
-\item Det er nødvendigt med NAT for at oversætte traffik der sendes videre
-ud på internet.
-\vskip 1cm
-\item Der er ingen som helst grund til at benytte NAT indenfor eget netværk!
-\end{list1}
 
 
-\slide{IPsec og Andre VPN features}
 
-\begin{list1}
-\item De fleste firewalls giver mulighed for at lave krypterede
-  tunneler
-\item Nyttigt til fjernkontorer der skal have usikker traffik henover
-  usikre netværk som Internet
-\item Konceptet kaldes Virtual Private Network VPN
-\item IPsec er de facto standarden for VPN og beskrevet i RFC'er
-\end{list1}
+\slide{Packet processing in firewalls -- detailed view}
 
-\slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
+% Picture with pipeline from Juniper SRX
+\hlkimage{21cm}{srx-firewall-flow-based-processing.png}
+\emph{Traffic Processing on SRX Series Devices Overview}\\ {\scriptsize
+\link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
 
-Kernel vulnerabilities, CVE-2019-11477, CVE-2019-11478 and CVE-2019-11479
 
-\begin{quote}\footnotesize{\bf
-Executive Summary}\\
-Three related flaws were found in the Linux kernel’s handling of TCP networking.  The most severe vulnerability could allow a remote attacker to trigger a kernel panic in systems running the affected software and, as a result, impact the system’s availability.
 
-The issues have been assigned multiple CVEs: CVE-2019-11477 is considered an Important severity, whereas CVE-2019-11478 and CVE-2019-11479 are considered a Moderate severity.
 
-The first two are related to the Selective Acknowledgement (SACK) packets combined with Maximum Segment Size (MSS), the third solely with the Maximum Segment Size (MSS).
+\slide{Scanning and Attacking -- \bf Pressure Points and Scope}
 
-These issues are corrected either through applying mitigations or kernel patches.  Mitigation details and links to RHSA advsories can be found on the RESOLVE tab of this article.
-\end{quote}
+% Drawing showing "network"
 
-Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tcpsack}}
+\hlkimage{21cm}{generic-network-pressure-points.pdf}
+
+\begin{list2}
+\item In scope for me is everything that could adversely affect the network
+\item Common scope IPv4: Link network /28 or /26 and a hosting network /24
+\item Common scope IPv6: Link network /64 (bad) or /127 (RFC9099) and a hosting network /48 with subnets
+%\item Domain Name Service outside of the network is ofc also attack vector, ignored today
+\end{list2}
 
 
 \slide{DDoS traffic before filtering}
@@ -842,6 +995,52 @@ Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tc
 
 Better to filter stateless before traffic reaches firewall, less work!
 
+
+
+\slide{DDoS protection and flooding}
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
+
+\begin{list2}
+\item Transport Layer Attacks TCP SYN flood TCP sequence numbers
+\item High level attacks like Slowloris - keep TCP/HTTP connection for a long time.
+\item Traffic shaping is available on multiple platforms like switches and routers
+\end{list2}
+
+
+\slide{Designing the protection -- bandwidth and rate limit}
+
+\begin{tabularx}{\textwidth-5cm}{|p{5cm}|p{7cm}|X|} \hline
+{\bf Protocol} & {\bf Mbps} & {\bf Prefix}\\\hline
+TCP & Up to full bandwidth 10Gbps & 192.0.2.0/25 \\\hline
+UDP & Less than 1Gbps & 192.0.2.128/25 \\\hline
+ICMP & Less than 10Mbps & 192.0.2.0/24 \\\hline
+\end{tabularx}
+
+
+\begin{list2}
+\item Create an address plan for your services
+\item Monitor your traffic -- how much UDP and TCP do you have, roughly
+
+\item Above is a simplified example -- dig deeper into your traffic
+\end{list2}
+
+\slide{Designing the protection -- address families \& protocols }
+
+\begin{tabularx}{\textwidth-5cm}{|p{2cm}|p{2cm}|p{7cm}|X|} \hline
+{\bf Address family} & {\bf Protocol} & {\bf Services and ports} & {\bf Prefix}\\\hline
+IPv4 & TCP & 25, 80, 8003, 443, 4443 & 192.0.2.0/25 \\\hline
+IPv4 & UDP & 53 & 192.0.2.128/25 \\\hline
+IPv6 & UDP & 53  & 2001:DB8:ABCD:0053::/60 \\\hline
+IPv6 & TCP & 80 443 & 2001:DB8:ABCD:1000::/56 \\\hline
+\end{tabularx}
+
+\begin{list2}
+\item Direction is also very important -- servers that never initiate connections have fewer requirements
+\item How much traffic do you have that uses IPv6 yet? Should an IPv6 DDoS take up all resources?
+\item Maybe let IPv4 only use a part, so at least some customers can visit using IPv6?
+\item Maybe you can do an allow list for allocated networks, since not all is used yet
+\end{list2}
 
 
 %\slide{Stateless filtering Junos}
@@ -953,6 +1152,12 @@ Reverse path forwarding (RPF) is a technique used in modern routers for the purp
 \end{quote}
 Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
 
+\begin{quote}
+{\bf Configuring Unicast RPF Strict Mode}\\
+In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
+\end{quote}
+
+
 %\slide{Juniper RPF check}
 
 %\begin{quote}
@@ -970,12 +1175,6 @@ Source: \link{http://en.wikipedia.org/wiki/Reverse_path_forwarding}
 
 \hlkimage{24cm}{uRPF-check-1.pdf}
 
-\slide{Strict mode RPF}
-
-\begin{quote}
-{\bf Configuring Unicast RPF Strict Mode}\\
-In strict mode, unicast RPF checks whether the incoming packet has a source address that matches a prefix in the routing table, {\bf and whether the interface expects to receive a packet with this source address prefix.}
-\end{quote}
 
 
 \slide{uRPF Junos config with loose mode}
@@ -1041,30 +1240,12 @@ Source:\\
 
 \centerline{Better drop single /32 host than whole network!}
 
-\slide{BGP FlowSpec}
-
-%\hlkimage{}{}
-
-\begin{quote}
-{\bf Abstract}
-
-This document defines a Border Gateway Protocol Network Layer Reachability Information (BGP NLRI) encoding format that can be used to distribute (intra-domain and inter-domain) traffic Flow Specifications for IPv4 unicast and IPv4 BGP/MPLS VPN services. This allows the routing system to propagate information regarding more specific components of the traffic aggregate defined by an IP destination prefix.
-
-It also specifies BGP Extended Community encoding formats, which can be used to propagate Traffic Filtering Actions along with the Flow Specification NLRI. Those Traffic Filtering Actions encode actions a routing system can take if the packet matches the Flow Specification.
-\end{quote}
-Source: \emph{Dissemination of Flow Specification Rules} RFC8955
-
-\begin{list2}
-\item Advanced users may also want to investigate BGP Flowspec
-\item Allows dynamic updating of multiple routers/firewalls/devices using BGP
-\end{list2}
-
 \slide{More information about DDoS testing}
 
 More DDoS and testing for DDoS can be found in this presentation:
 \begin{quote}\footnotesize{\bf
 Simulated DDoS Attacks, Breaking the Firewall Infrastructure
-Henrik Kramselund  }
+Henrik Kramselund}
 
 DDoS Attacks have become a daily annoyance for many, and we need to create robust infrastructure. This tutorial will go through a proposed method for testing your own infrastructure using off-the-shelf tools like packet generators hping3 and t50 on Kali Linux.
 
@@ -1077,47 +1258,105 @@ The goal for the tutorial is to explain:
 {\small Can be found at \link{https://ripe72.ripe.net/wp-content/uploads/presentations/32-simulated-ddos-ripe.pdf} or \\
 \link{https://github.com/kramse/security-courses/tree/master/presentations/pentest/simulated-ddos-ripe}}
 
+\slide{IPv6 is more/less secure than IPv4}
 
-\slide{Firewalls og IPv6}
+%\hlkimage{}{}
 
-\begin{list1}
-\item Læg mærke til forskellen mellem ARP og ICMPv6
-\item Hvis det er muligt lav een regel der tillader adgang til services uanset protokol
-\item NB: husk at aktivere IP forwarding når I skal lave en firewall
-\end{list1}
+There are two big misconceptions about IPv6 security:
 
-
-\slide{ IPv6 neighbor discovery protocol (NDP)}
-
-\hlkimage{14cm}{ipv6-arp-ndp.pdf}
-
+\begin{quote}
 \begin{list2}
-\item ARP bruges kun til IPv4
-\item NDP erstatter og udvider ARP, se eksempel nedenfor
-\item ICMPv6 kan samtidig uddele \emph{prefix} til subnet via router advertisement og dermed kan systemer lave egen adresse i dette subnet, inklusiv privacy extension RFC4941 adresser som skifter løbende
-\item DHCP i IPv6, DHCPv6 findes stadig, men knapt så nødvendig
-\item {\bf NB: bemærk at ovenstående har stor betydning for firewallregler!}
+\item IPv6 is more secure than IPv4
+\item IPv6 is less secure than IPv4
 \end{list2}
 
-\slide{ARP vs NDP}
+\emph{Neither} are true. Both assume that comparing IPv6 security with IPv4 security is meaningful. It is not.
+\end{quote}
+Source: David Holder at, \link{https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/}
 
-Example from Mac OS X -- BSD derived operating system
-\begin{alltt}
-\small
-hlk@bigfoot:basic-ipv6-new$ arp -an
-? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
-? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
-hlk@bigfoot:basic-ipv6-new$ ndp -an
-Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
-::1                           (incomplete)         lo0 permanent R
-2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
-fe80::1%lo0                   (incomplete)         lo0 permanent R
-fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
-fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+
+See also:
+\emph{Security in a Mixed IPv4 and IPv6 World}, presentation by me\\
+\link{https://github.com/kramse/security-courses/tree/master/presentations/network/ipv6-security-in-mixed-v4-v6}
+
+\slide{IPv6 is already in your network!}
+
+\hlkimage{20cm}{ipv6_puzzle.png}
+Picture from the IPv6 Act Now web site, RIPE NCC
+
+\begin{list2}
+\item You have both, you will keep on having both
+\item Unless you have very strict control and turn one or the other OFF always, you have both IPv4 and IPv6 in your network!
+\item My suggestion, realize IPv6 is here, take control
+\end{list2}
+
+
+\slide{Operational Security Considerations for IPv6 Networks}
+
+%\hlkimage{}{}
+
+\begin{alltt}\small
+Internet Engineering Task Force (IETF)                         É. Vyncke
+Request for Comments: 9099                                         Cisco
+Category: Informational                                  K. Chittimaneni
+ISSN: 2070-1721
+                                                                 M. Kaeo
+                                                    Double Shot Security
+                                                                  E. Rey
+                                                                    ERNW
+                                                             August 2021
+         Operational Security Considerations for IPv6 Networks
 \end{alltt}
+Source: \link{https://www.rfc-editor.org/rfc/rfc9099.txt}
 
-Note: Linux systems have moved to the command \verb+ip -4 neighbor show+ and
-\verb+ip -6 neighbor show+
+\begin{list2}
+\item Fantastic reference
+\item Another from RIPE NCC, 191 slides! IPv6 Security Training Course April 2021,\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+\end{list2}
+
+
+\slide{Address planning -- helps security for both IPv4 and IPv6! }
+
+%\hlkimage{}{}
+
+\begin{quote}
+IPv6 address allocations and overall architecture are important parts
+of securing IPv6.  Initial designs, even if intended to be temporary,
+tend to last much longer than expected.  Although IPv6 was initially
+thought to make renumbering easy, in practice, it may be extremely
+difficult to renumber without a proper IP Address Management (IPAM)
+system.  [RFC7010] introduces the mechanisms that could be utilized
+for IPv6 site renumbering and tries to cover most of the explicit
+issues and requirements associated with IPv6 renumbering.
+
+{\bf A key task for a successful IPv6 deployment is to prepare an
+addressing plan.  Because an abundance of address space is available,
+structuring an address plan around both services and geographic
+locations allows address space to become a basis for more structured
+security policies to permit or deny services between geographic
+regions}.  [RFC6177] documents some operational considerations of
+using different prefix sizes for address assignments at end sites.
+\end{quote}
+Source: RFC 9099
+
+\begin{list2}
+\item You have space, use it!
+\end{list2}
+
+
+\slide{Network Architecture and Address planning }
+
+\hlkimage{8cm}{ipv6-linked-to-ipv4.png}
+Source: picture from Surfnet Preparing and IPv6 Address Plan
+
+\begin{list2}
+\item Take the opportunity to re-design your network! Create a design, consider it green field, work towards it!
+\item Use /127 for point-to-point links, add loopback addresses on routers, allows filtering of access to management
+\item You can also make parts IPv6-only, Veronika McKillop at TROOPERS19 \emph{Microsoft IT (secure) journey to IPv6-only}\\
+\link{https://troopers.de/troopers19/agenda/h7sv7v/}
+\end{list2}
+
 
 \slide{OpenBSD PF IPv6 NDP}
 \begin{alltt}\footnotesize
@@ -1145,14 +1384,336 @@ pass out inet6 proto ipv6-icmp all icmp6-type routersol keep state
 
 
 
-\slide{IPv4 + IPv6 serviceeksempel, med tables}
+\slide{Providing both IPv4 + IPv6 with simple tables}
 
-PF har tabeller og simpel regel til PF konfigurationsfilen kan give adgang til både IPv4 og IPv6:
+The OpenBSD PF has an elegant solution for providing the same rules for both protocols, a table of addresses
+
 \begin{alltt}\small
-table <webservers> \{ 2001:7b8:3e4:72::20 10.0.72.20 \}
-...
+table <webservers> \{ 2001:db8:1:2::80 192.0.2.80 \}
+...al logging is of course NOT)
+
 pass in on $ext_if proto tcp to <webserver> port http
 \end{alltt}
+
+This will allow 80/tcp on both IPv4 and IPv6
+
+\slide{Creating an Access Control List (ACL)}
+
+%\hlkimage{}{}
+
+\begin{alltt}\small
+ (config)#ipv6 access-list RA-GUARD
+ (config-ipv6-acl)#sequence 3 deny icmp any any router-advertisement
+ (config-ipv6-acl)#sequence 6 permit ipv6 any any
+ (config-ipv6-acl)#exit
+ (config)#interface FastEthernet0/5
+ (config-if)#ipv6 traffic-filter RA-GUARD in
+\end{alltt}
+Source: example copied from RIPE NCC IPv6 Security Training materials:\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+
+\begin{list2}
+\item Best practice, and not that hard to do
+\item ACL, filtering and firewalling will create longer lasting protection
+\item Paired with a nice address plan you can easily put restrictions on traffic flow, without hurting functionality or the business
+\item Does ANY client in ANY office NEEEEEED to connect to ANY UPS, Virtualisation and printer across the world ...
+\end{list2}
+
+\slide{Get IPv6 prefix! }
+
+%\hlkimage{}{}
+
+\begin{quote}
+You can ask RIPE NCC for an IPv6 provider independent prefix, through a LIR -- I have a LIR!
+\end{quote}
+
+\begin{list2}
+\item YOU can't request directly, but need to find a RIPE NCC member to request it\\
+Hint: Zencurity Aps is a member
+\item It will cost you about EUR 100 per year and you will get minimum /48
+\item You can move this space from provider to provider\\
+more easily than migrating from their IP space to some new providers space
+\item You can have this announced via multiple providers -- redundancy
+\item Read more about this at:\\
+\link{https://www.ripe.net/manage-ips-and-asns/ipv6/request-ipv6/how-to-request-an-ipv6-pi-assignment}
+\item If you want to play with IPv6 try an IPv6 tunnel broker like\\
+\link{https://tunnelbroker.net/}
+\end{list2}
+
+
+
+\slide{Concrete advice for enterprise networks}
+
+
+\begin{list2}
+\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
+\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LAN, WAN, Mail, web, ...
+\item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
+do not allow traffic to and from any new TLD
+\item Use only your own DNS servers, create a pair of Unbound servers, \\
+point your internal DNS running on Windows to these\\
+Create filtering, logging, restrictions on these Unbound DNS servers\\
+\link{https://www.nlnetlabs.nl/projects/unbound/about/} and also \link{https://pi-hole.net/}
+\item Only allow SMTP via your own mail servers, create a simple forwarder if you must
+\end{list2}
+
+Allow lists are better than block list, even if it takes some time to do it
+
+
+\slide{DROP SOME TRAFFIC NOW}
+
+\begin{list2}
+\item Drop some traffic on the border of everything
+\item Seriously do NOT allow Windows RPC across borders
+\item Border here may be from regional country office back to HQ
+\item Border may be from internet to internal networks
+\item Block Windows RPC ports, 135, 137, 139, 445
+\item Block DNS directly to internet, do not allow clients to use any DNS, fake 8.8.8.8 if you must internally
+\item Block SMTP directly to internet
+\item Create allow list for internal networks, client networks should not contact other client networks but only relevant server networks
+\end{list2}
+
+You DONT need to allow direct DNS towards internet, except from your own recursive DNS servers
+
+If you get hacked by Windows RPC in 2022, you probably deserve it, sorry for being blunt
+
+Best would be to analyze traffic and create allow lists, some internal networks to not need internet at all
+
+
+\slide{Default permit}
+
+%\hlkimage{}{}
+
+One of the early implementers of firewalls Marcus J. Ranum summarized in 2005 The Six Dumbest Ideas in Computer Security \link{https://www.ranum.com/security/computer_security/editorials/dumb/} which includes the always appropriate discussion about default permit versus default deny.
+
+\begin{quote}\small {\bf
+\#1) Default Permit}\\
+This dumb idea crops up in a lot of different forms; it’s incredibly persistent and difficult to eradicate. Why? Because it’s so attractive. Systems based on ”Default Permit” are the computer security equivalent of empty calories: tasty, yet fattening.
+
+The most recognizable form in which the ”Default Permit” dumb idea manifests itself is in firewall rules. Back in the very early days of computer security, network managers would set up an internet connection and decide to secure it by turning off incoming telnet, incoming rlogin, and incoming FTP. Everything else was allowed through, hence the name ”Default Permit.” This put the security practitioner in an endless arms-race with the hackers.
+\end{quote}
+
+
+\begin{list2}
+\item Allow all current networks today on all ports for all protocols \emph{is} an allow list \\
+Which tomorrow can be split into one for TCP, UDP and remaining, and measured upon
+\item Measure, improve, repeat
+\end{list2}
+
+
+
+\slide{We cannot do X}
+
+\begin{quote}
+We cannot block SMTP from internal networks, since we do not know for sure if vendor X equipment needs to send the MOST important email alert at some unspecific time in the future
+\end{quote}
+
+Cool, then we can do an allow list starting today on our border firewall:
+\begin{alltt}
+table <smtp-exchange> \{ $exchange1 $exchange2 $exchange3 \}
+table <smtp-unknown> persist file "/firewall/mail/smtp-internal-unknown.txt"
+# Regular use, allowed
+pass out on egress inet proto tcp from smtp-echange to any port 25/tcp
+# Unknown, remove when phased out
+pass out on egress inet proto tcp from smtp-internal to any port 25/tcp
+\end{alltt}
+
+Year 0 the unknown list may be 100\% of all internal networks, but new networks added to infrastructure are NOT added, so list will shrink -- evaluate the list, and compare to network logs, did networks send ANY SMTP for 1,2,3 years?
+
+
+\slide{Conclusion}
+
+% \hlkrightimage{15cm}{network-layers-1.png}
+
+\begin{list2}
+\item Implement firewalls -- take control over network packets
+\item Read the Fine manuals -- your devices already has a lot to offer
+\item Make a policy for networks, make incremental changes, configure security for new parts and VLANs in the network\\
+Over time the older ones will be phased out, replaced or can have the same configuration applied with little trouble
+\item Start from the bottom and from client ports, or from server ports if you like
+\item Learn some Linux and use open source projects, really, will save you thosands of USD/EUR/DKK
+\end{list2}
+
+
+\myquestionspage
+
+\slide{Further literature}
+Recommended literature from my courses system security and communication and network security
+
+\begin{list2}
+\item \emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}, Lee Brotherston, Amanda Berlin ISBN: 978-1-491-96038-7 284 pages
+\item \emph{Forensics Discovery}, Dan Farmer, Wietse Venema 2004, Addison-Wesley 240 pages. Can be found at \link{http://www.porcupine.org/forensics/forensic-discovery/}
+\item \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, 2014 Chris Sanders \\
+ISBN: 9780124172081 - shortened ANSM
+\item \emph{Practical Packet Analysis - Using Wireshark to Solve Real-World Network Problems}, 3rd edition 2017, \\
+Chris Sanders ISBN: 9781593278021 - shortened PPA
+\item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
+\end{list2}
+
+\slide{Resources}
+\label{resources}
+Long list of various references follow, YMMV. I have found these useful in some way
+
+\begin{list2}
+\item \link{https://theinternetprotocolblog.wordpress.com/2020/11/28/ipv6-security-best-practices/}
+
+\item \link{https://insinuator.net/2019/02/ipv6-security-in-an-ipv4-only-environment/}\\
+via \link{https://mobile.twitter.com/enno_insinuator/status/1285681172719316992}
+
+
+\item  \link{https://www.caida.org/catalog/papers/2016_dont_forget_lock/dont_forget_lock.pdf}\\
+via \link{https://twitter.com/Enno_Insinuator/status/1224147916022898689}
+
+
+\item \link{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}\\
+Classic with example of something locked down on IPv4 but not on IPv6\\
+I have found similar on management interfaces for a large network myself, if you came from a specific source port, you could connect to management on all core routers around the network. Router protection filter for IPv6 was not secure.
+\end{list2}
+
+\slide{Further resources}
+
+\begin{list2}
+\item \emph{IPv6 and IPv4 Threat Comparison and BestPractice Evaluation (v1.0)}
+Sean Convery (sean@cisco.com)
+Darrin Miller (dmiller@cisco.com)
+\link{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.85.7165&rep=rep1&type=pdf} 43 pages short enough, nicely structured
+
+\item \link{https://www.cisco.com/web/SG/learning/ipv6_seminar/files/02Eric_Vyncke_Security_Best_Practices.pdf}
+Updated? Advanced \link{https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2020/pdf/BRKSEC-3200.pdf}
+
+
+\item Mixed resources, maybe not useful
+\item \link{https://www.varonis.com/blog/ipv6-security} - Apply IPv4 best practices when applicable ... and IPv6 Security is not distinct from IPv4 security
+\item \link{https://www.hpc.mil/images/hpcdocs/ipv6/infoblox-best-practices-for-ipv6-security-excerpt.pdf} routing security and stuff
+\item \link{https://www.nist.gov/publications/guidelines-secure-deployment-ipv6} from 2010, but maybe some good advice - and goes to show IPv6 security advise has been around for some time
+
+\end{list2}
+
+\slide{Resources LIRs and others}
+
+Grateful to be part of such communities! Tried finding recent references, more can be found across their sites:
+\begin{list2}
+\item RIPE April 2021, 191 pages!\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+
+\item ISOC 2019
+\link{https://www.internetsociety.org/deploy360/ipv6/security/faq/}
+
+\item APNIC 2019
+\link{https://blog.apnic.net/2019/03/18/common-misconceptions-about-ipv6-security/}
+
+%\item August 2020 \link{https://www.etsi.org/images/files/ETSIWhitePapers/etsi_WP35_IPv6_Best_Practices_Benefits_Transition_Challenges_and_the_Way_Forward.pdf}
+
+\item May 2022 \emph{Apple Platform security guide}, includes IPv6\\
+\link{https://help.apple.com/pdf/security/en_US/apple-platform-security-guide.pdf}
+
+\item \emph{JANET IPv6 Technical Guide}, IPv4 security equivalence page 49\\
+\link{https://repository.jisc.ac.uk/8349/1/janet-ipv6-technical-guide.pdf}
+
+\item \emph{Network Reconnaissance in IPv6 Networks} \link{https://www.rfc-editor.org/rfc/rfc7707.txt}
+
+\item RFC6092 2011 \emph{Recommended Simple Security Capabilities in Customer Premises Equipment (CPE) for Providing Residential IPv6 Internet Service}\\
+ \link{https://datatracker.ietf.org/doc/html/rfc6092}
+\end{list2}
+
+
+\slide{Hosting og internet-udbydere}
+
+\hlkimage{17cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item Data krydser mange internetudbydere
+\item Det er stadig muligt at spoofe mange steder fra
+\end{list2}
+
+
+\slide{Routing and BGP Solutions }
+
+\begin{list2}
+\item Filtrering, ingress / egress:\\
+"reject external packets that claim to be from the local net"
+\item See also Reverse Path forwarding \link{https://en.wikipedia.org/wiki/Reverse-path_forwarding}
+\item Routers and routing protocols must be more skeptical\\
+Routing filters implemented everywhere, auth on routing protocols OSPF/BGP etc.
+\item Has been recommended for some years, but not done in all organisations
+\item BGP routing Resource Public Key Infrastructure RPKI
+\item BCP38 is RFC2827: \emph{Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing}\\
+\link{http://www.bcp38.info/}
+\item \emph{Mutually Agreed Norms for Routing Security}, \link{https://www.manrs.org/}
+\end{list2}
+
+
+\slide{Mutually Agreed Norms for Routing Security (MANRS)}
+
+\hlkimage{2cm}{MANRS_square.png}
+
+\begin{quote}
+  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
+\end{quote}
+
+\begin{list1}
+\item Problems related to incorrect routing information
+\item Problems related to traffic with spoofed source IP addresses
+\item Problems related to coordination and collaboration between network operators
+\item {\small\link{https://www.manrs.org/isps/}}
+\item {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+\end{list1}
+
+\slide{Expected Actions in MANRS for Network Operators}
+
+\begin{list1}
+\item 1. Prevent propagation of incorrect routing information\\
+Clear routing policies and systems for correctness, route import filters
+\item 2. Prevent traffic with spoofed source IP addresses\\
+Validate source address from end-users and infrastructure, use BCP38
+\item 3. Facilitate global operational communication and coordination between network operators\\
+Maintain contact information in databases like Whois, PeeringDB
+{\small\link{https://www.peeringdb.com/}}
+
+\item Advanced
+\item 4. Facilitate validation of routing information on a global scale\\
+Use RPSL {\small\link{ https://en.wikipedia.org/wiki/Routing_Policy_Specification_Language}}
+\end{list1}
+
+
+\slide{RPKI Testing}
+
+\hlkimage{9cm}{rpki-test.png}
+
+\begin{list2}
+\item Check your own networks! Ask your ISP to check RPKI\\
+\link{https://sg-pub.ripe.net/jasper/rpki-web-test/}
+\item Read more about RPKI at:\\
+\link{https://www.ripe.net/manage-ips-and-asns/resource-management/rpki}
+\end{list2}
+
+
+\slide{The Zeek Network Security Monitor}
+
+Together with firewalls -- The Zeek Network Security Monitor is not a single tool, more of a powerful network analysis framework
+
+\hlkimage{8cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Together with firewalls -- Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+Workshop materials available:\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
 
 
 \slide{Redundante firewalls}

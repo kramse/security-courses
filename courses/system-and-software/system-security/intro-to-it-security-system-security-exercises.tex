@@ -847,6 +847,7 @@ Using SSH keys for access and disabling password based logins effectively preven
 {\bf Suggested method:}\\
 
 \begin{enumerate}
+\item Make sure OpenSSH server is installed on the Debian server: \verb+apt install openssh-server+
 \item First generate a SSH key, using \verb+ssh-keygen+
 \item Copy the public key onto a system, using \verb+ssh-copy-id+
 \item Test using the ssh command
@@ -1139,13 +1140,15 @@ Use Nmap with built-in scripts for getting the authentication settings from SSH 
 Nmap includes lots of scripts, look into the directory on Kali:
 
 \begin{alltt}\footnotesize
-$ ls /usr/share/nmap/scripts/*ssh*
+# apt install openssh-server
+
+# ls /usr/share/nmap/scripts/*ssh*
 /usr/share/nmap/scripts/ssh2-enum-algos.nse   /usr/share/nmap/scripts/ssh-publickey-acceptance.nse
 /usr/share/nmap/scripts/ssh-auth-methods.nse  /usr/share/nmap/scripts/ssh-run.nse
 /usr/share/nmap/scripts/ssh-brute.nse	      /usr/share/nmap/scripts/sshv1.nse
 /usr/share/nmap/scripts/ssh-hostkey.nse
 
-$ sudo nmap -A -p 22 --script "ssh2-enum-algos,ssh-auth-methods" 10.0.45.2
+# sudo nmap -A -p 22 --script "ssh2-enum-algos,ssh-auth-methods" 127.0.0.1
 Starting Nmap 7.80 ( https://nmap.org ) at 2020-02-20 08:46 CET
 Nmap scan report for 10.0.42.6
 Host is up (0.0038s latency).
@@ -1299,7 +1302,7 @@ This should be the common case, sending logs off system - to avoid an attacker b
 Log into your local Linux systems or network devices, see how syslog is configured.
 
 {\bf Hints:}\\
-Look in the config file, may be in /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
+Look in the config file, may be in /etc/rsyslog.conf, /etc/syslog  or /etc/syslog-ng/syslog-ng.conf
 
 Sample output from old-skool syslogd
 \begin{alltt}
@@ -1318,6 +1321,8 @@ authpriv.debug                                          /var/log/secure
 
 {\bf Solution:}\\
 When you understand how to configure syslog from a couple of devices and has looked up which protocol and port it uses. (default is 514/udp)
+
+Main point is that syslog is a standard way of collecting and sending logs to a central place.
 
 {\bf Discussion:}\\
 There are syslog senders for Windows too. Other systems define their own format for sending, example Beats - lightweight data shippers \link{https://www.elastic.co/products/beats }

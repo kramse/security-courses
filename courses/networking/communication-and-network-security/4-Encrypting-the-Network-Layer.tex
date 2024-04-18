@@ -15,11 +15,12 @@
 
 \hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
 
-Todays goals:
 \begin{list2}
 \item Introduce Encryption
 \item Present the common algorithms, protocols, and tools used
+\item Start focus on various sub projects related to encryption in organisations
 \end{list2}
+
 
 {\small \hfill Photo by Thomas Galler on Unsplash}
 
@@ -35,18 +36,31 @@ Todays goals:
 \item Subjects
 \begin{list2}
 \item Basic cryptography - Encryption Decryption - Hashing
+\item Symmetric Cryptosystems
+\item Data Encryption Standard (DES) / Advanced Encryption Standard (AES)
+\item Public Key Cryptography
+\item Stream and Block Ciphers
+\item Example cryptosystems OpenPGP, IPsec, Transport Layer Security (TLS)
+\item Authentication and Password security, NIST guidelines
 \item Short introduction to algorithms RSA, AES
-\item Diffie Helman exchange and Transport Layer Security (TLS)
+\item Diffie Hellman exchange and Transport Layer Security (TLS)
 \end{list2}
+\end{list1}
+
+\begin{list1}
 \item Exercises
 \begin{list2}
-\item \link{https://www.ssllabs.com/} and sslscan checking servers
-\item Nginx exercises with TLS and load balancing
+\item sslscan scan various sites for TLS settings, Qualys SSLLabs\\
+\link{https://www.ssllabs.com/} and sslscan locally on Kali
 %\item sslstrip \link{https://moxie.org/software/sslstrip/}
 %\item mitmproxy \link{https://mitmproxy.org/}
 %\item sslsplit \link{https://www.roe.ch/SSLsplit}
+\item Try Nmap with TLS scans
+\item Try ssl scanners, similar to ssh scanners
+\item Discuss HTTPS/TLS with Nginx as example
 \end{list2}
 \end{list1}
+
 
 
 
@@ -136,15 +150,79 @@ ping: local error: Message too long, mtu=1500
 \end{list1}
 
 
+\slide{Reading, Putty CVE-2024-31497}
+
+\begin{quote}{\bf \large
+PuTTY SSH client flaw allows recovery of cryptographic private keys}\\
+The vulnerability tracked as CVE-2024-31497 was discovered by Fabian Bäumer and Marcus Brinkmann of the Ruhr University Bochum and is caused by how PuTTY generates ECDSA nonces (temporary unique cryptographic numbers) for the NIST P-521 curve used for SSH authentication.
+
+...
+
+Brinkmann explained on X that {\bf attackers require 58 signatures} to calculate a {\bf target's private key}, which they can acquire either by {\bf collecting them from logins to an SSH server they control or is compromised, or from signed Git commits.}
+\end{quote}
+
+Source: {\footnotesize\url{https://www.bleepingcomputer.com/news/security/putty-ssh-client-flaw-allows-recovery-of-cryptographic-private-keys/}}
+
+\slide{Reading, Putty CVE-2024-31497}
+
+\begin{quote}\footnotesize{\bf
+2024-04-15 PuTTY 0.81 released}\\
+
+PuTTY 0.81, released today, fixes a critical vulnerability CVE-2024-31497 in the use of 521-bit ECDSA keys (ecdsa-sha2-nistp521). If you have used a 521-bit ECDSA private key with any previous version of PuTTY, consider the private key compromised: remove the public key from \verb+authorized_keys+ files, and generate a new key pair.
+
+However, this only affects that one algorithm and key size. No other size of ECDSA key is affected, and no other key type is affected.
+\end{quote}
+Source: The Putty download page at
+\url{https://www.chiark.greenend.org.uk/~sgtatham/putty/}
+
+\begin{list1}
+\item Random number generation and use is hard!
+\item \url{https://nvd.nist.gov/vuln/detail/CVE-2024-31497}
+\item Another recent SSH related vulnerability which require active MiTM attack \url{https://terrapin-attack.com/}
+\end{list1}
+
+
+\slide{What is data?}
+
+{~}
+\hlkrightpic{10cm}{0cm}{Linus3-04041999.jpg}
+
+\begin{list1}
+\item Personal data you dont want to loose:
+\begin{list2}
+\item Wedding pictures
+\item Pictures of your children
+\item Sextapes
+\item Personal finances
+\end{list2}
+\end{list1}
+
+Source: picture of my son less than 24 hours old - precious!
+
+
+\slide{Confidentiality Integrity Availability}
+
+\hlkimage{8cm}{cia-triad-uk.pdf}
+
+\begin{list1}
+\item We want to protect something
+\item Confidentiality - data holdes hemmelige
+\item Integrity - data ændres ikke uautoriseret
+\item Availability - data og systemet er tilgængelige når de skal bruges
+\end{list1}
+
+
 \slide{Why think of security?}
 
 \hlkimage{8cm}{1984-not-instruction-manual.jpg}
 
 
 \begin{quote}
-	Privacy is necessary for an open society in the electronic age. Privacy is not secrecy. A private matter is something one doesn't want the whole world to know, but a secret matter is something one doesn't want anybody to know. Privacy is the power to selectively reveal oneself to the world.
+	Privacy is necessary for an open society in the electronic age. Privacy is not secrecy. A private matter is something one doesn't want the whole world to know, but a secret matter is something one doesn't want anybody to know. Privacy is the power to selectively reveal oneself to the world. ~A Cypherpunk's Manifesto by Eric Hughes, 1993
 \end{quote}
-Source: A Cypherpunk's Manifesto by Eric Hughes, 1993
+
+Copied from \link{https://cryptoparty.org/wiki/CryptoParty}
+
 
 \slide{Solidaritetskryptering}
 
@@ -165,7 +243,6 @@ Hvorfor skal vi kryptere?
 \vskip2cm
 
 Når vi krypterer hjælper vi andre! {\bf Solidaritetskryptering}
-
 
 
 
@@ -194,6 +271,7 @@ Når vi krypterer hjælper vi andre! {\bf Solidaritetskryptering}
 \item A common attack category is children intercepting messages
 \item or MiTM Mini in the Middle in this case
 \end{list2}
+
 \slide{Cryptography}
 
 \begin{list1}
@@ -219,8 +297,9 @@ Source: \link{https://en.wikipedia.org/wiki/Cryptography}
 \hlkimage{6cm}{book-ce-150w.jpg}
 
 \emph{Cryptography Engineering} by
-Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno\\
+Niels Ferguson, Bruce Schneier, and Tadayoshi Kohno, 2010\\
 \link{https://www.schneier.com/book-ce.html}
+
 
 \slide{Serious Cryptography}
 
@@ -234,7 +313,6 @@ November 2017, 312 pp.
 ISBN-13:
 978-1-59327-826-7
 \link{https://nostarch.com/seriouscrypto}
-
 
 \slide{Encryption Decryption}
 
@@ -457,6 +535,28 @@ TLS er baseret på SSL Version 3.0
 \item Stanford Dan Boneh udgiver en masse omkring crypto\\ \link{https://crypto.stanford.edu/~dabo/cryptobook/}
 \end{list1}
 
+\slide{Which TLS version}
+
+\hlkimage{8cm}{ncsc-tls-versions.png}
+
+Source: \emph{IT Security Guidelines for
+Transport Layer Security (TLS)} v2.1, National Cyber Security Centre, 2021\\{\scriptsize
+\url{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+\begin{list2}
+\item Danish datatilsynet and CfCS.dk also has some guidance
+\end{list2}
+
+\slide{TLS version 1.2 and 1.3 details}
+
+\hlkimage{17cm}{ncsc-tls-version-detail.png}
+
+Source: \emph{IT Security Guidelines for
+Transport Layer Security (TLS)} v2.1, National Cyber Security Centre, 2021\\{\scriptsize
+\url{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+
+
 
 
 
@@ -520,15 +620,33 @@ TLS er baseret på SSL Version 3.0
 \slide{Fokus \the\year: TLS og VPN indstillinger}
 
 \hlkimage{16cm}{bettercrypto-nginx.png}
+Old settings for Nginx, don't use!
 
 \begin{list2}
 \item De fleste har https nu, men er det konfigureret optimalt
 \item Vi bruger også VPN til at forbinde sites, kontorer
-\item Anbefaler at alle indstillingerne gennemgås!
+\item Anbefaler at alle indstillingerne gennemgås mindst en gang om året!
 \end{list2}
 
-Best current practice kan eksempelvis findes i dokumenter som dette\\{\footnotesize
-\link{https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1}}
+
+\slide{Opportunistic TLS}
+
+%\hlkimage{}{}
+
+Today most email is protected using Opportunistic TLS
+\begin{quote}\small
+Opportunistic TLS (Transport Layer Security) refers to extensions in plain text communication protocols, which offer a way to upgrade a plain text connection to an encrypted (TLS or SSL) connection instead of using a separate port for encrypted communication. Several protocols use a command named "STARTTLS" for this purpose. It is a form of opportunistic encryption and is primarily intended as a countermeasure to passive monitoring.
+
+The STARTTLS command for IMAP and POP3 is defined in RFC 2595, for SMTP in RFC 3207, for XMPP in RFC 6120 and for NNTP in RFC 4642. For IRC, the IRCv3 Working Group has defined the STARTTLS extension. FTP uses the command "AUTH TLS" defined in RFC 4217 and LDAP defines a protocol extension OID in RFC 2830. HTTP uses an upgrade header.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Opportunistic_TLS}
+
+\begin{list2}
+\item Easy to setup using Lets Encrypt
+\item SMTP MTA Strict Transport Security (MTA-STS) also exist, enforce and only accept email using encryption
+\end{list2}
+
+
 
 \slide{Nmap efter SSL og TLS}
 
@@ -643,6 +761,33 @@ check you own site \link{https://www.ssllabs.com/ssltest/}
 \end{list2}
 
 
+\slide{HTTPS Everywhere}
+
+\hlkimage{5cm}{HTTPS_Everywhere_new_logo.jpg}
+\begin{quote}
+HTTPS Everywhere is a Firefox extension produced as a collaboration between The Tor Project and the Electronic Frontier Foundation. It encrypts your communications with a number of major websites.
+\end{quote}
+
+\centerline{\link{http://www.eff.org/https-everywhere}}
+
+\slide{TLS Server Name Indication extension}
+
+\hlkimage{5cm}{Encrypt_all_the_things.png}
+
+
+Vi skal kryptere, men desværre så skjuler vores HTTPS ikke hvad site vi tilgår.
+
+\begin{list2}
+\item HTTPS er idag TLS Transport Layer Security
+\item Verifikation sker med certifikater der præsenteres af server
+\item Der kan være flere sites på en enkelt IP - med SNI
+\item Desværre vælges det rigtige certifikat før krypteringen starter
+\end{list2}
+
+\slide{TLS Server Name Indication example}
+
+\hlkimage{12cm}{wireshark-sni-twitter.png}
+
 
 \slide{Decrypting TLS Browser Traffic With Wireshark }
 
@@ -658,6 +803,16 @@ check you own site \link{https://www.ssllabs.com/ssltest/}
 Source: great blog article about the features used\\
 {\tiny\link{https://jimshaver.net/2015/02/11/decrypting-tls-browser-traffic-with-wireshark-the-easy-way/}}
 
+\slide{Basic MiTM}
+
+{~}
+\hlkimage{4cm}{mitm-2019.png}
+
+\begin{list2}
+\item A common attack category is children intercepting messages
+\item or MiTM Mini in the Middle in this case
+\item Note: sslstrip and other MiTM tools for TLS/SSL are becoming outdated!
+\end{list2}
 
 \slide{sslstrip - transparently hijack HTTP}
 
@@ -836,12 +991,14 @@ gpg:                 aka "wietse venema <wietse@wzv.win.tue.nl>"
 %\colorbox{white}{\includegraphics[width=12cm]{images/tshirt-9b.jpg}}
 %\end{center}
 
-\hlkimage{13cm}{images/openssh-banner.png}
+\hlkimage{10cm}{images/openssh-banner.png}
 
 \begin{list1}
 \item Hvad er Secure Shell SSH?
-\item Oprindeligt udviklet af Tatu Ylönen i Finland,\\
+\item SSH er oprindeligt udviklet af Tatu Ylönen i Finland,\\
 se \link{http://www.ssh.com}
+\item OpenSSH er idag det mest udbredte og inkluderet i Mac OS X, Windows og de fleste Linux distributioner\\
+se \link{https://www.openssh.com/}
 \item SSH afløser en række protokoller som er usikre:
   \begin{list2}
   \item Telnet til terminal adgang
@@ -871,31 +1028,36 @@ se \link{http://www.ssh.com}
 
 I praksis benytter man nøgler fremfor kodeord
 \begin{list1}
-\item I kan lave jeres egne SSH nøgler med programmerne i Putty
+\item I kan lave jeres egne SSH nøgler med programmerne i Putty eller \verb+ssh-keygen+
 \item Hvilken del skal jeg have for at kunne give jer adgang til en
   server?
 \item Hvordan får jeg smartest denne nøgle?
-\end{list1}
-
-\slide{Installation af SSH nøgle}
-\begin{list1}
-\item Vi bruger login med password på kurset, men for
-  fuldstændighedens skyld beskrives her hvordan nøgle installeres:
-
-\begin{list2}
-\item først skal der genereres et nøglepar {\bfseries id\_dsa og id\_dsa.pub}
-\item Den offentlige del, filen id\_dsa.pub, kopieres til serveren
+\item først skal der genereres et nøglepar \verb+id_ed25519+ og  \verb+id_ed25519.pub+
+\item Den offentlige del, filen \verb+id_ed25519.pub+, kopieres til serveren, brug \verb+ssh-copy-id+
 \item Der logges ind på serveren
-\item Der udføres følgende kommandoer:
-\end{list2}
 \end{list1}
-\begin{alltt}
-$ cd  \emph{skift til dit hjemmekatalog}
-$ mkdir .ssh  \emph{lav et katalog til ssh-nøgler}
-$ cat id\_dsa.pub >> .ssh/authorized\_keys  \emph{kopierer nøglen}
-$ chmod -R go-rwx .ssh  \emph{skift rettigheder på nøglen}
-\end{alltt}
 
+\slide{Nice tool ssh-copy-id}
+
+Highly recommended to use the utility tool \verb+ssh-copy-id+ for copying the public key to the server. Install tool if not available using \verb+apt+ :
+
+\begin{alltt}\footnotesize
+hlk@kunoichi:hlk$ ssh-copy-id -i /home/hlk/.ssh/id_rsa hlk@10.0.42.147
+/usr/local/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/kramse.pub"
+The authenticity of host '10.0.42.147 (10.0.42.147)' can't be established.
+ECDSA key fingerprint is SHA256:DP6jqadDWEJW/3FYPY84cpTKmEW7XoQ4zDNf/RdTu6M.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/local/bin/ssh-copy-id: INFO: attempting to log in with the new key(s),
+to filter out any that are already installed
+/usr/local/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you
+are prompted now it is to install the new keys
+hlk@10.0.42.147's password:
+
+Number of key(s) added:        1
+
+Now try logging into the machine, with:   "ssh -o 'IdentitiesOnly yes' 'hlk@10.0.42.147'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
 
 \slide{OpenSSH konfiguration}
 

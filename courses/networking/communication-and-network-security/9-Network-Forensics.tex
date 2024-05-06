@@ -37,7 +37,7 @@ Todays goals:
 \end{list2}
 \item Exercises
 \begin{list2}
-\item Run Brim a desktop security tool
+\item Run Zui a desktop security tool
 \item Indicator of Compromise
 \item Syslog configuration
 \item Bonus: Create a Kibana dashboard for looking at logs
@@ -477,6 +477,83 @@ Source: \link{https://en.wikipedia.org/wiki/NetFlow}
 
 \centerline{Bringing the power of the command line forward}
 
+
+\slide{How to get started}
+
+\begin{list1}
+\item How to get started searching for security events?
+\item Collect basic data from your devices and networks
+\begin{list2}
+\item Netflow data from routers
+\item Session data from firewalls
+\item Logging from applications: email, web, proxy systems
+\end{list2}
+\item {\bf Centralize!}
+\item Process data
+\begin{list2}
+\item Top 10: interesting due to high frequency, occurs often, brute-force attacks
+\item {\it ignore}
+\item Bottom 10: least-frequent messages are interesting
+\end{list2}
+\end{list1}
+
+
+
+\slide{View data efficiently}
+
+\hlkimage{10cm}{logstash-search.png}
+
+\begin{list1}
+\item View data by digging into it easily - must be fast
+\item Logstash and Kibana are just examples, but use indexing to make it fast!
+\item Other popular examples include Graylog and Grafana
+\end{list1}
+
+\slide{Big Data tools: Elasticsearch}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
+
+\vskip 1cm
+\centerline{We are all Devops now, even security people!}
+
+
+\slide{Kibana}
+
+\hlkimage{12cm}{kibanascreenshothomepagebannerbigger.jpg}
+
+\centerline{Highly recommended for a lot of data visualisation}
+
+Non-programmers can create, save, and share dashboards
+
+Source:
+\link{https://www.elastic.co/products/kibana}
+
+
+
+\slide{Ansible configuration management}
+
+\begin{alltt}\small
+- apt: name={{ item }} state=latest
+  with_items:
+        - unzip
+        - elasticsearch
+        - logstash
+        - redis-server
+        - nginx
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='script.disable_dynamic: true' line='script.disable_dynamic: true'"
+- lineinfile: "dest=/etc/elasticsearch/elasticsearch.yml state=present
+  regexp='network.host: localhost' line='network.host: localhost'"
+\end{alltt}
+\vskip 5mm
+\centerline{only requires SSH+python \link{http://www.ansible.com}}
+
+I have a set of files that can install a mostly complete Elastic stack on Debian:\\
+\link{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
 
 \slide{Next steps}
 

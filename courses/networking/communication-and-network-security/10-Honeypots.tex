@@ -13,16 +13,16 @@
 
 \slide{Goals for today}
 
-\hlkimage{8cm}{kibana-suricata.png}
+\hlkimage{8cm}{misp-project-visualization.png}
 
 Todays goals:
 \begin{list2}
-\item Talk about investigating network data, using Zeek
-\item We already used logstash and Kibana
-\item Spend time in Zeek data using the Filebeat import
+\item Talk about honeypots in general, but also how to get the right data for investigating
+\item We already used Elasticsearch and Kibana, spend a little time in Zeek data using the Filebeat import
+\item {\bf Revisit earlier slides, documents, data, SELKS, Elasticsearch -- get an overview}
 \end{list2}
 
-Trying to make today less heavy with information, same tomorrow with the Email subject.
+Trying to make today less heavy with information, same next time with the Email subject.
 
 
 
@@ -103,14 +103,12 @@ Source:
 also used as Honeynet - monitored network infrastructure
 
 \begin{list1}
-\item En honeypot består typisk af:
-  \begin{list2}
-    \item Et eller flere sårbare systemer
-\item Et eller flere systemer der logger traffik til og fra honeypot
-  systemerne
-  \end{list2}
-\item Meningen med en honeypot er at den bliver angrebet og brudt ind
-  i, se også Canary Tokens
+\item Often honeypots are:
+\begin{list2}
+\item One of more systems that appear vulnerable
+\item One or more systems logging data about the attacks, network traffic, event logging etc.
+\end{list2}
+\item The main goal is to lure attackers into the trap -- any connection is suspicious
 \end{list1}
 
 
@@ -120,14 +118,26 @@ also used as Honeynet - monitored network infrastructure
 
 \slide{An Evening with Berferd}
 
-\hlkimage{5cm}{honeypots-tracking-hackers-2003.jpg}
 
+\begin{quote}
+\centerline{\bf Abstract}
+
+On 7 January 1991 a cracker, believing he had discovered the famous sendmail DEBUG hole in our Internet gateway machine, attempted to obtain a copy of our password file. I sent him one.
+
+For several months we led this cracker on a merry chase in order to trace his location and learn his techniques. This paper is a chronicle of the cracker’s “successes” and disappointments, the bait and traps used to lure and detect him, and the chroot “Jail” we built to watch his activities.
+\end{quote}
+
+\emph{An Evening with Berferd
+In Which a Cracker is Lured, Endured, and Studied}, Bill Cheswick, AT\&T Bell Laboratories, 1997
+\url{https://www.cheswick.com/ches/papers/berferd.pdf}
+
+\slide{The Honeynet Project}
+
+\hlkimage{5cm}{honeypots-tracking-hackers-2003.jpg}
+Source: Book \emph{Honeypots: Tracking Hackers}, Lance Spitzner, 2003
 \begin{list1}
-\item Artikel om en hacker der lokkes, vurderes, overvåges
-\item Et tidligt eksempel på en honeypot
-\item Senere kom The Honeynet Project \link{http://www.honeynet.org}
-\item Billede er: \emph{Honeypots: Tracking Hackers}
-af Lance Spitzner, 2003
+
+\item Later came The Honeynet Project \link{http://www.honeynet.org}
 \end{list1}
 
 \slide{Cuckoo's Egg 1986 A real spy story}
@@ -137,10 +147,25 @@ af Lance Spitzner, 2003
 \item
 \emph{Cuckoo's Egg: Tracking a Spy Through the Maze of Computer
  Espionage}
- \item  Stoll brugte også lignende lavede interessante filer som hackeren hentede - over modem
+ \item  Stoll created multiple files that looked interesting, so keep the attacker connected -- over modem, so tracing could complete
 \item \emph{During his time at working for KGB, Hess is estimated to have broken into 400 U.S. military computers}\\
 Source: \link{https://en.wikipedia.org/wiki/Markus_Hess}
 \end{list1}
+
+\slide{Book: Intrusion Detection Honeypots}
+
+\hlkimage{4cm}{9781735188300-chris-sanders-honeypots.jpg}
+
+Intrusion Detection Honeypots: Chris Sanders, Applied Network Defense, 2020, ISBN 9781735188300
+
+
+\begin{list2}
+\item Easily read and fun
+\item Introduces the honeypot concepts nicely
+\item Uses cowrie honeypot software -- often various forks exist of honeypot software
+\item Includes information about Honey Tokens, Honey Credentials etc.
+\end{list2}
+
 
 
 \slide{ANSM 12. Using Canary Honeypots
@@ -183,8 +208,7 @@ targeted and compromised by hackers."
 \begin{list1}
 \item \emph{The Use of Honeynets to Detect Exploited Systems
 Across Large Enterprise Networks}
-\item Honeypots og IDS systemer kan være ressourcekrævende, men
-en kombination kan være mere effektiv i visse tilfælde
+\item Honeypots and IDS systems require ressources, but a combination might be more efficient
 \item Kilde: {\small
 \link{https://staff.washington.edu/dittrich/pnw-honeynet/reading/gatech-honeynet.pdf}}
 \end{list1}
@@ -198,23 +222,32 @@ en kombination kan være mere effektiv i visse tilfælde
 
 {\bf Low-interaction} honeypots simulate only the services frequently requested by attackers. Since they consume relatively few resources, multiple virtual machines can easily be hosted on one physical system, the virtual systems have a short response time, and less code is required, reducing the complexity of the virtual system's security. Example: Honeyd.
 \end{quote}
+Source: \link{https://www.honeynet.org/papers/}
 
 Source:
 \link{https://en.wikipedia.org/wiki/Honeypot_(computing)}
 
 \slide{Honeynets - Why use them research, production}
 
-\hlkimage{6cm}{honeynet-figureA.jpg}
+\hlkimage{7cm}{honeynet-figureA.jpg}
+Source: \link{https://www.honeynet.org/}
 
 Creating a network architecture with multiple systems become a honeynet.
 
-\begin{list2}
-\item Lessons Learned from \link{http://old.honeynet.org/papers/edu/}
-\item Out of all of this were a variety of lessons learned things to do and NOT to do. Hopefully this short list can help you avoid some common mistakes.
+\slide{Lessons Learned from Honeynets in Universities}
 
+Out of all of this were a variety of lessons learned things to do and NOT to do. Hopefully this short list can help you avoid some common mistakes.
+\begin{list2}
 \item Start Small - If you are going to install a honeynet within your enterprise, start small. Begin initially with two machines (in order to detect sweep scans of your honeynet) with operating systems that you are familiar with installed behind the reverse firewall.
 \item Maintain good relations with your enterprise administrators. THIS IS CRITICAL! Inform your network administrators of the types of exploits that you are seeing. In some cases, they will already be aware of these exploits, but in other cases, you will have been the first person to notice them.
 \item Focus on attacks and exploits originating from within your enterprise network. Theses are the attacks that can do the most damage to your enterprise. Inform your enterprise administrators immediately of these types of attacks since they indicate machines that have already been compromised within the enterprise.
+\end{list2}
+
+
+Source: \emph{Know Your Enemy: Honeynets in Universities Deploying a Honeynet at an Academic Institution}
+
+\slide{Lessons Learned from Honeynets in Universities, cont}
+\begin{list2}
 \item Don't publish the IP address range of the honeynet. There is no need to do this. Hackers and worms are constantly scanning across the Internet for machines to exploit. You honeynet will be found and attacked.
 \item Don't underestimate the amount of time required to analyze the data collected from the honeynet. This data must be analyzed every day. You will be collecting lots of information and it must be analyzed to provide any benefit.
 \item Powerful machines are not necessary to establish the honeynet. The Georgia Tech Honeynet did not use state of the art machines and it functioned as intended. Everything we needed to establish our honeynet was already available on campus.
@@ -277,12 +310,23 @@ A picture or graph often show more than just a table of data
 
 \slide{SecViz - Security Visualization}
 
-%\hlkimage{}{}
+\hlkimage{12cm}{domain-profiler-example.preview.png}
+Source: \url{https://secviz.org/content/mapping-dns-with-graphviz.html}
 
 \begin{list2}
-  \item Lets visit \link{https://secviz.org/}
-  \item Look into the Gallery
+\item Lets visit \link{https://secviz.org/} Look into the Gallery
 \end{list2}
+
+\slide{Now we will revisit older stuff from the course}
+
+%\hlkimage{}{}
+What data types do we use, need or want?
+\begin{list2}
+\item Network logs, traffic logs, netflow?
+\item Which tools would you use, Elasticsearch why or why not?!
+\end{list2}
+
+Focus on your own organisation, your skills, the need for skils, lets discuss the overall subject
 
 \exercise{ex:zeek-to-elastic}
 

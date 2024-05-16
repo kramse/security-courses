@@ -32,6 +32,7 @@
 \end{list1}
 
 
+Misc stuff that didn't fit in the other parts \smiley
 
 \slide{Reading Summary}
 
@@ -48,14 +49,14 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 \slide{Infrastrukturer i praksis}
 
 \begin{list1}
-\item Vi vil nu gennemgå netværksdesign med udgangspunkt i vores setup
-\item Vores setup indeholder:
+\item Vi vil nu gennemgå netværksdesign med udgangspunkt i mit setup
 \begin{list2}
-\item Routere
-\item Firewall
-\item Wireless
-\item DMZ
-\item DHCPD, BIND, BGPD, OSPFD, ...
+\item Routere - router og forwarder pakker
+\item Firewall - checker pakkerne før de sendes videre
+\item Wireless - trådløse netværk skal man have
+\item DMZ - adskilte netværks zone
+\item DHCPD, BIND, BGPD, OSPFD, ... routing protkoller ofte nødvendige i større netværk
+\item LLDP, VRRP, ... støtteprotokoller til diverse formål
 \end{list2}
 \item Den kunne udvides med flere andre teknologier vi har til rådighed:
 \begin{list2}
@@ -512,10 +513,9 @@ RFC2827: Network Ingress Filtering: Defeating Denial of Service Attacks
 
 \slide{Testing security, evaluating and reporting}
 
-Make incremental changes
 
 \begin{center}
-\begin{tikzpicture}[->,>=stealth',scale=0.9, transform shape]
+\begin{tikzpicture}[->,>=stealth',scale=0.8, transform shape]
 \newlength{\boxwidth}
 \setlength{\boxwidth}{0.21\paperwidth}
 \newlength{\boxheight}
@@ -526,6 +526,7 @@ Make incremental changes
 \end{tikzpicture}
 \end{center}
 
+Make incremental changes
 
 \slide{Example: DDoS protection and flooding}
 
@@ -618,6 +619,98 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 
 \vskip 1cm
 \centerline{Ohh we lost our VPN into the environment, ohh the fw console is dead}
+
+
+\slide{Packet processing in firewalls -- detailed view}
+
+% Picture with pipeline from Juniper SRX
+\hlkimage{21cm}{srx-firewall-flow-based-processing.png}
+\emph{Traffic Processing on SRX Series Devices Overview}\\ {\scriptsize
+\link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
+
+
+
+
+\slide{Scanning and Attacking -- \bf Pressure Points and Scope}
+
+% Drawing showing "network"
+
+\hlkimage{21cm}{generic-network-pressure-points.pdf}
+
+\begin{list2}
+\item In scope for me is everything that could adversely affect the network
+\item Common scope IPv4: Link network /28 or /26 and a hosting network /24
+\item Common scope IPv6: Link network /64 (bad) or /127 (RFC9099) and a hosting network /48 with subnets
+%\item Domain Name Service outside of the network is ofc also attack vector, ignored today
+\end{list2}
+
+
+
+\slide{Enter MoonGen and Dedicated Hardware}
+
+\hlkimage{6cm}{dell-precision-3240-compact.jpg}
+
+\begin{list2}
+\item Modern computer with modern CPU and PCIe x8 or better\\
+I currently use a few cheap Dell devices Precision 3640 Tower / Precision 3240 Compact (not a recommendation)
+\item Supported card - I am using the old Intel 82599 based 10Gbit cards
+\item DPDK and software -- I use MoonGen \link{https://github.com/emmericp/MoonGen}
+\item A huge thanks to Paul Emmerich emmericp for programming and publishing his works!
+\item Maybe the easiest way to use DPDK currently -- "Craft all packets in user-controller Lua scripts"
+\end{list2}
+
+
+\slide{Running MoonGen}
+
+\begin{alltt}\footnotesize
+root@penguin01:~/projects/MoonGen# {\bf ./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -d 192.0.2.138}
+[INFO]  Initializing DPDK. This will take a few seconds...
+EAL: Detected 16 lcore(s)
+[INFO]  Found 1 usable devices:
+   Device 0: 00:25:90:32:9F:F3 (Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection)
+PMD: ixgbe_dev_link_status_print():  Port 0: Link Down
+[INFO]  Device 0 (00:25:90:32:9F:F3) is up: 10000 MBit/s
+[INFO]  Detected an IPv4 address.
+...
+[Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (9999 Mbit/s with framing)
+[Device: id=0] TX: 14.48 Mpps, 7414 Mbit/s (9730 Mbit/s with framing)
+[Device: id=0] TX: 14.88 Mpps, 7619 Mbit/s (10000 Mbit/s with framing)
+\end{alltt}
+
+\begin{list2}
+\item Installing Debian Linux went \emph{okay} -- little bit of disable secure boot, RAID/AHCI settings, ...
+\item After install -- tuning and enabling Hugepages
+\item Then adding a cable between the two ports on a dual card
+\item Clone the repository \link{https://github.com/emmericp/MoonGen} build and run
+\item {\bf Note: the full 14.8Mpps is done using a single core!}
+\end{list2}
+
+\slide{Turn down as you please}
+
+\begin{alltt}\footnotesize
+root@penguin01:~/projects/MoonGen# ./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -r 5000 -d 192.0.2.138
+[INFO]  Initializing DPDK. This will take a few seconds...
+EAL: Detected 16 lcore(s)
+[INFO]  Found 1 usable devices:
+   Device 0: 00:25:90:32:9F:F3 (Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection)
+PMD: ixgbe_dev_link_status_print():  Port 0: Link Down
+[INFO]  Device 0 (00:25:90:32:9F:F3) is up: 10000 MBit/s
+[INFO]  Detected an IPv4 address.
+
+[Device: id=0] TX: 9.77 Mpps, 5000 Mbit/s (6562 Mbit/s with framing)
+[Device: id=0] TX: 9.68 Mpps, 4955 Mbit/s (6504 Mbit/s with framing)
+[Device: id=0] TX: 9.77 Mpps, 5000 Mbit/s (6562 Mbit/s with framing)
+[Device: id=0] TX: 9.77 Mpps, 5000 Mbit/s (6562 Mbit/s with framing)
+\end{alltt}
+
+IPv6 and UDP, replace tcp with udp in example:
+\begin{alltt}\footnotesize
+./build/MoonGen ./examples/l3-tcp-syn-flood.lua 0 -r 5000 -d 2001:DB8:ABCD:0053::138 -i 2001:DB8:ABCD:0053::1
+
+./build/MoonGen ./examples/l3-udp-flood-hlk.lua 0 -r 5000 -d 2001:DB8:ABCD:0053::138 -i 2001:DB8:ABCD:0053::1
+\end{alltt}
+
+
 
 
 \slide{DDoS and network attacks}

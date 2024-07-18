@@ -1,59 +1,849 @@
-\documentclass[20pt,landscape,a4paper,footrule]{foils}
-\usepackage{sec6slides}
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
 
-% Basic things that we need are below
-\selectlanguage{danish}
-
-%\externaldocument{unix-audit-security-oevelser}
 \externaldocument{\jobname-exercises}
+\selectlanguage{english}
 
 \begin{document}
-% beskrivelse findes i beskrivelse.txt
+% Come to this workshop and learn some TCP/IP. (sorry, I forgot to bring stuff to make your own Ethernet 2-3m network cable)
 
-% lavet med basis i advanced-unix-admin kurset!
+% First I will do a 30min introduction to TCP/IP version 4 and version 6, show and tell with the BornHack network as example. Then afterwards there will be small isolated networks to play with. Learn how DHCP works, configure a router, and connect it to the BornHack network and THE INTERNET!!!!!1111
+
+% I will bring network hardware comparable to what you would use in a normal home network, but no other people are connected except you. You are in control and can experiment.
+
+% Devices will be a range of cheap TP-Link devices, routers, switches etc. Some more capable GL.Inet routers - have wireguard etc. When workshop finishes you can borrow the devices until BornHack ends.
+
+% I will also bring some cheap Ethernet cables for selling 10m/20m/30m - so you can connect your tent/village later
 
 \mytitlepage
-{TCP/IP grundkursus}
-{Januar 2008}
+{Networking and TCP/IP for beginners}
+{July 2024}
 
 
-\slide{Kursusmateriale}
-\label{reftest}
-\begin{list1}
-\item Dette materiale består af flere dele:
+\hlkprofiluk
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{bornhack-camp-2024.jpg}
+
 \begin{list2}
-%\item Introduktionsmateriale med baggrundsinformation
-\item Kursusmaterialet - præsentationen til undervisning - dette sæt
-\item Øvelseshæfte med øvelser
+\item Introduce basic TCP/IP terminology
+\item Show the BornHack network
+\item Describe how you can connect a router or switch to the network
+\item Describe basics of TCP/IP in 30 minutes
+\item Let you get some hands on with IP protocols
 \end{list2}
-\item Hertil kommer diverse ressourcer fra internet, specielt RFC-dokumenter
-\item Boot CD'er baseret på Linux
-\item Bemærk: kursusmaterialet er ikke en substitut for andet materiale, der er udeladt mange detaljer som forklares undervejs, eller kan slås op op internet 
+
+Photo is NWWC camp at BornHack 2024, come by and say hi
+
+
+\slide{Time schedule}
+
+\begin{list2}
+\item 15:00 - 15:45\\
+Introduction and basics
+
+\item 15:45 - 17:00\\
+Connect to the network, play with TCP/IP, switches and routers.
+\end{list2}
+
+Note: even though I talk a lot about Unix and Linux, you can definitely run a lot of tools on Windows and Mac OS X. The basic tools are available like the built-in ones and Nmap
+
+Command line tools are sometimes used in the slides, as they only show text where a GUI screenshot can be cluttered with a lot of information, feel free to find GUI tools and web sites with same functionality
+
+\slide{Exercises}
+
+Exercises are completely optional
+
+\begin{list2}
+\item Try ping and traceroute
+\item See your own IP settings
+\item Borrow a USB Ethernet and connect to a switch or router
+\end{list2}
+
+Linux is a toolbox I will use and participants are recommended to research virtual machines
+
+
+
+\slide{Course Materials}
+
+\begin{list2}
+\item This material is in multiple parts:
+
+\item Slide show - presentation - this file
+\item Exercises - PDF which is used for this and other workshops
+\item Additional resources from the internet are linked throughout
+\item Wikipedia has a LOT of nice pages about IP protocols, for example:
+\end{list2}
+
+\begin{quote}\small
+Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security over a computer network. The protocol is widely used in applications such as email, instant messaging, and voice over IP, but its use in securing HTTPS remains the most publicly visible.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+
+
+
+\slide{Prerequisites}
+
+If you are interested in TCP/IP you are welcome
+
+If you want to be an expert in IP and network security I recommend doing exercises
+
+\begin{list1}
+\item It is recommended to use virtual machines for the exercises
+\item Network security and most internet related security work has the following requirements:
+\begin{list2}
+\item Network experience
+\item TCP/IP principles - often in more detail than a common user
+\item Programming is an advantage, for automating things
+\item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill} for infosec work\\
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+\end{list2}
 \end{list1}
 
 
 
+\slide{Wifi Hardware}
 
-\slide{Kursusforløb}
+If you want to do sniffing of wireless it will be an advantage to have a wireless USB network card. Make sure to play nice, and dont abuse knowledge!
 
+\begin{list2}
+\item The following are two recommended models:
+\item TP-link TL-WN722N hardware version 2.0 cheap but only support 2.4GHz
+\item Alfa AWUS036ACH 2.4GHz + 5GHz Dual-Band and high performing
+\item Both work great in Kali Linux for our purposes, but are older models by now
+\end{list2}
+
+Unfortunately the vendors change models often enough that the above are hard to find. I recommend using your favourite search engine and research which cards work with Kali Linux and airodump-ng.
+
+I have some available you can borrow
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+
+
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+\link{https://nostarch.com/packetanalysis3}
+
+I recommend this book for people new to networking, it has been in HumbleBundle book bundles multiple times
+
+
+
+\slide{Internet Today}
+
+\hlkimage{10cm}{images/server-client.pdf}
 
 \begin{list1}
-\item Vi skal have glæde af hinanden i følgende kursusforløb   
+\item Clients and servers, roots in the academic world
+\item Protocols are old, some more than 20 years
+\item Very few protocols where encrypted, today a lot has switched to HTTPS and TLS
+\end{list1}
+
+\slide{Internet is Open Standards!}
+
+{\hlkbig \color{titlecolor}
+We reject kings, presidents, and voting.\\
+We believe in rough consensus and running code.\\
+-- The IETF credo Dave Clark, 1992.}
+
+\begin{list1}
+\item Request for comments (RFC) -- a series of documents spanning decades
+\item RFC, BCP, FYI, informational -- first ones from 1969!
+\item Are not updated but status is changed to Obsoleted when new versions are published
+\item Standards track:\\
+Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
+\end{list1}
+
+\slide{Internetworking: history}
+
 \begin{list2}
-\item 5 dage TCP/IP grundkursus
-%\item 2 dage Apache HTTP server
+\item[1961]  L. Kleinrock, MIT packet-switching theory
+\item[1962]  J. C. R. Licklider, MIT - notes
+\item[1964]  Paul Baran: On Distributed Communications
+\item[1969]  ARPANET 4 nodes
+\item[1971]  14 nodes
+\item[1973]  Design of Internet Protocols started
+\item[1973]  Email is about 75\% of all ARPANET traffic
+\item[1974]  TCP/IP: Cerf/Kahn: A protocol for Packet
+        Network Interconnection
+\item[1983]  EUUG $\rightarrow$ DKUUG/DIKU Denmark
+\item[1988]  About 60.000 systems on the internet -
+        The Morris Worm hits about 10\%
+\item[2002] About 130 million Internet hosts
+\item[2010] IANA reserved blocks 7\% (Maj 2010) - \link{http://www.potaroo.net/tools/ipv4/}
 \end{list2}
-\item I skal udover at lære en masse om protokoller og netværk lære nogle gode vaner!
-\item Jeres arbejde med netværk kan lettes betydeligt - hvis I starter rigtigt!
+
+
+\slide{What is the Internet}
+
+\begin{list1}
+\item Communication between humans - currently!
+\item Based on TCP/IP
+\begin{list2}
+\item best effort
+\item packet switching (IPv6 calls it packets, not datagram)
+\item \emph{connection-oriented} TCP
+\item \emph{connection-less} UDP
+\end{list2}
+\end{list1}
+
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
+
+
+\slide{Common Address Space}
+
+\vskip 2 cm
+\hlkimage{13cm}{IP-address.pdf}
+
+\begin{list2}
+\item Internet is defined by the address space
+\item IPv4 based on 32-bit addresses, example dotted decimal format 10.0.0.1
+\item IPv6 very similar to IPv4 without NAT, 128-bit addresses in hex ::1, 2a06:d380:0:101::80
+\end{list2}
+
+
+\slide{How to use the Internet Protocols (IP)}
+
+Names are used by humans
+\begin{center}\hlkbig
+www.kramse.org
+
+hlk@kramse.org
+\end{center}
+
+Computers use the addresses
+
+\begin{alltt}
+www     IN      A       185.129.63.130
+        IN      AAAA    2a06:d380:0:102::80
+mail    IN      A       217.157.63.115
+        IN      AAAA    2a06:d380:0:102::25
+\end{alltt}
+
+
+
+
+
+\slide{Documentation Prefix, IPv6 updates etc.}
+
+Even documentation has its own prefix, RFC5737:
+\begin{alltt}
+The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
+and 203.0.113.0/24 (TEST-NET-3) are provided for use in
+documentation.
+\end{alltt}
+
+IPv6 listed in RFC3849 \verb+2001:DB8::/32+
+
+See RFC3330 \emph{Special-Use IPv4 Addresses} which is updated by
+RFC6890 \emph{Special-Purpose IP Address Registries} which in turn is updated by RFC8190\\
+Use the web version of RFCs to surf back and forth \link{https://www.rfc-editor.org/rfc/rfc8190}
+
+
+\slide{CIDR Classless Inter-Domain Routing}
+
+\hlkimage{15cm}{CIDR-aggregation.pdf}
+
+\begin{list2}
+\item Subnet mask originally inferred by the class
+\item Started to allocate multiple C-class networks - save remaining B-class\\
+Resulted in routing table explosion - btw Stop using A, B, C
+\item A subnet mask today is a row of 1-bit
+\item Supernet, supernetting
+\item 10.0.0.0/24 means the network 10.0.0.0 with 24 subnet bits (mask 255.255.255.0)
+\item 2a06:d380:0:101::80/64 means the network with 64-bit prefix length
+\end{list2}
+
+\slide{Protocols: OSI and Internet models}
+
+\hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+\slide{Ethernet, cables}
+
+\hlkimage{17cm}{ethernetLights.jpg}
+
+\centerline{Show link, and activity -- blinkenlights}
+
+
+
+\slide{MAC address}
+%\hlkimage{10cm}{apple-oui.png}
+
+\begin{alltt}
+00-03-93   (hex)        Apple Computer, Inc.
+000393     (base 16)    Apple Computer, Inc.
+                        20650 Valley Green Dr.
+                        Cupertino CA 95014
+                        UNITED STATES
+\end{alltt}
+\begin{list1}
+\item Network technologies use a layer 2 hardware address
+\item Typically using 48-bit MAC addresses known from Ethernet MAC-48/EUI-48
+\item First half is assigned to companies -- Organizationally Unique Identifier (OUI)
+\item Using the OUI you can see which producer and roughly when a network chip was produced
+\item \link{http://standards.ieee.org/regauth/oui/index.shtml}
 \end{list1}
 
 
-\hlkprofil
+\slide{Bridges}
 
-% lad være hvis der er 10+ deltagere
-%\deltagere
+\begin{list1}
+\item Ethernet is a broadcast technology data transmitted into the ether -- a cable
+\item This limits how many devices to connect
+\item Using bridges we can connect segments -- which copy between them if needed
+\item It learns the devices on each side (MAC address)
+\end{list1}
 
-\dagsplan
+See also \link{http://en.wikipedia.org/wiki/ALOHAnet}
+
+
+\slide{A switch}
+
+\hlkimage{10cm}{switch-1.pdf}
+
+\begin{list1}
+\item Today we use switches, Don't buy a hub, not even for experimenting or sniffing
+\item A switch can receive and send data on multiple ports at the same time
+\item Performance only limited by the backplane and switching chips
+\item Can also often route with the same speed and mirror packets
+\end{list1}
+
+
+\slide{Wireless }
+
+\hlkimage{10cm}{WCG200v2_med.jpg}
+
+\begin{list1}
+\item A typical home router would have built-in 802.11 Access-Point (AP) and some Ethernet LAN ports
+\end{list1}
+
+
+\slide{Topologier og Spanning Tree Protocol}
+
+\hlkimage{13cm}{switch-STP.pdf}
+
+Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
+
+\slide{Core, Distribution og Access net}
+
+\hlkimage{17cm}{core-dist.pdf}
+
+\centerline{Det er ikke altid man har præcis denne opdeling, men den er ofte brugt}
+
+\slide{Bridges and routers}
+
+\hlkimage{17cm}{wan-network.pdf}
+
+
+\slide{Packets of data}
+
+\hlkimage{18cm}{ethernet-frame-1.pdf}
+\begin{list1}
+\item Looking into the hardware we see that data is laid out according to a structure -- frames and packets
+\item Often a start and end signal of a frame -- like Ethernet
+\item Today we talk about packets of 1500 bytes which is common in Ethernet
+\end{list1}
+
+
+
+\slide{IPv4 header - RFC-791 september 1981}
+
+\begin{alltt}\footnotesize
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                    Example Internet Datagram Header
+\end{alltt}
+Source: \url{https://datatracker.ietf.org/doc/html/rfc791} and updated later
+
+\slide{IPv6 header - RFC-1883 December 1995}
+\vskip -1cm
+\begin{alltt}\footnotesize
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+\end{alltt}
+%Source: \url{https://datatracker.ietf.org/doc/html/rfc1883} and obsoleted by\\
+%\url{https://datatracker.ietf.org/doc/html/rfc8200}
+
+
+
+
+\slide{Windows - ipconfig}
+
+\hlkimage{14cm}{win-ipconfig-ipv6.png}
+
+\slide{Windows -- control panel with DHCP}
+\hlkimage{10cm}{win-control-panel-ipv6.png}
+
+DHCP is responsible for giving you a dynamic address
+
+\slide{Unix - practical examples ifconfig and ping}
+
+\begin{alltt}\small
+$ ifconfig en0
+en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+        inet6 {\bf fe80::216:cbff:feac:1d9f%en0} prefixlen 64 scopeid 0x4
+        inet {\bf 10.0.42.15} netmask 0xffffff00 broadcast 10.0.42.255
+        inet6 {\bf 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f} prefixlen 64 autoconf
+        ether 00:16:cb:ac:1d:9f
+        media: autoselect (1000baseT <full-duplex>) status: active
+
+$ ping6 ::1
+PING6(56=40+8+8 bytes) ::1 --> ::1
+16 bytes from ::1, icmp_seq=0 hlim=64 time=0.089 ms
+16 bytes from ::1, icmp_seq=1 hlim=64 time=0.155 ms
+
+$ traceroute6 2001:16d8:dd0f:cf0f::1
+traceroute6 to 2001:16d8:dd0f:cf0f::1 (2001:16d8:dd0f:cf0f::1)
+from 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f, 64 hops max, 12 byte packets
+ 1  2001:16d8:dd0f:cf0f::1  0.399 ms  0.371 ms  0.294 ms
+\end{alltt}
+
+
+\slide{The basic tools for countering threats}
+
+{\Large Knowledge and insight}
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Wireshark is advanced, try right-clicking different places
+\item Name resolution includes low level MAC addresses, and IP - names
+\end{list2}
+
+\begin{list2}
+\item Tcpdump format, built-in to many network devices
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+\centerline{\Large Great network security comes from knowing networks!}
+
+
+
+\slide{Network Knowledge Needed}
+
+To work with network security the following protocols are the bare minimum to know about.
+
+\begin{list2}
+\item ARP Address Resolution Protocol for IPv4
+\item NDP Neighbor Discovery Protocol for IPv6
+\item IPv4 \& IPv6 -- the basic packet fields source, destination,
+\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list2}
+
+\centerline{A little Linux knowledge is also {\bf highly recommended}}
+
+
+\slide{UDP User Datagram Protocol}
+\hlkimage{16cm}{udp-1.pdf}
+Connectionless \url{https://en.wikipedia.org/wiki/User_Datagram_Protocol}
+
+
+\slide{TCP Transmission Control Protocol}
+\hlkimage{14cm}{tcp-1.pdf}
+
+Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Protocol}
+
+
+\slide{Well-Known Port Numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA maintains a list of magical numbers in TCP/IP
+\item Lists of protocl numbers, port numers etc.
+\item A few notable examples:
+\begin{list2}
+\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
+\item Port 53/udp and 53/tcp Domain Name System (DNS)
+\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
+\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
+\end{list2}
+\item Source: \link{http://www.iana.org}
+\end{list1}
+
+
+\slide{Whois -- Where do IP addresses come from}
+
+\begin{list1}
+\item A these magical numbers we use on the internet are administered by IANA \url{https://www.iana.org/}
+\item They have handed out portions to the Region Internet Registries (RIR)
+\begin{list2}
+\item RIPE (Réseaux IP Européens)  \link{http://ripe.net}
+\item ARIN American Registry for Internet Numbers \link{http://www.arin.net}
+\item Asia Pacific Network Information Center \link{http://www.apnic.net}
+\item LACNIC (Regional Latin-American and Caribbean IP Address Registry) - Latin America and some Caribbean Islands
+\end{list2}
+\item AFRINIC \url{https://afrinic.net/}
+\item They are memberbased, and members are called Local Internet Registries (LIRs) og National Internet Registry (NIR)
+\end{list1}
+
+
+\slide{Ping}
+
+\begin{list1}
+\item ICMP - Internet Control Message Protocol
+\item Benyttes til fejlbeskeder og til diagnosticering af forbindelser
+\item ping programmet virker ved hjælp af ICMP ECHO request og
+  forventer ICMP ECHO reply
+\item
+\begin{alltt}
+\small {\bfseries
+$ ping 192.168.1.1}
+PING 192.168.1.1 (192.168.1.1): 56 data bytes
+64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
+\end{alltt}
+\end{list1}
+
+\slide{traceroute}
+
+\begin{list1}
+  \item traceroute programmet virker ved hjælp af TTL
+\item levetiden for en pakke tælles ned i hver router på vejen og ved at sætte denne lavt
+  opnår man at pakken \emph{timer ud} - besked fra hver router på vejen
+\item default er UDP pakker, men på UNIX systemer er der ofte mulighed
+  for at bruge ICMP
+\item
+\begin{alltt}
+\small{\bfseries
+$ traceroute 185.129.60.129}
+traceroute to 185.129.60.129 (185.129.60.129),
+30 hops max, 40 byte packets
+ 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
+ 2  router (185.129.60.129)  1.481 ms  1.374 ms  1.261 ms
+\end{alltt}
+\end{list1}
+
+
+\slide{NAT Network Address Translation}
+\hlkimage{16cm}{nat-1.pdf}
+
+
+\vskip 2 cm
+\begin{list2}
+\item NAT is used for connecting private networks to the Internet
+\item NAT gateway replaces source address and forwards packets
+\item A quick and dirty fix that keeps messing up networks and protocols
+\item The NAT router/firewall has state tables
+\end{list2}
+
+\slide{RFC-1918 Private Networks}
+
+\begin{list1}
+\item There is a list of network prefixes anyone can use, for private networks:
+\begin{list2}
+\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
+\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
+\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
+\end{list2}
+\item Address Allocation for Private Internets RFC-1918 adresserne!
+\item To use these typically there will be a NAT device in front
+\end{list1}
+
+\begin{alltt}
+The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
+and 203.0.113.0/24 (TEST-NET-3) are provided for use in
+documentation.
+
+169.254.0.0/16 has been ear-marked as the IP range to use for end node
+auto-configuration when a DHCP server may not be found
+\end{alltt}
+
+
+
+\slide{Course Network}
+.
+\hlkrightpic{85mm}{-1cm}{sample-network.png}
+
+\begin{list1}
+\item I have a course network with me -- the whole of BornHack \smiley\\
+which has the following information:
+\begin{list2}
+\item Juniper MX240 router -- in the basement, we can go see it
+\item Juniper switches
+\item Aruba APs wireless access-points
+\item IPv4 addresses: 151.216.32.0/21 total 2048
+\item IPv6 addresses route6: 2001:678:9ec::/48
+\item Autonomous system number: AS208647 BornHack\\
+\url{https://en.wikipedia.org/wiki/Autonomous_system_(Internet)}
+
+\end{list2}
+\end{list1}
+
+You are encouraged to use the network
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+\centerline{\link{http://www.wireshark.org}}
+
+
+\slide{Your Privacy }
+
+\hlkimage{18cm}{images/internet-browsing.pdf}
+
+\begin{list2}
+\item Your data travels far
+\item Often crossing borders, virtually and literally
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Network Segmentation -- Firewalls}
+
+\begin{quote}\small
+\$ firewall\\
+
+1. (I) {\bf An internetwork gateway that restricts data communication traffic to and from one of the connected networks} (the one said to be "inside" the firewall) and thus protects that network's system resources against threats from the other network (the one that is said to be "outside" the firewall). (See: guard, security gateway.)
+
+2. (O) {\bf A device or system that controls the flow of traffic between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41, January 2002.
+
+Tutorial: A firewall typically protects a smaller, secure network (such as a corporate LAN, or even just one host) from a larger network (such as the Internet). The firewall is installed at the point where the networks connect, and the firewall applies policy rules to control traffic that flows in and out of the protected network.
+\end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\slide{Continued}
+\begin{quote}\small
+{\bf A firewall is not always a single computer.} For example, a firewall may consist of a pair of filtering routers and one or more proxy servers running on one or more bastion hosts, all connected to a small, dedicated LAN (see: buffer zone) between the two routers. The external router blocks attacks that use IP to break security (IP address spoofing, source routing, packet fragments), while proxy servers block attacks that would exploit a vulnerability in a higher-layer protocol or service. The internal router blocks traffic from leaving the protected network except through the proxy servers. The difficult part is defining criteria by which packets are denied passage through the firewall, because a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic pass both in and out.
+\end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\begin{list2}
+\item Network layer, packet filters, application level, stateless, stateful
+\item Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+\item Older but still interesting Cheswick chapter 2 PDF
+\emph{A Security Review of Protocols:
+Lower Layers}\\
+\link{http://www.wilyhacker.com/}
+\end{list2}
+
+
+
+
+
+
+\slide{Modern Firewall Infrastructures}
+
+
+\centerline{\hlkbig A firewall {\color{security6blue}blocks traffic} on a network}
+
+\vskip 1 cm
+\pause
+
+\centerline{\hlkbig A firewall {\color{red}allows traffic} on a network}
+{\small The interesting part is typically what it allows!}
+
+\begin{list1}
+\item A firewall infrastructure must:
+\begin{list2}
+\item Prevent attackers from entering
+\item Prevent data exfiltration
+\item Prevent worms, malware, virus from spreading in networks
+\item Be part of an overall solution with ISP, routers, other firewalls, switched infrastructures,\\
+  intrusion detection systems and the rest of the infrastructure
+\item ...
+\end{list2}
+\end{list1}
+
+\vskip 5mm
+\centerline{Difficult -- and requires design and secure operations}
+
+
+
+\slide{Open source based firewalls}
+\begin{list2}
+\item Linux firewalls IP tables, use command line tool ufw Uncomplicated Firewall!
+\item Firewall GUIs on top of Linux -- lots! Some are also available as commercial ones
+\item OpenBSD PF
+\link{http://www.openbsd.org}
+\item FreeBSD IPFW og IPFW2 \link{http://www.freebsd.org}
+\item Mac OS X uses OpenBSD PF
+\item FreeBSD has an older version of the OpenBSD PF, should really be renamed now
+\end{list2}
+
+
+
+\slide{Uncomplicated Firewall (UFW)}
+
+\begin{alltt}\small
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+\begin{list2}
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\end{list2}
+
+
+
+\slide{Firewalls are NOT Alone}
+
+\hlkimage{15cm}{network-layers-1.png}
+
+\centerline{Use Defense in Depth -- all layers have features}
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\end{list1}
+
+
+\slide{ARP in IPv4}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
+\end{center}
+
+%server 00:30:65:22:94:a1\\
+%client 00:40:70:12:95:1c\\
+%hacker 00:02:03:04:05:06\\
+
+
+\slide{ARP request and reply}
+\begin{list1}
+\item {\bfseries ping 10.0.0.2} from server
+\item ARP Address Resolution Protocol request/reply:
+  \begin{list2}
+  \item ARP request broadcasted on layer 2 - Who has 10.0.0.2 Tell 10.0.0.1
+  \item ARP reply (from 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
+  \end{list2}
+\item IP ICMP request/reply:
+  \begin{list2}
+    \item Echo (ping) request from 10.0.0.1 to 10.0.0.2
+\item Echo (ping) reply from 10.0.0.2 to 10.0.0.1
+\item ...
+  \end{list2}
+\item ARP is performed on Ethernet before IP can be transmitted
+\end{list1}
+
+\slide{ IPv6 neighbor discovery protocol (NDP)}
+
+\hlkimage{20cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item NDP replaces ARP, compare \verb+arp -an+ and \verb+ndp -an+
+\item RFC4861 Neighbor Discovery for IP version 6 (IPv6)
+\end{list1}
+
+\slide{Hello neighbors}
+
+\begin{alltt}\small
+$ ping6 -w -I en1 ff02::1
+PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
+30 bytes from fe80::223:6cff:fe9a:f52c%en1: bigfoot
+36 bytes from fe80::216:cbff:feac:1d9f%en1: mike.kramse.dk.
+38 bytes from fe80::200:aaff:feab:9f06%en1: xrx0000aaab9f06
+34 bytes from fe80::20d:93ff:fe4d:55fe%en1: harry.local
+36 bytes from fe80::200:24ff:fec8:b24c%en1: kris.kramse.dk.
+31 bytes from fe80::21b:63ff:fef5:38df%en1: airport5
+32 bytes from fe80::216:cbff:fec4:403a%en1: main-base
+44 bytes from fe80::217:f2ff:fee4:2156%en1: Base Station Koekken
+35 bytes from fe80::21e:c2ff:feac:cd17%en1: arnold.local
+\end{alltt}
+
+\exercise{ex:debian-firewall}
+
+\end{document}
+
+
 
 \slide{Er TCP/IP interessant?}
 \hlkimage{12cm}{kame-noanime-small.png}
@@ -72,7 +862,7 @@
 \begin{list1}
 \item At introducere IP familien af protokoller
 \item Kendskab til almindeligt brugte programmer i disse miljøer\\
- - ping, traceroute, samt serverfunktioner Apache HTTP, BIND DNS m.v. 
+ - ping, traceroute, samt serverfunktioner Apache HTTP, BIND DNS m.v.
 \item Gennemgang af netværksdesign ved hjælp af almindeligt brugte setups\\ - en skalamodel af internet
 \end{list1}
 
@@ -132,7 +922,7 @@ Password: {\bf kursus42}
 \item BackTrack \link{http://www.remote-exploit.org/backtrack.html}
 %\item Knoppix Dansk \link{http://tyge.sslug.dk/knoppix/}
 \item Til begyndere indenfor Linux anbefales Ubuntu eller Kubuntu til
-  arbejdsstationer 
+  arbejdsstationer
 \end{list1}
 
 \slide{Stop - tid til check}
@@ -158,14 +948,14 @@ Password: {\bf kursus42}
 %\item ren - mv - move flytter filer til nyt navn, rename
 %\item md - mkdir - make directory, lav en mappe/katalog
 \item cd - cd - change directory, skifter katalog
-\item type - cat - concatenate, viser indholdet af tekstfiler 
+\item type - cat - concatenate, viser indholdet af tekstfiler
 \item more - less - viser tekstfiler en side af gangen
-\item attrib - chmod - change mode, ændrer rettighederne på filer 
+\item attrib - chmod - change mode, ændrer rettighederne på filer
 \end{list2}
 \item Prøv bare:
   \begin{list2}
-    \item {\bfseries ls} list, eller long listing med {\bfseries ls -l} 
-    \item {\bfseries cat /etc/hosts} viser hosts filen 
+    \item {\bfseries ls} list, eller long listing med {\bfseries ls -l}
+    \item {\bfseries cat /etc/hosts} viser hosts filen
 \item {\bfseries chmod +x head.sh} - sæt execute bit på en fil så den
   kan udføres som et program med kommandoen \verb+./head.sh+
   \end{list2}
@@ -174,7 +964,7 @@ Password: {\bf kursus42}
 \slide{Aftale om test af netværk}
 
 {\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel
-  indtil 6 måneder 
+  indtil 6 måneder
 straffes den, som uberettiget skaffer sig adgang til en andens
 oplysninger eller programmer, der er bestemt til at bruges i et anlæg
 til elektronisk databehandling.}
@@ -184,13 +974,13 @@ Hacking kan betyde:
 \item At man skal betale erstatning til personer eller virksomheder
 \item At man får konfiskeret sit udstyr af politiet
 \item At man, hvis man er over 15 år og bliver dømt for hacking, kan
-  få en bøde - eller fængselsstraf i alvorlige tilfælde 
+  få en bøde - eller fængselsstraf i alvorlige tilfælde
 \item At man, hvis man er over 15 år og bliver dømt for hacking, får
 en plettet straffeattest. Det kan give problemer, hvis man skal finde
 et job eller hvis man skal rejse til visse lande, fx USA og
 Australien
 \item Frit efter: \link{http://www.stophacking.dk} lavet af Det
-  Kriminalpræventive Råd 
+  Kriminalpræventive Råd
 \item Frygten for terror har forstærket ovenstående - så lad være!
 \end{list2}
 
@@ -212,9 +1002,9 @@ Australien
 \slide{Agenda - dag 2 IPv6, Management, diagnosticering}
 
 \begin{list1}
-\item IP version 6 
+\item IP version 6
 \item ARP og NDP
-\item Ping 
+\item Ping
 \item Traceroute
 \item Snifferprogrammer Tcpdump og Wireshark
 \item Management
@@ -286,9 +1076,9 @@ Australien
 \item DNS er grundlaget for Internet
 \item Sikkerheden på internet er generelt dårlig, brug SSL!
 \item Procedurerne og vedligeholdelse er essentiel for alle
-  operativsystemer! 
+  operativsystemer!
 \item Man skal \emph{hærde} operativsystemer \emph{før} man sætter dem på
-  Internet 
+  Internet
 \item Husk: IT-sikkerhed er ikke kun netværkssikkerhed!
 \item God sikkerhed kommer fra langsigtede intiativer\\
 \end{list2}
@@ -301,7 +1091,7 @@ Australien
 \vskip 4cm
 
 \begin{center}
-\hlkbig 
+\hlkbig
 
 \myname
 
@@ -316,14 +1106,14 @@ I er altid velkomne til at sende spørgsmål på e-mail
 \slide{Referencer: netværksbøger}
 
 \begin{list2}
-\item Stevens, Comer, 
+\item Stevens, Comer,
 \item Network Warrior
 \item TCP/IP bogen på dansk
 \item KAME bøgerne
-\item O'Reilly generelt IPv6 Essentials og IPv6 Network Administration  
+\item O'Reilly generelt IPv6 Essentials og IPv6 Network Administration
 \item O'Reilly cookbooks: Cisco, BIND og Apache HTTPD
 \item Cisco Press og website
-\item Firewall bøger, Radia Perlman: IPsec, 
+\item Firewall bøger, Radia Perlman: IPsec,
 \end{list2}
 
 \slide{Bøger om IPv6}

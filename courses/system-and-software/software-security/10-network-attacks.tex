@@ -263,79 +263,6 @@ Unauthorized Access Vulnerability (CVE-2019-1890)
 {\bf Link Layer Discovery Protocol Buffer Overflow Vulnerability} (CVE-2019-1901)
 \end{list2}
 
-\slide{DNS problems}
-
-\begin{quote}
-The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
-addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
-attacks, including denial of service and password collection. There are a number of vulnerabilities.
-\end{quote}
-Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin 1989\\
-\link{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
-
-\begin{list1}
-\item We have a lot of the same problems in DNS today
-\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
-\begin{list2}
-\item DNS must allow both UDP and TCP port 53
-\item Your DNS servers must have updated software, which use updated protocol behaviour \\
-see DNS flag day \link{https://dnsflagday.net/}
-\item DNS is unencrypted
-\end{list2}
-\end{list1}
-
-\slide{Recommended Software -- Unbound and NSD}
-
-\begin{quote}
-Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
-
-To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
-\end{quote}
-
-\link{https://www.nlnetlabs.nl/projects/unbound/about/}
-
-My preferred local DNS server
-
-Also check out uncensored DNS and his DNS over TLS setup!\\
-Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
-
-
-
-
-
-
-\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
-
-\begin{list1}
-\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
-\item Today we have competing standards:
-\item
-\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
-\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
-
-\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
-
-\item How to cofigure DoT \link{https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients}
-\end{list1}
-
-
-\slide{DNS problems}
-
-\begin{list2}
-\item Failure to Deal with Invalid Label Lengths
-\item Insufficient Destination Lengths Check
-\item Insufficient Source Length Checks
-\item Pointer Values Not Verified In Packet
-\item Special Pointer Values
-\item Length Variables
-\item These are from the book: AoSSA chapter 16: Network Application Protocols\\
-\emph{The Art of Software Security Assessment Identifying and Preventing
-Software Vulnerabilities}
-Mark Dowd, John McDonald, Justin Schuh ISBN: 9780321444424
-\end{list2}
-
-\vskip 1cm
-\centerline{Labels and pointers within packets save bytes, but make it more complex!}
 
 
 \slide{Networks today}
@@ -395,7 +322,7 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 
 
 
-\slide{IPv4 pakken - header - RFC-791}
+\slide{IPv4 packets -- header - RFC-791}
 
 \begin{alltt}
 \small
@@ -419,121 +346,79 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 \end{alltt}
 
 
-\slide{IPv6 pakken - header - RFC-2460}
+\slide{DNS problems}
 
-\begin{list2}
-\item Simplere - fixed size - 40 bytes
-\item Sjældent brugte felter (fra v4) udeladt (kun 6 vs 10 i IPv4)
-\item Ingen checksum!
-\item Adresser 128-bit
-\item 64-bit aligned, alle 6 felter med indenfor første 64
-\end{list2}
-
-Mindre kompleksitet for routere på vejen medfører
-mulighed for flere pakker på en given router
-
-\slide{IPv6 pakken - header - RFC-2460}
-
-\begin{alltt}\footnotesize
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version| Traffic Class |           Flow Label                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Payload Length        |  Next Header  |   Hop Limit   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                         Source Address                        +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                      Destination Address                      +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-
-\slide{IPv6 addresser og skrivemåde}
-
-\hlkimage{17cm}{ipv6-address-1.pdf}
-
-\begin{list2}
-\item 128-bit adresser, subnet prefix næsten altid 64-bit
-\item skrives i grupper af 4 hexcifre ad gangen adskilt af kolon :
-\item foranstillede 0 i en gruppe kan udelades, en række 0 kan erstattes med ::
-\item dvs 0:0:0:0:0:0:0:0 er det samme som \\
-0000:0000:0000:0000:0000:0000:0000:0000
-\item Dvs min webservers IPv6 adresse kan skrives som:
-2001:16d8:ff00:12f::2
-\item Specielle adresser:
-::1 localhost/loopback og
-::  default route
-\item Læs mere i RFC-3513
-\end{list2}
-
-
-\slide{IP karakteristik}
+\begin{quote}
+The Domain Name System (DNS) [32][33] provides for a distributed database mapping host names to IP
+addresses. An intruder who interferes with the proper operation of the DNS can mount a variety of
+attacks, including denial of service and password collection. There are a number of vulnerabilities.
+\end{quote}
+Source: \emph{Security Problems in the TCP/IP Protocol Suite}, S.M. Bellovin 1989\\
+\link{https://www.cs.columbia.edu/~smb/papers/ipext.pdf}
 
 \begin{list1}
-\item Fælles adresserum, dog version 4 for sig, og IPv6 for sig.
-\item Best effort - kommer en pakke fra er det fint, hvis ikke må højere lag klare det
-\item Kræver ikke mange services fra underliggende teknologi \emph{dumt netværk}
-\item Defineret gennem åben standardiseringsprocess og RFC-dokumenter
-\end{list1}
-
-\slide{Fragmentering og PMTU}
-
-\hlkimage{15cm}{fragments-1.pdf}
-\begin{list1}
-\item Hidtil har vi antaget at der blev brugt Ethernet med pakkestørrelse på 1500 bytes
-\item Pakkestørrelsen kaldes MTU Maximum Transmission Unit
-\item Skal der sendes mere data opdeles i pakker af denne størrelse, fra afsender
-\item Men hvad hvis en router på vejen ikke bruger 1500 bytes, men kun 1000
-\end{list1}
-
-\slide{ICMP Internet Control Message Protocol}
-
-\begin{list1}
-\item Kontrolprotokol og fejlmeldinger
-\item Nogle af de mest almindelige beskedtyper
+\item We have a lot of the same problems in DNS today
+\item Plus some more caused by middle-boxes, NAT, DNS size, DNS inspection
 \begin{list2}
-\item echo
-\item netmask
-\item info
-\end{list2}
-\item Bruges generelt til \emph{signalering}
-\item Defineret i RFC-792
-\end{list1}
-
-\centerline{\bf NB: nogle firewall-administratorer blokerer alt ICMP - det er forkert!}
-
-\slide{ICMP beskedtyper}
-
-\begin{list1}
-\item Type
-\begin{list2}
-\item 0 = net unreachable;
-\item 1 = host unreachable;
-\item 2 = protocol unreachable;
-\item 3 = port unreachable;
-\item 4 = fragmentation needed and DF set;
-\item 5 = source route failed.
-\end{list2}
-\item Ved at fjerne ALT ICMP fra et net fjerner man nødvendig funktionalitet!
-\item Tillad ICMP types:
-\begin{list2}
-\item 3 Destination Unreachable
-\item 4 Source Quench Message
-\item 11 Time Exceeded
-\item 12 Parameter Problem Message
+\item DNS must allow both UDP and TCP port 53
+\item Your DNS servers must have updated software, which use updated protocol behaviour \\
+see DNS flag day \link{https://dnsflagday.net/}
+\item DNS is unencrypted
 \end{list2}
 \end{list1}
+
+\slide{Recommended Software -- Unbound and NSD}
+
+\begin{quote}
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
+\end{quote}
+
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
+
+My preferred local DNS server
+
+Also check out uncensored DNS and his DNS over TLS setup!\\
+Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
+
+
+
+
+
+
+\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
+
+\begin{list1}
+\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
+\item Today we have competing standards:
+\item
+\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
+\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
+
+\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
+
+
+\end{list1}
+
+
+\slide{DNS problems}
+
+\begin{list2}
+\item Failure to Deal with Invalid Label Lengths
+\item Insufficient Destination Lengths Check
+\item Insufficient Source Length Checks
+\item Pointer Values Not Verified In Packet
+\item Special Pointer Values
+\item Length Variables
+\item These are from the book: AoSSA chapter 16: Network Application Protocols\\
+\emph{The Art of Software Security Assessment Identifying and Preventing
+Software Vulnerabilities}
+Mark Dowd, John McDonald, Justin Schuh ISBN: 9780321444424
+\end{list2}
+
+\vskip 1cm
+\centerline{Labels and pointers within packets save bytes, but make it more complex!}
 
 
 \slide{Firewalls and related issues}
@@ -931,44 +816,6 @@ A basic test would be:
 \verb+hping3 -q -c 1000000  -i u60 -S -p 179 $ROUTER_IP+
 \end{list1}
 
-\slide{Test-cases / Scenarios, continued Spoof Source}
-
-Spoofed packets src=dst=target \smiley
-
-Flooding with spoofed packet source, within customer range
-
-\begin{alltt}\small
-
--a --spoof hostname
-    Use this option in order to set a fake IP  source  address,  this
-    option ensures that target will not gain your real address.
-\end{alltt}
-
-\verb+hping3 -q --flood -p 80 -S -a $CUST_IP $CUST_IP+
-
-Preferably using a test-case you know fails, to see effect
-
-Still amazed how often this works
-
-BCP38 anyone!
-
-\slide{Test-cases / Scenarios, continued Small Fragments}
-
-Using the built-in option -f for hping
-
-\begin{alltt}\small
--f --frag
-    Split  packets  in more fragments, this may be useful in order to test IP
-    stacks fragmentation performance and to test if some packet filter is  so
-    weak  that  can  be  passed using tiny fragments (anachronistic). Default
-    {\bf 'virtual mtu' is 16 bytes}. see also --mtu option.
-\end{alltt}
-
-\begin{list1}
-\item \verb+hping3 -q --flood -p 80 -S -f $CUST_IP+
-\item Similar process with bad checksum and Bad fragment offset
-\end{list1}
-
 \slide{Rocky Horror Picture Show - 1}
 
 \hlkimage{20cm}{smokeping-1.png}
@@ -1030,78 +877,8 @@ for later devices to dig deeper
 \vskip 2cm
 \centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
 
-\slide{More application testing}
 
-\hlkimage{9cm}{images/linux-tsung-size_rcv.png}
-
-\begin{list1}
-\item We covered only lower layers - but helpful layer 7 testing programs exist
-\item Tsung can be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL, LDAP and Jabber/XMPP servers \link{http://tsung.erlang-projects.org/}
-\end{list1}
-
-
-\slide{DDoS traffic before filtering}
-\hlkimage{22cm}{ddos-before-filtering}
-
-\centerline{Only two links shown, at least 3Gbit incoming for this single IP}
-
-\slide{DDoS traffic after filtering}
-\hlkimage{18cm}{ddos-after-filtering}
-\centerline{Link toward server (next level firewall actually) about ~350Mbit outgoing}
-
-
-%\slide{Stateless filtering Junos}
-\slide{Stateless firewall filter throw stuff away}
-
-\begin{alltt}\footnotesize
-hlk@MX-CPH-02> show configuration firewall filter all | no-more
-/* This is a static sample, perhaps better to use BGP flowspec and RTBH */
-term edgeblocker \{
-    from \{
-        source-address \{
-            84.180.xxx.173/32;
-...
-            87.245.xxx.171/32;
-        \}
-        destination-address \{
-            91.102.91.16/28;
-        \}
-        protocol [ tcp udp icmp ];
-    \}
-    then \{
-        count edge-block;
-        discard;
-    \}
-\}
-\end{alltt}
-Hint: can also leave out protocol and then it will match all protocols
-
-\slide{Stateless firewall filter limit protocols}
-
-\begin{alltt}\footnotesize
-term limit-icmp \{
-    from \{
-        protocol icmp;
-    \}
-    then \{
-        policer ICMP-100M;
-        accept;
-    \}
-\}
-term limit-udp \{
-    from \{
-        protocol udp;
-    \}
-    then \{
-        policer UDP-1000M;
-        accept;
-    \}
-\}
-\end{alltt}
-
-Routers have extensive Class-of-Service (CoS) tools today
-
-\slide{Strict filtering for some servers, still stateless!}
+\slide{Strict stateless filtering}
 
 \begin{alltt}\footnotesize
 term some-server-allow \{
@@ -1124,35 +901,6 @@ term some-server-block-unneeded \{
     then discard;
 \}
 \end{alltt}
-
-Wut - no UDP, yes UDP service is not used on these servers
-
-
-\slide{ Firewalls - screens, IDS like features}
-
-When you know regular traffic you can decide \emph{normal settings}:
-
-\begin{alltt}\footnotesize
-hlk@srx-kas-05# show security screen ids-option untrust-screen
-icmp \{
-    ping-death;
-\}
-ip \{
-    source-route-option;
-    tear-drop;
-\}
-tcp \{    Note: UDP flood setting also exist
-    syn-flood \{
-        alarm-threshold 10024;
-        attack-threshold 200;
-        source-threshold 10024;
-        destination-threshold 2048;
-        timeout 20;
-    \}
-    land;
-\}
-\end{alltt}
-
 
 
 

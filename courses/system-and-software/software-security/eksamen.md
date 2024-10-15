@@ -1,5 +1,5 @@
 
-# Software Security Exam subjects 2023
+# Software Security Exam subjects
 Keywords er ideer og inspiration. I kan IKKE nå at gennemgå allesammen i de 10 minutter i præsenterer
 
 ## 1.Trusler mod software, oversigt over hvordan sårbarheder i software opstår
@@ -67,7 +67,6 @@ Kan bruge alt hvad vi har talt om på kurset
 
 ## 8.Audit af software, samt almindelige fejl der skal håndteres
 * Any security policy, mechanism, or procedure is based on assumptions that, if incorrect, destroy the super-structure on which it is built.
-* Matt Bishop, Computer Security 2019
 * Access Control
 * Exceptions
 * Confidentiality Integrity and Availability

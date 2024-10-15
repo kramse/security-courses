@@ -480,7 +480,7 @@ Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Swit
 \item Fra et lavere niveau modtager vi en pakke, eksempelvis 1500-bytes fra Ethernet driver
 \end{list1}
 
-\slide{IPv4 pakken - header - RFC-791}
+\slide{IPv4 packets -- header - RFC-791}
 
 \begin{alltt}
 \small
@@ -502,139 +502,6 @@ Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Swit
 
                     Example Internet Datagram Header
 \end{alltt}
-
-
-\slide{IPv6 pakken - header - RFC-2460}
-
-\begin{list2}
-\item Simplere - fixed size - 40 bytes
-\item Sjældent brugte felter (fra v4) udeladt (kun 6 vs 10 i IPv4)
-\item Ingen checksum!
-\item Adresser 128-bit
-\item 64-bit aligned, alle 6 felter med indenfor første 64
-\end{list2}
-
-Mindre kompleksitet for routere på vejen medfører
-mulighed for flere pakker på en given router
-
-\slide{IPv6 pakken - header - RFC-2460}
-
-\begin{alltt}\footnotesize
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version| Traffic Class |           Flow Label                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Payload Length        |  Next Header  |   Hop Limit   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                         Source Address                        +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                      Destination Address                      +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-
-\slide{IPv6 pakken - extension headers RFC-2460}
-
-\begin{list1}
-\item Fuld IPv6 implementation indeholder:
-\begin{list2}
-\item Hop-by-Hop Options
-\item Routing (Type 0) - deprecated
-\item Fragment - fragmentering KUN i end-points!
-\item Destination Options
-\item Authentication
-\item Encapsulating Security Payload
-\end{list2}
-\item Ja, IPsec er en del af IPv6!
-\end{list1}
-
-\slide{Placering af extension headers}
-
-\begin{alltt}
-\small
-  +---------------+----------------+------------------------
-  |  IPv6 header  | Routing header | TCP header + data
-  |               |                |
-  | Next Header = |  Next Header = |
-  |    Routing    |      TCP       |
-  +---------------+----------------+------------------------
-
-  +---------------+----------------+-----------------+-----------------
-  |  IPv6 header  | Routing header | Fragment header | fragment of TCP
-  |               |                |                 |  header + data
-  | Next Header = |  Next Header = |  Next Header =  |
-  |    Routing    |    Fragment    |       TCP       |
-  +---------------+----------------+-----------------+-----------------
-\end{alltt}
-
-\slide{Hvordan bruger man IPv6}
-
-\begin{center}
-\hlkbig
-\vskip 2 cm
-www.zencurity.com
-
-hlk@zencurity.com
-
-\end{center}
-
-\pause
-DNS AAAA record tilføjes
-
-\begin{alltt}
-www     IN A    91.102.91.17
-        IN AAAA 2001:16d8:ff00:12f::2
-mail    IN A    91.102.91.17
-        IN AAAA 2001:16d8:ff00:12f::2
-\end{alltt}
-
-\slide{IPv6 addresser og skrivemåde}
-
-\hlkimage{17cm}{ipv6-address-1.pdf}
-
-\begin{list2}
-\item 128-bit adresser, subnet prefix næsten altid 64-bit
-\item skrives i grupper af 4 hexcifre ad gangen adskilt af kolon :
-\item foranstillede 0 i en gruppe kan udelades, en række 0 kan erstattes med ::
-\item dvs 0:0:0:0:0:0:0:0 er det samme som \\
-0000:0000:0000:0000:0000:0000:0000:0000
-\item Dvs min webservers IPv6 adresse kan skrives som:
-2001:16d8:ff00:12f::2
-\item Specielle adresser:
-::1 localhost/loopback og
-::  default route
-\item Læs mere i RFC-3513
-\end{list2}
-
-\slide{IPv6 addresser - prefix notation}
-
-\begin{list1}
-\item CIDR Classless Inter-Domain Routing RFC-1519
-\item Aggregatable Global Unicast
-\item 2001::/16 RIR subTLA space
-\begin{list2}
-\item 2001:200::/23 APNIC
-\item 2001:400::/23 ARIN
-\item 2001:600::/23 RIPE
-\end{list2}
-\item 2002::/16 6to4 prefix
-\item 3ffe::/16 6bone allocation
-\item link-local unicast addresses\\
-fe80::/10 genereres udfra MAC addresserne EUI-64
-\end{list1}
-
-
 
 \slide{IP karakteristik}
 

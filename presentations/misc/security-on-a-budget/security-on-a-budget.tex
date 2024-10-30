@@ -41,12 +41,13 @@
 \end{quote}
 
 
-\hlkimage{8cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+\hlkimage{5cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
 
 
 \begin{list1}
 \item Point you towards resources, so you can get started
 \item List a few core concepts I think you should know and learn
+\item List example programs, tools, frameworks, maybe you are not using them -- allow your organizations to benefit from them!
 \hskip 2cm {\footnotesize Photo by Pawel Janiak on Unsplash}
 \end{list1}
 
@@ -243,7 +244,7 @@ I like to learn new concepts from books
 
 Pro Tip: all my courses and exercise booklets are available on Github!
 
-Humble Bundle!
+Humble Bundle! \url{https://www.humblebundle.com/}
 
 \slide{Other Materials}
 
@@ -291,14 +292,15 @@ Example list from a course, supporting literature:\\
 \hlkimage{4cm}{005scawebiaidosezaicon.png}
 
 \begin{list2}
-\item Open Source I really love open source. There is just too much great open source software, to ignore, and security budgets are tight in DK!
+\item Open Source I really love open source. There is just too much great open source software, to ignore
 \item Linux/Unix knowledge is necessary
 -- because a lot of the newest tools are written for Linux/Unix/BSD
 \item Git and Github -- where you can find lots of tools, libraries, applications
 \item Programming experience is an advantage for automating stuff\\
-Python is a nice generic tool for this, powershell is another alternative
+Python is a nice generic tool for this, PowerShell is another alternative
 \item Ansible provisioning -- installing and configuring software for production
 \item Elasticsearch -- how to run a \emph{service}, full fledged applications exist for Elasticsearch
+\item OpenSSH -- included in Linux and Windows, allows for Rsync, Git, port forward etc.
 \end{list2}
 
 \slide{Thursday What a concept}
@@ -456,6 +458,40 @@ Source: \url{https://www.stamus-networks.com/selks}
 
 This will provide a basic Elasticsearch version 7, with Kibana and Suricata
 
+\slide{Example system: Wazuh}
+
+\hlkimage{8cm}{01-Wazuh-Security-Analytics-op.png}
+
+\begin{quote}\small
+Wazuh agents scan the monitored systems looking for malware, rootkits and suspicious anomalies. They can detect hidden files, cloaked processes or unregistered network listeners, as well as inco
+nsistencies in system call responses.\\
+Source: text and picture from \link{https://wazuh.com/}
+\end{quote}
+
+\begin{list2}
+\item Wazuh initially a fork of the OSSEC project, and has integration with Elastic Stack
+\end{list2}
+
+
+\slide{Wazuh agent}
+
+\begin{quote}\small
+The Wazuh lightweight agent is designed to perform a number of tasks with the objective of detecting threats and, when necessary, trigger automatic responses. The agent core capabilities are:
+
+The Wazuh agents run on many different platforms, including Windows, Linux, Mac OS X, AIX, Solaris and HP-UX. They can be configured and managed from the Wazuh server.\\
+Source: \link{https://wazuh.com/}
+\end{quote}
+
+\begin{list2}
+\item Log and events data collection
+\item File and registry keys integrity monitoring
+\item Inventory of running processes and installed applications
+\item Monitoring of open ports and network configuration
+\item Detection of rootkits or malware artifacts
+\item Configuration assessment and policy monitoring
+\item Execution of active responses
+\end{list2}
+
 
 \slide{OPNsense GUI based and easy to install}
 
@@ -564,10 +600,113 @@ Some things probably cannot be automated!
 \end{quote}
 
 \begin{list2}
+\item Do not trust the automation will fix everything, and don't mention AI
+\vskip 1cm
+\item Make \emph{manual tasks} easier!
 \item I usually update server myself -- but have a scripted process
 \item Put commands into small script -- even a one-line for doing a task
-\item Do not trust the automation will fix everything, and don't mention AI
+\item Example: Look up a MAC address, find a port in a switch
 \end{list2}
+
+
+
+\slide{LibreNMS Automatic discovery}
+
+\hlkimage{10cm}{librenms-switches.png}
+
+Automatically discover your entire network using CDP, FDP, LLDP, OSPF, BGP, SNMP and ARP \\
+\url{https://www.librenms.org/}
+
+
+
+\slide{Analysis on Docker Hub malicious images: Attacks through public container images}
+
+\hlkimage{10cm}{sysdig-malicious-images.png}
+This article is relevant, talking about malicious docker images\\
+\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
+
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
+\link{https://github.com/anchore/anchore-engine}\\
+"As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype."
+\item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype}
+\item Allow direct download from the internet into your cluster, may become a problem
+\item Malicious people are typosquatting popular containers!
+\item Suply chain attacks in general are a problem
+\end{list2}
+
+\slide{Harden Container Images and Update Your Procedures}
+
+\begin{list2}
+\item Change the goddamn passwords!\\
+Container postgresql with user postgres and password *postgres*, REALLY!!!!!!1111
+\item and NO MORE ROOT! Dont run as root, we realized this was bad in the 1990s!
+\item CIS Docker Benchmarking also Learn Kubernetes Security \emph{Chapter 8: Securing Kubernetes Pods}
+\item Hacking Kubernetes \emph{Chapter 8: Policy} - describe things like Resource Quotas, Runtime Policies
+\end{list2}
+
+\slide{Recommendations from CIS Docker Benchmark}
+
+\hlkimage{14cm}{cis-docker-1.png}
+Summary from: \link{https://www.aquasec.com/cloud-native-academy/docker-container/docker-cis-benchmark/}
+
+\begin{list2}
+\item Latest version: CIS Docker Benchmark v1.5.0 - 12-28-2022
+\end{list2}
+
+
+\slide{Benchmarking tools}
+
+\begin{quote}
+\faWrench\ \verb+Kube-bench+ is the industry-standard tool to automate checking Kubernetes compliance with the Center for Internet Security (CIS) Benchmark.
+
+Kube-bench makes it easy for operators to check whether each node in their Kubernetes cluster is configured according to security best practices.
+\end{quote}
+Source: \link{https://info.aquasec.com/open-source}
+
+\begin{list2}
+\item CIS Kubernetes V1.24 Benchmark v1.0.0 - 09-21-2022 -- other versions exist
+\item CIS Docker Benchmark v1.5.0 - 12-28-2022
+\end{list2}
+
+%\slide{Benchmarking and keeping up to date}
+
+% Try it out \faWrench\ \verb+kube-bench+ - make some bad changes, like LKS p95 allow anonymous authentication, show why layered defense works, and how kube-bench marks it. Another example token based access, initially we have token while installing, remember to remove!
+% \faWrench\ \verb+kube-hunter+ and kube-bench
+
+\slide{Tool example kube-bench}
+
+%\hlkimage{}{}
+
+\begin{alltt}\scriptsize
+hlk@timon:~/bin/kube-bench/kube-bench$ {\bf kubectl logs kube-bench-gdf62}
+[PASS] 1.1.7 Ensure that the etcd pod specification file permissions are set to 600 or more restrictive (Automated)
+[PASS] 1.1.8 Ensure that the etcd pod specification file ownership is set to root:root (Automated)
+[WARN] 1.1.9 Ensure that the Container Network Interface file permissions are set to 600 or more restrictive (Manual)
+[WARN] 1.1.10 Ensure that the Container Network Interface file ownership is set to root:root (Manual)
+[PASS] 1.1.11 Ensure that the etcd data directory permissions are set to 700 or more restrictive (Automated)
+[FAIL] 1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)
+...
+== Summary policies ==
+0 checks PASS
+0 checks FAIL
+35 checks WARN
+0 checks INFO
+
+== Summary total ==
+63 checks PASS
+10 checks FAIL
+58 checks WARN
+0 checks INFO
+
+\end{alltt}
+
+\begin{list2}
+\item \url{https://github.com/aquasecurity/kube-bench} also check out Lynis \url{https://cisofy.com/lynis/}
+\end{list2}
+
 
 
 \myquestionspage

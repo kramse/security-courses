@@ -1,0 +1,718 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% Sårbarhedsmitigering, værktøjer og processer
+% Fokus på begreberne indenfor sårbarheder og på den længerevarende beskyttelse af organitionen
+
+% Der er store problemer med sårbarheder i de fleste organisationer. Vores software og infrastruktur er bygget på sand, både reelt i form af computere, men også i overført betydning at sikkerheden skrider væk under os.
+
+% Hver måned kommer der hundredevis af nye sårbarheder, og selvom vi ikke har al den sårbare software installeret, er det en næsten uoverkommelig opgave at holde miljøerne sikre imod indbrud og skade.
+
+% I dette foredrag vil vi tage udgangspunkt i begreberne indenfor sårbarheder, mitigering, beskyttelse med fokus på længerevarende beskyttelse af organisationen.
+
+% Der vil være elementer fra:
+% * Sårbarheder, hvad er de, og hvad er exploits, der udnytter dem
+% * Patch management, herunder asset discovery and management
+% * Software security
+% * Long term mitigation and protection
+% * Security Metrics - hvordan måler vi, om det går fremad
+% * Hvordan står vi bedst klar til hændelseshåndtering / incident response
+% * Security frameworks for the organisation
+%
+% * Forudsætninger
+% * Interesse for sikring af netværk, infrastruktur og organisationer imod sikkerhedsbrud som følge af sårbarheder.
+
+
+\begin{document}
+%\rm
+\selectlanguage{english}
+
+\mytitlepage
+{Security on a Budget}{Survive without drowning in information}
+
+\hlkprofiluk
+
+
+
+\slide{Goals for today}
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  ― Antoine de Saint-Exupéry
+\end{quote}
+
+
+\hlkimage{5cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+
+\begin{list1}
+\item Point you towards resources, so you can get started
+\item List a few core concepts I think you should know and learn
+\item List example programs, tools, frameworks, maybe you are not using them -- allow your organizations to benefit from them!
+\hskip 2cm {\footnotesize Photo by Pawel Janiak on Unsplash}
+\end{list1}
+
+
+\slide{My daily job     -- Security engineering a job role}
+
+\begin{alltt}\small
+On any given day, you may be challenged to:
+        Create new ways to solve existing production security issues
+        Configure and install firewalls and intrusion detection systems
+        Perform vulnerability testing, risk analyses and security assessments
+        Develop automation scripts to handle and track incidents
+        Investigate intrusion incidents, conduct forensic investigations and incident responses
+        Collaborate with colleagues on authentication, authorization and encryption solutions
+        Evaluate new technologies and processes that enhance security capabilities
+        Test security solutions using industry standard analysis criteria
+        Deliver technical reports and formal papers on test findings
+        Respond to information security issues during each stage of a project’s lifecycle
+        Supervise changes in software, hardware, facilities, telecommunications and user needs
+        Define, implement and maintain corporate security policies
+        Analyze and advise on new security technologies and program conformance
+        Recommend modifications in legal, technical and regulatory areas that affect IT security
+\end{alltt}
+
+Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
+also
+\url{https://en.wikipedia.org/wiki/Security_engineering}
+
+
+\slide{Reality Hits -- every month}
+
+\hlkimage{12cm}{microsoft-patch-tuesday-oct-2024.png}
+
+\begin{quote}
+Microsoft addresses {\bf 117 CVEs} with three rated as critical and four zero-day vulnerabilities, two of which were {\bf exploited in the wild}.
+\end{quote}
+Source: \url{https://www.tenable.com/blog/microsoft-october-2024-patch-tuesday-addresses-117-cves-cve-2024-43572-cve-2024-43573}, originally from Microsoft October 2024 Security Updates \url{https://msrc.microsoft.com/update-guide/releaseNote/2024-Oct}
+
+\slide{Vulnerabilities - CVE}
+
+\begin{list1}
+\item Common Vulnerabilities and Exposures (CVE):
+  \begin{list2}
+  \item classification
+  \item identification
+  \end{list2}
+\item When discovered each vuln gets a CVE ID
+\item CVE maintained by MITRE - not-for-profit
+org for research and development in the USA.
+\item National Vulnerability Database search for CVE.
+\item Sources: \link{http://cve.mitre.org/} og \link{http://nvd.nist.gov}
+\item also checkout OWASP Top-10 \link{http://www.owasp.org/}
+\end{list1}
+
+\slide{Vulnerabilities are everywhere!}
+
+\hlkimage{18cm}{cve-details-new-updated.png}
+Source: CVEdetails.com on 2024-09-02
+
+\begin{list2}
+\item This is crazy! \url{https://www.cvedetails.com/}
+\end{list2}
+
+\slide{Vulnerabilities by type \& year}
+
+\hlkimage{17cm}{cve-details-year.png}
+Source: CVEdetails.com on 2024-09-02 Graph on the web site is interactive \url{https://www.cvedetails.com/}
+
+\slide{LG TVs 2024 -- CVE-2023-6317 up to CVE-2023-6320}
+
+\hlkimage{10cm}{LG-shodan.png}
+
+\begin{quote}{\large\bf
+90,000+ LG TVs Vulnerable to Authorization Attacks\\
+Due to WebOS Vulnerabilities}
+
+Bitdefender Labs has revealed a critical security flaw in over 90,000 LG smart TVs running the company’s proprietary WebOS platform.
+
+If exploited, the vulnerability could allow attackers to gain unauthorized access to the TV’s functions and potentially the user’s home network.
+
+\end{quote}
+Source: \url{https://cybersecuritynews.com/lg-tvs-vuauthorization-attacks/}
+
+
+
+\slide{Overlapping Security Incidents -- Demant 2019}
+
+%\hlkimage{}{}
+
+\begin{quote}
+- For året 2019 rapporterede vi et tab i omsætning på {\bf 575 millioner kroner}. Det i sig selv er alvorligt. Hvad angår vores opmærksomhed på it-sikkerhedsområdet, har it-hændelsen været med til at understrege nødvendigheden af, at tage dette felt seriøst. Angreb mod it-infrastruktur er uden tvivl en af de største trusler mod en virksomhed, og det kan gå galt, hvis man ikke er i stand til at lukke ned for skaden og bruge sin back-up.
+
+...
+
+- På det konkrete plan har vi fået et mantra der lyder {\bf ’Active Directory is king, and backup is Queen’}. Men mere overordnet har vi også lært at Fokus skal helt op på øverste niveau i virksomheden, at man skal skaffe høj faglig indsigt i sikkerhed og trusler, og at det er et arbejde, der skal være under konstant observation og udvikling.
+
+\end{quote}
+Kilde: \link{https://dit.dk/Nyheder/2021/Demant}
+
+\slide{Protection, building secure and robust networks}
+
+\hlkimage{14cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item We should prefer security mechanisms that does NOT require us to keep patching every month
+\item Can we change our networks to avoid this? Yes!
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+
+
+\slide{Goals of Security -- short version}
+
+\hlkimage{12cm}{OODA.Boyd.png}
+{\footnotesize Source: Patrick Edwin Moran - Wikipedia \link{https://en.wikipedia.org/wiki/OODA_loop}}
+
+\begin{list2}
+\item Prevention - means that an attack will fail
+\item Detection - determine if attack is underway, or has occured - report it
+\item Recovery - stop attack, assess damage, repair damage
+\end{list2}
+
+\slide{Tight budgets everywhere!}
+
+%\hlkimage{9cm}{cia-triad.png}
+\hlkimage{10cm}{kelly-sikkema-212376-unsplash.jpg}
+
+\hfill {\footnotesize Photo by Kelly Sikkema on Unsplash}
+
+\centerline{Whats the goal, where are the strawberries!}
+
+\begin{list2}
+\item And you have a limited budget, always!
+\item Use the resources available in the best way is your mission!
+\end{list2}
+
+\slide{Core Concepts -- use existing knowledge!}
+
+Information Security is a huge domain:
+
+\begin{quote}
+The (ISC)² CBK is a collection of topics relevant to cybersecurity professionals around the world. It establishes a common framework of information security terms and principles which enables cybersecurity and IT/ICT professionals worldwide to discuss, debate and resolve matters pertaining to the profession with a common understanding, taxonomy and lexicon.
+\end{quote}
+Source: \link{https://www.isc2.org/Certifications/CBK}
+
+List of 8 domains in CISSP CBK: Security and Risk Management, Asset Security,
+Security Architecture and Engineering, Communications and Network Security, Identity and Access Management, Security Assessment and Testing, Security Operations, Software Development Security
+
+- then add all the news about new tools, exploits, and networking
+
+
+\slide{Work together}
+
+\hlkimage{9cm}{Shaking-hands_web.jpg}
+
+\begin{list1}
+\item Team up!
+\item We need to share security information freely
+\item We often face the same threats, so we can work on solving these together
+\end{list1}
+
+
+
+\slide{OSI Model and Internet Protocols}
+
+\hlkimage{9cm,angle=90}{images/compare-osi-ip.pdf}
+
+\centerline{I recommend securing things from the bottom and from the outside}
+
+\slide{Books and courses}
+
+%\hlkimage{}{}
+
+How:
+
+I like to learn new concepts from books
+\begin{list2}
+\item Have a clear structure, less confusion
+\item They go from a basic level towards a complete goal
+\item Often have exercises available with nice progression
+\item Lots of nice books available from \link{http://www.nostarch.com/} and others
+\item Often you can get Humble bundles with many books for \$25
+\item Some books are "free" if you give your email address, example
+\item Can function as inspiration and a checklist
+\end{list2}
+
+Pro Tip: all my courses and exercise booklets are available on Github!
+
+Humble Bundle! \url{https://www.humblebundle.com/}
+
+\slide{Other Materials}
+
+
+Pro tip: ENISA, the european agency publishes nice materials, including course materials:\\
+\url{https://www.enisa.europa.eu/publications}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Information comes in many formats, resources, programs, people, authors, documents, sites
+that further your exploration into network and security
+
+\item I force my students to read older hacker texts files, computer science papers, web articles, books chapters, standard documents, internet request for comments (RFCs)
+
+\item Goal is to kickstart their journey into the subjects
+
+\item Also serves to mention organizations, groups, persons, authors that I recommend you follow and read from
+\end{list2}
+
+Example list from a course, supporting literature:\\
+\link{https://zencurity.gitbook.io/kea-it-sikkerhed/net-og-komm-sikkerhed/lektionsplan}
+
+
+\slide{Book: Defensive Security Handbook (DSH)}
+
+\hlkimage{6cm}{defensive-security-handbook.jpg}
+
+\emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}, Lee Brotherston, Amanda Berlin, William F. Reyor ISBN: 9781098127237, 362 pages -- Note: 2nd edition updated 2024\\
+{\footnotesize\link{https://learning.oreilly.com/library/view/defensive-security-handbook/9781098127237/}}
+
+\slide{Network Security Through Data Analysis}
+
+\hlkimage{6cm}{network-security-through-data-analysis.png}
+
+
+\emph{Network Security through Data Analysis }, Michael S Collins, 2nd Edition, 2017\\
+{\footnotesize\url{https://learning.oreilly.com/library/view/network-security-through/9781491962831/}}
+
+
+\slide{Recommended tools to learn}
+
+\hlkimage{4cm}{005scawebiaidosezaicon.png}
+
+\begin{list2}
+\item Open Source I really love open source. There is just too much great open source software, to ignore
+\item Linux/Unix knowledge is necessary
+-- because a lot of the newest tools are written for Linux/Unix/BSD
+\item Git and Github -- where you can find lots of tools, libraries, applications
+\item Programming experience is an advantage for automating stuff\\
+Python is a nice generic tool for this, PowerShell is another alternative
+\item Ansible provisioning -- installing and configuring software for production
+\item Elasticsearch -- how to run a \emph{service}, full fledged applications exist for Elasticsearch
+\item OpenSSH -- included in Linux and Windows, allows for Rsync, Git, port forward etc.
+\end{list2}
+
+\slide{Thursday What a concept}
+
+\hlkimage{10cm}{thursday.jpg}
+
+\begin{quote}
+Alt text: Nadia from the Russian Doll fearing that she would never see a Thursday again says, "Thursday. What a concept" while smoking a cigarette
+\end{quote}
+
+\begin{list2}
+\item Mastodon bot \url{https://botsin.space/@thursday} post the same picture each thursday
+\item Github Actions Workflows, se \url{https://github.com/devashishp/thursday} and \url{https://docs.github.com/en/actions/writing-workflows}
+
+\end{list2}
+
+\slide{Github Actions Workflows }
+
+\begin{minted}[fontsize=\small]{yaml}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install Mastodon.py
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Run Script
+      run:
+        python bot.py
+\end{minted}
+
+
+\slide{Open Source -- Linux hackerlab}
+
+\hlkimage{6cm}{hacklab-1.png}
+
+\begin{list2}
+\item Create your own playground, a hackerlab
+\item kramse-labs -- Guide to preparing your laptop for training with Kramse\\
+\link{https://github.com/kramse/kramse-labs}
+\item Recommend two VMs, Debian and Kali Linux
+\item Don't forget to find the Debian Handbook and Kali Linux Revealed, free PDFs
+\end{list2}
+
+% {\bf Start a download of Kali now, if you want to play with the tools.}\\
+% Recommend virtual machine download 64-bit\\
+%  \url{https://www.kali.org/get-kali/#kali-virtual-machines}
+
+{\bf I consider Linux/Unix knowledge a must for working in Networking and Security}
+
+
+\slide{Tools: Open Source and Python}
+\hlkimage{7cm}{maltrail.png}
+
+\begin{list2}
+\item Open Source is already written *doh*
+\item Can provide solutions or parts of a solution
+\item Often feature-rich, mature, tested, maintained, and even when \emph{not} can be brought back to life
+\item Picture from Maltrail \link{https://github.com/stamparm/maltrail}\\
+Maltrail is a malicious traffic detection system, utilizing publicly available (black)lists containing malicious and/or generally suspicious trails, along with static trails compiled from various AV reports and custom user defined lists,
+\end{list2}
+
+
+
+
+\slide{Why Ansible}
+
+%\hlkimage{}{}
+
+Platform options Ansible:
+\begin{alltt}
+CloudEngine OS, CNOS, Dell OS6, Dell OS9 Dell OS10, ENOS, EOS, ERIC_ECCLI, EXOS,
+FRR, ICX, IOS, IOS-XR, IronWare, Junos OS, Meraki, Pluribus NETVISOR, NOS, NXOS,
+RouterOS, SLX-OS, VOSS, VyOS, WeOS 4
+
+plus routers based on Linux, OpenBSD, FreeBSD etc.
+\end{alltt}
+
+
+One management system with many uses, free to download and use
+\begin{list2}
+\item Generic configuration management -- and you end up running support systems, network near systems
+\item Ansible for Network Automation\\
+\link{https://docs.ansible.com/ansible/latest/network/index.html}
+\item Allows you to install, configure and run your network management systems -- like LibreNMS, Nipap
+\end{list2}
+
+\slide{Python and YAML}
+
+\hlkimage{7cm}{git-logo.png}
+
+\begin{list2}
+\item We need to store configurations of devices and systems
+\item Run Ansible playbooks
+\item Problem: Remember what we did, when, how
+\item Solution: use git for the playbooks
+\item Not the only version control system, but my preferred one
+\item Git can also be used by Oxidized which I also love \link{https://github.com/ytti/oxidized}
+\end{list2}
+
+
+
+\slide{Why Elasticsearch}
+
+%\hlkimage{}{}
+
+\begin{quote}
+The Elastic Common Schema (ECS) is an open source specification, developed with support from the Elastic user community. ECS defines a common set of fields to be used when storing event data in Elasticsearch, such as logs and metrics.
+\end{quote}
+
+One storage system with many uses, free to download and use
+\begin{list2}
+\item Logstash - can take logs and SNMP traps easily
+\item Packetbeat \link{https://www.elastic.co/beats/packetbeat}
+\item Elastiflow
+\link{https://github.com/robcowart/elastiflow}
+\item Has defined an Elastic Common Scheme (ECS)\\
+\link{https://www.elastic.co/guide/en/ecs/current/ecs-reference.html}
+\end{list2}
+
+
+\slide{SELKS}
+
+\hlkimage{6cm}{selks-17.png}
+
+\begin{quote}
+SELKS™ is a free, open-source, and turn-key Suricata network intrusion detection/protection system (IDS/IPS), network security monitoring (NSM) and threat hunting implementation created and maintained by Stamus Networks.
+
+Released under GPL 3.0-or-later license, the live distribution is available as either a live and installable Debian-based ISO or via Docker compose on any Linux operating system.
+\end{quote}
+Source: \url{https://www.stamus-networks.com/selks}
+
+
+\slide{The "install" on Debian 12 -- in less than 30minutes}
+
+\begin{list1}
+\item[\faSquareO] Clone the Github repo: \link{https://github.com/kramse/kramse-labs}\\
+\verb+git clone https://github.com/kramse/kramse-labs+
+\item[\faSquareO] Go into this repository and install Docker, there is a small README.md too:\\
+\verb+cd kramse-labs/docker-install+ and then \verb+ansible-playbook 1-dependencies.yml+
+\item[\faSquareO] Enable Docker: \verb+systemctl enable docker+ and reboot the VM,
+\item[\faSquareO] Clone the SELKS repository:\\
+\verb+git clone https://github.com/StamusNetworks/SELKS.git+
+\item[\faSquareO] Go into this and run docker-compose as described in the instructions:\\
+\url{https://github.com/StamusNetworks/SELKS/wiki/Docker}\\
+{\bf  make sure to select the right network interface, so Suricata can sniff packets}
+\end{list1}
+
+This will provide a basic Elasticsearch version 7, with Kibana and Suricata
+
+\slide{Example system: Wazuh}
+
+\hlkimage{8cm}{01-Wazuh-Security-Analytics-op.png}
+
+\begin{quote}\small
+Wazuh agents scan the monitored systems looking for malware, rootkits and suspicious anomalies. They can detect hidden files, cloaked processes or unregistered network listeners, as well as inco
+nsistencies in system call responses.\\
+Source: text and picture from \link{https://wazuh.com/}
+\end{quote}
+
+\begin{list2}
+\item Wazuh initially a fork of the OSSEC project, and has integration with Elastic Stack
+\end{list2}
+
+
+\slide{Wazuh agent}
+
+\begin{quote}\small
+The Wazuh lightweight agent is designed to perform a number of tasks with the objective of detecting threats and, when necessary, trigger automatic responses. The agent core capabilities are:
+
+The Wazuh agents run on many different platforms, including Windows, Linux, Mac OS X, AIX, Solaris and HP-UX. They can be configured and managed from the Wazuh server.\\
+Source: \link{https://wazuh.com/}
+\end{quote}
+
+\begin{list2}
+\item Log and events data collection
+\item File and registry keys integrity monitoring
+\item Inventory of running processes and installed applications
+\item Monitoring of open ports and network configuration
+\item Detection of rootkits or malware artifacts
+\item Configuration assessment and policy monitoring
+\item Execution of active responses
+\end{list2}
+
+
+\slide{OPNsense GUI based and easy to install}
+
+\hlkimage{8cm}{images/screenshots_OPNsense-1024x518.png}
+
+\begin{list1}
+\item OPNsense \link{https://opnsense.org/}
+\item Firewall built on FreeBSD with web interface
+\item Originally thoughts from m0n0wall and later \link{https://www.pfsense.org/}\\
+\item Danish companies have been using these for many years now
+\end{list1}
+
+\slide{All servers should have firewall enabled! }
+
+Example: Uncomplicated Firewall (UFW)
+
+\begin{alltt}\small
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw status numbered
+Status: active
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+\begin{list2}
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\item Integrated with Ansible
+\item Windows and Mac also has firewall -- enable it!
+\end{list2}
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{15cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\item Used in most, if not all, Wi-Fi networks -- each SSID has a VLAN behind it
+\end{list1}
+
+
+\slide{Equipment -- wanna work with networks}
+
+Laptops, one is enough to get started
+
+.
+\hlkrightpic{85mm}{-2cm}{sample-network.png}
+
+\begin{list1}
+\item I have a network with me when needed, \\
+which has the following systems:
+\begin{list2}
+\item OpenBSD router
+\item Switches Juniper EX2200-C and small TP-Link
+\item UniFi AP wireless access-point
+\item Getting an extra wireless network card for your laptop
+\item USB Ethernet for sniffing network -- 200DKK StarTech USB 3.0
+\end{list2}
+\end{list1}
+
+Above or similar can often be found lying around in offices, ask if you can take it.
+
+
+\slide{Who are you gonna call?}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Cyberangreb kan blive en dyr omgang for SMV’erne
+Et ransomware angreb koster 376.350 kr. alene i tabt omsætning fra e-handel for en virksomhed med 10-49 ansatte. I lyset af at truslen for cyberkriminalitet er på sit højeste, skal flere SMV’er have hjælp til at øge deres IT-sikkerhed. Særligt efter en hård tid under COVID-19, som har tvunget virksomhedernes fokus væk fra IT-sikkerhed.
+\end{quote}
+Source: SMVdanmark Marts 2022 \url{https://smvdanmark.dk/analyser/temaanalyser/cyberangreb-kan-blive-en-dyr-omgang-for-smverne}
+
+\begin{list2}
+\item You need friends!
+
+\item Incident Response is a specialized area
+
+\item They cost upwards of 1.500DKK / hour -- more if outside of business hours
+\item Pre-arranged is recommended, agree on \emph{who can call them}, decide up front when to call them -- not for every little incident
+\item Expect an incident to cost at least 100.000DKK plus time, lost hours, lost orders, etc.
+\end{list2}
+
+\slide{Automate it all!}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Some things probably cannot be automated!
+\end{quote}
+
+\begin{list2}
+\item Do not trust the automation will fix everything, and don't mention AI
+\vskip 1cm
+\item Make \emph{manual tasks} easier!
+\item I usually update server myself -- but have a scripted process
+\item Put commands into small script -- even a one-line for doing a task
+\item Example: Look up a MAC address, find a port in a switch
+\end{list2}
+
+
+
+\slide{LibreNMS Automatic discovery}
+
+\hlkimage{10cm}{librenms-switches.png}
+
+Automatically discover your entire network using CDP, FDP, LLDP, OSPF, BGP, SNMP and ARP \\
+\url{https://www.librenms.org/}
+
+
+
+\slide{Analysis on Docker Hub malicious images: Attacks through public container images}
+
+\hlkimage{10cm}{sysdig-malicious-images.png}
+This article is relevant, talking about malicious docker images\\
+\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
+
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
+\link{https://github.com/anchore/anchore-engine}\\
+"As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype."
+\item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype}
+\item Allow direct download from the internet into your cluster, may become a problem
+\item Malicious people are typosquatting popular containers!
+\item Suply chain attacks in general are a problem
+\end{list2}
+
+\slide{Harden Container Images and Update Your Procedures}
+
+\begin{list2}
+\item Change the goddamn passwords!\\
+Container postgresql with user postgres and password *postgres*, REALLY!!!!!!1111
+\item and NO MORE ROOT! Dont run as root, we realized this was bad in the 1990s!
+\item CIS Docker Benchmarking also Learn Kubernetes Security \emph{Chapter 8: Securing Kubernetes Pods}
+\item Hacking Kubernetes \emph{Chapter 8: Policy} - describe things like Resource Quotas, Runtime Policies
+\end{list2}
+
+\slide{Recommendations from CIS Docker Benchmark}
+
+\hlkimage{14cm}{cis-docker-1.png}
+Summary from: \link{https://www.aquasec.com/cloud-native-academy/docker-container/docker-cis-benchmark/}
+
+\begin{list2}
+\item Latest version: CIS Docker Benchmark v1.5.0 - 12-28-2022
+\end{list2}
+
+
+\slide{Benchmarking tools}
+
+\begin{quote}
+\faWrench\ \verb+Kube-bench+ is the industry-standard tool to automate checking Kubernetes compliance with the Center for Internet Security (CIS) Benchmark.
+
+Kube-bench makes it easy for operators to check whether each node in their Kubernetes cluster is configured according to security best practices.
+\end{quote}
+Source: \link{https://info.aquasec.com/open-source}
+
+\begin{list2}
+\item CIS Kubernetes V1.24 Benchmark v1.0.0 - 09-21-2022 -- other versions exist
+\item CIS Docker Benchmark v1.5.0 - 12-28-2022
+\end{list2}
+
+%\slide{Benchmarking and keeping up to date}
+
+% Try it out \faWrench\ \verb+kube-bench+ - make some bad changes, like LKS p95 allow anonymous authentication, show why layered defense works, and how kube-bench marks it. Another example token based access, initially we have token while installing, remember to remove!
+% \faWrench\ \verb+kube-hunter+ and kube-bench
+
+\slide{Tool example kube-bench}
+
+%\hlkimage{}{}
+
+\begin{alltt}\scriptsize
+hlk@timon:~/bin/kube-bench/kube-bench$ {\bf kubectl logs kube-bench-gdf62}
+[PASS] 1.1.7 Ensure that the etcd pod specification file permissions are set to 600 or more restrictive (Automated)
+[PASS] 1.1.8 Ensure that the etcd pod specification file ownership is set to root:root (Automated)
+[WARN] 1.1.9 Ensure that the Container Network Interface file permissions are set to 600 or more restrictive (Manual)
+[WARN] 1.1.10 Ensure that the Container Network Interface file ownership is set to root:root (Manual)
+[PASS] 1.1.11 Ensure that the etcd data directory permissions are set to 700 or more restrictive (Automated)
+[FAIL] 1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)
+...
+== Summary policies ==
+0 checks PASS
+0 checks FAIL
+35 checks WARN
+0 checks INFO
+
+== Summary total ==
+63 checks PASS
+10 checks FAIL
+58 checks WARN
+0 checks INFO
+
+\end{alltt}
+
+\begin{list2}
+\item \url{https://github.com/aquasecurity/kube-bench} also check out Lynis \url{https://cisofy.com/lynis/}
+\end{list2}
+
+
+
+\myquestionspage
+
+
+
+\end{document}

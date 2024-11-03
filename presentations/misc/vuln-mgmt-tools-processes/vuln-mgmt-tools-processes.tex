@@ -395,7 +395,7 @@ Humble Bundle! \url{https://www.humblebundle.com/}
 \item Git and Github -- where you can find lots of tools, libraries, applications
 \item Programming experience is an advantage for automating stuff\\
 Python is a nice generic tool for this, PowerShell is another alternative
-\item Ansible provisioning -- installing and configuring software for production
+\item Ansible -- installing and configuring software for production, gathering information
 \item Elasticsearch -- how to run a \emph{service}, full fledged applications exist for Elasticsearch
 \item OpenSSH -- included in Linux and Windows, allows for Rsync, Git, port forward etc.
 \end{list2}
@@ -493,6 +493,65 @@ One management system with many uses, free to download and use
 \item Git can also be used by Oxidized which I also love \link{https://github.com/ytti/oxidized}
 \end{list2}
 
+\slide{Gathering information from Systems automatically}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+yamabushi$ ansible -m setup sunny | egrep "ansible_distribution|kernel"
+        "ansible_distribution": "OpenBSD",
+        "ansible_distribution_release": "release",
+        "ansible_distribution_version": "7.5",
+        "ansible_kernel": "7.5",
+        "ansible_kernel_version": "GENERIC.MP#82",
+\end{minted}
+
+\begin{list2}
+\item Quick and dirty, output it JSON -- so could use jq instead \url{https://jqlang.github.io/jq/}
+\end{list2}
+
+\slide{Creating automation playbooks with YAML }
+
+\begin{minted}[fontsize=\footnotesize]{yaml}
+yamabushi$ cat os-release.yaml
+---
+- hosts: all
+  gather_facts: yes
+  become: false
+  tasks:
+  - name: Distribution
+    debug: msg="{{ ansible_distribution }}"
+  - name: Distribution version
+    debug: msg="{{ ansible_distribution_version}}"
+\end{minted}
+
+\begin{list2}
+\item Creating playbooks is not dificult
+\end{list2}
+
+\slide{Output from Automation}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\footnotesize]{json}
+TASK [Distribution version] *******************
+...
+ok: [sunny] => {
+    "msg": "7.5"
+}
+ok: [shito] => {
+    "msg": "7.4"
+}
+ok: [conserver01] => {
+    "msg": "7.5"
+}
+ok: [pumba] => {
+    "msg": "7.6"
+}
+\end{minted}
+
+\begin{list2}
+\item So it seems I have upgraded some systems to OpenBSD 7.5, and 7.6
+\item One is only OpenBSD 7.4 -- plan ugrade soon
+\end{list2}
 
 
 \slide{\faWrench\ Wazuh}
@@ -529,49 +588,119 @@ Source: \link{https://wazuh.com/}
 \item Execution of active responses
 \end{list2}
 
+\slide{Asset inventory}
 
-\slide{\faWrench\ Isolation and Network Segmentation -- Virtual LAN (VLAN)}
-
-\hlkimage{8cm}{vlan-portbased.pdf}
-
-\begin{list1}
-\item Managed switches often allow splitting into zones called virtual LANs
-\item Most simple version is port based
-\item Like putting ports 1-4 into one LAN and remaining in another LAN
-\item Packets must traverse a router or firewall to cross between VLANs
-\end{list1}
-
-\slide{Virtual LAN (VLAN) IEEE 802.1q}
-
-\hlkimage{15cm}{vlan-8021q.pdf}
-
-\begin{list1}
-\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
-\item Virtual LAN, to pass from one to another, must use a router/firewall
-\item Allows separation/segmentation and protects traffic from many security issues
-\item Used in most, if not all, Wi-Fi networks -- each SSID has a VLAN behind it
-\end{list1}
-
-
-\slide{Who are you gonna call?}
-
-%\hlkimage{}{}
-
-\begin{quote}
-Cyberangreb kan blive en dyr omgang for SMV’erne
-Et ransomware angreb koster 376.350 kr. alene i tabt omsætning fra e-handel for en virksomhed med 10-49 ansatte. I lyset af at truslen for cyberkriminalitet er på sit højeste, skal flere SMV’er have hjælp til at øge deres IT-sikkerhed. Særligt efter en hård tid under COVID-19, som har tvunget virksomhedernes fokus væk fra IT-sikkerhed.
-\end{quote}
-Source: SMVdanmark Marts 2022 \url{https://smvdanmark.dk/analyser/temaanalyser/cyberangreb-kan-blive-en-dyr-omgang-for-smverne}
+\hlkimage{7cm}{overview-routing-customer-2015.png}
 
 \begin{list2}
-\item You need friends!
-
-\item Incident Response is a specialized area
-
-\item They cost upwards of 1.500DKK / hour -- more if outside of business hours
-\item Pre-arranged is recommended, agree on \emph{who can call them}, decide up front when to call them -- not for every little incident
-\item Expect an incident to cost at least 100.000DKK plus time, lost hours, lost orders, etc.
+\item Routers on the way to critical systems and networks -- especially availability
+\item Firewall -- is the environment protected sufficiently, discarding probes
+\item Mail servers -- relay testing and also critical data
+\item Web servers -- holds data, typically has a lot of functionality
+\item Cloud systems, storage systems, anywhere data is saved
+\item I recommend Nmap for both offensive and defensive purposes! \url{https://nmap.org}
 \end{list2}
+
+
+\slide{Reporting -- results}
+
+\begin{list1}
+\item What is in a pentest report:
+\begin{list2}
+\item Title, Table of contents, formal report thanks
+\item Confidentiality agreement – Write ”Confidential” on each page
+\item Executive summary – big companies always want this
+\item Information about the scan done, what was it
+\item Scope and targets
+\item Review of all targets – detailed information and recommendations
+\item Conclusion – may be more technical
+\item Appendices – various information, Whois info about subnets and prefixes
+\end{list2}
+\item BTW When delivering a report, it is up to the organisation to decide which recommendations to implement
+\end{list1}
+
+Sample report available at: \link{https://github.com/kramse/pentest-report}
+
+
+\slide{Basic Portscan}
+
+\begin{list1}
+\item What is port scanning
+\item Testing all ports from 0/1 up to 65535
+\item Goal is to identify open ports -- vulnerable services
+\item Typically TCP and UDP scans
+\item TCP scanning is more reliable than UDP scanning
+\item TCP handshake is easy to see, due to session setup -- services must respond to SYN with SYN-ACK. Otherwise client programs like browsers will not work
+\item UDP applications respond differently -- if at all\\
+They might respond to queries and probes in the correct format, \\
+If no firewall the operating systems will respond with ICMP on closed ports
+\item Use Zenmap while learning Nmap
+\end{list1}
+
+
+\slide{Nmap port sweep for web services}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries  nmap -p80,443 172.29.0.0/24}
+
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:31 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00016s latency).
+PORT    STATE    SERVICE
+{\color{darkgreen}80/tcp  open     http}
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00012s latency).
+PORT    STATE  SERVICE
+{\color{darkgreen}80/tcp  open   http}
+443/tcp closed https
+MAC Address: 00:0C:29:46:22:FB (VMware)
+
+\end{alltt}
+
+
+\slide{Nmap Advanced OS detection}
+
+\begin{alltt}\footnotesize
+root@cornerstone:~#{\bfseries nmap -A -p80,443 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:37 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00027s latency).
+PORT    STATE    SERVICE VERSION
+80/tcp  open     http    Apache httpd 2.2.26 ((Unix) DAV/2 mod_ssl/2.2.26 OpenSSL/0.9.8zc)
+|_http-title: Site doesn't have a title (text/html).
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+Device type: media device|general purpose|phone
+Running: Apple iOS 6.X|4.X|5.X, Apple Mac OS X 10.7.X|10.9.X|10.8.X
+OS details: Apple iOS 6.1.3, Apple Mac OS X 10.7.0 (Lion) - 10.9.2 (Mavericks)
+or iOS 4.1 - 7.1 (Darwin 10.0.0 - 14.0.0), Apple Mac OS X 10.8 - 10.8.3 (Mountain Lion)
+or iOS 5.1.1 - 6.1.5 (Darwin 12.0.0 - 13.0.0)
+OS and Service detection performed.
+Please report any incorrect results at http://nmap.org/submit/
+\end{alltt}
+
+\begin{list2}
+\item Low level operating system identification, often I use \verb+nmap -A+
+\item Send packets, observe responses, match with tables of known operating system fingerprints
+\item An early reference for this was: \emph{ICMP Usage In Scanning} Version 3.0,
+  Ofir Arkin, 2001 %\link{https://web.archive.org/web/20050210093427/http://www.sys-security.com/html/projects/icmp.html} % Original side er død
+\end{list2}
+
+
+\slide{Scan for Heartbleed and SSLv2/SSLv3}
+
+Nmap includes Nmap scripting engine (NSE)
+
+\hlkimage{5cm}{nmap-sslv2.png}
+
+\begin{list1}
+\item \verb+nmap -p 443 --script ssl-heartbleed <target>+\\
+\link{https://nmap.org/nsedoc/scripts/ssl-heartbleed.html}
+\item Almost every new popular vulnerability will have Nmap recipe
+\end{list1}
 
 
 \slide{\faWrench\ LibreNMS Automatic discovery -- inventory management}
@@ -587,6 +716,7 @@ See all the versions, what do you have, what needs to be secure \url{https://www
 \hlkimage{10cm}{sysdig-malicious-images.png}
 This article is relevant, talking about malicious docker images\\
 \link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
+
 
 \slide{Keeping Container Images secure}
 
@@ -672,7 +802,625 @@ hlk@timon:~/bin/kube-bench/kube-bench$ {\bf kubectl logs kube-bench-gdf62}
 
 
 
+
+\slide{Introducing firewalls}
+
+
+Some of these slides are part of the course:\\
+\emph{Communication and Network Security} at KEA, next course April 2. 2024\\
+\url{https://kompetence.kea.dk/kurser-fag/netv%C3%A6rk-og-kommunikationssikkerhed}
+
+specifically the slideshow\\
+\emph{3. Traffic Inspection and Firewalls}
+
+I also have multiple presentations and materials about related subjects in my Github:
+
+\begin{list2}
+\item Attack and Defense
+\item DDoS Testing
+\item Security in a Mixed IPv4 and IPv6 World
+\item SIEM and Log analysis
+\item Kubernetes Security
+\end{list2}
+
+\slide{Networks are trouble}
+
+\hlkimage{9cm}{dragon-drawing-6.jpg}
+\centerline{\Large Internet here be dragons}
+
+\begin{list2}
+\item Networks are constantly evolving
+\item Increased threat landscape, World wide networks, attacks from everywhere
+\item Vulnerabilities are found daily, Software quality - even security and firewall software has flaws
+\item Even more vulnerabilities are \emph{developed} and \emph{installed}\\
+Sorry developers, but some of you don't care, and it shows!
+\end{list2}
+
+
+\slide{Back in the day: Firewalls and Internet Security, 1994}
+
+\hlkimage{4cm}{images/cheswick-cover2e.jpg}
+\begin{list2}
+\item \emph{Firewalls and Internet Security: Repelling the Wily Hacker} , Second Edition 2003, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, {\bf 2003} \link{http://www.wilyhacker.com/}
+\item The full PDF—and the full LaTeX source of the book.
+Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow certain protocols through a firewall, we are asking for trouble
+\end{list2}
+
+
+\slide{Network Segmentation -- Firewalls}
+
+\begin{quote}\small
+\$ firewall\\
+
+1. (I) {\bf An internetwork gateway that restricts data communication traffic to and from one of the connected networks} (the one said to be "inside" the firewall) and thus protects that network's system resources against threats from the other network (the one that is said to be "outside" the firewall). (See: guard, security gateway.)
+
+2. (O) {\bf A device or system that controls the flow of traffic between networks using differing security postures.} Wack, J. et al (NIST), "Guidelines on Firewalls and Firewall Policy", Special Publication 800-41, January 2002.
+
+Tutorial: A firewall typically protects a smaller, secure network (such as a corporate LAN, or even just one host) from a larger network (such as the Internet). The firewall is installed at the point where the networks connect, and the firewall applies policy rules to control traffic that flows in and out of the protected network.
+\end{quote}
+Source: RFC4949 \emph{Internet Security Glossary, Version 2\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\slide{Continued}
+\begin{quote}\small
+{\bf A firewall is not always a single computer.} For example, a firewall may consist of a pair of filtering routers and one or more proxy servers running on one or more bastion hosts, all connected to a small, dedicated LAN (see: buffer zone) between the two routers. The external router blocks attacks that use IP to break security (IP address spoofing, source routing, packet fragments), while proxy servers block attacks that would exploit a vulnerability in a higher-layer protocol or service. The internal router blocks traffic from leaving the protected network except through the proxy servers. The difficult part is defining criteria by which packets are denied passage through the firewall, because a firewall not only needs to keep unauthorized traffic (i.e., intruders) out, but usually also needs to let authorized traffic pass both in and out.
+\end{quote}
+{\footnotesize Source: RFC4949 \emph{Internet Security Glossary, Version 2}\\
+\link{https://datatracker.ietf.org/doc/html/rfc4949} 2007}
+
+\slide{What is a packet filter}
+
+We may want to distinguis between different types of firewalls/devices:
+\begin{list2}
+\item Network layer, we often call them packet filters, stateless
+\item Application level, we often call them, stateful filtering and gateways
+\item Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+%\item Older but still interesting Cheswick chapter 2 PDF
+%\emph{A Security Review of Protocols: Lower Layers}\\
+%\link{http://www.wilyhacker.com/}
+\end{list2}
+
+They are all firewalls -- or firewall devices!
+\slide{Best Current Practice }
+
+%\hlkimage{}{}
+
+\begin{quote}
+Lets get this out of the way immediately, you should already be doing
+\end{quote}
+
+\begin{list2}
+\item Network segmentation and filtering -- we could write a book about this! {\myalert}
+\item Monitor your network -- both bandwidth, error, netflow etc. {\myalert}
+\item Take control of your network, no more admin/admin logins on core devices {\myalert}
+\item Turn on authentication for protocols -- routing protocols but also any http service within your org {\myalert}
+\item Configure host-based firewalls {\myalert}
+\item Control DNS -- internally and externally, recursive, authoritative etc. {\myalert}
+\end{list2}
+
+\centerline{This goes for IPv4-only, IPv6-only, and mixed networks!}
+
+\slide{\faWrench\ Isolation and Network Segmentation -- Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{15cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\item Used in most, if not all, Wi-Fi networks -- each SSID has a VLAN behind it
+\end{list1}
+
+
+\slide{Network Access Control -- Connecting clients more securely}
+
+Talking about standard, another useful one:\\
+IEEE 802.1x -- Port Based Network Access Control
+
+\hlkimage{7cm}{802.1X_wired_protocols.png}
+
+\begin{list1}
+\item Authentication protocol ensures user validation before port access
+\item Can authenticate using username and then password or certificate
+\item Typically RADIUS and 802.1x which can use LDAP or Active Directory
+\item Already used in Wi-Fi networks, so can be turned on for wired Ethernet ports
+\end{list1}
+
+
+\slide{Network Protocol Knowledge Needed for Network Security}
+
+To work with network security the following protocols are the bare minimum to know about.
+
+\begin{list2}
+\item ARP Address Resolution Protocol for IPv4
+\item NDP Neighbor Discovery Protocol for IPv6
+\item IPv4 \& IPv6 -- the basic packet fields source, destination,
+\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
+\item UDP User Datagram Protocol
+\item TCP Transmission Control Protocol
+\item DHCP Dynamic Host Configuration Protocol
+\item DNS Domain Name System
+\end{list2}
+
+These protocols are part of the Internet Protocol suite, or TCP/IP for short. The canonical document describing this is from 1981 RFC-0791 \citetitle{RFC0791}. The protocols were deployed on the internet around 1983.
+
+
+
+\slide{Book: Practical Packet Analysis (PPA)}
+\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+
+\link{https://nostarch.com/packetanalysis3}
+
+\slide{Book: Applied Network Security Monitoring (ANSM)}
+
+\hlkimage{5cm}{ansm-book.png}
+
+\emph{Applied Network Security Monitoring: Collection, Detection, and Analysis}
+1st Edition
+
+Chris Sanders, Jason Smith
+eBook ISBN: 9780124172166
+Paperback ISBN: 9780124172081 496 pp.
+Imprint: Syngress, December 2013
+
+
+
+\slide{Firewall configuration}
+
+Best firewall starts with the design
+\begin{list2}
+\item Drawings -- lots of drawings and topology
+\item An addressing plan! This is very important
+\item Then use a GUI for your first experience
+\item Plan for long term care
+\item Plan for updates
+\item Systems and services behind the firewall must still be hardened and configured securely
+\end{list2}
+
+\slide{Block outgoing traffic too}
+
+\begin{list1}
+\item Some services should \emph{not} cross firewalls, at least not to the internet
+\item Some services are too \emph{fragile}
+
+\begin{list2}
+\item Windows SMB file sharing is \emph{only} for small internal networks
+\item Unix NFS is like-wise \emph{only} for internal use
+\item Outgoing email should only go via dedicated relays
+\item LDAP outgoing, why?! See the log4j CVE-2021-44228
+\item Create a list, document them and consider them dead!
+\end{list2}
+\item Making a positive list of allowed protocols would be best, but may require too many resources to implement and update
+\end{list1}
+
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+\begin{list2}
+\item Filtrering at higher layers is also possible
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists}
+\end{list2}
+
+
+\slide{Netflow and Session Logging}
+
+\begin{list2}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{list2}
+
+\centerline{Netflow is often from routers, we dont have any here}
+
+\slide{Collect Network Evidence from the network}
+
+\begin{list1}
+\item Network Flows
+\item Cisco standard NetFlow version 5 defines a flow as a unidirectional sequence of packets that all share the following 7 values:
+\begin{list2}
+\item Ingress interface (SNMP ifIndex)
+\item IP protocol, Source IP address and Destination IP address
+\item Source port for UDP or TCP, 0 for other protocols
+\item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
+\item IP Type of Service
+\end{list2}
+\item today Netflow version 9 or IPFIX
+\end{list1}
+
+Source: \\{\footnotesize
+\link{https://en.wikipedia.org/wiki/NetFlow}\\
+\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}}
+
+
+
+\slide{ElastiFlow -- Elasticsearch based}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+
+\slide{Akvorado: flow collector, enricher and visualizer}
+
+\hlkimage{8cm}{akvorado-timeseries.png}
+
+\begin{quote}
+This program receives flows (currently Netflow/IPFIX and sFlow), enriches them with interface names (using SNMP), geo information (using IPinfo.io), and exports them to Kafka, then ClickHouse. It also exposes a web interface to browse the collected data.
+\end{quote}
+Source: Picture and text from \url{https://github.com/akvorado/akvorado}
+
+
+
+
+
+\slide{Who are you gonna call?}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Cyberangreb kan blive en dyr omgang for SMV’erne
+Et ransomware angreb koster 376.350 kr. alene i tabt omsætning fra e-handel for en virksomhed med 10-49 ansatte. I lyset af at truslen for cyberkriminalitet er på sit højeste, skal flere SMV’er have hjælp til at øge deres IT-sikkerhed. Særligt efter en hård tid under COVID-19, som har tvunget virksomhedernes fokus væk fra IT-sikkerhed.
+\end{quote}
+Source: SMVdanmark Marts 2022 \url{https://smvdanmark.dk/analyser/temaanalyser/cyberangreb-kan-blive-en-dyr-omgang-for-smverne}
+
+\begin{list2}
+\item You need friends!
+
+\item Incident Response is a specialized area
+
+\item They cost upwards of 1.500DKK / hour -- more if outside of business hours
+\item Pre-arranged is recommended, agree on \emph{who can call them}, decide up front when to call them -- not for every little incident
+\item Expect an incident to cost at least 100.000DKK plus time, lost hours, lost orders, etc.
+\end{list2}
+
+
+
+\slide{\faWrench\ Primary Incident Response Literature}
+
+\hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
+Primary literature:
+\begin{list2}
+\item \emph{Intelligence-Driven Incident Response} \\
+ Scott Roberts. Rebekah Brown, ISBN: 9781098120689 {\bf 2nd edition}- short IDIR
+\item \emph{Computer Security Incident Handling Guide}, NIST SP 800-61 Rev. 2, August 2012,\\
+\link{https://doi.org/10.6028/NIST.SP.800-61r2} -- also uploaded to Fronter
+\item \emph{Forensics Discovery} (FD), Dan Farmer, Wietse Venema 2004, Addison-Wesley 240 pages.\\
+ISBN: 9780201634976\\
+This book is currently available for "free":\\
+\link{http://fish2.com/security/} -- also uploaded to Fronter
+\end{list2}
+
+These resources are used by me for the introduction to incident response courses, it all boils down to having data available to perform investigations!
+
+
+\slide{Risk management defined}
+
+\hlkimage{20cm}{shon-harris-risk-management.png}
+
+Source: Shon Harris \emph{CISSP All-in-One Exam Guide}
+
+
+
+\slide{Security Controls and Frameworks}
+
+\begin{list1}
+\item Multiple exist
+\vskip 1cm
+\begin{list2}
+\item CIS controls Center for Internet Security (CIS) \link{https://www.cisecurity.org}
+\item PCI Best Practices for Maintaining PCI DSS Compliance v2.0 Jan 2019
+\item NIST Cybersecurity Framework (CSF)\\
+Framework for Improving
+Critical Infrastructure Cybersecurity\\ \link{https://www.nist.gov/cyberframework}\\
+\link{https://csrc.nist.gov/publications/sp800} - SP800 series
+\item National Security Agency (NSA)\\
+\link{https://www.nsa.gov/Research/}
+\item NSA security configuration guides\\
+\link{https://apps.nsa.gov/iaarchive/library/ia-guidance/security-configuration/}
+\item Information Systems Audit and Control Association (ISACA)\\
+\link{http://www.isaca.org/Knowledge-Center/}
+\end{list2}
+\end{list1}
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  ― Antoine de Saint-Exupéry
+\end{quote}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+
+\slide{SIEM}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Security information and event management (SIEM)} is a subsection within the field of computer security, where software products and services combine security information management (SIM) and security event management (SEM). They provide real-time analysis of security alerts generated by applications and network hardware.
+
+  Vendors sell SIEM as software, as appliances, or as managed services; these products are also used to log security data and generate reports for compliance purposes.[1]
+
+  The term and the initialism SIEM was coined by Mark Nicolett and Amrit Williams of Gartner in 2005.[2]
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Security_information_and_event_management}
+
+\begin{list2}
+  \item Note: there are alerting examples towards the bottom of the page, with sources
+  \item Closely related to log management, incident response
+\end{list2}
+
+
+\slide{SOC}
+
+%\hlkimage{}{}
+
+\begin{quote}
+An information security operations center (ISOC or SOC) is a facility where enterprise information systems (web sites, applications, databases, data centers and servers, networks, desktops and other endpoints) are monitored, assessed, and defended.
+
+...
+
+A {\bf security operations center (SOC)} can also be called a security defense center (SDC), security analytics center (SAC), network security operations center (NSOC),[3] security intelligence center, cyber security center, threat defense center, security intelligence and operations center (SIOC). In the Canadian Federal Government the term, infrastructure protection center (IPC), is used to describe a SOC.
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Information_security_operations_center}
+
+%\begin{list2}
+%\item We have a whole book about SOCs, but I skipped the introductory chapters!
+%\item If you need to build a SOC, that is great source of information
+%\end{list2}
+
+
+\slide{Incident Handling, phases}
+
+The procedures developed for incident response must cover the complete life-cycle
+
+\begin{list2}
+\item  Preparation for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\item  Identification of an attack, notice the attack is ongoing
+\item  Containment (confinement) of the attack, limit effects of the attack as much as possible
+\item  Eradication of the attack, stop attacker, block further similar attacks
+\item  Recovery from the attack, restore system to a secure state
+\item  Follow-up to the attack, include lessons learned  improve environment
+\end{list2}
+
+
+\slide{MITRE ATT\&CK framework}
+
+\hlkimage{14cm}{mitre-attack.png}
+
+Source: \link{https://attack.mitre.org/} Great resource for attack categorization
+
+\slide{Incident Response Checklists}
+\hlkimage{9cm}{incident-handling-checklist.png}
+
+This checklist is from the NIST document
+\emph{Computer Security Incident Handling Guide: Recommendations of the National Institute
+of Standards and Technology}, NIST Special Publication 800-61
+Revision 2, August 2012.
+
+\slide{CIS Controls also recommend Incident Response}
+
+\begin{quote}{\bf
+CIS Control 19:}\\
+Incident Response and Management Protect the organization’s information, as well as its reputation, by developing and implementing an incident response infrastructure (e.g., plans, defined roles, training, communications, management oversight) for quickly discovering an attack and then effectively containing the damage, eradicating the attacker’s presence, and restoring the integrity of the network and systems.
+\end{quote}
+
+Source:
+Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+from \link{https://www.cisecurity.org/controls/}
+
+
+
+\slide{Anatomy of an Auditing System}
+
+
+Sample logs from login with Secure Shell (SSH) and performing the command \verb+sudo su -+
+\begin{alltt}
+Jun  5 11:53:15 pumba sshd[64505]: Accepted publickey for hlk from 79.142.233.18 port 43902
+ ssh2: ED25519 SHA256:l8OJMcywyBcraJiCWJ06uZ2yzHfu0VuiArqVvlVyfEI
+
+Jun  5 11:53:19 pumba sudo:      hlk : TTY=ttyp2 ; PWD=/home/hlk ; USER=root ; COMMAND=/usr/bin/su -
+\end{alltt}
+
+\begin{list1}
+\item Example systems: Unix syslog, IBM main frame RACF and Windows Event Logs service
+\item Logs should be protected and considered confidential information
+\end{list1}
+
+
+
+\slide{Anatomy of an Auditing System}
+
+When data has been gathered it should be analyzed.
+
+\begin{itemize}
+\item {\bf Logger functions} - collect
+\item {\bf Analyzer} - analyze it, creating dashboard can provide some insights
+\item {\bf Notifier} - report results by email or other means
+\item Example systems Windows Event Logs service can inform of successful and failed logins, both should be collected
+\item Logs should be protected and considered confidential information, by sending it to a centralized system with a high security level protects it
+\end{itemize}
+
+Modern systems exist to take all data from logging and provide high capacity storage, searching and sorting.
+
+\slide{Why Elasticsearch}
+
+\hlkimage{8cm}{illustrated-screenshot-hero-siem-500x730.png}
+Screenshot from \url{https://www.elastic.co/siem}
+
+Recommend building a proof-of-concept infrastructure using the Elastic stack and gather experience with logging. This can be done without a license fee and the organization can then see what works and doesn't. Then using the experiences as input an informed decision can be made, to continue with this as a home grown logging and auditing solution, or buy a premade one.
+
+
+
+
+\slide{Sources: Strategy for implementing identification and detection}
+
+We recommend that the following strategy is used for implementing identification and detection -- logging:
+\begin{enumerate}
+\item[\faSquareO] Enable system logging from servers
+\item[\faSquareO] Enable system logging from network devices
+\item[\faSquareO] Enable logging from client devices
+\item[\faSquareO] Centralize logging
+\item[\faSquareO] Add search facilities and dashboards
+\item[\faSquareO] Perform system audits manually or automatically
+\item[\faSquareO] Setup alerting and notification with procedures
+\end{enumerate}
+
+
+
+\slide{Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
+
+
+\slide{Detection Capabilities}
+
+
+Security incidents happen, but what happens. One of the actions to reduce impact of incidents are done in preparing for incidents.
+
+\begin{itemize}
+\item \emph{Preparation} for an attack, establish procedures and mechanisms for detecting and responding to attacks
+\end{itemize}
+
+Preparation will enable easy {\bf identification} of affected systems, better {\bf containment} which systems are likely to be infected, {\bf eradication} what happened -- how to do the {\bf eradication} and {\bf recovery}.
+
+
+\slide{Data Analysis Skills}
+
+\begin{quote}
+Although we could spend an entire book creating an exhaustive list of skills needed to be a good security data scientist, this chapter covers the following skills/domains that a data scientist will benefit from
+knowing within information security:
+\begin{list2}
+\item Domain expertise—Setting and maintaining a purpose to the analysis
+\item Data management—Being able to prepare, store, and maintain data
+\item Programming—The glue that connects data to analysis
+\item Statistics—To learn from the data
+\item Visualization—Communicating the results effectively
+\end{list2}
+It might be easy to label any one of these skills as the most important, but in reality, the whole is greater than the sum of its parts. Each of these contributes a significant and important piece to the workings of
+security data science.
+\end{quote}
+
+Source: \emph{Data-Driven Security: Analysis, Visualization and Dashboards} Jay Jacobs, Bob Rudis\\
+ISBN: 978-1-118-79372-5 February 2014 \url{https://datadrivensecurity.info/} - short DDS
+
+
+
 \myquestionspage
+
+
+
+\slide{The Zeek Network Security Monitor}
+
+Together with firewalls -- The Zeek Network Security Monitor is not a single tool, more of a powerful network analysis framework
+
+\hlkimage{8cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+
+\slide{Suricata IDS/IPS/NSM}
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Together with firewalls -- Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+Workshop materials available:\\
+{\small\link{https://github.com/kramse/security-courses/tree/master/courses/networking/suricatazeek-workshop}}
+
+
+\slide{Mutually Agreed Norms for Routing Security (MANRS)}
+
+%\hlkimage{2cm}{MANRS_square.png}
+
+\begin{quote}
+  Mutually Agreed Norms for Routing Security (MANRS) is a global initiative, supported by the Internet Society, that provides crucial fixes to reduce the most common routing threats. ﻿
+\end{quote}
+Source: {\small\link{https://www.manrs.org/wp-content/uploads/2018/09/MANRS_PDF_Sep2016.pdf}}
+
+\begin{list2}
+\item Problems related to incorrect routing information
+\item Problems related to traffic with spoofed source IP addresses
+\item Problems related to coordination and collaboration between network operators
+\item Also BCP38 RFC2827 \emph{Network Ingress Filtering: Defeating Denial of Service Attacks
+which employ IP Source Address Spoofing}
+\end{list2}
+
+You should all ask your internet providers if they know about MANRS, and follow it. We should ask our government and institutions to support and follow MANRS and good practices for network on the Internet
+
+
+\slide{Routing Security}
+
+
+\begin{list2}
+\item Use MD5 passwords or better authentication for routing protocols {\myalert}
+\item TTL Security -- avoid routed packets
+\item Max prefix -- of course, only allow expected networks
+\item Prefix filtering -- only parts of IPv6 space is used
+\item TCP Authentication Option [RFC 5925] replaces TCP MD5 [RFC 2385]
+\item Turn ON RPKI for both IPv4 and IPv6 prefixes, {\myalert} \\
+\link{https://nlnetlabs.nl/projects/rpki/about/}
+\item Drop bogons on IPv4 and IPv6, article with multiple references YMMV\\
+\link{https://theinternetprotocolblog.wordpress.com/2020/01/15/some-notes-on-ipv6-bogon-filtering/}
+\end{list2}
 
 
 

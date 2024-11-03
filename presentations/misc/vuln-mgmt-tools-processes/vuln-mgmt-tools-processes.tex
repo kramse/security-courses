@@ -3,7 +3,7 @@
 \usepackage{zencurity-slides}
 
 % Sårbarhedsmitigering, værktøjer og processer
-% Fokus på begreberne indenfor sårbarheder og på den længerevarende beskyttelse af organitionen
+% Fokus på begreberne indenfor sårbarheder og på den længerevarende beskyttelse af organisationen
 
 % Der er store problemer med sårbarheder i de fleste organisationer. Vores software og infrastruktur er bygget på sand, både reelt i form af computere, men også i overført betydning at sikkerheden skrider væk under os.
 
@@ -29,7 +29,7 @@
 \selectlanguage{english}
 
 \mytitlepage
-{Security on a Budget}{Survive without drowning in information}
+{Vulnerability Management}{Tools and Processes}
 
 \hlkprofiluk
 
@@ -47,36 +47,134 @@
 
 
 \begin{list1}
-\item Point you towards resources, so you can get started
-\item List a few core concepts I think you should know and learn
-\item List example programs, tools, frameworks, maybe you are not using them -- allow your organizations to benefit from them!
+\item What are vulnerabilities and exploits
+\item Patch management -- asset discovery and management
+\item Long term mitigation and protection -- how can we achieve that
 \hskip 2cm {\footnotesize Photo by Pawel Janiak on Unsplash}
 \end{list1}
 
 
-\slide{My daily job     -- Security engineering a job role}
 
-\begin{alltt}\small
-On any given day, you may be challenged to:
-        Create new ways to solve existing production security issues
-        Configure and install firewalls and intrusion detection systems
-        Perform vulnerability testing, risk analyses and security assessments
-        Develop automation scripts to handle and track incidents
-        Investigate intrusion incidents, conduct forensic investigations and incident responses
-        Collaborate with colleagues on authentication, authorization and encryption solutions
-        Evaluate new technologies and processes that enhance security capabilities
-        Test security solutions using industry standard analysis criteria
-        Deliver technical reports and formal papers on test findings
-        Respond to information security issues during each stage of a project’s lifecycle
-        Supervise changes in software, hardware, facilities, telecommunications and user needs
-        Define, implement and maintain corporate security policies
-        Analyze and advise on new security technologies and program conformance
-        Recommend modifications in legal, technical and regulatory areas that affect IT security
-\end{alltt}
+\slide{Malware and Worms}
 
-Source: \url{https://www.cyberdegrees.org/jobs/security-engineer/}\\
-also
-\url{https://en.wikipedia.org/wiki/Security_engineering}
+\begin{list1}
+\item {\bf Definition 23-1} \emph{Malicious logic}, more commonly called \emph{malware}, is a set\\
+ of instructions that cause a site's security policy to be violated
+ \item {\bf Definition 23-4} A \emph{computer virus} is a program that inserts (a possibly transformed version of) itself into one or more files and then performs some (possibly null) action.
+\item {\bf Definition 23-2} A \emph{Trojan horse} is a program with an overt (documented or\\
+known) purpose and a covert (undocumented or unexpected) purpose
+\item {\bf Definition 23-14} A \emph{computer worm} is a program that copies itself from one computer to another. Computer worms has existed since research began mid-1970s
+\end{list1}
+Source: \emph{Computer Security: Art and Science}, 2nd edition 2019! Matt Bishop ISBN: 9780321712332\\
+Virus, trojan or worm? Unless you work specifically in the computer virus industry, call it all malware
+
+
+\slide{Vulnerability Analysis -- Trinity breaking in}
+
+\hlkimage{12cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+Very realistic: \link{https://nmap.org/movies/} and \link{https://youtu.be/51lGCTgqE_w}
+
+\begin{list2}
+\item \emph{Vulnerability} or security \emph{flaw} -- exploiting the vulnerability happens by an attacker
+\item A program or script used for this is called an \emph{exploit}
+\end{list2}
+
+\slide{The Wikipedia definition}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Vulnerabilities are {\bf flaws} in a computer system that weaken the overall security of the system.
+
+{\bf Despite intentions to achieve complete correctness, virtually all hardware and software contains bugs where the system does not behave as expected.} If the bug could enable an attacker to compromise the confidentiality, integrity, or availability of system resources, it is called a vulnerability. Insecure software development practices as well as design factors such as complexity can increase the burden of vulnerabilities. There are different types most common in different components such as hardware, operating systems, and applications.
+
+{\bf Vulnerability management} is a process that includes identifying systems and prioritizing which are most important, scanning for vulnerabilities, and taking action to secure the system. Vulnerability management typically is a combination of remediation (fixing the vulnerability), mitigation (increasing the difficulty or reducing the danger of exploits), and accepting risks that are not economical or practical to eliminate.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Vulnerability_(computer_security)}
+
+Included this specifically because I agree \emph{virtually all hardware and software contains bugs}
+
+\slide{What is an exploit?}
+
+\begin{minted}[fontsize=\footnotesize]{ruby}
+    sploit = {
+      nil                   => /220.*Sendmail/,
+      'DEBUG'               => /200 Debug set/,
+      "MAIL FROM:<#{from}>" => /250.*Sender ok/,
+      "RCPT TO:<#{to}>"     => /250.*Recipient ok/,
+      'DATA'                => /354 Enter mail.*itself/,
+      # Indent PATH= so it's not interpreted as a mail header
+      " PATH=#{path}"       => nil,
+      'export PATH'         => nil,
+      payload.encoded       => nil,
+      '.'                   => /250 Ok/,
+      'QUIT'                => /221.*closing connection/
+    }
+\end{minted}
+Source: {\footnotesize\url{https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/unix/smtp/morris_sendmail_debug.rb}}
+
+\begin{list2}
+    \item Command injection through debugging \emph{feature}
+\end{list2}
+
+
+\slide{The Internet Worm 2. nov 1988}
+
+\begin{list1}
+\item Exploited the following vulnerabilities
+\begin{list2}
+\item buffer overflow in fingerd - VAX code
+\item Sendmail - DEBUG functionality
+\item Trust between systems: rsh, rexec, ...
+\item Bad passwords
+\end{list2}
+\item Contained camouflage!
+\begin{list2}
+\item Program name set to 'sh'
+\item Used fork() to switch PID regularly
+\item Password cracking using intern list of 432 words and /usr/dict/words
+\item Found systems to infect in /etc/hosts.equiv, .rhosts, .forward, netstat ...
+\end{list2}
+\item Made byRobert T. Morris, Jr.
+\end{list1}
+
+
+\slide{Many Years ago around 1988 }
+
+\begin{minted}[fontsize=\footnotesize]{c}
+/usr/src/etc/fingerd.c from 4.3BSD:
+main(argc, argv)
+        char *argv[];
+{
+        register char *sp;
+        char line[512];  // This is a fixed size buffer
+        struct sockaddr_in sin;
+...
+        line[0] = '\0';
+        gets(line);      // This line can overflow the buffer, buffer overflow vulnerability
+\end{minted}
+
+Source code link \url{https://www.tuhs.org/cgi-bin/utree.pl?file=4.3BSD/usr/src/etc/fingerd.c}
+
+More description in the articles:\\
+{\footnotesize\url{https://spaf.cerias.purdue.edu/tech-reps/823.pdf}} \emph{The Internet Worm Program: An Analysis}
+Purdue Technical Report CSD-TR-823
+Eugene H. Spafford\\ {\footnotesize\url{https://blog.rapid7.com/2019/01/02/the-ghost-of-exploits-past-a-deep-dive-into-the-morris-worm/}}\\ The Ghost of Exploits Past: A Deep Dive into the Morris Worm
+
+
+
+\slide{Stuxnet}
+
+\begin{list1}
+\item Worm in 2010 intended to infect Iran nuclear program
+\item Target was the uranium enrichment process
+\item Infected other industrial sites
+\item SCADA, and Industrial Control Systems (ICS) are becoming very important for whole countries
+\item A small \emph{community} of consultants work in these \emph{isolated} networks, but can be used as infection vector - they visit multiple sites
+\item More can be found in \url{https://en.wikipedia.org/wiki/Stuxnet}
+\end{list1}
+
+\centerline{Exploits are worth millions! Bug bounty is a concept, developing and selling exploits}
 
 
 \slide{Reality Hits -- every month}
@@ -135,28 +233,89 @@ Source: \url{https://cybersecuritynews.com/lg-tvs-vuauthorization-attacks/}
 
 
 
-\slide{Overlapping Security Incidents -- Demant 2019}
+\slide{Sample vulnerabilities}
+
+\begin{list1}
+\item \small CVE-2000-0884\\
+IIS 4.0 and 5.0 allows remote attackers to read documents outside of
+the web root, and possibly execute arbitrary commands, via malformed
+URLs that contain UNICODE encoded characters, aka the "Web Server
+Folder Traversal" vulnerability.
+
+\item \small CVE-2002-1182\\
+IIS 5.0 and 5.1 allows remote attackers to cause a denial of service
+(crash) via malformed WebDAV requests that cause a large amount of
+memory to be assigned.
+
+\item Source:\\
+\link{http://cve.mitre.org/ - CVE}
+\end{list1}
+
+\centerline{And updates from vendors reference these too! A closed loop}
+
+\slide{CWE Common Weakness Enumeration}
+
+\hlkimage{18cm}{cwe-mitre-org.png}
+\link{http://cwe.mitre.org/}
+
+\slide{CWE/SANS Monster mitigations}
+
+\hlkimage{13cm}{cwe-monster-mitigations.png}
+
+Source:
+\link{http://cwe.mitre.org/top25/index.html}
+
+
+
+\slide{Reflecting on the Internet Worm at 35}
 
 %\hlkimage{}{}
 
 \begin{quote}
-- For året 2019 rapporterede vi et tab i omsætning på {\bf 575 millioner kroner}. Det i sig selv er alvorligt. Hvad angår vores opmærksomhed på it-sikkerhedsområdet, har it-hændelsen været med til at understrege nødvendigheden af, at tage dette felt seriøst. Angreb mod it-infrastruktur er uden tvivl en af de største trusler mod en virksomhed, og det kan gå galt, hvis man ikke er i stand til at lukke ned for skaden og bruge sin back-up.
-
+Thirty-five years ago today (November 2nd), the Internet Worm program was set loose to propagate on the Internet.
 ...
-
-- På det konkrete plan har vi fået et mantra der lyder {\bf ’Active Directory is king, and backup is Queen’}. Men mere overordnet har vi også lært at Fokus skal helt op på øverste niveau i virksomheden, at man skal skaffe høj faglig indsigt i sikkerhed og trusler, og at det er et arbejde, der skal være under konstant observation og udvikling.
-
+ All of that eventually led to a boom in add-on security measures, resulting in what is now a {\bf multi-billion dollar cybersecurity industry.}
+...
+The Worm provided us with an object lesson about many issues that, unfortunately, were not heeded in full to this day. {\bf That multi-billion dollar cybersecurity industry is still failing to protect far too many of our systems.}
 \end{quote}
-Kilde: \link{https://dit.dk/Nyheder/2021/Demant}
+Source: \emph{Reflecting on the Internet Worm at 35}, November 02, 2023 by spaf, Eugene Spafford\\
+\url{https://www.cerias.purdue.edu/site/blog/post/reflecting_on_the_internet_worm_at_35/}
+
+\begin{list2}
+\item Many of the same problems that plagued us earlier are still the same!
+\item My thoughts are we should try something else than \emph{patch insanity}
+\end{list2}
+
+
+\slide{Case in point: SQL injection affecting airport security}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\large Bypassing airport security via SQL injection}\\
+08/29/2024\\
+Like many, Sam Curry and I spend a lot of time waiting in airport security lines. If you do this enough, you might sometimes see a special lane at airport security called Known Crewmember (KCM). KCM is a TSA program that allows pilots and flight attendants to bypass security screening, even when flying on domestic personal trips.
+
+The KCM process is fairly simple: the employee uses the dedicated lane and presents their KCM barcode or provides the TSA agent their employee number and airline. Various forms of ID need to be presented while the TSA agent’s laptop verifies the employment status with the airline. If successful, the employee can access the sterile area without any screening at all.
+\end{quote}
+Source: \url{https://ian.sh/tsa}
+
+\begin{list2}
+\item And SQL injection is one of the \emph{easiest} software security problems to guard against!
+\end{list2}
+
+
 
 \slide{Protection, building secure and robust networks}
 
-\hlkimage{14cm}{sample-ip-network.pdf}
+\hlkimage{10cm}{sample-ip-network.pdf}
 
 
 \begin{list2}
 \item We should prefer security mechanisms that does NOT require us to keep patching every month
-\item Can we change our networks to avoid this? Yes!
+\item Can we change our infrastructure and networks to avoid this? {\bf Yes!}
+\item Reduce complexity -- note adding VLANs may seem to increase, but also reduce number of systems that can interact, and each \emph{network} is afterwards easier to understand
+\item Limit the attack surface -- fewer systems exposed \faArrowRight fewer vulns exposed, fewer services \faArrowRight  less code!
 \end{list2}
 
 
@@ -180,54 +339,13 @@ Kilde: \link{https://dit.dk/Nyheder/2021/Demant}
 \item Recovery - stop attack, assess damage, repair damage
 \end{list2}
 
-\slide{Tight budgets everywhere!}
-
-%\hlkimage{9cm}{cia-triad.png}
-\hlkimage{10cm}{kelly-sikkema-212376-unsplash.jpg}
-
-\hfill {\footnotesize Photo by Kelly Sikkema on Unsplash}
-
-\centerline{Whats the goal, where are the strawberries!}
-
-\begin{list2}
-\item And you have a limited budget, always!
-\item Use the resources available in the best way is your mission!
-\end{list2}
-
-\slide{Core Concepts -- use existing knowledge!}
-
-Information Security is a huge domain:
-
-\begin{quote}
-The (ISC)² CBK is a collection of topics relevant to cybersecurity professionals around the world. It establishes a common framework of information security terms and principles which enables cybersecurity and IT/ICT professionals worldwide to discuss, debate and resolve matters pertaining to the profession with a common understanding, taxonomy and lexicon.
-\end{quote}
-Source: \link{https://www.isc2.org/Certifications/CBK}
-
-List of 8 domains in CISSP CBK: Security and Risk Management, Asset Security,
-Security Architecture and Engineering, Communications and Network Security, Identity and Access Management, Security Assessment and Testing, Security Operations, Software Development Security
-
-- then add all the news about new tools, exploits, and networking
-
-
-\slide{Work together}
-
-\hlkimage{9cm}{Shaking-hands_web.jpg}
-
-\begin{list1}
-\item Team up!
-\item We need to share security information freely
-\item We often face the same threats, so we can work on solving these together
-\end{list1}
-
-
-
 \slide{OSI Model and Internet Protocols}
 
 \hlkimage{9cm,angle=90}{images/compare-osi-ip.pdf}
 
 \centerline{I recommend securing things from the bottom and from the outside}
 
-\slide{Books and courses}
+\slide{\faWrench\ Books and courses}
 
 %\hlkimage{}{}
 
@@ -248,29 +366,6 @@ Pro Tip: all my courses and exercise booklets are available on Github!
 
 Humble Bundle! \url{https://www.humblebundle.com/}
 
-\slide{Other Materials}
-
-
-Pro tip: ENISA, the european agency publishes nice materials, including course materials:\\
-\url{https://www.enisa.europa.eu/publications}
-
-\begin{quote}
-
-\end{quote}
-
-\begin{list2}
-\item Information comes in many formats, resources, programs, people, authors, documents, sites
-that further your exploration into network and security
-
-\item I force my students to read older hacker texts files, computer science papers, web articles, books chapters, standard documents, internet request for comments (RFCs)
-
-\item Goal is to kickstart their journey into the subjects
-
-\item Also serves to mention organizations, groups, persons, authors that I recommend you follow and read from
-\end{list2}
-
-Example list from a course, supporting literature:\\
-\link{https://zencurity.gitbook.io/kea-it-sikkerhed/net-og-komm-sikkerhed/lektionsplan}
 
 
 \slide{Book: Defensive Security Handbook (DSH)}
@@ -289,7 +384,7 @@ Example list from a course, supporting literature:\\
 {\footnotesize\url{https://learning.oreilly.com/library/view/network-security-through/9781491962831/}}
 
 
-\slide{Recommended tools to learn}
+\slide{\faWrench\ Recommended tools to learn -- DevSecOps}
 
 \hlkimage{4cm}{005scawebiaidosezaicon.png}
 
@@ -305,6 +400,14 @@ Python is a nice generic tool for this, PowerShell is another alternative
 \item OpenSSH -- included in Linux and Windows, allows for Rsync, Git, port forward etc.
 \end{list2}
 
+\slide{\faWrench\ Learning DevSecOps: A Practical Guide to Processes and Tools}
+
+\hlkrightpic{5cm}{-5cm}{learning-devsecops.jpg}
+\hlkimage{18cm}{secdevops-iterations.png}
+
+\emph{Learning DevSecOps}, Steve Suehring
+Released May 2024, O'Reilly, ISBN: 9781098144869
+
 \slide{Thursday What a concept}
 
 \hlkimage{10cm}{thursday.jpg}
@@ -319,7 +422,7 @@ Alt text: Nadia from the Russian Doll fearing that she would never see a Thursda
 
 \end{list2}
 
-\slide{Github Actions Workflows }
+\slide{\faWrench\ Github Actions Workflows }
 
 \begin{minted}[fontsize=\small]{yaml}
 jobs:
@@ -341,27 +444,7 @@ jobs:
         python bot.py
 \end{minted}
 
-
-\slide{Open Source -- Linux hackerlab}
-
-\hlkimage{6cm}{hacklab-1.png}
-
-\begin{list2}
-\item Create your own playground, a hackerlab
-\item kramse-labs -- Guide to preparing your laptop for training with Kramse\\
-\link{https://github.com/kramse/kramse-labs}
-\item Recommend two VMs, Debian and Kali Linux
-\item Don't forget to find the Debian Handbook and Kali Linux Revealed, free PDFs
-\end{list2}
-
-% {\bf Start a download of Kali now, if you want to play with the tools.}\\
-% Recommend virtual machine download 64-bit\\
-%  \url{https://www.kali.org/get-kali/#kali-virtual-machines}
-
-{\bf I consider Linux/Unix knowledge a must for working in Networking and Security}
-
-
-\slide{Tools: Open Source and Python}
+\slide{\faWrench\ Open Source and Python}
 \hlkimage{7cm}{maltrail.png}
 
 \begin{list2}
@@ -375,7 +458,7 @@ Maltrail is a malicious traffic detection system, utilizing publicly available (
 
 
 
-\slide{Why Ansible}
+\slide{\faWrench\ Ansible Configuration management and more!}
 
 %\hlkimage{}{}
 
@@ -388,13 +471,13 @@ RouterOS, SLX-OS, VOSS, VyOS, WeOS 4
 plus routers based on Linux, OpenBSD, FreeBSD etc.
 \end{alltt}
 
-
 One management system with many uses, free to download and use
 \begin{list2}
 \item Generic configuration management -- and you end up running support systems, network near systems
 \item Ansible for Network Automation\\
 \link{https://docs.ansible.com/ansible/latest/network/index.html}
-\item Allows you to install, configure and run your network management systems -- like LibreNMS, Nipap
+\item Allows you to install, configure and run your infrastructure
+\item Depends on Python and SSH, or module for the network devices
 \end{list2}
 
 \slide{Python and YAML}
@@ -412,55 +495,7 @@ One management system with many uses, free to download and use
 
 
 
-\slide{Why Elasticsearch}
-
-%\hlkimage{}{}
-
-\begin{quote}
-The Elastic Common Schema (ECS) is an open source specification, developed with support from the Elastic user community. ECS defines a common set of fields to be used when storing event data in Elasticsearch, such as logs and metrics.
-\end{quote}
-
-One storage system with many uses, free to download and use
-\begin{list2}
-\item Logstash - can take logs and SNMP traps easily
-\item Packetbeat \link{https://www.elastic.co/beats/packetbeat}
-\item Elastiflow
-\link{https://github.com/robcowart/elastiflow}
-\item Has defined an Elastic Common Scheme (ECS)\\
-\link{https://www.elastic.co/guide/en/ecs/current/ecs-reference.html}
-\end{list2}
-
-
-\slide{SELKS}
-
-\hlkimage{6cm}{selks-17.png}
-
-\begin{quote}
-SELKS™ is a free, open-source, and turn-key Suricata network intrusion detection/protection system (IDS/IPS), network security monitoring (NSM) and threat hunting implementation created and maintained by Stamus Networks.
-
-Released under GPL 3.0-or-later license, the live distribution is available as either a live and installable Debian-based ISO or via Docker compose on any Linux operating system.
-\end{quote}
-Source: \url{https://www.stamus-networks.com/selks}
-
-
-\slide{The "install" on Debian 12 -- in less than 30minutes}
-
-\begin{list1}
-\item[\faSquareO] Clone the Github repo: \link{https://github.com/kramse/kramse-labs}\\
-\verb+git clone https://github.com/kramse/kramse-labs+
-\item[\faSquareO] Go into this repository and install Docker, there is a small README.md too:\\
-\verb+cd kramse-labs/docker-install+ and then \verb+ansible-playbook 1-dependencies.yml+
-\item[\faSquareO] Enable Docker: \verb+systemctl enable docker+ and reboot the VM,
-\item[\faSquareO] Clone the SELKS repository:\\
-\verb+git clone https://github.com/StamusNetworks/SELKS.git+
-\item[\faSquareO] Go into this and run docker-compose as described in the instructions:\\
-\url{https://github.com/StamusNetworks/SELKS/wiki/Docker}\\
-{\bf  make sure to select the right network interface, so Suricata can sniff packets}
-\end{list1}
-
-This will provide a basic Elasticsearch version 7, with Kibana and Suricata
-
-\slide{Example system: Wazuh}
+\slide{\faWrench\ Wazuh}
 
 \hlkimage{8cm}{01-Wazuh-Security-Analytics-op.png}
 
@@ -495,40 +530,7 @@ Source: \link{https://wazuh.com/}
 \end{list2}
 
 
-\slide{OPNsense GUI based and easy to install}
-
-\hlkimage{8cm}{images/screenshots_OPNsense-1024x518.png}
-
-\begin{list1}
-\item OPNsense \link{https://opnsense.org/}
-\item Firewall built on FreeBSD with web interface
-\item Originally thoughts from m0n0wall and later \link{https://www.pfsense.org/}\\
-\item Danish companies have been using these for many years now
-\end{list1}
-
-\slide{All servers should have firewall enabled! }
-
-Example: Uncomplicated Firewall (UFW)
-
-\begin{alltt}\small
-root@debian01:~# apt install ufw
-...
-root@debian01:~# ufw status numbered
-Status: active
-     To                         Action      From
-     --                         ------      ----
-[ 1] 22/tcp                     ALLOW IN    Anywhere
-[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
-\end{alltt}
-
-\begin{list2}
-\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
-\item Integrated with Ansible
-\item Windows and Mac also has firewall -- enable it!
-\end{list2}
-
-
-\slide{Together with Firewalls - Virtual LAN (VLAN)}
+\slide{\faWrench\ Isolation and Network Segmentation -- Virtual LAN (VLAN)}
 
 \hlkimage{8cm}{vlan-portbased.pdf}
 
@@ -551,28 +553,6 @@ Status: active
 \end{list1}
 
 
-\slide{Equipment -- wanna work with networks}
-
-Laptops, one is enough to get started
-
-.
-\hlkrightpic{85mm}{-2cm}{sample-network.png}
-
-\begin{list1}
-\item I have a network with me when needed, \\
-which has the following systems:
-\begin{list2}
-\item OpenBSD router
-\item Switches Juniper EX2200-C and small TP-Link
-\item UniFi AP wireless access-point
-\item Getting an extra wireless network card for your laptop
-\item USB Ethernet for sniffing network -- 200DKK StarTech USB 3.0
-\end{list2}
-\end{list1}
-
-Above or similar can often be found lying around in offices, ask if you can take it.
-
-
 \slide{Who are you gonna call?}
 
 %\hlkimage{}{}
@@ -593,32 +573,13 @@ Source: SMVdanmark Marts 2022 \url{https://smvdanmark.dk/analyser/temaanalyser/c
 \item Expect an incident to cost at least 100.000DKK plus time, lost hours, lost orders, etc.
 \end{list2}
 
-\slide{Automate it all!}
 
-%\hlkimage{}{}
-
-\begin{quote}
-Some things probably cannot be automated!
-\end{quote}
-
-\begin{list2}
-\item Do not trust the automation will fix everything, and don't mention AI
-\vskip 1cm
-\item Make \emph{manual tasks} easier!
-\item I usually update server myself -- but have a scripted process
-\item Put commands into small script -- even a one-line for doing a task
-\item Example: Look up a MAC address, find a port in a switch
-\end{list2}
-
-
-
-\slide{LibreNMS Automatic discovery}
+\slide{\faWrench\ LibreNMS Automatic discovery -- inventory management}
 
 \hlkimage{10cm}{librenms-switches.png}
 
 Automatically discover your entire network using CDP, FDP, LLDP, OSPF, BGP, SNMP and ARP \\
-\url{https://www.librenms.org/}
-
+See all the versions, what do you have, what needs to be secure \url{https://www.librenms.org/}
 
 
 \slide{Analysis on Docker Hub malicious images: Attacks through public container images}

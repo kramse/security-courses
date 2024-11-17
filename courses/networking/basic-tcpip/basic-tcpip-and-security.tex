@@ -69,14 +69,19 @@ Photo is NWWC camp at BornHack 2024, next year 16-23rd of July 2025
 
 Note: even though I talk a lot about Unix and Linux, you can definitely run a lot of tools on Windows and Mac OS X. The basic tools are available like the built-in ones and Nmap. Command line tools are sometimes used in the slides, as they only show text where a GUI screenshot can be cluttered with a lot of information, feel free to find GUI tools and web sites with same functionality
 
-\slide{Exercises}
+\slide{Exercises are completely optional}
 
-Exercises are completely optional
+We will use a combination of your systems, my networking hardware and my systems.\\
+{\color{red}\Large \bf There might be live sniffing done on traffic!\\
+Don't abuse information gathered if you sniff data}
+
+We try to mimic what you would do in your own networks during the exercises.
 
 \begin{list2}
 \item Try ping and traceroute
 \item See your own IP settings
 \item Borrow a USB Ethernet and connect to a switch or router
+\item Borrow a router
 \end{list2}
 
 Linux is a toolbox I will use and participants are recommended to research virtual machines
@@ -198,6 +203,40 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 \item[2010] IANA reserved blocks 7\% (Maj 2010) - \link{http://www.potaroo.net/tools/ipv4/}
 \end{list2}
 
+\slide{Internet historically set -  anno 1969}
+\hlkimage{6cm}{1969_4-node_map.png}
+%size 2
+
+\begin{list2}
+\item Node 1: University of California Los Angeles
+\item Node 2: Stanford Research Institute
+\item Node 3: University of California Santa Barbara
+\item Node 4: University of Utah
+%\item Kilde: \link{http://www.zakon.org/robert/internet/timeline/}
+\end{list2}
+
+\slide{What are Internet hosts }
+
+\vskip 1 cm
+
+\centerline{World Wide Web servers}
+
+\hlkimage{13cm}{images/Count_WWW.png}
+
+\begin{list1}
+\item Source: Hobbes' Internet Timeline v5.6
+\link{http://www.zakon.org/robert/internet/timeline/}
+\end{list1}
+
+\slide{What are Internet hosts }
+
+\hlkimage{15cm}{potaroo-ipv4-address-report.png}
+\centerline{Cumulative RIR address assignments, per RIR}
+
+\begin{list1}
+\item Source:
+IPv4 Address Report \link{http://www.potaroo.net/tools/ipv4/}
+\end{list1}
 
 \slide{What is the Internet}
 
@@ -257,6 +296,78 @@ mail    IN      A       217.157.63.115
 
 
 
+\slide{IPv4 address}
+
+\begin{alltt}
+hlk@bigfoot:hlk$ ipconvert.pl 127.0.0.1
+Adressen er: 127.0.0.1
+Adressen er: 2130706433
+hlk@bigfoot:hlk$ ping 2130706433
+PING 2130706433 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.135 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.144 ms
+\end{alltt}
+
+\begin{list1}
+\item IP-adresser typically written as decimal numbers with dots
+\item {\bf dot notation}: 10.1.2.3
+\end{list1}
+
+\slide{IP-adresser as bits}
+
+\begin{alltt}
+IP-adresse: 127.0.0.1
+Heltal:	2130706433
+Binary:	1111111000000000000000000000001
+\end{alltt}
+
+\begin{list1}
+\item IP-address converted to bits
+\item Computers use bits
+\end{list1}
+
+\slide{Internet ABC}
+
+\begin{list1}
+\item Previously we used classes: A, B, C, D og E
+\item This proved to be a bit inflexible:
+\begin{list2}
+\item A-klasse has 16 million hosts
+\item B-klasse about 65.000 hosts
+\item C-klasse only 250 hosts
+\end{list2}
+\item Most people asked for B-klasser - starting to run out!
+\item D-klasse used for multicast
+\item E-klasse reserved
+\item See \link{http://en.wikipedia.org/wiki/Classful\_network}
+\end{list1}
+
+\vskip 5mm
+\centerline{\bf Stop saying C, say /24}
+
+
+\slide{RFC-1918 Private Networks}
+
+\begin{list1}
+\item Der findes et antal adresserum som alle må benytte frit:
+\begin{list2}
+\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
+\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
+\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
+\end{list2}
+\item Address Allocation for Private Internets RFC-1918 adresserne!
+\item NB: man må ikke sende pakker ud på internet med disse som afsender, giver ikke mening
+\end{list1}
+
+\begin{alltt}
+The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
+and 203.0.113.0/24 (TEST-NET-3) are provided for use in
+documentation.
+
+169.254.0.0/16 has been ear-marked as the IP range to use for end node
+auto-configuration when a DHCP server may not be found
+\end{alltt}
+
 
 \slide{Documentation Prefix, IPv6 updates etc.}
 
@@ -287,6 +398,8 @@ Resulted in routing table explosion - btw Stop using A, B, C
 \item 10.0.0.0/24 means the network 10.0.0.0 with 24 subnet bits (mask 255.255.255.0)
 \item 2a06:d380:0:101::80/64 means the network with 64-bit prefix length
 \end{list2}
+
+
 
 \slide{Protocols: OSI and Internet models}
 
@@ -370,15 +483,15 @@ Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Swit
 \hlkimage{17cm}{wan-network.pdf}
 
 
-\slide{Packets of data}
+\slide{Packets across the wire or wireless}
 
-\hlkimage{18cm}{ethernet-frame-1.pdf}
+\hlkimage{20cm}{ethernet-frame-1.pdf}
 \begin{list1}
-\item Looking into the hardware we see that data is laid out according to a structure -- frames and packets
-\item Often a start and end signal of a frame -- like Ethernet
-\item Today we talk about packets of 1500 bytes which is common in Ethernet
+\item Looking at data as a stream the packets are a pattern laid on top
+\item Network technology defines the start and end of a frame, example Ethernet
+\item From a lower level we receive a packet, example 1500-bytes from Ethernet driver
+\item Operating system masks a lot of complexity
 \end{list1}
-
 
 
 
@@ -392,6 +505,21 @@ Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Swit
 \hlkimage{10cm}{win-control-panel-ipv6.png}
 
 DHCP is responsible for giving you a dynamic address
+
+
+
+\slide{DHCP Dynamic Host Configuration Protocol}
+
+\hlkimage{10cm}{dhcp-1.pdf}
+
+\begin{list1}
+\item How does a system get the address?
+\item Typically in  IPv4 they will get them from DHCP
+\item System sends a DHCP request, server allocates an address \emph{lease}
+\item IPv6 typically uses Router Advertisement -- get prefix, configure their own IPv6 address
+\end{list1}
+
+
 
 \slide{Unix - practical examples ifconfig and ping}
 
@@ -518,6 +646,16 @@ Connectionless \url{https://en.wikipedia.org/wiki/User_Datagram_Protocol}
 Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Protocol}
 
 
+\slide{TCP three way handshake}
+
+\hlkimage{6cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item Session setup is used in some protocols
+\item Other protocols like HTTP/2 can perform request in the first packet
+\end{list2}
+
+
 \slide{Well-Known Port Numbers}
 
 \hlkimage{6cm}{iana1.jpg}
@@ -552,13 +690,64 @@ Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Prot
 \end{list1}
 
 
-\slide{Ping}
+
+\slide{Hosting and internet providers}
+
+\hlkimage{16cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\item Try RIPE BGPlay \url{https://stat.ripe.net/special/bgplay#bgplay_fetch.resource=185.129.60.1}
+\end{list2}
+
+
+\slide{DNS root -- the server addresses }
+
+\begin{alltt}\small
+a.root-servers.net 198.41.0.4, 2001:503:ba3e::2:30 Verisign, Inc.
+b.root-servers.net 170.247.170.2, 2801:1b8:10::b University of Southern California,
+Information Sciences Institute
+c.root-servers.net 192.33.4.12, 2001:500:2::c Cogent Communications
+d.root-servers.net 199.7.91.13, 2001:500:2d::d University of Maryland
+e.root-servers.net 192.203.230.10, 2001:500:a8::e NASA (Ames Research Center)
+f.root-servers.net 192.5.5.241, 2001:500:2f::f Internet Systems Consortium, Inc.
+g.root-servers.net 192.112.36.4, 2001:500:12::d0d US Department of Defense (NIC)
+h.root-servers.net 198.97.190.53, 2001:500:1::53 US Army (Research Lab)
+i.root-servers.net 192.36.148.17, 2001:7fe::53 Netnod
+j.root-servers.net 192.58.128.30, 2001:503:c27::2:30 Verisign, Inc.
+k.root-servers.net 193.0.14.129, 2001:7fd::1 RIPE NCC
+l.root-servers.net 199.7.83.42, 2001:500:9f::42 ICANN
+m.root-servers.net 202.12.27.33, 2001:dc3::35 WIDE Project
+\end{alltt}
+Source: \url{https://www.iana.org/domains/root/servers}, see also \url{https://en.wikipedia.org/wiki/Root_name_server}
+
+
+\slide{DNS root servers}
+
+\hlkimage{20cm}{root-servers.png}
+
+\link{http://root-servers.org/}
+
+
+
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
+
+
+
+\slide{ICMP and Ping}
 
 \begin{list1}
-\item ICMP - Internet Control Message Protocol
-\item Benyttes til fejlbeskeder og til diagnosticering af forbindelser
-\item ping programmet virker ved hjælp af ICMP ECHO request og
-  forventer ICMP ECHO reply
+\item Internet Control Message Protocol (ICMP)
+\item Error conditions are signalled using this
+\item The ping program sends ICMP ECHO request and
+ expect ICMP ECHO reply
 \item
 \begin{alltt}
 \small {\bfseries
@@ -573,11 +762,9 @@ PING 192.168.1.1 (192.168.1.1): 56 data bytes
 \slide{traceroute}
 
 \begin{list1}
-  \item traceroute programmet virker ved hjælp af TTL
-\item levetiden for en pakke tælles ned i hver router på vejen og ved at sætte denne lavt
-  opnår man at pakken \emph{timer ud} - besked fra hver router på vejen
-\item default er UDP pakker, men på UNIX systemer er der ofte mulighed
-  for at bruge ICMP
+  \item traceroute works using the Time to Live (TTL) or Hop-Count fields
+\item Each router will subtract one from this, and if zero -- return ICMP message
+\item Unix uses UDP and Windows usually uses ICMP Echo
 \item
 \begin{alltt}
 \small{\bfseries
@@ -602,29 +789,6 @@ traceroute to 185.129.60.129 (185.129.60.129),
 \item The NAT router/firewall has state tables
 \end{list2}
 
-\slide{RFC-1918 Private Networks}
-
-\begin{list1}
-\item There is a list of network prefixes anyone can use, for private networks:
-\begin{list2}
-\item 10.0.0.0    -  10.255.255.255  (10/8 prefix)
-\item 172.16.0.0  -  172.31.255.255  (172.16/12 prefix)
-\item 192.168.0.0 -  192.168.255.255 (192.168/16 prefix)
-\end{list2}
-\item Address Allocation for Private Internets RFC-1918 adresserne!
-\item To use these typically there will be a NAT device in front
-\end{list1}
-
-\begin{alltt}
-The blocks 192.0.2.0/24 (TEST-NET-1), 198.51.100.0/24 (TEST-NET-2),
-and 203.0.113.0/24 (TEST-NET-3) are provided for use in
-documentation.
-
-169.254.0.0/16 has been ear-marked as the IP range to use for end node
-auto-configuration when a DHCP server may not be found
-\end{alltt}
-
-
 
 \slide{Course Network}
 .
@@ -644,31 +808,216 @@ auto-configuration when a DHCP server may not be found
 \end{list2}
 \end{list1}
 
-You are encouraged to use the network
-
-\slide{Wireshark - graphical network sniffer}
-
-\hlkimage{13cm}{images/wireshark-http.png}
-
-\centerline{Capture - Options, select a network interface}
-\centerline{\link{http://www.wireshark.org}}
+\centerline{\Large You are encouraged to use the network}
 
 
-\slide{Your Privacy }
+\slide{ARP in IPv4}
 
-\hlkimage{18cm}{images/internet-browsing.pdf}
+\begin{center}
+\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
+\end{center}
+
+%server 00:30:65:22:94:a1\\
+%client 00:40:70:12:95:1c\\
+%hacker 00:02:03:04:05:06\\
+
+
+\slide{ARP request and reply}
+\begin{list1}
+\item {\bfseries ping 10.0.0.2} from server
+\item ARP Address Resolution Protocol request/reply:
+  \begin{list2}
+  \item ARP request broadcasted on layer 2 - Who has 10.0.0.2 Tell 10.0.0.1
+  \item ARP reply (from 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
+  \end{list2}
+\item IP ICMP request/reply:
+  \begin{list2}
+    \item Echo (ping) request from 10.0.0.1 to 10.0.0.2
+\item Echo (ping) reply from 10.0.0.2 to 10.0.0.1
+\item ...
+  \end{list2}
+\item ARP is performed on Ethernet before IP can be transmitted
+\end{list1}
+
+
+\slide{ IPv6 Neighbor Discovery Protocol (NDP)}
+
+\hlkimage{18cm}{ipv6-arp-ndp.pdf}
+
+\begin{list1}
+\item Address Resolution Protocol (ARP) is replaced
+\item NDP expands on the ARP concept, similar command \verb+arp -an+ compared to \verb+ndp -an+
+\item Can do some things we knew from DHCPv4 still DHCPv6 exist
+\item {\bf Note ICMPv6 often need to be added to firewall rules for NDP!} {\myalert}
+\end{list1}
+
+\slide{ARP vs NDP}
+
+So at the low level, near the hardware we have protocols connecting IP addreses with MAC addresses, Ethernet and Wi-Fi are commonly found
+
+\begin{alltt}
+\small
+hlk@bigfoot:basic-ipv6-new$ arp -an
+? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
+? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
+
+hlk@bigfoot:basic-ipv6-new$ ndp -an
+Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
+::1                           (incomplete)         lo0 permanent R
+2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
+fe80::1%lo0                   (incomplete)         lo0 permanent R
+fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
+fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
+\end{alltt}
+
+\slide{ARP and NDP problems}
 
 \begin{list2}
-\item Your data travels far
-\item Often crossing borders, virtually and literally
+\item This mapping is used in your operating system, keep a dynamic ARP/neighbor cache -- a table
+\item Switches map devices to ports -- tables
+\item Routers remember your IP, so it can send responses back -- tables
+\item A table has a maximum size! This can cause problems {\myalert}
+\item This is all done without ANY security -- you can lie, attackers can lie
+\item See ARP spoofing and a sample tool \link{https://en.wikipedia.org/wiki/ARP_spoofing} \\
+and \link{https://en.wikipedia.org/wiki/DSniff}
 \end{list2}
 
+
+\slide{IPv6 addressing RFC-4291}
+
+\begin{list1}
+\item Addresses are always 128-bit identifiers for interfaces and sets of
+   interfaces
+\item Unicast:   An identifier for a {\bf single interface}.\\
+A packet sent to a
+               unicast address is delivered to the interface identified
+               by that address.
+\item Anycast:   An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes).\\  A packet sent to an
+               anycast address is {\bf delivered to one} of the interfaces
+               identified by that address (the "nearest" one, according
+               to the routing protocols' measure of distance).
+
+\item Multicast: An identifier for a {\bf set of interfaces} (typically
+               belonging to different nodes). \\ A packet sent to a
+               multicast address is {\bf delivered to all interfaces
+               identified by that address}.
+\end{list1}
+
+\slide{IPv6 addressing RFC-4291, cont.}
+
+\hlkimage{22cm}{ipv6-address-1.pdf}
+
+\begin{list1}
+\item 8 times 4 hex-digits seperated by colon x:x:x:x:x:x:x:x
+\item Written as ipv6-address/prefix-length CIDR notation
+\item Leading zeros can be removed
+\item One or more groups of 16 bits of zeros can be replaced by ::
+\end{list1}
+
+
+\slide{Examples:}
+\begin{list2}
+\item ABCD:EF01:2345:6789:ABCD:EF01:2345:6789
+
+\item Adddress 2001:DB8:0:0:8:800:200C:417A
+\item Address of loopback ::1
+\item IPv6 prefix 2a02:09d0:95::1/64, subnet 2a02:09d0:0095:0000::/64
+\item Address 2a02:09d0:95::1 or 2a02:09d0:0095:0000:0000:0000:0000:0001
+\end{list2}
+
+
+
+\slide{IPv6 address - special prefixes }
+
+\begin{list2}
+\item link-local unicast addresses\\
+fe80::/10 generated from the interface MAC address EUI-64
+\item FEC0::/10 site-local - deprecated in RFC-3879
+
+\item 2001:0DB8::/32 NON-ROUTABLE range to be used for documentation purpose RFC-3849.
+
+\item FC00::/7 Unique Local IPv6 Unicast Addresses RFC-4193\\
+\link{http://www.simpledns.com/private-ipv6.aspx}\\
+If you do not like to put public addresses on internal network - use this instead
+\end{list2}
+
+
+
+\slide{Hello neighbors}
+
+\begin{alltt}\small
+$ ping6 -w -I en1 ff02::1
+PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
+30 bytes from fe80::223:6cff:fe9a:f52c%en1: bigfoot
+36 bytes from fe80::216:cbff:feac:1d9f%en1: mike.kramse.dk.
+38 bytes from fe80::200:aaff:feab:9f06%en1: xrx0000aaab9f06
+34 bytes from fe80::20d:93ff:fe4d:55fe%en1: harry.local
+36 bytes from fe80::200:24ff:fec8:b24c%en1: kris.kramse.dk.
+31 bytes from fe80::21b:63ff:fef5:38df%en1: airport5
+32 bytes from fe80::216:cbff:fec4:403a%en1: main-base
+44 bytes from fe80::217:f2ff:fee4:2156%en1: Base Station Koekken
+35 bytes from fe80::21e:c2ff:feac:cd17%en1: arnold.local
+\end{alltt}
+
+
+\slide{IPv6 autoconfiguration}
+
+\hlkimage{24cm}{modified-eui64.pdf}
+
+\begin{list1}
+\item DHCPv6 is available, but {\bfseries stateless autoconfiguration} is king
+\item Routers announce subnet prefix via {\bfseries router advertisements}
+\item Individual nodes then combine this with their EUI64 identifier
+\end{list1}
+
+%\link{http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_7-2/ipv6_autoconfig.html}
+
+\slide{Router Advertisement ICMPv6}
+
+\hlkimage{10cm}{ipv6-router-advertisement.png}
+
+
+\exercise{ex:ping}
+\exercise{ex:basic-dns-lookup}
+\exercise{ex:whois}
+\exercise{ex:ip-address-research}
 
 \slide{Defense in depth}
 
 %\hlkimage{10cm}{Bartizan.png}
 \hlkimage{15cm}{medieval-clipart-5}
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
+
+
+\begin{list2}
+\item When your SIEM alerts you, you need tools to block and restrict
+\item Recommend adding empty blocking access control lists etc. to your network infrastructure
+\item Add premade blocking to your name servers, proxy servers, recursive servers
+\item Recommend implementing country lists
+\end{list2}
+
 
 
 \slide{Network Segmentation -- Firewalls}
@@ -802,188 +1151,442 @@ Status: active
 \item Allows separation/segmentation and protects traffic from many security issues
 \end{list1}
 
-
-\slide{ARP in IPv4}
-
-\begin{center}
-\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
-\end{center}
-
-%server 00:30:65:22:94:a1\\
-%client 00:40:70:12:95:1c\\
-%hacker 00:02:03:04:05:06\\
-
-
-\slide{ARP request and reply}
-\begin{list1}
-\item {\bfseries ping 10.0.0.2} from server
-\item ARP Address Resolution Protocol request/reply:
-  \begin{list2}
-  \item ARP request broadcasted on layer 2 - Who has 10.0.0.2 Tell 10.0.0.1
-  \item ARP reply (from 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
-  \end{list2}
-\item IP ICMP request/reply:
-  \begin{list2}
-    \item Echo (ping) request from 10.0.0.1 to 10.0.0.2
-\item Echo (ping) reply from 10.0.0.2 to 10.0.0.1
-\item ...
-  \end{list2}
-\item ARP is performed on Ethernet before IP can be transmitted
-\end{list1}
-
-\slide{ IPv6 neighbor discovery protocol (NDP)}
-
-\hlkimage{20cm}{ipv6-arp-ndp.pdf}
-
-\begin{list1}
-\item NDP replaces ARP, compare \verb+arp -an+ and \verb+ndp -an+
-\item RFC4861 Neighbor Discovery for IP version 6 (IPv6)
-\end{list1}
-
-\slide{Hello neighbors}
-
-\begin{alltt}\small
-$ ping6 -w -I en1 ff02::1
-PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
-30 bytes from fe80::223:6cff:fe9a:f52c%en1: bigfoot
-36 bytes from fe80::216:cbff:feac:1d9f%en1: mike.kramse.dk.
-38 bytes from fe80::200:aaff:feab:9f06%en1: xrx0000aaab9f06
-34 bytes from fe80::20d:93ff:fe4d:55fe%en1: harry.local
-36 bytes from fe80::200:24ff:fec8:b24c%en1: kris.kramse.dk.
-31 bytes from fe80::21b:63ff:fef5:38df%en1: airport5
-32 bytes from fe80::216:cbff:fec4:403a%en1: main-base
-44 bytes from fe80::217:f2ff:fee4:2156%en1: Base Station Koekken
-35 bytes from fe80::21e:c2ff:feac:cd17%en1: arnold.local
-\end{alltt}
-
 \exercise{ex:debian-firewall}
 \exercise{ex:git-tutorial}
-\exercise{ex:whois}
-\exercise{ex:ip-address-research}
-\exercise{ex:ping}
-\exercise{ex:basic-dns-lookup}
-\exercise{ex:nping-tcp}
+
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+\centerline{\link{http://www.wireshark.org}}
+
+
+\slide{Your Privacy }
+
+\hlkimage{18cm}{images/internet-browsing.pdf}
+
+\begin{list2}
+\item Your data travels far
+\item Often crossing borders, virtually and literally
+\end{list2}
+
+
+
 \exercise{ex:wireshark-install}
+\exercise{ex:nping-tcp}
+
+
+\slide{Wi-Fi Introduction and Security}
+
+
+\slide{Wifi standards IEEE 802.11}
+
+\begin{list1}
+\item IEEE 802.11
+\begin{list2}
+\item 802.11b 11Mbps
+\item 802.11g 54Mbps
+\item 802.11n faster
+\item 802.11i Security enhancements Robust Security Network RSN
+\end{list2}
+\item New names soon:\\
+Wi-Fi 6 to identify devices that support 802.11ax technology\\
+Wi-Fi 5 to identify devices that support 802.11ac technology\\
+Wi-Fi 4 to identify devices that support 802.11n technology
+\end{list1}
+
+Source: \link{http://grouper.ieee.org/groups/802/11/index.html}
+
+
+
+
+\slide{Wi-Fi Labs Network cards}
+
+\hlkimage{16cm}{TL-WN722N.png}
+
+\begin{list1}
+\item Laptop or Netbook, I typically use USB wireless cards\\
+Cheap and easy -- keep using your built-in with the host OS
+\item Access Points - get a small selection for testing
+\item Many resources available, books, sites, blogs, etc.
+\end{list1}
+
+
+\slide{IEEE 802.11 Security fast forward }
+
+\begin{quote}
+{\bf In 2001}, a group from the University of California, Berkeley presented a paper describing weaknesses in the 802.11 Wired Equivalent Privacy (WEP) security mechanism defined in the original standard; they were followed by {\bf Fluhrer, Mantin, and Shamir's} paper titled "Weaknesses in the Key Scheduling Algorithm of RC4". Not long after, Adam Stubblefield and AT\&T publicly announced the first {\bf verification of the attack}. In the attack, they were able to intercept transmissions and gain unauthorized access to wireless networks.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
+
+\slide{IEEE 802.11 Security fast forward }
+
+\begin{quote}
+The IEEE set up a dedicated task group to create a replacement security solution, {\bf 802.11i} (previously this work was handled as part of a broader 802.11e effort to enhance the MAC layer). The Wi-Fi Alliance announced an {\bf interim specification called Wi-Fi Protected Access (WPA)} based on a subset of the then current IEEE 802.11i draft. These started to appear in products in {\bf mid-2003}. {\bf IEEE 802.11i (also known as WPA2)} itself was ratified in {\bf June 2004}, and uses government strength encryption in the {\bf Advanced Encryption Standard AES,} instead of RC4, which was used in WEP. The modern recommended encryption for the home/consumer space is {\bf WPA2 (AES Pre-Shared Key) and for the Enterprise space is WPA2 along with a RADIUS authentication server} (or another type of authentication server) and a strong authentication method such as EAP-TLS.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
+
+\slide{IEEE 802.11 Security fast forward }
+
+\begin{quote}
+In January 2005, the IEEE set up yet another task group "w" to protect management and broadcast frames, which previously were sent unsecured. Its standard was published in 2009.[24]
+
+In {\bf December 2011}, a security flaw was revealed that affects wireless routers with the {\bf optional Wi-Fi Protected Setup (WPS)} feature. While WPS is not a part of 802.11, {\bf the flaw allows a remote attacker to recover the WPS PIN and, with it, the router's 802.11i password in a few hours}.
+\end{quote}
+Source: \link{http://en.wikipedia.org/wiki/IEEE_802.11}
+
+\vskip 1cm
+\centerline{WPS WTF?! Turn it off -- use WPA PSK or WPA Enterprise}
+
+
+\slide{WPA3 Security}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+{\bf WPA3}\\
+In January 2018, the Wi-Fi Alliance announced WPA3 as a replacement to WPA2.[12][13] Certification began in June 2018,[14] and WPA3 support has been mandatory for devices which bear the "Wi-Fi CERTIFIED™" logo since July 2020.[11]
+
+The new standard uses an equivalent 192-bit cryptographic strength in WPA3-Enterprise mode[15] (AES-256 in GCM mode with SHA-384 as HMAC), and still mandates the use of CCMP-128 (AES-128 in CCM mode) as the minimum encryption algorithm in WPA3-Personal mode.
+
+The WPA3 standard also replaces the pre-shared key (PSK) exchange with Simultaneous Authentication of Equals (SAE) exchange, a method originally introduced with IEEE 802.11s, resulting in a more secure initial key exchange in personal mode[16][17] and forward secrecy.[18] The Wi-Fi Alliance also says that WPA3 will mitigate security issues posed by weak passwords and simplify the process of setting up devices with no display interface.[2][19]
+
+Protection of management frames as specified in the IEEE 802.11w amendment is also enforced by the WPA3 specifications.
+\end{quote}
+Source: \link{https://en.wikipedia.org/wiki/Wi-Fi_Protected_Access}
+
+\begin{list2}
+\item Does not seem to be used much, in Denmark, yet -- but coming
+\end{list2}
+
+\slide{IS WPA3 supported?}
+
+%\hlkimage{}{}
+
+\begin{quote}
+A wireless network adapter that supports Wi-Fi 6. To see if your PC supports it, check the documentation that came with it or check the PC manufacturer’s website.
+Tip: You can also check to see if your router supports Wi-Fi 6 by opening the Command Prompt, and then typing the command netsh wlan show drivers. Look next to Radio types supported and see if it includes 802.11ax.
+\end{quote}
+Source: \link{https://support.microsoft.com/en-us/windows/faster-and-more-secure-wi-fi-in-windows-26177a28-38ed-1a8e-7eca-66f24dc63f09}
+
+\begin{list2}
+\item Your devices must support both WPA3 in both operating system and Wi-Fi drivers!
+\item Windows 10 and 11 does, so try upgrading drivers
+\item Android does since Android 10 -- pretty new still
+\item Apple devices have support in recent versions
+\end{list2}
+
+
+\slide{WPA3 on Apple Devices}
+
+%\hlkimage{}{}
+
+\begin{quote}
+\begin{list2}
+\item iPhone 7 or later.
+\item iPad 5th generation or later.
+\item Apple TV 4K or later.
+\item Apple Watch series 3 or later.
+\item Mac computers (late 2013 or later, with 802.11ac or later)
+\end{list2}
+\end{quote}
+Source: \link{https://support.apple.com/da-dk/guide/security/sec8a67fa93d/web}
+
+
+\slide{Wi-Fi CERTIFIED WPA3™}
+
+%\hlkimage{}{}
+
+\begin{quote}
+
+WPA3™ provides cutting-edge security protocols to the market. Building on the widespread success and adoption of Wi-Fi security, WPA3 adds new features to simplify Wi-Fi security, enable more robust authentication, deliver increased cryptographic strength for highly sensitive data markets, and maintain resiliency of mission critical networks. All WPA3 networks:
+
+\begin{list2}
+\item Use the latest security methods
+\item Disallow outdated legacy protocols
+\item Require use of Protected Management Frames (PMF)
+\end{list2}
+Since Wi-Fi networks differ in usage purpose and security needs, WPA3 includes additional capabilities specifically for personal and enterprise networks. Users of WPA3-Personal receive increased protections from password guessing attempts, while WPA3-Enterprise users can now take advantage of higher-grade security protocols for sensitive data networks.
+
+WPA3 is a mandatory certification for Wi-Fi CERTIFIED™ devices.
+\end{quote}
+Source: \url{https://www.wi-fi.org/discover-wi-fi/security}
+
+\slide{WPA3-Personal}
+
+\begin{quote}
+WPA3-Personal brings better protections to individual users by providing more robust password-based authentication, even when users choose passwords that fall short of typical complexity recommendations. This capability is enabled through Simultaneous Authentication of Equals (SAE). The technology is resistant to offline dictionary attacks where an adversary attempts to determine a network password by trying possible passwords without further network interaction.
+
+\begin{list2}
+\item {\bf Natural password selection}: Allows users to choose passwords that are easier to remember
+\item {\bf Ease of use}: Delivers enhanced protections with no change to the way users connect to a network
+\item {\bf Forward secrecy}: Protects data traffic even if a password is compromised after the data was transmitted
+\end{list2}
+\end{quote}
+
+Source: \url{https://www.wi-fi.org/discover-wi-fi/security}
+
+
+\slide{WPA3-Enterprise}
+
+%\hlkimage{}{}
+
+\begin{quote}
+WPA3-Enterprise builds upon the foundation of WPA2-Enterprise with the additional requirement of using Protected Management Frames on all WPA3 connections.
+
+\begin{list2}
+\item {\bf Authentication}: multiple Extensible Authentication Protocol (EAP) methods
+\item {\bf Authenticated encryption}: minimum 128-bit Advanced Encryption Standard Counter Mode with Cipher Block Chaining Message Authentication (AES-CCMP 128)
+\item {\bf Key derivation and confirmation}: minimum 256-bit Hashed Message Authentication Mode (HMAC) with Secure Hash Algorithm (HMAC-SHA256)
+\item {\bf Robust management frame protection}: minimum 128-bit Broadcast/Multicast Integrity Protocol Cipher-based Message Authentication Code (BIP-CMAC-128)
+\end{list2}
+\end{quote}
+
+Source: \url{https://www.wi-fi.org/discover-wi-fi/security}
+
+
+\slide{WPA3-Enterprise with 192-bit mode}
+
+\begin{quote}
+
+WPA3-Enterprise also offers an optional mode using 192-bit minimum-strength security protocols and cryptographic tools to better protect sensitive data.
+
+\begin{list2}
+\item {\bf Authentication}: Extensible Authentication Protocol – Transport Layer Security (EAP-TLS) using Elliptic Curve Diffie-Hellman (ECDH) exchange and Elliptic Curve Digital Signature Algorithm (ECDSA) using a 384-bit elliptic curve
+\item {\bf Authenticated encryption}: 256-bit Galois/Counter Mode Protocol (GCMP-256)
+\item {\bf Key derivation and confirmation}: 384-bit Hashed Message Authentication Mode (HMAC) with Secure Hash Algorithm (HMAC-SHA384)
+\item {\bf Robust management frame protection}: 256-bit Broadcast/Multicast Integrity Protocol Galois Message Authentication Code (BIP-GMAC-256)
+\end{list2}
+The 192-bit security mode offered by WPA3-Enterprise ensures the right combination of cryptographic tools are used and sets a consistent baseline of security within a WPA3 network.
+\end{quote}
+
+Source: \url{https://www.wi-fi.org/discover-wi-fi/security}
+
+
+
+
+\slide{2020: Dragonblood}
+
+%\hlkimage{}{}
+
+\begin{quote}\small
+April 2019 — Modern Wi-Fi networks use WPA2 to protect transmitted data. However, because {\bf WPA2 is more than 14 years old}, the Wi-Fi Alliance recently announced the new and more secure WPA3 protocol. One of the supposed advantages of WPA3 is that, thanks to its underlying {\bf Dragonfly handshake}, it's {\bf near impossible to crack the password} of a network. Unfortunately, we found that even with WPA3, an {\bf attacker within range of a victim can still recover the password}. If the victim uses no extra protection such as HTTPS, this allows an attacker to steal sensitive information such as passwords and emails. We hope our disclosure motivates vendors to mitigate our attacks before WPA3 becomes widespread.
+
+...
+
+Fortunately, as a result of our research, both the Wi-Fi standard and EAP-pwd are being updated with a more secure protocol. Although this update is not backwards-compatible with current deployments of WPA3, it does prevent most of our attacks.
+\end{quote}
+Source: \link{https://wpa3.mathyvanhoef.com/}
+
+
+\begin{list2}
+\item Side-channel leaks
+\item Full paper Mathy Vanhoef and Eyal Ronen. 2020. \emph{Dragonblood: Analyzing the Dragonfly Handshake of WPA3 and EAP-pwd}. In IEEE Symposium on Security \& Privacy (SP). IEEE.
+ \link{https://eprint.iacr.org/2019/383}
+
+\end{list2}
+
+
+
+\slide{Advanced Subjects}
+
+
+\begin{list2}
+\item Nmap
+\item Zeek
+\item Suricata
+\end{list2}
+
+\slide{Basic port scanning}
+
+\begin{list1}
+\item What is a port scan
+\item Testing all values possible for port number from 0/1 to 65535
+\item Goal is to identify open ports, listening and vulnerable services
+\item Most often TCP og UDP scan
+\item TCP scanning is more realiable than UDP scanning
+\item TCP handshake must respond with SYN-ACK packets
+\item UDP applications respond differently -- if they even respond\\
+so probes with real requests may get response, no firewall they respond withb ICMP on closed ports
+\item Use the GUI program Zenmap while learning Nmap
+\end{list1}
+
+\slide{TCP three-way handshake}
+
+\hlkimage{4cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item {\bfseries TCP SYN half-open} scans
+\item in the old days systems would only log when a full TCP connection was setup\\
+  -- so doing only half open it was a \emph{stealth}-scans
+\item Today system and IDS intrusion detection can easily monitor for this
+\item Sending a lot of SYN packets can create a Denial of Service -- {\bfseries SYN-flooding}
+\end{list2}
+
+\slide{Scope: select systems for testing}
+
+\hlkimage{10cm}{overview-routing-customer-2015.png}
+
+\begin{list2}
+\item Routers in front of critical systems and networks - availability
+\item Firewalls -- are traffic flows restricted
+\item Mail servers -- open for relaying
+\item Web servers -- remote code execution in web systems, data download
+\end{list2}
+
+\slide{Ping and port sweep}
+
+\begin{list1}
+\item Scans across the network are named sweeps
+\item Ping sweeps using ICMP Ping probes
+\item Port sweep trying to find a specific service, like port 80 web
+\item Quite easy to see in network traffic:
+\begin{list2}
+\item Selecting two IP-adresser not in use
+\item Should not see any traffic, but if it does, its being scanned
+\item If traffic is received on both addresses, its a sweep -- if they are a bit apart it is even better, like 10.0.0.100 and 10.0.0.200
+  \end{list2}
+
+\vskip 2cm
+Pro tip: a Great network intrusion detection engine (IDS), is Suricata \link{suricata-ids.org}
+\end{list1}
+
+\slide{what is Nmap today}
+\begin{quote}
+Nmap ("Network Mapper") is a free and open source (license) utility for network discovery and security auditing.
+\end{quote}
+
+\begin{list1}
+\item Initial release September 1997; +20 years ago
+\item Today a package of programs for Windows, Mac, BSD, Linux, ... source
+\item Flexible, powerful, and free! Includes other tools!
+\item Lets check release notes, 7.70 pt.\\
+http://seclists.org/nmap-announce/2018/0
+\end{list1}
+
+Bonus info: you can help Nmap by submitting fingerprints
+
+
+\slide{Nmap port sweep for web servers}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries  nmap -p80,443 172.29.0.0/24}
+
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:31 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00016s latency).
+PORT    STATE    SERVICE
+{\color{darkgreen}80/tcp  open     http}
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00012s latency).
+PORT    STATE  SERVICE
+{\color{darkgreen}80/tcp  open   http}
+443/tcp closed https
+MAC Address: 00:0C:29:46:22:FB (VMware)
+
+\end{alltt}
+
+\slide{Nmap port sweep for SNMP port 161/UDP}
+
+\begin{alltt}\small
+root@cornerstone:~#{\bfseries nmap -sU -p 161 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:30 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00015s latency).
+PORT    STATE         SERVICE
+{\color{darkgreen}161/udp open|filtered snmp}
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for 172.29.0.138
+Host is up (0.00011s latency).
+PORT    STATE  SERVICE
+{\bf{161/udp closed snmp}}
+MAC Address: 00:0C:29:46:22:FB (VMware)
+...
+Nmap done: 256 IP addresses (5 hosts up) scanned in 2.18 seconds
+\end{alltt}
+
+\vskip 5mm
+\centerline{More reliable to use Nmap script with probes like --script=snmp-info}
+
+\slide{Nmap Advanced OS detection}
+\begin{alltt}\footnotesize
+root@cornerstone:~#{\bfseries nmap -A -p80,443 172.29.0.0/24}
+Starting Nmap 6.47 ( http://nmap.org ) at 2015-02-05 07:37 CET
+Nmap scan report for 172.29.0.1
+Host is up (0.00027s latency).
+PORT    STATE    SERVICE VERSION
+80/tcp  open     http    Apache httpd 2.2.26 ((Unix) DAV/2 mod_ssl/2.2.26 OpenSSL/0.9.8zc)
+|_http-title: Site doesn't have a title (text/html).
+443/tcp filtered https
+MAC Address: 00:50:56:C0:00:08 (VMware)
+Device type: media device|general purpose|phone
+Running: Apple iOS 6.X|4.X|5.X, Apple Mac OS X 10.7.X|10.9.X|10.8.X
+OS details: Apple iOS 6.1.3, Apple Mac OS X 10.7.0 (Lion) - 10.9.2 (Mavericks)
+or iOS 4.1 - 7.1 (Darwin 10.0.0 - 14.0.0), Apple Mac OS X 10.8 - 10.8.3 (Mountain Lion)
+or iOS 5.1.1 - 6.1.5 (Darwin 12.0.0 - 13.0.0)
+OS and Service detection performed.
+Please report any incorrect results at http://nmap.org/submit/
+\end{alltt}
+
+\begin{list2}
+\item Low-level way to identify operating systems, also try/use
+  \verb+nmap -A+
+\item Send probes and observe responses, lookup in table of known OS and responses
+\item Techniques known since at least: \emph{ICMP Usage In Scanning} Version 3.0,
+  Ofir Arkin, 2001 %\link{https://web.archive.org/web/20050210093427/http://www.sys-security.com/html/projects/icmp.html} % Original side er død
+\end{list2}
+
+
 \exercise{ex:nmap-pingsweep}
 \exercise{ex:nmap-synscan}
 \exercise{ex:nmap-os}
 
 
+\slide{Architecture for packet capture}
+
+\hlkimage{4cm}{network-horiz-onion.png}
+Source: picture from \link{https://docs.securityonion.net/en/2.3/introduction.html}
+
+\begin{list2}
+\item Note the terminology North-South -- from the internet into the systems
+\item East-West -- horizontal traffic inside the data center
+\item See also from Security Onion \url{https://docs.securityonion.net/en/2.3/architecture.html#architecture}
+\end{list2}
+
+
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{13cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework. Note: the project was renamed from Bro to Zeek in Oct 2018
+
+{\small Source \url{https://www.zeek.org/}}
+
+
+\slide{Suricata IDS/IPS/NSM}
+
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+\centerline{I often use Suricata and Zeek together}
+
+
+
 \myquestionspage
-
-\end{document}
-
-\slide{Er TCP/IP interessant?}
-\hlkimage{12cm}{kame-noanime-small.png}
-
-\begin{list1}
-\item IP er med i alle de gængse operativsystemer UNIX og Windows
-\item Internet er overalt
-\end{list1}
-
-\slide{Formål: TCP/IP grundkursus}
-\hlkimage{12cm}{images/sample-network.png}
-\centerline{IP-baserede netværk}
-
-
-% Extras
-\slide{Agenda - dag 1 Basale begreber}
-
-\begin{list1}
-\item Opstart - hvad er IP og TCP/IP
-\item Adresser
-\item Subnets og CIDR
-\item TCP og UDP
-\item Basal DNS
-\item Lidt om hardware half/full-duplex
-
-\end{list1}
-
-
-
-\slide{Agenda - dag 2 IPv6, Management, diagnosticering}
-
-\begin{list1}
-\item IP version 6
-\item ARP og NDP
-\item Ping
-\item Traceroute
-\item Snifferprogrammer Tcpdump og Wireshark
-\item Management
-\item Tuning og perfomancemålinger
-\item RRDTool og Smokeping
-\item Overvågning og Nagios
-\item Wireless 802.11
-\end{list1}
-
-
-\slide{Agenda - dag 3 Dynamiske protokoller og services}
-
-\begin{list1}
-\item Netværksservices og serverfunktioner
-\item DNS protokoller og servere
-\item HTTP protokoller og servere
-\item Dynamisk routing: BGP og OSPF
-\item Produktionsmodning af netværk
-\item Netværksprogrammering: små utilityprogrammer og scripts
-\end{list1}
-
-\slide{Agenda - dag 4  Netværkssikkerhed og firewalls}
-
-\begin{list1}
-\item SSL Secure Sockets Layer
-\item VLAN 802.1q
-\item 802.1x portbaseret autentifikation
-\item WPA Wi-Fi Protected Access
-\item VPN protokoller og IPSec
-\item VoIP introduktion
-\item Mobile IP introduktion
-\end{list1}
-
-\slide{Agenda - dag 5 Netværksdesign og templates}
-
-\begin{list1}
-\item Netværksdesign
-\item Infrastrukturer i praksis
-\item Templates til almindeligt forekommende setups
-\item Afslutning og opsummering på kursus
-\vskip 1 cm
-\item Udfyld meget gerne evalueringsskemaerne, tak
-\end{list1}
-
-% agenda slut
-
-
-% days 1-5
-\input{basic-tcpip-1.tex}
-
-\input{basic-tcpip-2.tex}
-
-\input{basic-tcpip-3.tex}
-
-\input{basic-tcpip-4.tex}
-
-\input{basic-tcpip-5.tex}
-
-
-
-
-\slide{Older books about IPv6}
-
-\begin{list1}
-\item \emph{IPv6 Network Administration}, David Malone og Niall Richard Murphy
-
-O'Reilly bog
-\item \emph{IPv6 Essentials} af Silvia Hagen, O'Reilly 2nd edition (May 17, 2006)
-\item \emph{IPv6 Core Protocols Implementation},
-Qing Li, Tatuya Jinmei og Keiichi Shima
-\item \emph{IPv6 Advanced Protocols Implementation},
-Qing Li, Jinmei Tatuya og Keiichi Shima
-\end{list1}
-
-
-% \input{references.tex}
-
 
 
 \end{document}

@@ -1,140 +1,58 @@
-# Mandatory Assignment 1 for System Security course
+# Mandatory for Intro til IT-security System Security course
 
-This is a description for the mandatory assignment 1 in
-KEA Kompetence System Security F2024
+Aflevering senest 28. april 2024 på email til xhek@kea.dk
 
-To be handed in at latest March 14, 2024 by email to xhek@kea.dk or hlk@zencurity.com
+# Overordnede mål
 
+Lav en rapport over jeres Debian Linux VM. En rapport pr gruppe, een vm i hver gruppe.
 
-# Overall goal
+Op til 4 medlemmer i grupperne. Det er også OK at aflevere alene.
 
-Get a formal business style report done, try out the hand-inn process.
+# Kontekst
+Virksomheden: Lille virksomhed, 5-10 personer en regnskabsansvarlig passer kontoret. der er en hjemmeside
+hvor man kan booke opgaver og se priser.
 
-Demonstrate knowledge about
-
-Teacher will provide image made in this way:
-* Install a Debian using a small disk size ~10G
-* Hack the system -- how is not detailed, maybe easy to guess password
-* Create extra users not usually found on Debian, copies of root with uid 0 or new users with sudo rights
-
-Students use forensics tools for analyzing this:
-* Suggest using Sleuthkit and Autopsy browser based tool, simple and free
-* Search for your evidence, MAKE SURE to demonstrate how a user would find these - searching for SUID files is one method to document, looking into sudo config and user database is another
-* Present a timeline of when the "hack" occurred, perhaps relate to when system was installed
-* Present as much information as possible about the "malicious bits"
-
-The process should be possible to complete in less than 10 hours, but you are welcome to do more.
+De har bemærket at nogle brugere har meget dårlige kodeord, og bedt jer om at opdatere systemerne. De bruger Debian Linux.
 
 
-# Deliverables
+# Opgaven
+I skal demonstrere at I ved hvad kodeordssikkerhed (password security) er. Derfor skal I finde en måde at konfigurere Debian Linux systemet så vi undgår dårlig kodeord.
 
-The assignment must be documented in a report sent to me, either on xhek@kea.dk or hlk@zencurity.com
+Læs om Linux PAM og find ud af om der kan konfigureres en bedre kodeordpolitik på Debian der kan afvise dårlige kodeord. Det kan der, https://en.wikipedia.org/wiki/Linux_PAM
 
-Report must be a formal template including:
-* Overview - description of the project
-* Table of contents, page numbers, headlines - business report style
-* Results - including method description and screenshots from the forensic tool
-* Executive summary
+Det kunne være krav som
+* Mindst 8 tegn lange
+* Kompleksitetskrav -- I vælger hvad kravene skal være, men vælg krav om eksempelvis tal, bogstaver, specialtegn
+* Undersøg cracklib  
+* Check pakken libpam-cracklib https://packages.debian.org/buster/libpam-cracklib. Beskriv med egne ord hvad det ville give virksomheden, og om I vælger at bruge det. Hvis I vælger IKKE at bruge det skal I argumentere for hvorfor
 
-# Whats in the image
-Indeholdt i det hackede image er:
+Specielt må følgende kodeord ikke kunne bruges, skal afvises når man prøver at ændre med kommandoen "passwd".
 
-* En dash kopi med suid bitten sat
-* Et par ekstra brugere
-* den ene hacker har sudo rettigheder - hvordan er dette konfigureret?
-* den anden hacker har vist user id 0 - hvad betyder det når
-vedkommende logger ind?
-
-Check eventuelt også shadow password filen med John The Ripper
-- eftersom det er en fuldt opdateret Debian, så kan det være via
-  dårlige passwords at der er foretaget indbrud?
-
-# Images
-
-The image files are at:
-https://files.kramse.org/.kea/
-
-You can choose from:
-
-1) Easiest - just the root file system, can be opened directly
-debian-hacked-rootfs.img.gz                     
-
-Same content as found in 2), but already extracted
-
-2) Multiple files - in a Tar Gzip'ed archive
-debian-hacked.tgz              
-
-3) Another version, recreated in 2021 but essentially the same
-debian-hacked-2021.img.gz
+* root
+* admin
+* henrik42
+* 1234567890
 
 
-# hints for analyzing RAW Partition with LVM
+Hint: lav et par ekstra brugerkonti og sæt reglerne op. Derefter kan man skifte til en bruger med:
 
+Skift til brugeren, vi kalder konti for user1:
 
-Dit udgangspunkt skal være en Debian med rigeligt plads.
+su - user1
 
-0) Dvs lav evt en ny Debian med en 50Gb VM disk.
+og prøv at skifte kodeord med kommandoen: passwd
 
+# Aflevering
 
-1) På denne Debian overfører du filen fra mig.
+I skal aflevere et pænt formateret dokument til ledelsen, så der skal være forside, indholdsfortegnelse, sidenr osv med.
 
-wget https://files.kramse.org/.kea/debian-hacked.tgz
+Rapporten skal indeholde:
+* Kodeordspolitikken i tekst - jeres beskrivelse
+* Kodeordspolitikken i hvad syntaks der nu er konfigureret, uddrag af filerne I retter
+* Screenshots der viser afvisning af et kodeord som "1234567890"
 
+Rapporterne, et udvalg, skal præsenteres sidste gang!
 
-2) Den udpakker du
+# Hjælp til opgaven
 
-tar zxvf debian-hacked.tgz
-cd debian-hacked
-
-
-3) Disk images
-Så har du et image af en disk fra en VM. Disk images indeholder typisk
-partitioner - dvs man har typisk op til 4 primære partioner
-
-[ ---- Master Boot Record --- // starten af disken
-[ Partition 1 typisk en slags boot disk      ---]
-[ Partition 2 typisk en slags data partition ---]
-[ Partition 3 typisk en swap - virtuel memory ]
-
-Til at finde ud af denne information bruger man programmet:
-mmls
-
-Den lister partitioner - herunder hvor de starter og stopper, størrelser
-
-Med disse informationer kan man skære data ud fra filen.
-
-Et program som "dd" kan med start og antal blokke - count skære ud.
-
-Så derfor omregnes :
-expr 501760 \* 512
-
-
-4) losetup
-
-Når nu autopsy ikke forstår LVM, så må vi bruge Linux kernen til at
-mounte filen, og derved opnås adgang til data som et /dev device
-
-sudo losetup -r -o 256901120 /dev/loop0 debian-hacked-root.img
-
-Det gør at den volume group hacked-vg kan tilgås som device dm-0 og dm-1
-
-user@KaliVM:~/QubesIncoming/dom0$ ls -l /dev/hacked-vg/
-total 0
-lrwxrwxrwx 1 root root 7 Mar  7 17:32 root -> ../dm-0
-lrwxrwxrwx 1 root root 7 Mar  7 17:32 swap_1 -> ../dm-1
-
-Vi skal bruge dm-0, dvs /dev/dm-0
-
-5)
-Udskæring af partition
-
-Jeg udførte testen selv for at sikre at man kan læse det endelige
-filsystem med autopsy, men da autopsy ikke forstår Linux Logical
-Volume Manager - som være data partition er, så skal denne skrælles ud.
-
-These can now be read or used, for instance use it to create image file
-for the rootfs!
-
-sudo dd if=/dev/dm-0 of=debian-hacked-rootfs.img
-
-NU er der således en fil - root fs - fra den hackede server :-D
+Hvis I går helt i stå er det OK at søge efter "debian konfigure password policy", men husk at I skal beskrive hvad der foretages.

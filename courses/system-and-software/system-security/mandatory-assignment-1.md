@@ -1,6 +1,10 @@
-# Mandatory for Intro til IT-security System Security course
+# Mandatory Assignment 1: Computer System Security course
 
-Aflevering senest 28. april 2024 på email til xhek@kea.dk
+This is a description for the mandatory assignment 2 in
+KEA Kompetence System Security F2025
+
+To be handed in on Fronter
+
 
 # Overordnede mål
 
@@ -51,7 +55,7 @@ Rapporten skal indeholde:
 * Kodeordspolitikken i hvad syntaks der nu er konfigureret, uddrag af filerne I retter
 * Screenshots der viser afvisning af et kodeord som "1234567890"
 
-Rapporterne, et udvalg, skal præsenteres sidste gang!
+Rapporterne, et udvalg, skal præsenteres!
 
 # Hjælp til opgaven
 

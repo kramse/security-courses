@@ -1,9 +1,9 @@
-# Mandatory Assignment 1 for System Security course
+# Mandatory Assignment 2: Computer System Security course
 
-This is a description for the mandatory assignment 1 in
-KEA Kompetence System Security F2024
+This is a description for the mandatory assignment 2 in
+KEA Kompetence System Security F2025
 
-To be handed in at latest March 14, 2024 by email to xhek@kea.dk or hlk@zencurity.com
+To be handed in on Fronter
 
 
 # Overall goal

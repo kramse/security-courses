@@ -22,7 +22,7 @@
 \item Start focus on various sub projects related to encryption in organisations
 \end{list2}
 
-{\small Photo by Thomas Galler on Unsplash}
+{\small \hfill Photo by Thomas Galler on Unsplash}
 
 \slide{Plan}
 
@@ -53,7 +53,7 @@
 %\item mitmproxy \link{https://mitmproxy.org/}
 %\item sslsplit \link{https://www.roe.ch/SSLsplit}
 \item Try Nmap and Ikescan
-\item Try ssh scanners, similar to sslscan
+\item Try ssl (TLS) scanners, similar to ssh scanners
 \item Crack your own passwords
 \end{list2}
 \end{list1}
@@ -73,6 +73,37 @@
 Home-work, look into {\small  \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}}
 
 
+
+\slide{Reading, Putty CVE-2024-31497}
+
+\begin{quote}{\bf \large
+PuTTY SSH client flaw allows recovery of cryptographic private keys}\\
+The vulnerability tracked as CVE-2024-31497 was discovered by Fabian Bäumer and Marcus Brinkmann of the Ruhr University Bochum and is caused by how PuTTY generates ECDSA nonces (temporary unique cryptographic numbers) for the NIST P-521 curve used for SSH authentication.
+
+...
+
+Brinkmann explained on X that {\bf attackers require 58 signatures} to calculate a {\bf target's private key}, which they can acquire either by {\bf collecting them from logins to an SSH server they control or is compromised, or from signed Git commits.}
+\end{quote}
+
+Source: {\footnotesize\url{https://www.bleepingcomputer.com/news/security/putty-ssh-client-flaw-allows-recovery-of-cryptographic-private-keys/}}
+
+\slide{Reading, Putty CVE-2024-31497}
+
+\begin{quote}\footnotesize{\bf
+2024-04-15 PuTTY 0.81 released}\\
+
+PuTTY 0.81, released today, fixes a critical vulnerability CVE-2024-31497 in the use of 521-bit ECDSA keys (ecdsa-sha2-nistp521). If you have used a 521-bit ECDSA private key with any previous version of PuTTY, consider the private key compromised: remove the public key from \verb+authorized_keys+ files, and generate a new key pair.
+
+However, this only affects that one algorithm and key size. No other size of ECDSA key is affected, and no other key type is affected.
+\end{quote}
+Source: The Putty download page at
+\url{https://www.chiark.greenend.org.uk/~sgtatham/putty/}
+
+\begin{list1}
+\item Random number generation and use is hard!
+\item \url{https://nvd.nist.gov/vuln/detail/CVE-2024-31497}
+\item Another recent SSH related vulnerability which require active MiTM attack \url{https://terrapin-attack.com/}
+\end{list1}
 
 
 \slide{What is data?}
@@ -150,7 +181,7 @@ Når vi krypterer hjælper vi andre! {\bf Solidaritetskryptering}
 \item Wireless listening and spoofing higher levels like  airpwn-ng \link{https://github.com/ICSec/airpwn-ng}
 \end{list2}
 \item Usually aimed at unencrypted protocols
-\item Today we only talk about getting the data, not how to perform higher level attacks
+\item Today we only talk about encrypting the data, not how to perform attacks
 \end{list1}
 
 \slide{Basic cryptography}
@@ -844,30 +875,6 @@ This tool provides a demonstration of the HTTPS stripping attacks that I present
 \item SSL/TLS certificates for interception are generated on the fly
 \end{list2}
 
-\slide{sslsplit  - transparent SSL/TLS interception}
-
-\begin{quote}\small
-Overview\\
-SSLsplit is designed to transparently terminate connections that are redirected to it using a network address translation engine. SSLsplit then terminates SSL/TLS and initiates a new SSL/TLS connection to the original destination address, while logging all data transmitted. Besides NAT based operation, SSLsplit also supports static destinations and using the server name indicated by SNI as upstream destination. SSLsplit is purely a transparent proxy and cannot act as a HTTP or SOCKS proxy configured in a browser.
-\end{quote}
-
-\link{https://www.roe.ch/SSLsplit}
-
-\begin{list2}
-\item SSLsplit implements a number of defences against mechanisms which would normally prevent MitM attacks or make them more difficult
-\item {\small SSLsplit can deny OCSP requests in a generic way. For HTTP and HTTPS connections, SSLsplit mangles headers to prevent server-instructed public key pinning (HPKP), avoid strict transport security restrictions (HSTS), avoid Certificate Transparency enforcement (Expect-CT) and prevent switching to QUIC/SPDY, HTTP/2 or WebSockets (Upgrade, Alternate Protocols)}
-\end{list2}
-
-\centerline{We will not really run SSLsplit, but its interesting}
-
-
-
-%\exercise{ex:SSLScanner}
-
-%\exercise{ex:sslstrip}
-%\exercise{ex:mitmproxy}
-%\exercise{ex:sslsplit}
-
 
 \slide{Other crypto related stuff}
 
@@ -1014,7 +1021,7 @@ keys which are associated with a service located at a domain name."
 
 
 
-
+\exercise{ex:web-site-check}
 
 \slide{Fokus: Laptop sikkerhed}
 

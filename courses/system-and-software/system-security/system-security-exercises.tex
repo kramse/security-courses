@@ -184,7 +184,7 @@ Kali Linux includes many hacker tools and should be known by anyone working in i
 {\bf Objective:}\\
 Make sure your Debian virtual machine is in working order.
 
-We need a Debian 11 Linux for running a few extra tools during the course.
+We need a Debian Linux for running a few extra tools during the course.
 
 
 {\bf Purpose:}\\
@@ -946,19 +946,19 @@ So why aren't more developers concerned with security, least privilege, creating
 Get an overview of the LibreNMS install instructions located at:\\
 \link{https://docs.librenms.org/Installation/Install-LibreNMS/}
 
-We are running Debian 11, and since we only need to play with the database, only install that part:
+We are running Debian, and since we only need to play with the database, only install that part:
 
 \begin{alltt}
 apt install mariadb-client mariadb-server
 \end{alltt}
 
-and follow only the instructions in \emph{Configure MariaDB} -- the ones with Debian 11!
+and follow only the instructions in \emph{Configure MariaDB} -- the ones with Debian!
 
 Repeated here for completeness, but \verb+vi+ changed into \emph{edit}.
 
-{\bf Configure MariaDB -- Debian 11}
+{\bf Configure MariaDB -- Debian}
 
-Edit \verb+/etc/mysql/mariadb.conf.d/50-server.cnf+
+Edit \verb+/etc/mysql/mariadb.conf.d/50-server.cnf+ using vi, nano or another preferred editor
 
 Within the [mysqld] section add:
 
@@ -1013,7 +1013,7 @@ Lots of systems need \emph{access to data}, but if noone ask -- what permissions
 {\bf Objective:}\\
 See actual real life example of permissions.
 
-Note: This exercise requires a GitHub account, so make sure your group has one. Maybe do groups of 3-4 for more discussion.
+Note: This exercise requires a GitHub account, so make sure your group has one -- it is recommended to do this with others in a group.
 
 {\bf Purpose:}\\
 GitHub is a very popular code sharing site.
@@ -1059,13 +1059,38 @@ John the Ripper is available from the web page, but also as a package:\\
 You should install from the package system using apt install, do apt search first to find the package name.
 
 \begin{enumerate}
-\item Install John, if not already there
+\item Install John, if not already there: \verb+apt install whois john+
 \item Copy the local password database, as root: \verb+cp /etc/shadow /root/mypasswords+
 \item Start cracking: \verb+john --single /root/mypasswords+
 \item Restart with incremental mode, bruteforce: \verb+john --incremental /root/mypasswords+
 \end{enumerate}
 
 You can make it easier if you add a few users with bad passwords first.
+
+NOTE: newer Debian 12 systems use a hashing method which is NOT supported by John. You can instead create a bad hash using the tool \verb+mkpasswd -5+
+
+\begin{alltt}
+root@Projects:~# mkpasswd -5
+Password:      // I entered henrik42 as password
+$1$ENlQhB5/$trB73FyYwHl/53Ys9LrQf0
+\end{alltt}
+Then copy this to the mypasswords file using nano or vi editors.
+
+\begin{alltt}
+root@Projects:~# cat mypasswords
+root:!*:19562:0:99999:7:::
+user:$1$4f1IYkFK$OQzP.MogNjOubDvtFO6GS1:19562:0:99999:7:::
+tinyproxy:!:19562::::::
+root@Projects:~# john --single mypasswords
+Created directory: /root/.john
+Loaded 1 password hash (md5crypt [MD5 32/64 X2])
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+0g 0:00:00:00 100% 0g/s 18387p/s 18387c/s 18387C/s user999991901..999991900
+Session completed
+\end{alltt}
+
+
 
 {\bf Hints:}\\
 You can download other sample hashes from\\
@@ -1328,10 +1353,12 @@ Check out the SELinux system\\
 and the setup instructions at:\\
 \link{https://wiki.debian.org/SELinux/Setup}
 
-(Not working right now - Create a secret file, that you can read, but root cant.)
+This is a very complex system, and for that reasone seldom used in production. Not working right now - Create a secret file, that you can read, but root cant.
+
+{\bf It is recommended to create a snapshot of your VM before messing with SELinux!}
 
 {\bf Purpose:}\\
-Everybody reads about Discretionary Access Control (DAC) and Mandatory Access Control (MAC) but few realize that Linux implements it.
+Everybody reads about Discretionary Access Control (DAC) and Mandatory Access Control (MAC) but few realize that Linux implements it. DAC is the most common case, where you decide the security settings on files -- permissions with the Read, Write, Execute bit. MAC can be implemented using SELinux -- for certain cases.
 
 
 {\bf Suggested method:}\\
@@ -1714,6 +1741,46 @@ PORT      STATE SERVICE VERSION
 |       none
 |_      zlib@openssh.com
 \end{alltt}
+
+
+
+\chapter{\faExclamationTriangle\ Internet scanners 15 min}
+\label{ex:web-site-check}
+
+{\bf Objective:}\\
+Try the Online scanners \link{https://internet.nl/} and a few more.
+
+{\bf Purpose:}\\
+Learn how to efficiently check settings on remote services.
+
+{\bf Suggested method:}\\
+There are multiple portals and testing services which allow you to checck a domain,
+mail settings or web site.
+
+Run tools against a couple of sites of your choice.
+\begin{itemize}
+\item \url{https://internet.nl/} Generic checker
+\item \url{https://www.hardenize.com/} Generic checker
+\item \url{https://www.wormly.com/test_ssl} Test TLS
+\item \url{https://observatory.mozilla.org/} Web site headers check
+\item \url{https://dnsviz.net/} DNS zone check
+\item \url{https://rpki.cloudflare.com/} Check RPKI - route validator enter
+IP address\\
+More information about this: \url{https://labs.ripe.net/author/nathalie_nathalie/rpki-test/}
+\end{itemize}
+
+Others exist, feel free to suggest some.
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+When you can run and understand what at least one tool does, you are done.
+
+{\bf Discussion:}\\
+Which settings are most important, which settings are your responsebility?
+
+
+
 
 
 \chapter{\faExclamationTriangle\ Perform privilege escalation using files 30min}

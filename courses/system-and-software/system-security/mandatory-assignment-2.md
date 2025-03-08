@@ -10,7 +10,7 @@ To be handed in on Fronter
 
 Get a formal business style report done, try out the hand-inn process.
 
-Demonstrate knowledge about
+Demonstrate knowledge about file system forensics.
 
 Teacher will provide image made in this way:
 * Install a Debian using a small disk size ~10G
@@ -18,7 +18,7 @@ Teacher will provide image made in this way:
 * Create extra users not usually found on Debian, copies of root with uid 0 or new users with sudo rights
 
 Students use forensics tools for analyzing this:
-* Suggest using Sleuthkit and Autopsy browser based tool, simple and free
+* Suggest using Sleuthkit and Autopsy browser based tool, simple and free - can run on Windows, Linux or Mac
 * Search for your evidence, MAKE SURE to demonstrate how a user would find these - searching for SUID files is one method to document, looking into sudo config and user database is another
 * Present a timeline of when the "hack" occurred, perhaps relate to when system was installed
 * Present as much information as possible about the "malicious bits"
@@ -28,12 +28,12 @@ The process should be possible to complete in less than 10 hours, but you are we
 
 # Deliverables
 
-The assignment must be documented in a report sent to me, either on xhek@kea.dk or hlk@zencurity.com
+The assignment must be documented in a report sent to me, either on xhek@kea.dk or hlk@zencurity.com, or uploaded to Fronter
 
 Report must be a formal template including:
 * Overview - description of the project
 * Table of contents, page numbers, headlines - business report style
-* Results - including method description and screenshots from the forensic tool
+* Results - including method description and screenshots from the forensic tool, show a few features from your selected tool
 * Executive summary
 
 # Whats in the image
@@ -52,7 +52,9 @@ Check eventuelt også shadow password filen med John The Ripper
 # Images
 
 The image files are at:
-https://files.kramse.org/.kea/
+http://files.kramse.org/.kea/
+
+Note: no https, will fix that someday!
 
 You can choose from:
 

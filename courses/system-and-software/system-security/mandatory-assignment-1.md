@@ -1,16 +1,17 @@
 # Mandatory Assignment 1: Computer System Security course
 
-This is a description for the mandatory assignment 2 in
+This is a description for the mandatory assignment 1 in
 KEA Kompetence System Security F2025
 
-To be handed in on Fronter
+
+The assignment must be documented in a report sent to me, either on xhek@kea.dk or hlk@zencurity.com, or uploaded to Fronter
 
 
 # Overordnede mål
 
 Lav en rapport over jeres Debian Linux VM. En rapport pr gruppe, een vm i hver gruppe.
 
-Op til 4 medlemmer i grupperne. Det er også OK at aflevere alene.
+Op til 3 medlemmer i grupperne. Det er også OK at aflevere alene.
 
 # Kontekst
 Virksomheden: Lille virksomhed, 5-10 personer en regnskabsansvarlig passer kontoret. der er en hjemmeside

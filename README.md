@@ -82,6 +82,11 @@ but with aux_dir enabled as above:
 
 I think having all the misc files from LaTeX'ing in another dir is nicer.
 
+Warning: after the major update to minted, and creating another name for the old version, I use
+```
+\RequirePackage[outputdir=build]{minted2}
+```
+
 I have decided to use ONLY UTF-8 too, so some files need to be converted - work in progress
 ```
 iconv −f ISO−8859−1 −t UTF−8

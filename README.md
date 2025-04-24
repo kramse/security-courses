@@ -81,16 +81,19 @@ $aux_dir = 'build';
 ```
 
 The build directory makes it nice and clean, but I did have some problems with Minted2 package which also required buildir setting:
+
+Warning: shell escape is needed for the minted package providing syntax highlighting. If you don't trust me, leave it out.
+
 ```
 \RequirePackage[outputdir=build]{minted2}
 ```
 
 
-## Further Configuration
+## Configuration of PATHS
 You need to tell LaTeX to find included files and packages
-with the TEXINPUTS
+with the TEXINPUTS environment variable.
 
-As an example my login profile on my laptops with Linux contains the following settings suitable for TeXLive and this package:
+As an example my login profile on my laptops with Linux contains the following settings suitable for TeXLive 2025 and this repo if checked out in a folder projects:
 ```
 export TEXINPUTS=:~/projects/security-courses//
 MANPATH=$MANPATH:/usr/local/texlive/2025/texmf/doc/man
@@ -103,7 +106,6 @@ I put those in my `$HOME/.bashrc`
 
 This should make it possible to produce PDF files by doing:
 ```
-.
 user@Projects:security-courses$ pwd
 /home/user/projects/security-courses
 user@Projects:security-courses$ latexmk first-presentation.tex
@@ -127,8 +129,8 @@ Latexmk: Moving 'build/first-presentation.pdf' to 'first-presentation.pdf'
 Latexmk: Moving 'build/first-presentation.synctex.gz' to 'first-presentation.synctex.gz'
 
 ```
+Hopefully this produces a nice PDF you can view.
 
-Warning: shell escape is needed for the minted package providing syntax highlighting. If you don't trust me, leave it out.
 
 ## Minted2 and UTF
 

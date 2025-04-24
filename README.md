@@ -97,6 +97,7 @@ MANPATH=$MANPATH:/usr/local/texlive/2025/texmf/doc/man
 INFOPATH=$INFOPATH:/usr/local/texlive/2025/texmf/doc/info
 ```
 
+I put those in my `$HOME/.bashrc`
 
 ## Producing a PDF of the first-presentation.tex
 

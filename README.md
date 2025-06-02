@@ -4,7 +4,9 @@
 
 Welcome to security-courses a free template and security courses repository of all my course materials -- written in LaTeX code, but assumed to be useful for others.
 
-It contains slides and exercise booklets I use for presenting various subjects.
+It contains slides and exercise booklets I use for presenting various subjects. The PDF files are the output and what most people will use from this repository.
+
+The LaTeX sources are for those that want to try LaTeX for writing presentation, for inspiration, and no guarantees - YMMV.
 
 You are welcome to copy from it.
 

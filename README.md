@@ -30,11 +30,6 @@ See more about LaTeX on wikipedia:
 https://en.wikipedia.org/wiki/LaTeX
 
 
-BTW: Adding LaTeX code in the middle of a document is wrong,
-you should rather update the classes and stylesheet for that!
-(I know some of my presentations contain LaTeX-code in the
-middle, sorry I am lazy ;-) )
-
 
 ## What you need
 If you dare to continue on I suggest you first get a working installation of LaTeX, for instance the TeXLive. See this reference: http://www.tug.org/texlive/

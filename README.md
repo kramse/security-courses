@@ -22,13 +22,19 @@ both for printing and screen presentations. I can also prepare exercises in one 
 If you don't know LaTeX then use the existing presentations
 as examples as they probably contain most of what you need to begin with. I also use an old-skool foils.cls class which is quite simple.
 
+This class file might not be included in your LaTeX distribution, so I copied it into the directory:  `texfiles/foiltex`
+
+You may need to copy this or include this in the configuration, see below for Configuration of PATHS
+
+See more about LaTeX on wikipedia:
+https://en.wikipedia.org/wiki/LaTeX
+
+
 BTW: Adding LaTeX code in the middle of a document is wrong,
 you should rather update the classes and stylesheet for that!
 (I know some of my presentations contain LaTeX-code in the
 middle, sorry I am lazy ;-) )
 
-See more about LaTeX on wikipedia:
-https://en.wikipedia.org/wiki/LaTeX
 
 ## What you need
 If you dare to continue on I suggest you first get a working installation of LaTeX, for instance the TeXLive. See this reference: http://www.tug.org/texlive/
@@ -42,8 +48,11 @@ the documentation. The documentation is mostly a sample
 of how the final output can look and includes some
 common construct to get you started using this.
 
+So look at the file: `first-presentation.tex` and `first-presentation.pdf`
+
 Second you might want to take a look at the hackerworkshop
-course which is a full course included.
+course which is a full course included in the directory: `courses/pentest/hackerworkshop`
+
 
 
 

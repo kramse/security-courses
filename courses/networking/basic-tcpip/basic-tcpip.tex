@@ -5,20 +5,24 @@
 \selectlanguage{english}
 
 \begin{document}
-% Come to this workshop and learn some TCP/IP. (sorry, I forgot to bring stuff to make your own Ethernet 2-3m network cable)
+% Come to this workshop and learn some TCP/IP, terms below will be explained for starters :-D
 
 % First I will do a 30min introduction to TCP/IP version 4 and version 6, show and tell with the BornHack network as example. Then afterwards there will be small isolated networks to play with. Learn how DHCP works, configure a router, and connect it to the BornHack network and THE INTERNET!!!!!1111
 
-% I will bring network hardware comparable to what you would use in a normal home network, but no other people are connected except you. You are in control and can experiment.
+% I will bring network hardware comparable to what you would use in a normal home network, but no other people are connected except you. You are in control and can experiment. Devices will be a some small routers, which are pretty capable GL.Inet routers - have wireguard etc. When workshop finishes you can borrow the devices until BornHack ends. I also bring a number of USB-Ethernet you can borrow.
 
-% Devices will be a range of cheap TP-Link devices, routers, switches etc. Some more capable GL.Inet routers - have wireguard etc. When workshop finishes you can borrow the devices until BornHack ends.
+% You can
+% * Learn how to connect a router to an ISP - BornHack being the Internet Service Provider here
+% * Play with a 2-port switch, built-into the router
+% * Do ping and traceroute with confidence
+% * Learn how to check your own internet domain setup, look up DNS records with local tools or web sites like https://internet.nl
+% * Setup Wireguard VPN tunnel from your laptop to the router, then visit another village and connect back to your home, your tent
 
-% I will also bring some cheap Ethernet cables for selling 10m/20m/30m - so you can connect your tent/village later
-
+% I will also try to bring some cheap Ethernet cables for selling 10m/20m/30m - so you can connect your tent/village later
 
 \mytitlepage
 {Networking and TCP/IP for Beginners}
-{BornHack July 2024}
+{BornHack July \the\year{}}
 
 
 \hlkprofiluk
@@ -35,17 +39,17 @@
 \item Let you get some hands on with IP protocols
 \end{list2}
 
-Photo is NWWC camp at BornHack 2024, come by and say hi
+Photo is NWWC camp at BornHack 2024, looks about the same every year
+--come by and say hi
 
 
 \slide{Time schedule}
 
 \begin{list2}
-\item 15:00 - 15:45\\
-Introduction and basics
+\item 45 min Introduction and basics
 
-\item 15:45 - 17:00\\
-Connect to the network, play with TCP/IP, switches and routers.
+\item Rest of the time:
+ Connect to the network, play with TCP/IP and routers
 \end{list2}
 
 Note: even though I talk a lot about Unix and Linux, you can definitely run a lot of tools on Windows and Mac OS X. The basic tools are available like the built-in ones and Nmap
@@ -56,13 +60,15 @@ Command line tools are sometimes used in the slides, as they only show text wher
 
 Exercises are completely optional
 
+\hlkimage{5cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
 \begin{list2}
 \item Try ping and traceroute
 \item See your own IP settings
 \item Borrow a USB Ethernet and connect to a switch or router
 \end{list2}
 
-Linux is a toolbox I will use and participants are recommended to research virtual machines
+Linux is a toolbox I will use and participants are free to use whatever they feel like
+\hfill Photo by Eugen Str on Unsplash
 
 
 
@@ -91,7 +97,6 @@ If you are interested in TCP/IP you are welcome
 If you want to be an expert in IP and network security I recommend doing exercises
 
 \begin{list1}
-\item It is recommended to use virtual machines for the exercises
 \item Network security and most internet related security work has the following requirements:
 \begin{list2}
 \item Network experience
@@ -100,6 +105,7 @@ If you want to be an expert in IP and network security I recommend doing exercis
 \item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill} for infosec work\\
 -- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
 \end{list2}
+\item It is recommended to use virtual machines for the exercises
 \end{list1}
 
 
@@ -178,11 +184,21 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 \item[1988]  About 60.000 systems on the internet -
         The Morris Worm hits about 10\%
 \item[2002] About 130 million Internet hosts
-\item[2010] IANA reserved blocks 7\% (Maj 2010) - \link{http://www.potaroo.net/tools/ipv4/}
+\item[2010] IANA reserved blocks 7\% Maj 2010 \link{http://www.potaroo.net/tools/ipv4/}
 \end{list2}
 
 
 \slide{What is the Internet}
+RFC-1958:
+\begin{quote}
+ A good analogy for the development of the Internet is that of
+ constantly renewing the individual streets and buildings of a city,
+ rather than razing the city and rebuilding it. The architectural
+ principles therefore aim to provide a framework for creating
+ cooperation and standards, as a small "spanning set" of rules that
+ generates a large, varied and evolving space of technology.
+\end{quote}
+
 
 \begin{list1}
 \item Communication between humans - currently!
@@ -195,15 +211,6 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 \end{list2}
 \end{list1}
 
-RFC-1958:
-\begin{quote}
- A good analogy for the development of the Internet is that of
- constantly renewing the individual streets and buildings of a city,
- rather than razing the city and rebuilding it. The architectural
- principles therefore aim to provide a framework for creating
- cooperation and standards, as a small "spanning set" of rules that
- generates a large, varied and evolving space of technology.
-\end{quote}
 
 
 
@@ -214,31 +221,44 @@ RFC-1958:
 
 \begin{list2}
 \item Internet is defined by the address space
-\item IPv4 based on 32-bit addresses, example dotted decimal format 10.0.0.1
+\item IPv4 based on 32-bit addresses, example dotted decimal format 127.0.0.1, 10.0.0.1
 \item IPv6 very similar to IPv4 without NAT, 128-bit addresses in hex ::1, 2a06:d380:0:101::80
 \end{list2}
 
 
-\slide{How to use the Internet Protocols (IP)}
+\slide{IPv4 ran out of addresses}
 
-Names are used by humans
-\begin{center}\hlkbig
-www.kramse.org
+\hlkimage{10cm}{ipv4-address-report-potaroo-plotend.png}
+Source: \link{http://www.potaroo.net/tools/ipv4/}
 
-hlk@kramse.org
-\end{center}
+We have essentially run out of IPv4 public addresses, so almost everyone uses Network Address Translation (NAT)
+
+\slide{How to use the Internet Protocols (IP) with DNS}
+
+Names are used by humans when browsing, sending email etc.
+
+\hlkimage{15cm}{garden-small-screenshot.png}
+
+\slide{The Domain Name System (DNS)}
 
 Computers use the addresses
-
 \begin{alltt}
+kramse.org has address 185.129.63.130
+kramse.org has IPv6 address 2a06:d380:0:102::80
+mail.kramse.org has address 185.129.63.250
+mail.kramse.org has IPv6 address 2a06:d380:0:102::25
+garden.kramse.org has address 185.129.62.180
+garden.kramse.org has IPv6 address 2a06:d380:0:9985::1
+
+
 www     IN      A       185.129.63.130
         IN      AAAA    2a06:d380:0:102::80
-mail    IN      A       217.157.63.115
+mail    IN      A       185.129.63.250
         IN      AAAA    2a06:d380:0:102::25
 \end{alltt}
 
 
-
+See more at \link{https://en.wikipedia.org/wiki/Domain_Name_System}
 
 
 \slide{Documentation Prefix, IPv6 updates etc.}
@@ -257,30 +277,23 @@ RFC6890 \emph{Special-Purpose IP Address Registries} which in turn is updated by
 Use the web version of RFCs to surf back and forth \link{https://www.rfc-editor.org/rfc/rfc8190}
 
 
-\slide{CIDR Classless Inter-Domain Routing}
+\slide{Classless Inter-Domain Routing (CIDR)}
 
 \hlkimage{15cm}{CIDR-aggregation.pdf}
 
 \begin{list2}
 \item Subnet mask originally inferred by the class
 \item Started to allocate multiple C-class networks - save remaining B-class\\
-Resulted in routing table explosion - btw Stop using A, B, C
-\item A subnet mask today is a row of 1-bit
-\item Supernet, supernetting
+Resulted in routing table explosion - Stop using A, B, C
+\item A subnet mask today is a row of 1-bit - for supernet, supernetting
 \item 10.0.0.0/24 means the network 10.0.0.0 with 24 subnet bits (mask 255.255.255.0)
 \item 2a06:d380:0:101::80/64 means the network with 64-bit prefix length
+\item You don't need to remember this now, but easier to write
 \end{list2}
 
 \slide{Protocols: OSI and Internet models}
 
 \hlkimage{11cm,angle=90}{images/compare-osi-ip.pdf}
-
-
-\slide{Ethernet, cables}
-
-\hlkimage{17cm}{ethernetLights.jpg}
-
-\centerline{Show link, and activity -- blinkenlights}
 
 
 
@@ -303,16 +316,26 @@ Resulted in routing table explosion - btw Stop using A, B, C
 \end{list1}
 
 
-\slide{Bridges}
+\slide{Ethernet and Bridges}
 
-\begin{list1}
+\hlkimage{9cm}{ethernet73_large.png}
+Original by Robert M. Metcalfe
+
+\begin{list2}
 \item Ethernet is a broadcast technology data transmitted into the ether -- a cable
-\item This limits how many devices to connect
-\item Using bridges we can connect segments -- which copy between them if needed
+\item This limits how many devices to connect, but using bridges we can connect segments -- which copy between them if needed
 \item It learns the devices on each side (MAC address)
-\end{list1}
+\item See also \link{http://en.wikipedia.org/wiki/ALOHAnet}
+\end{list2}
 
-See also \link{http://en.wikipedia.org/wiki/ALOHAnet}
+
+
+
+\slide{Ethernet, cables}
+
+\hlkimage{17cm}{ethernetLights.jpg}
+
+\centerline{Show link, and activity -- blinkenlights}
 
 
 \slide{A switch}
@@ -336,11 +359,11 @@ See also \link{http://en.wikipedia.org/wiki/ALOHAnet}
 \end{list1}
 
 
-\slide{Topologier og Spanning Tree Protocol}
+\slide{Topologies and Spanning Tree Protocol}
 
 \hlkimage{13cm}{switch-STP.pdf}
 
-Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
+Redundant cabling is preferred, see Radia Perlman, \emph{Interconnections: Bridges, Routers, Switches, and Internetworking Protocols}
 
 \slide{Core, Distribution og Access net}
 
@@ -353,7 +376,7 @@ Se mere i bogen af Radia Perlman, \emph{Interconnections: Bridges, Routers, Swit
 \hlkimage{17cm}{wan-network.pdf}
 
 
-\slide{Packets of data}
+\slide{Packets of data -- postcards of the Internet}
 
 \hlkimage{18cm}{ethernet-frame-1.pdf}
 \begin{list1}
@@ -487,8 +510,7 @@ To work with network security the following protocols are the bare minimum to kn
 \item DNS Domain Name System
 \end{list2}
 
-\centerline{A little Linux knowledge is also {\bf highly recommended}}
-
+The book \emph{Practical Packet Analysis} by Chris Sanders covers these nicely as an introduction
 
 \slide{UDP User Datagram Protocol}
 \hlkimage{16cm}{udp-1.pdf}
@@ -573,7 +595,7 @@ traceroute to 185.129.60.129 (185.129.60.129),
 \end{list1}
 
 
-\slide{NAT Network Address Translation}
+\slide{Network Address Translation (NAT)}
 \hlkimage{16cm}{nat-1.pdf}
 
 
@@ -581,7 +603,7 @@ traceroute to 185.129.60.129 (185.129.60.129),
 \begin{list2}
 \item NAT is used for connecting private networks to the Internet
 \item NAT gateway replaces source address and forwards packets
-\item A quick and dirty fix that keeps messing up networks and protocols
+\item A quick and dirty fix for address shortage that keeps messing up networks and protocols
 \item The NAT router/firewall has state tables
 \end{list2}
 
@@ -617,10 +639,10 @@ auto-configuration when a DHCP server may not be found
 \item I have a course network with me -- the whole of BornHack \smiley\\
 which has the following information:
 \begin{list2}
-\item Juniper MX240 router -- in the basement, we can go see it
+\item Core router -- in the basement, we can go see it
 \item Juniper switches
-\item Aruba APs wireless access-points
-\item IPv4 addresses: 151.216.32.0/21 total 2048
+\item Wireless access-points (APs)
+\item IPv4 addresses: 151.216.64.0/21 total 2048
 \item IPv6 addresses route6: 2001:678:9ec::/48
 \item Autonomous system number: AS208647 BornHack\\
 \url{https://en.wikipedia.org/wiki/Autonomous_system_(Internet)}
@@ -730,9 +752,9 @@ Lower Layers}\\
 \item FreeBSD has an older version of the OpenBSD PF, should really be renamed now
 \end{list2}
 
+Try this one \url{https://opnsense.org/} if you want a modern, free and easy to configure firewall
 
-
-\slide{Uncomplicated Firewall (UFW)}
+\slide{Debian/Ubuntu Uncomplicated Firewall (UFW)}
 
 \begin{alltt}\small
 root@debian01:~# apt install ufw
@@ -753,7 +775,7 @@ Status: active
 \end{alltt}
 
 \begin{list2}
-\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\item Extremely easy to use -- I recommend and use the Uncomplicated Firewall (UFW)
 \end{list2}
 
 

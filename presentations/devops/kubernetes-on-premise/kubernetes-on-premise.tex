@@ -1,0 +1,773 @@
+\documentclass[Screen16to9,17pt]{foils}
+%\documentclass[16pt,landscape,a4paper,footrule]{foils}
+\usepackage{zencurity-slides}
+
+% Experiences with a small on-premise Kubernetes setup
+
+% Kubernetes is everywhere and can support many interesting use-cases for hosting services, while some feel it is overkill - decide for yourself.
+
+% This talk is based on my experience as a Unix, Internet and Security person with researching K8s over some years and setting up my own infrastructure with Kubernetes in a small production setup. The main points in the talk are:
+
+% * Experiences running the setup for one more year now
+% * Upgrading this small setup
+% * How do you bring up a bare-metal test-cluster using Kubeadm, I use two small VMs for all of it
+% * Cilium as the network plugin - and listing some things I noticed, like your setup may be correct, but the version of cilium can have a problem
+% * Keeping your cluster connected to the outside world with BGP, worked nicely
+% I use this to run a small set of services based on Nginx as ingress controller, and Nginx serving applications (very boring static sites generated using Jekyll) you can see the result at: https://garden.kramse.org which also documents this setup
+
+% The talk is based on my experiences, and I would love to discuss more K8s security before and after, and will be at BornHack all week.
+
+\begin{document}
+
+%\rm
+\selectlanguage{english}
+
+\mytitlepage
+{Experiences with a small on-premise Kubernetes setup}
+{}
+\LogoOn
+
+\hlkprofiluk
+
+
+\slide{}
+
+\hlkimage{24cm}{kubernetes-anywhere.png}
+Disclaimer:\\
+Kubernetes is everywhere and can support many interesting use-cases for hosting services, while some feel it is overkill - decide for yourself.
+
+This talk is based on my experience as a Unix, Internet and Security person with researching K8s over some years and setting up my own infrastructure with Kubernetes in a small production setup.
+
+Use the fine manual at the main site:
+\url{https://kubernetes.io/}
+
+On-premise migration can also be part of digital sovereignty and data independence
+
+\slide{Goals for today}
+\vskip 1 cm
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+\begin{list2}
+
+
+
+\item Experiences running the setup for one more year now
+\item How do you bring up a bare-metal test-cluster using Kubeadm, I use two small VMs for all of it
+\item Cilium as the network plugin - and listing some things I noticed, like your setup may be correct, but the version of cilium can have a problem
+\item Keeping your cluster connected to the outside world with BGP, worked nicely
+\item Show a Kubernetes lab and run some tools
+\item Point you towards resources, so you can get started with Kubernetes more securely.Plan for a modern featureful reasonably secure K8s bare-metal install -- works for me
+\end{list2}
+
+\slide{The garden}
+
+\hlkimage{13cm}{garden-small-screenshot.png}
+
+I use this to run a small set of services based on Nginx as ingress controller, and Nginx serving applications (very boring static sites generated using Jekyll) you can see the result at: \url{https://garden.kramse.org} which also documents this setup
+
+TL;DR My setup has now run for quite some time, and is very stable. Comparable to my OpenBSD web servers and also on par with public clouds.
+Runs inside the Adeo Datacenter \url{https://adeodc.dk/}
+
+\slide{My Intentions}
+
+\hlkimage{7cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
+
+I suspect you want to work with Kubernetes, maybe you already do, but:
+\begin{list2}
+\item You are responsible for all of it
+\item You don't have the resources, knowledge, time, etc. for getting to know it all
+\item You have to create an architecture, as well as implement it
+\item ... and monitor it, ... and secure it
+\end{list2}
+My intention is to be your sparring partner today, list all the parts I think must be considered.
+
+\slide{Target Audience}
+
+\hlkimage{9cm}{nesa-by-makers-IgUR1iX0mqM-unsplash.jpg}
+
+\begin{quote}
+
+\end{quote}
+
+\begin{list2}
+\item Overall target audience: operators, and developers becoming operators -- devops
+\item Maybe secdevops - security personnel that needs some scalable systems running on K8s
+    - like myself
+\item People being told to setup a K8s cluster -- for some app
+\end{list2}
+
+
+\slide{Disclaimer: I am not an expert in EVERYTHING Kubernetes}
+
+\begin{quote}
+\large \bf I am not an EXPERT \\
+-- but I have read a lot and watched youtube videos. \smiley
+\end{quote}
+
+\begin{list1}
+\item Kubernetes is such a big ecosystem
+\item The list is long, and an incomplete list contains:
+\begin{list2}
+\item Kubernetes core components -- software written by the project RBAC etc.
+\item Kubernetes supported container technologies, docker etc.
+\item Kubernetes dependencies -- etcd software used for storing data
+\item Operating systems -- and that lies below, storage
+\item Kubernetes networking providers -- multiple exist, which one to choose -- like Cilium
+\item Monitoring solutions -- logging solutions
+\end{list2}
+\item and on top all the applications in and around Kubernetes -- NGINX, PostgreSQL, ...
+\end{list1}
+
+
+\slide{Kubernetes: Production-Grade Container Orchestration}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Kubernetes, also known as K8s, is an open-source system for automating deployment, scaling, and management of containerized applications.
+
+It groups containers that make up an application into logical units for easy management and discovery. Kubernetes builds upon 15 years of experience of running production workloads at Google, combined with best-of-breed ideas and practices from the community.
+\end{quote}
+Source: \link{https://kubernetes.io/}
+
+Basics:
+\begin{list2}
+\item I run two VMs for the K8s nodes -- Debian 12
+\item Run NFS for storage -- very easy to bind into the nodes
+\item Choose the Cilium for networking \url{https://cilium.io/}
+\item Cluster installed and maintained with Kubeadm \url{https://kubernetes.io/docs/reference/setup-tools/kubeadm/}
+\end{list2}
+
+
+\slide{Document or it didn't happen}
+
+\hlkimage{14cm}{mythical-man-month-documentary.png}
+
+\begin{list2}
+\item Make sure to document!
+\item There are so many parts, so many decisions, soo many places thing can mess up
+\item Have a minimum of documentation -- and the YAML files are not enough
+\item Hint:  you can read the Mythical Man Month at \link{https://archive.org/details/MythicalManMonth}
+\item We also use decision records in my company:\\
+\url{https://github.com/joelparkerhenderson/architecture-decision-record/}\\
+\url{https://github.com/joelparkerhenderson/decision-record/}
+
+\end{list2}
+
+\slide{Why Have Formal Documents}
+
+\hlkimage{9cm}{mythical-formal-documents.png}
+Source: \emph{The Mythical Man-Month (Anniversary Edition)}
+by Frederick P. Brooks Jr.
+
+\begin{list2}
+\item I use Git version control for my documentation purposes, some is in Zim Personal Wiki \link{https://zim-wiki.org/}
+\item I also use an IPAM \link{https://spritelink.github.io/NIPAP/}
+\item \url{https://garden.kramse.org} which also documents this setup
+\end{list2}
+
+\slide{Adding administrators for people}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\normalsize]{shell}
+kubeadm config print init-defaults > kubeadm.conf
+kubeadm kubeconfig user --client-name=hlkadmin --config=kubeadm.conf > hlkadmin.conf
+\end{minted}
+
+\begin{list2}
+\item I would recommend having multiple configs, even for yourself
+\item hlkadmin config used for administration
+\item hlkdeploy for deploying
+\item hlktester maybe even a testing user
+\item Read more about \link{https://kubernetes.io/docs/reference/access-authn-authz/rbac/}
+\end{list2}
+
+\slide{RBAC, groups and namespaces}
+
+\begin{quote}
+Kubernetes starts with three initial namespaces:
+\begin{list2}
+\item[*] default The default namespace for objects with no other namespace
+\item[*] kube-system The namespace for objects created by the Kubernetes system
+\item[*] kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
+\end{list2}
+\end{quote}
+Source: \link{https://kubernetes.io/docs/tasks/administer-cluster/namespaces/}
+
+\begin{list2}
+\item I like namespaces, easy way to isolate stuff
+\item Allow for quotas -- don't allow a test application to use all resources
+\item Easy network segregation -- network policies
+\item Allows easy data isolation -- who can access sensitive data
+\item I recommend groups, namespaces and roles for granting access -- {\bf do not grant permission to named users!}
+\end{list2}
+
+
+\slide{Network parts}
+
+Lets move to networking and CNI plugin alternatives
+
+\hlkimage{12cm}{cilium-overview.png}
+\begin{list2}
+\item Container Network Interface (CNI) and Cloud Native Computing Foundation (CNCF) project\\
+\link{https://github.com/containernetworking/cni}
+\item Multiple options -- popular and common ones Calico, Flannel, Weave and Cilium
+\item Cilium - I have followed Cilium for a while, so I choose that
+\end{list2}
+
+
+\slide{Installing Cilium - part 1}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@cheese01:~/bin$ cat install-cilium.sh
+#! /bin/sh
+# Find releases with: cilium install --list-versions
+cilium uninstall
+echo waiting 15 seconds
+sleep 15
+
+API_SERVER_IP=::1
+API_SERVER_PORT=6443
+
+# May 27, 2025 this version was installed
+#VERSION=1.16.3
+# New version
+#VERSION=1.17.4
+# Not working with IPv6! Sounds like: https://github.com/cilium/cilium/issues/37817
+# Reverted to 1.16, but newer version .10
+VERSION=1.16.10
+\end{minted}
+
+
+\begin{list2}
+\item As can be read, there has been problems along the way
+\item Ended up doing this complete uninstall and re-install, only a few minutes on my setup
+\end{list2}
+
+\slide{Installing Cilium - part 2 }
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+# Gateway API CRDs
+# Read on https://isovalent.com/blog/post/tutorial-getting-started-with-the-cilium-gateway-api/ it needs to be installed FIRST
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/experimental-install.yaml
+
+# Kubernetes was installed using these:
+# So make sure to set the same!
+NATIVE_CIDR=10.50.0.0/16
+NATIVE_CIDR6="2a06:d380:9984:0::/96"
+
+cilium install --version=$VERSION --helm-set ipam.mode=cluster-pool
+--helm-set bgpControlPlane.enabled=true --helm-set k8s.requireIPv4PodCIDR=true --helm-set kube-proxy-replacement=strict
+--helm-set prometheus.enabled=true 	--helm-set operator.prometheus.enabled=true
+--helm-set hubble.relay.enabled=true 	--helm-set hubble.ui.enabled=true
+--helm-set hubble.metrics.enabled="{dns,drop,tcp,flow,icmp,http}" --helm-set
+--policy-audit-mode=true --helm-set hostFirewall.enabled=true  --helm-set devices='{enp1s0}'
+--helm-set namespace=kube-system --helm-set ipv6.enabled=true --set enableIPv6Masquerade=false
+--helm-set ipam.operator.clusterPoolIPv4PodCIDRList=$NATIVE_CIDR
+--helm-set ipam.operator.clusterPoolIPv6PodCIDRList=$NATIVE_CIDR6
+--helm-set ipam.operator.clusterPoolIPv4MaskSize=24 --helm-set ipam.operator.clusterPoolIPv6MaskSize=112
+--helm-set bpf.masquerade=true --helm-set gatewayAPI.enabled=true
+\end{minted}
+
+
+
+\slide{Installing Cilium - Finish up }
+
+We are missing the following lines from the install script, restart the thing:
+\begin{minted}[fontsize=\footnotesize]{shell}
+#kubectl rollout restart daemonset -n kube-system cilium
+kubectl -n kube-system rollout restart deployment/cilium-operator
+\end{minted}
+
+\slide{Overall experience with cilium - great!}
+
+\begin{list2}
+\item I have tried both release candidates, production releases and had few problems
+\item It is quite easy to install cilium with the script, try a new / newer version
+\item It starts up quickly, and fails equally fast -- where you can read why it didn't start
+\item My initial rules for Cilium has been very stable - including as the host firewall too!\\
+\url{https://docs.cilium.io/en/latest/security/host-firewall/}
+\item I find it cleaner to use Cilium for all network policies, ignoring IPtables
+\item You need only a few CiliumClusterwideNetworkPolicy resources defined for the cluster to work, and then you can allow Secure Shell from only a few places
+\item Note: While booting there might be a very short time where Cilium is starting, where packets are allowed YMMV
+\end{list2}
+
+Worst when learning something new, trust yourself! You read the damn manual, but it didn't work - it might be a bug!
+
+\slide{Document what you did, what it did}
+
+Initially I started out with much fewer options for cilium:
+\begin{minted}[fontsize=\footnotesize]{shell}
+cilium install --version=1.13.0-rc4 \
+		--helm-set ipam.mode=kubernetes --helm-set tunnel=disabled \
+		--helm-set ipv4NativeRoutingCIDR="10.0.0.0/8" --helm-set bgpControlPlane.enabled=true \
+		--helm-set k8s.requireIPv4PodCIDR=true --helm-set kube-proxy-replacement=strict
+ℹ️  Using Cilium version 1.13.0-rc4
+🔮 Auto-detected cluster name: kubernetes
+🔮 Auto-detected datapath mode: tunnel
+🔮 Auto-detected kube-proxy has not been installed
+ℹ️  Cilium will fully replace all functionalities of kube-proxy
+ℹ️  helm template --namespace kube-system cilium cilium/cilium --version 1.13.0-rc4 --set bgpControlPlane.enabled=true,
+cluster.id=0,cluster.name=kubernetes,encryption.nodeEncryption=false,ipam.mode=kubernetes,
+ipv4NativeRoutingCIDR=10.0.0.0/8,k8s.requireIPv4PodCIDR=true,k8sServiceHost=10.137.0.26,
+k8sServicePort=6443,kube-proxyreplacement=strict,kubeProxyReplacement=strict,operator.replicas=1,
+serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator,tunnel=disabled
+...
+⌛ Waiting for Cilium to be installed and ready...
+✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+\end{minted}
+
+
+\slide{Cilium Gateway and TLS}
+
+Initially I had started with NGINX Ingress and Cilium, quite simple in the cloud world.
+
+
+Along the way I found out there is a new thing called Gateway API\\
+ \url{https://kubernetes.io/docs/concepts/services-networking/gateway/}
+
+\hlkimage{12cm}{gateway-1-dee3cc3f353e2ab51ecc4a58f59636fe.png}
+Source: \url{https://cilium.io/use-cases/gateway-api/}
+
+\slide{Gateway API in real life }
+\begin{minted}[fontsize=\footnotesize]{yaml}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: garden-gateway
+  namespace: webservices
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  gatewayClassName: cilium
+  infrastructure:
+    annotations:
+      io.cilium/lb-ipam-ips: 185.129.62.180, 2a06:d380:0:9985::1
+# Not in 1.16.3 yet
+#  addresses:
+#  - type: IPAddress
+#    value: 185.129.62.177
+\end{minted}
+
+\begin{list2}
+\item I run my DNS seperate from K8s, so I allocate static IPs externally and add them here
+\item Also again note that some feature was no in the version I used originally etc.
+\end{list2}
+
+\slide{Gateway API listeners }
+\begin{minted}[fontsize=\scriptsize]{yaml}
+  listeners:
+    - name: http-garden
+      protocol: HTTP
+      port: 80
+      hostname: garden.kramse.org
+      allowedRoutes:
+        namespaces:
+          from: All
+... more port 80 listeners
+    - name: https-garden
+      protocol: HTTPS
+      port: 443
+      hostname: garden.kramse.org
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - kind: Secret
+          name: garden-tls
+      allowedRoutes:
+        namespaces:
+          from: All
+\end{minted}
+
+
+
+
+\slide{Gateway API HTTProute with TLS }
+\begin{minted}[fontsize=\scriptsize]{yaml}
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: http-app-tls
+  namespace: webservices
+spec:
+  parentRefs:
+  - name: garden-gateway
+    namespace: webservices
+  hostnames:
+  - "garden.kramse.org"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+  - backendRefs:
+    - name: nginx-garden
+      port: 80
+\end{minted}
+
+\begin{list2}
+\item End result is very easy to follow, connects things
+\end{list2}
+
+%\her
+\slide{Cilium and other CLI tools}
+
+\hlkimage{24cm}{k8s-cilium-status.png }
+
+\begin{list2}
+\item Many tools are executed via \verb+kubectl+
+\item Others have their own command: kubeadm, crictl
+\item This can be very confusing, and again -- document which tools you use!
+\item Having a {\bf jump host with updated tools installed} might help -- helps me!
+\end{list2}
+
+
+
+\slide{Checking your Kubernetes deployment}
+
+\hlkimage{5cm}{testing.pdf}
+
+\begin{list2}
+\item It can actually be hard to check your Kubernetes installation
+\item Especially networking in detail
+\item I would recommend spending a little time investigating Maximum Transmission Unit (MTU)\\
+\link{https://en.wikipedia.org/wiki/Maximum_transmission_unit}
+\item Your devices -- switches and network cards can probably also offload some features to hardware
+\item Advanced users could dive deeper into \emph{BPF and XDP Reference Guide} \link{https://docs.cilium.io/en/latest/bpf/}
+\end{list2}
+
+
+\slide{Testing Connectivity}
+
+Cilium has a very nice built-in connectivity test:
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@k8s-1:~# cilium connectivity test
+ℹ️  Monitor aggregation detected, will skip some flow validation steps
+✨ [kubernetes] Creating namespace cilium-test for connectivity check...
+✨ [kubernetes] Deploying echo-same-node service...
+✨ [kubernetes] Deploying DNS test server configmap...
+✨ [kubernetes] Deploying same-node deployment...
+✨ [kubernetes] Deploying client deployment...
+✨ [kubernetes] Deploying client2 deployment...
+✨ [kubernetes] Deploying echo-other-node service...
+✨ [kubernetes] Deploying other-node deployment...
+⌛ [kubernetes] Waiting for deployments [client client2 echo-same-node] to become ready...
+⌛ [kubernetes] Waiting for deployments [echo-other-node] to become ready...
+...
+✅ All 31 tests (232 actions) successful, 0 tests skipped, 0 scenarios skipped.
+root@k8s-1:~#
+\end{minted}
+
+\slide{External IPs}
+
+Jumping directly in, I am running on bare metal. Getting external access into K8s is a bit hard. I decided to use Cilium, BGP, and IP pools
+
+pool-zencurity.yaml:
+\begin{minted}[fontsize=\footnotesize]{yaml}
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "pool"
+spec:
+  cidrs:
+  - cidr: "185.129.62.144/28"
+  - cidr: "2a06:d380:0:85::0/64"
+\end{minted}
+
+\begin{list2}
+\item \link{https://docs.cilium.io/en/latest/network/lb-ipam/}
+\item I run a LIR (Local Internet Registry) with network AS57860 which have these addresses
+\item This part has been running flawlessly, no more comments - nice!
+\end{list2}
+
+
+\slide{Result in my setup}
+
+%\hlkimage{}{}
+
+\begin{minted}[fontsize=\scriptsize]{shell}
+hlk@cheese01:~$ k get gateway -A
+NAMESPACE     NAME             CLASS    ADDRESS          PROGRAMMED   AGE
+webservices   garden-gateway   cilium   185.129.62.180   True         228d
+hlk@cheese01:~$ k get svc -A
+NAMESPACE      NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP                          PORT(S)                      AGE
+cert-manager   cert-manager                    ClusterIP      10.96.2.250     <none>                               9402/TCP                     261d
+cert-manager   cert-manager-cainjector         ClusterIP      10.96.14.165    <none>                               9402/TCP                     261d
+cert-manager   cert-manager-webhook            ClusterIP      10.96.214.76    <none>                               443/TCP,9402/TCP             261d
+default        kubernetes                      ClusterIP      10.96.0.1       <none>                               443/TCP                      228d
+kube-system    cilium-envoy                    ClusterIP      None            <none>                               9964/TCP                     45d
+kube-system    kube-dns                        ClusterIP      10.96.0.10      <none>                               53/UDP,53/TCP,9153/TCP       266d
+webservices    cilium-gateway-garden-gateway   LoadBalancer   10.96.85.230    185.129.62.180,2a06:d380:0:9985::1   80:30137/TCP,443:32058/TCP   228d
+webservices    nginx-files-kramse              LoadBalancer   10.96.234.56    185.129.62.176,2a06:d380:0:9985::2   80:30854/TCP,443:31590/TCP   193d
+webservices    nginx-garden                    LoadBalancer   10.96.49.30     185.129.62.179,2a06:d380:0:9985::    80:31498/TCP,443:31710/TCP   228d
+webservices    nginx-library-kramse            LoadBalancer   10.96.44.145    185.129.62.177,2a06:d380:0:9985::3   80:30420/TCP,443:30432/TCP   115d
+
+\end{minted}
+
+
+
+
+
+
+
+\slide{Monitoring and updating -- upgrades}
+
+%\hlkimage{}{}
+
+\begin{quote}
+Since Kubernetes is a complex system, I recommend making an initial deployment plan which is longer than a release cycle of Kubernetes. Currently new releases are coming out rapidly, so a 3-4 month plan should suffice.
+
+{\bf Main goal is to try upgrading the cluster \emph{before} you have production running!}
+\end{quote}
+
+\link{https://kubernetes.io/releases/}
+
+You need to upgrade all parts, so remember which parts you use:
+\begin{list2}
+\item Firmwares and supporting systems, routers, switches, server control, storage, ...
+\item Operating systems
+\item Kubernetes core components
+\item Cilium upgrade and various other plugins
+\end{list2}
+
+
+\slide{Performing upgrades: Cilium}
+
+%\hlkimage{}{}
+\begin{quote}
+When rolling out an upgrade with Kubernetes, Kubernetes will first terminate the pod followed by pulling the new image version and then finally spin up the new image. In order to reduce the downtime of the agent and to prevent ErrImagePull errors during upgrade, the pre-flight check pre-pulls the new image version.
+\end{quote}
+
+\begin{alltt}\footnotesize
+root@gouda01:~# cilium upgrade
+🔮 Auto-detected datapath mode: tunnel
+🚀 Upgrading cilium-operator to version quay.io/cilium/operator-generic:v1.12.5...
+🚀 Upgrading cilium to version quay.io/cilium/cilium:v1.12.5...
+⌛ Waiting for Cilium to be upgraded...
+
+\end{alltt}
+
+\begin{list2}
+\item Cilium recommend a pre-flight check -- pulls images beforehand etc:\\
+\link{https://docs.cilium.io/en/v1.12/operations/upgrade/}
+\item A good example of how to prepare upgrades
+\end{list2}
+
+
+\slide{Performing upgrades: CRI-O and K8s}
+
+% \hlkimage{}{}
+
+Basically I follow the instructions from:\\
+\url{https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/}
+
+Example in mid May 2025, and 1.33 came out recently. I upgraded from 1.31 over 1.32 to 1.33, without problems
+
+The process was for each upgrade
+\begin{list2}
+\item Update repositories
+\item Upgrade kubeadm from say 1.32 which you are running to 1.33 which is the version you want
+\item Run \verb+kubeadm upgrade plan+ to check a few things
+\item Perform upgrade on controller to the version you want, like kubeadm upgrade apply v1.33.1
+\item Upgrade software, CRI-O container, kubectl and kubelet etc. just regular apt update/upgrade
+\item Do a reboot, controlled, chaotic, whatever :-D
+\end{list2}
+
+\slide{kubeadm upgrade plan}
+
+\begin{minted}[fontsize=\scriptsize]{shell}
+# kubeadm upgrade plan
+[preflight] Running pre-flight checks.
+[upgrade/config] Reading configuration from the "kubeadm-config" ConfigMap in namespace "kube-system"...
+[upgrade/config] Use 'kubeadm init phase upload-config --config your-config-file' to re-upload it.
+W0525 20:44:37.362442  833945 configset.go:78] Warning: No kubeproxy.config.k8s.io/v1alpha1 config is loaded.
+Continuing without it: configmaps "kube-proxy" not found
+[upgrade] Running cluster health checks
+[upgrade] Fetching available versions to upgrade to
+[upgrade/versions] Cluster version: 1.32.5
+[upgrade/versions] kubeadm version: v1.33.1
+[upgrade/versions] Target version: v1.33.1
+[upgrade/versions] Latest version in the v1.32 series: v1.32.5
+
+W0525 20:44:44.068842  833945 configset.go:78] Warning: No kubeproxy.config.k8s.io/v1alpha1 config is loaded.
+Continuing without it: configmaps "kube-proxy" not found
+Components that must be upgraded manually after you have upgraded the control plane with 'kubeadm upgrade apply':
+COMPONENT   NODE       CURRENT   TARGET
+kubelet     cheese01   v1.32.5   v1.33.1
+kubelet     cheese02   v1.32.5   v1.33.1
+\end{minted}
+
+\slide{continued}
+
+\begin{minted}[fontsize=\scriptsize]{shell}
+Upgrade to the latest stable version:
+
+COMPONENT                 NODE       CURRENT    TARGET
+kube-apiserver            cheese01   v1.32.5    v1.33.1
+kube-controller-manager   cheese01   v1.32.5    v1.33.1
+kube-scheduler            cheese01   v1.32.5    v1.33.1
+kube-proxy                           1.32.5     v1.33.1
+CoreDNS                              v1.11.3    v1.12.0
+etcd                      cheese01   3.5.16-0   3.5.21-0
+
+You can now apply the upgrade by executing the following command:
+
+	kubeadm upgrade apply v1.33.1
+\end{minted}
+
+Then after running the apply:\\{\scriptsize
+\verb+[upgrade] SUCCESS! A control plane node of your cluster was upgraded to "v1.33.1".+}
+
+Logs from my upgrade can be seen at \url{https://garden.kramse.org/kubernetes-upgrade.html}
+
+\slide{Package installation: Kubernetes and CRI-O repositories}
+
+Then following the instructions from the packaging README.md:\\
+\url{https://github.com/cri-o/packaging/blob/main/README.md}
+
+\begin{minted}[fontsize=\scriptsize]{shell}
+KUBERNETES_VERSION=v1.33
+CRIO_VERSION=v1.33
+
+curl -fsSL https://pkgs.k8s.io/core:/stable:/$KUBERNETES_VERSION/deb/Release.key |
+  gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]
+https://pkgs.k8s.io/core:/stable:/$KUBERNETES_VERSION/deb/ /" |
+  tee /etc/apt/sources.list.d/kubernetes.list
+
+echo "and CRI-O"
+curl -fsSL https://download.opensuse.org/repositories/isv:/cri-o:/stable:/$CRIO_VERSION/deb/Release.key |
+      gpg --dearmor -o /etc/apt/keyrings/cri-o-apt-keyring.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg]
+https://download.opensuse.org/repositories/isv:/cri-o:/stable:/$CRIO_VERSION/deb/ /" |
+  tee /etc/apt/sources.list.d/cri-o.list
+\end{minted}
+
+
+\slide{The software upgrade}
+
+\begin{minted}[fontsize=\scriptsize]{shell}
+#  apt upgrade
+  Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+The following packages will be upgraded:
+  cri-o cri-tools kubectl kubelet
+4 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Need to get 66.5 MB of archives.
+After this operation, 13.2 MB of additional disk space will be used.
+Get:1 https://prod-cdn.packages.k8s.io/repositories/isv:/kubernetes:/core:/stable:/v1.33/deb  cri-tools 1.33.0-1.1 [17.3 MB]
+Get:2 https://ftp.gwdg.de/pub/opensuse/repositories/isv%3A/cri-o%3A/stable%3A/v1.33/deb  cri-o 1.33.0-2.1 [21.6 MB]
+Get:3 https://prod-cdn.packages.k8s.io/repositories/isv:/kubernetes:/core:/stable:/v1.33/deb  kubectl 1.33.1-1.1 [11.7 MB]
+Get:4 https://prod-cdn.packages.k8s.io/repositories/isv:/kubernetes:/core:/stable:/v1.33/deb  kubelet 1.33.1-1.1 [15.9 MB]
+Fetched 66.5 MB in 1s (76.9 MB/s)
+...
+\end{minted}
+
+\begin{list2}
+\item I have had very little trouble with the CRI-O and K8s software installation and maintainance
+\end{list2}
+
+
+
+\slide{Kubernetes lab setup -- proof of concept}
+
+\hlkimage{4cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: any modern PC with modern CPU and virtualisation\\
+Don't forget to enable it in the BIOS
+\item Software: your favourite Linux distribution, I choose Debian
+\item Container software: pick CRI-O
+\item Smallest Kubernetes: Minikube -  I run this on Debian
+\item Production deployment probably would use better tools like \faWrench\ \verb+Kubeadm+
+\item Cilium for the networking part took some setup, quite a lot! Afterwards has been very easy
+\item Switching from NGINX Ingress to Gateway API with Cilium was well documented, even though a new feature
+\end{list2}
+
+
+
+\slide{Conclusion Kubernetes on-premise}
+
+\hlkimage{4cm}{network-layers-2022.pdf}
+
+\begin{list2}
+\item It is hard getting started, took me a lot of YAML \smiley
+\item Dont be discouraged -- just learn some Linux, Debian, K8s, Cilium, BGP, NFS, YAML, NGINX, Git, Ruby, Jekyll and you are almost done
+
+
+\item Multiple books have checklist -- depending on your interests, some for developers, some for ops
+\item Example: Hacking Kubernetes chapter 10. has good advice too, including a small checklist for On-Premises Environments
+links on p249 to Build K8s Bare-metal cluster with external access\\
+\link{https://medium.com/swlh/on-premise-kubernetes-clusters-b36660ca6914}\\
+\link{https://www.datapacket.com/blog/build-kubernetes-cluster}\\
+\link{https://medium.com/@apiotrowski312/bare-metal-kubernetes-with-helm-rook-ingress-prometheus-grafana-6a74857cc74c}
+\end{list2}
+
+
+\myquestionspage
+
+
+\slide{Materials -- where to start}
+
+\begin{list2}
+\item This presentation -- slides for today, start here
+\item \emph{Kubernetes: Up and Running}, 3rd Edition, Brendan Burns, Joe Beda, Kelsey Hightower,
+August 2022\\
+Introduces containers and Kubernetes, books in 3rd ed also has been fixed and updated
+\item \emph{Container Security}, (CS) Liz Rice, O'Reilly, Apr 2020\\
+A classic text about containers and a must read for everyone
+\item \emph{Networking and Kubernetes: A Layered Approach}, James Strong, Vallery Lancey, O'Reilly, 2021\\
+K8s uses a lot of intricate networking -- great for understanding this more
+\item \emph{Learn Kubernetes Security} (LKS), Kaizhe Huang , Pranjal Jumde, Packt, July 2020\\
+This is a very complete and detailed view at K8s security, covering many many parts
+\item Advanced security practioners will enjoy security focused books like:\\
+\emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
+\item \emph{Kubernetes Best Practices: Blueprints for Building Successful Applications on Kubernetes}, Brendan Burns, Eddie Villalba, Dave Strebel and Lachlan Evenson, O'Reilly 2020
+\end{list2}
+
+
+\slide{Books and educational materials}
+
+We could keep recommending books, articles, papers and official documentation.
+These are examples, and even if some details are changed, may be good to read
+\begin{list2}
+\item \emph{Kubernetes Security and Observability} Brendan Creane, Amit Gupta % Er på Oreilly.com
+Mastering Kubernetes, {\bf Third Edition}, Gigi Sayfan, Packt 2020
+\item \emph{kubectl: Command-Line Kubernetes in a Nutshell}, Rimantas Mocevicius, Packt, 2020
+\item \emph{The Kubernetes Workshop},Zachary Arnold, Sahil Dua, Wei Huang, Faisal Masood, Melony Qin,
+and Mohammed Abu Taleb, Packt, 2020
+\item \emph{Kubernetes A Complete DevOps Cookbook}, Murat Karslioglu, Packt, 2020
+\item \emph{Cloud Native with Kubernetes}, Alexander Raul, Packt, 2020
+\item \emph{Kubernetes and Docker – An Enterprise Guide}, Scott Surovich, Marc Boorshtein, Packt, 2020
+\item \emph{Kubernetes in Production Best Practices: Build and manage highly available production-ready
+Kubernetes clusters}, Aly Saleh, Murat Karslioglu, Packt 2021
+\end{list2}
+
+These are the ones I selected for \emph{my Kubernetes education} some via a Humble Ultimate Devops bundle
+
+\slide{Linux and Internet Resources}
+
+Let's face it, K8s is Unix, so basic Linux and Internet Security resources help too:
+\begin{list2}
+\item \emph{The Linux Command Line: A Complete Introduction}, 2nd Edition\\
+ by William Shotts, internet edition \link{https://sourceforge.net/projects/linuxcommand}
+\item \emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, 5. ed. Allen Harper and others ISBN: 978-1-260-10841-5
+\item \emph{Defensive Security Handbook: Best Practices for Securing Infrastructure}, Lee Brotherston, Amanda Berlin ISBN: 978-1-491-96038-7 284 pages
+\item \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+\item \emph{Practical Packet Analysis, Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd ed, ISBN: 978-1-59327-802-1
+\end{list2}
+
+We teach using these books and others! Diploma in IT-security at KEA Kompetence\\
+ \link{https://zencurity.gitbook.io/}
+
+\end{document}

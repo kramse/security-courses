@@ -106,26 +106,6 @@ Source: \url{https://www.merriam-webster.com/dictionary/holistic}
 \item When improving network security, we often improve overall security
 \end{list2}
 
-\slide{Goals for today}
-
-%\hlkimage{6cm}{bornhack-camp-2024.jpg}
-
-\begin{list2}
-\item Confidentiality, Integrity og Availability (CIA) model
-\item
-\item
-\item
-\item
-
-\end{list2}
-
-Exercises
-\begin{list2}
-\item Debian Linux installation
-\end{list2}
-
-
-
 
 \slide{Course Materials}
 
@@ -418,6 +398,51 @@ This is not easy!
 \item We should prefer security mechanisms that does NOT require us to keep patching every month
 \item Can we change our networks to avoid this? Yes!
 \end{list2}
+
+
+
+\slide{Address planning -- helps security for both IPv4 and IPv6! }
+
+%\hlkimage{}{}
+
+\begin{quote}
+IPv6 address allocations and overall architecture are important parts
+of securing IPv6.  Initial designs, even if intended to be temporary,
+tend to last much longer than expected.  Although IPv6 was initially
+thought to make renumbering easy, in practice, it may be extremely
+difficult to renumber without a proper IP Address Management (IPAM)
+system.  [RFC7010] introduces the mechanisms that could be utilized
+for IPv6 site renumbering and tries to cover most of the explicit
+issues and requirements associated with IPv6 renumbering.
+
+{\bf A key task for a successful IPv6 deployment is to prepare an
+addressing plan.  Because an abundance of address space is available,
+structuring an address plan around both services and geographic
+locations allows address space to become a basis for more structured
+security policies to permit or deny services between geographic
+regions}.  [RFC6177] documents some operational considerations of
+using different prefix sizes for address assignments at end sites.
+\end{quote}
+Source: RFC 9099
+
+\begin{list2}
+\item You have space, use it!
+\end{list2}
+
+
+\slide{Network Architecture and Address planning }
+
+\hlkimage{8cm}{ipv6-linked-to-ipv4.png}
+Source: picture from Surfnet Preparing and IPv6 Address Plan
+
+\begin{list2}
+\item Take the opportunity to re-design your network! Create a design, consider it green field, work towards it!
+\item Use /127 for point-to-point links, add loopback addresses on routers, allows filtering of access to management
+\item You can also make parts IPv6-only, Veronika McKillop at TROOPERS19 \emph{Microsoft IT (secure) journey to IPv6-only}\\
+\link{https://troopers.de/troopers19/agenda/h7sv7v/}
+\end{list2}
+
+
 
 
 \slide{Unified communications}
@@ -865,6 +890,31 @@ IEEE 802.1x -- Port Based Network Access Control
 \end{list1}
 
 
+\slide{Creating an Access Control List (ACL)}
+
+%\hlkimage{}{}
+
+\begin{alltt}\small
+ (config)#ipv6 access-list RA-GUARD
+ (config-ipv6-acl)#sequence 3 deny icmp any any router-advertisement
+ (config-ipv6-acl)#sequence 6 permit ipv6 any any
+ (config-ipv6-acl)#exit
+ (config)#interface FastEthernet0/5
+ (config-if)#ipv6 traffic-filter RA-GUARD in
+\end{alltt}
+Source: example copied from RIPE NCC IPv6 Security Training materials:\\
+\link{https://www.ripe.net/support/training/material/ipv6-security/ipv6security-slides.pdf}
+
+\begin{list2}
+\item Best practice, and not that hard to do -- Layer 2 protection
+\item ACL, filtering and firewalling will create longer lasting protection
+\item Paired with a nice address plan you can easily put restrictions on traffic flow, without hurting functionality or the business
+\item Does ANY client in ANY office NEEEEEED to connect to ANY UPS, Virtualisation and printer across the world ...
+\end{list2}
+
+
+
+
 \slide{Example high level blueprint and process}
 
 %\hlkimage{}{}
@@ -923,7 +973,50 @@ server would affect the rest of the network
 \end{list2}
 
 
-\slide{Logging}
+
+\slide{Block outgoing traffic too}
+
+\begin{list1}
+\item Some services should \emph{not} cross firewalls, at least not to the internet
+\item Some services are too \emph{fragile}
+
+\begin{list2}
+\item Windows SMB file sharing is \emph{only} for small internal networks
+\item Unix NFS is like-wise \emph{only} for internal use
+\item Outgoing email should only go via dedicated relays
+\item LDAP outgoing, why?! See the log4j CVE-2021-44228
+\item Create a list, document them and consider them dead!
+\end{list2}
+\item Making a positive list of allowed protocols would be best, but may require too many resources to implement and update
+\end{list1}
+
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+\begin{list2}
+\item Filtrering at higher layers is also possible
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists}
+\end{list2}
+
+
+\slide{Cloud Network Security: Cilium overview}
+
+\hlkimage{12cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+
+
+
+\slide{Logging and Monitoring}
 
 %\hlkimage{}{}
 
@@ -934,31 +1027,211 @@ server would affect the rest of the network
 \begin{list2}
     \item
 \end{list2}
+
+\slide{Netflow and Session Logging}
+
+\begin{list2}
+\item Netflow is getting more important, more data share the same links
+\item Accounting is important
+\item Detecting DoS/DDoS and problems is essential
+\item Netflow sampling is vital information - 123Mbit, but what kind of traffic
+\item NFSen is an old but free application
+\link{http://nfsen.sourceforge.net/}
+\item Currently also investigating sFlow - hopefully more fine grained
+\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model, \\
+\link{https://en.wikipedia.org/wiki/SFlow}
+\end{list2}
+
+
+
+
+\slide{Netflow using NFSen}
+
+\hlkimage{13cm}{images/nfsen-overview.png}
+
+
+\slide{ Netflow NFSen}
+
+\hlkimage{17cm}{nfsen-udp-flood.png}
+
+\centerline{An extra 100k packets per second from this netflow source (source is a router)}
+
+
+
+\slide{ElastiFlow -- Elasticsearch based}
+
+\hlkimage{10cm}{elastiflow.png}
+
+\begin{quote}
+  ElastiFlow™ provides network flow data collection and visualization using the Elastic Stack (Elasticsearch, Logstash and Kibana). It supports Netflow v5/v9, sFlow and IPFIX flow types (1.x versions support only Netflow v5/v9).
+\end{quote}
+Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
+
+\slide{Akvorado: flow collector, enricher and visualizer}
+
+\hlkimage{8cm}{akvorado-timeseries.png}
+
+\begin{quote}
+This program receives flows (currently Netflow/IPFIX and sFlow), enriches them with interface names (using SNMP), geo information (using IPinfo.io), and exports them to Kafka, then ClickHouse. It also exposes a web interface to browse the collected data.
+\end{quote}
+Source: Picture and text from \url{https://github.com/akvorado/akvorado}
+
+
+\slide{Big Data tools: Elasticsearch and Kibana}
+
+\hlkimage{10cm}{kibana-basics-with-vega.jpg}
+
+Elasticsearch is an open source distributed, RESTful search and analytics engine capable of solving a growing number of use cases.
+
+\link{https://www.elastic.co}
 
 \slide{DNS logging}
 
-%\hlkimage{}{}
+Since most malware uses DNS today, to be able to switch to new command and control endpoints, we can leverage that to our advantage.
 
-\begin{quote}
-
-\end{quote}
+Domain Name System (DNS) depends on a query from the client, and a server that resolves this to a value.
 
 \begin{list2}
-    \item
+\item We can log any DNS traffic into a database
+\item We can look up if any clients have done a lookup for a specific name or IP during incident handling
+\item This can confirm if a client has ever \emph{visited} a malicious site, because first it needs to lookup the name to IP address before it can make the TCP/HTTP connection, or send data
 \end{list2}
 
 
-\slide{Netflow and Akvorado}
+
+\slide{Unbound and NSD}
+
+\begin{quote}
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
+\end{quote}
+
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
+
+My preferred local DNS server.
+
+Also check out uncensored DNS and his DNS over TLS setup!\\
+Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
+
+
+
+\slide{Building Secure Infrastructures}
+
+\begin{list1}
+\item A real-life setup of an infrastructure from scratch can be daunting!
+\item You need:
+\begin{list2}
+\item Policies
+\item Procedures
+\item Incident Response
+\end{list2}
+\item Running systems which require
+\begin{list2}
+\item Configurations
+\item Settings
+\item Supporting infrastructure -- networks
+\item Supporting infrastructure -- logging, dash boarding, monitoring
+\end{list2}
+\item Building something \emph{secure} is {\bf hard work!}
+\end{list1}
+
+
+
+
+\slide{Concrete advice for enterprise networks}
+
+
+\begin{list2}
+\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updates or isolation
+\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LAN, WAN, Mail, web, ...
+\item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
+do not allow traffic to and from any new TLD
+\item Use only your own DNS servers, create a pair of Unbound servers, \\
+point your internal DNS running on Windows to these\\
+Create filtering, logging, restrictions on these Unbound DNS servers\\
+\link{https://www.nlnetlabs.nl/projects/unbound/about/} and also \link{https://pi-hole.net/}
+\item Only allow SMTP via your own mail servers, create a simple forwarder if you must
+\end{list2}
+
+Allow lists are better than block list, even if it takes some time to do it
+
+
+\slide{DROP SOME TRAFFIC NOW}
+
+\begin{list2}
+\item Drop some traffic on the border of everything
+\item Seriously do NOT allow Windows RPC across borders
+\item Border here may be from regional country office back to HQ
+\item Border may be from internet to internal networks
+\item Block Windows RPC ports, 135, 137, 139, 445
+\item Block DNS directly to internet, do not allow clients to use any DNS, fake 8.8.8.8 if you must internally
+\item Block SMTP directly to internet
+\item Create allow list for internal networks, client networks should not contact other client networks but only relevant server networks
+\end{list2}
+
+You DONT need to allow direct DNS towards internet, except from your own recursive DNS servers
+
+If you get hacked by Windows RPC in 2022, you probably deserve it, sorry for being blunt
+
+Best would be to analyze traffic and create allow lists, some internal networks to not need internet at all
+
+
+\slide{Default permit}
 
 %\hlkimage{}{}
 
-\begin{quote}
+One of the early implementers of firewalls Marcus J. Ranum summarized in 2005 The Six Dumbest Ideas in Computer Security \link{https://www.ranum.com/security/computer_security/editorials/dumb/} which includes the always appropriate discussion about default permit versus default deny.
 
+\begin{quote}\small {\bf
+\#1) Default Permit}\\
+This dumb idea crops up in a lot of different forms; it’s incredibly persistent and difficult to eradicate. Why? Because it’s so attractive. Systems based on ”Default Permit” are the computer security equivalent of empty calories: tasty, yet fattening.
+
+The most recognizable form in which the ”Default Permit” dumb idea manifests itself is in firewall rules. Back in the very early days of computer security, network managers would set up an internet connection and decide to secure it by turning off incoming telnet, incoming rlogin, and incoming FTP. Everything else was allowed through, hence the name ”Default Permit.” This put the security practitioner in an endless arms-race with the hackers.
 \end{quote}
 
+
 \begin{list2}
-    \item
+\item Allow all current networks today on all ports for all protocols \emph{is} an allow list \\
+Which tomorrow can be split into one for TCP, UDP and remaining, and measured upon
+\item Measure, improve, repeat
 \end{list2}
+
+
+
+\slide{We cannot do X}
+
+\begin{quote}
+We cannot block SMTP from internal networks, since we do not know for sure if vendor X equipment needs to send the MOST important email alert at some unspecific time in the future
+\end{quote}
+
+Cool, then we can do an allow list starting today on our border firewall:
+\begin{alltt}
+table <smtp-exchange> \{ $exchange1 $exchange2 $exchange3 \}
+table <smtp-unknown> persist file "/firewall/mail/smtp-internal-unknown.txt"
+# Regular use, allowed
+pass out on egress inet proto tcp from smtp-echange to any port 25/tcp
+# Unknown, remove when phased out
+pass out on egress inet proto tcp from smtp-internal to any port 25/tcp
+\end{alltt}
+
+Year 0 the unknown list may be 100\% of all internal networks, but new networks added to infrastructure are NOT added, so list will shrink -- evaluate the list, and compare to network logs, did networks send ANY SMTP for 1,2,3 years?
+
+
+\slide{Conclusion}
+
+% \hlkrightimage{15cm}{network-layers-1.png}
+
+\begin{list2}
+\item Implement firewalls -- take control over network packets
+\item Read the Fine manuals -- your devices already has a lot to offer
+\item Make a policy for networks, make incremental changes, configure security for new parts and VLANs in the network\\
+Over time the older ones will be phased out, replaced or can have the same configuration applied with little trouble
+\item Start from the bottom and from client ports, or from server ports if you like
+\item Learn some Linux and use open source projects, really, will save you thosands of USD/EUR/DKK
+\end{list2}
+
+
 
 
 \end{document}

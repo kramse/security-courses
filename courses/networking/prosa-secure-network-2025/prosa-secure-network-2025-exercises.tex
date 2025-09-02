@@ -1187,8 +1187,6 @@ We wont do this in class, but I have a lot of friends that use Wireguard in prod
 
 
 
-
-
 \chapter{\faInfoCircle\ Zeek on the web 10min}
 \label{ex:zeekweb}
 
@@ -1234,6 +1232,156 @@ drwxr-xr-x 10 root root 4096 Apr 16 20:03 ..
 -rw-rw-r--  1 root zeek 3052 Jan 28  2015 zeekctl.cfg
 drwxr-xr-x  2 root zeek 4096 Apr 16 20:03 zkg
 \end{alltt}
+
+
+\chapter{\faExclamationTriangle\ Zeek DNS capturing domain names -- 15min}
+\label{ex:zeekdnsbasic}
+
+
+{\bf Objective:} \\
+We will now start using Zeek on our systems.
+
+
+{\bf Purpose:}\\
+Try Zeek with example traffic, and see what happens.
+
+
+{\bf Suggested method packet capture file:}\\
+Use Nitroba.pcap can be found in various places around the internet
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ cd
+$ wget http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap
+$ mkdir $HOME/zeek;cd $HOME/zeek; zeek -r ../nitroba.pcap
+... zeek reads the packets
+~/zeek$ ls
+conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
+sip.log  ssl.log  weird.log  x509.log
+$ less *
+\end{minted}
+
+Use :n to jump to the next file in less, go through all of them.
+
+{\bf Suggested method Live traffic:}\\
+Make sure Zeek is configured as a standalone probe and configured for the right interface. Linux used to use eth0 as the first ethernet interface, but now can use others, like ens192 or enx00249b1b2991.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian:/opt/zeek/etc# cat node.cfg
+# Example ZeekControl node configuration.
+#
+# This example has a standalone node ready to go except for possibly changing
+# the sniffing interface.
+
+# This is a complete standalone configuration.  Most likely you will
+# only need to change the interface.
+[zeek]
+type=standalone
+host=localhost
+interface=eth0
+...
+\end{minted}
+
+
+{\bf Hints:}\\
+There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
+
+Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
+{\bf Solution:}\\
+When you either run Zeek using a packet capture or using live traffic
+
+Running with a capture can be done using a command line such as:
+\verb+zeek -r traffic.pcap+
+
+Using zeekctl to start it would be like this:
+\begin{minted}[fontsize=\footnotesize]{shell}
+// Use the deploy command to initialize and start zeek first
+debian:~ root# zeekctl
+
+Welcome to ZeekControl 1.5
+Type "help" for help.
+
+[ZeekControl] > install
+creating policy directories ...
+installing site policies ...
+generating standalone-layout.zeek ...
+generating local-networks.zeek ...
+generating zeekctl-config.zeek ...
+generating zeekctl-config.sh ...
+...
+debian:etc root# grep eth0 node.cfg
+interface=eth0
+\end{minted}
+
+Afterwards you can stop and start as you wish:
+\begin{minted}[fontsize=\footnotesize]{shell}
+[ZeekControl] > start
+... starting zeek
+// Exit using ctrl-d and then look at logs
+debian:zeek root# cd /opt/zeek/logs/current
+debian:zeek root# pwd
+/opt/zeek/logs/current
+debian:current root# tail -f dns.log
+\end{minted}
+
+You should be able to spot entries like this:
+\begin{minted}[fontsize=\footnotesize]{shell}
+#fields ts      uid     id.orig_h       id.orig_p       id.resp_h       id.resp_p       proto
+trans_id        rtt query   qclass  qclass_name     qtype   qtype_name      rcode   rcode_name
+AA      TC      RD      RA      Z       answers TTLs    rejected
+1538982372.416180 CD12Dc1SpQm42QW4G3 10.xxx.0.145 57476 10.x.y.141 53	udp
+20383	0.045021	www.dr.dk	1	C_INTERNET	1 A 0 NOERROR
+F F T T 0 www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93 60.000000,20409.000000,20.000000 F
+\end{minted}
+
+Note: this show ALL the fields captured and dissected by Zeek, there is a nice utility program zeek-cut which can select specific fields:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian:/opt/zeek/logs/current# cat dns.log | zeek-cut -d ts query answers | grep dr.dk
+2018-10-08T09:06:12+0200 www.dr.dk www.dr.dk-v1.edgekey.net,e16198.b.akamaiedge.net,2.17.212.93
+\end{minted}
+
+If your file is already in JSON format, you cannot use zeek-cut, but you can use other tools like jQuery \verb+jq+.
+
+{\bf Discussion:}\\
+Why is DNS interesting?
+
+
+\chapter{\faExclamationTriangle\ Zeek TLS capturing certificates -- 15min}
+\label{ex:zeektlsbasic}
+
+
+{\bf Objective:} \\
+Run more traffic through Zeek, see the various files.
+
+
+{\bf Purpose:}\\
+See that even though HTTPS and TLS traffic is encrypted it often show names and other values from the certificates and servers.
+
+
+{\bf Suggested method:}\\
+Run Zeek capturing live traffic, start https towards some sites. A lot of common sites today has shifted to HTTPS/TLS.
+
+
+{\bf Hints:}\\
+use zeekctl start and watch the output directory
+
+\begin{alltt}\small
+root@debian:/opt/zeek/logs/current# ls *.log
+communication.log  dhcp.log files.log known_services.log packet_filter.log  stats.log
+stdout.log x509.log conn.log dns.log known_hosts.log loaded_scripts.log  ssl.log
+stderr.log weird.log
+\end{alltt}
+
+We already looked at \verb+dns.log+, now check \verb+ssl.log+ and \verb+x509.log+
+
+{\bf Solution:}\\
+When you have multiple log files with data from Zeek, and have looked into some of them. You are welcome to ask questions and look into more files.
+
+
+{\bf Discussion:}\\
+How can you hide that you are going to HTTPS sites?
+
+Hint: VPN
 
 
 

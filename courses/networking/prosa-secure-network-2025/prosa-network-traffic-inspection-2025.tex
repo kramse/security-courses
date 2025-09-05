@@ -76,7 +76,7 @@ Will also try to make smaller breaks/exercises during the slidesshows, check for
 
 
 \begin{quote}
-{\bf \large Hvordan kan vi overvåge netværk effektivt?}
+{\bf Hvordan kan vi overvåge netværk effektivt?}
 
     Det får I svaret på i dette oplæg. Vi starter med at se på nogle simple eksempler som TCP forbindelse, HTTPS request og DNS. Dernæst peger underviseren på eksempelværktøjer som igennem mere end 25 år har automatiseret netværksovervågning som Zeek. Vi vil også tale om sessionslogning, firewall logning, Netflow. Og du får en præsentation af Suricata IDS som eksempel på et andet værktøj, der kan bruges til Intrusion Detection eller som central rolle i blokering af DNS traffik, IP negativ lister m.v.
 \vskip 5mm
@@ -89,19 +89,41 @@ Keywords: CIA modellen, CVE sårbarheder, switch, router, firewall, ACL, DoS/DDo
 \item Alle værktøjer der præsenteres er veldokumenterede mange steder -- inkl videoer
 \end{list2}
 
+\slide{Planlægning}
 
+\begin{quote}
+Ved gennemgangen af evalueringerne af ”Modul 1: Hvad er et sikkert netværk” afholdt 25.8: har vi lyttet til jer - om at der mangler nogle praktiske opgaver. Vi vil derfor meget gerne invitere til øvelsesaftener, hvor der udelukkende laves opgaver og kan stilles spørgsmål. Vi vil arbejde med den lille opal router, opgaver fra øvelseshæftet og der vil være lejlighed til at stille spørgsmål omkring materialerne fra Henrik.
+\end{quote}
 
-\slide{Goals for today}
+Planen er således:
+\begin{list2}
+\item Mandag 8. september kl. 17-21: ”Modul 2: Traffic Inspection”
+\item Mandag 15. september kl. 17-21: Åbent hus online med opgaver
+\item Mandag 22. september kl 17-21: ”Modul 3: Netværksovervågning og SIEM”
+\item Mandag 29. september kl. 17-21: Åbent hus online med opgaver
+\end{list2}
+
+På åbent hus aftener vil Henrik Kramselund være online og guide mht. spørgsmål, opgaver, løsning og input. Der vil ikke være foredrag. Mødeinvitation til alle aftener er samme Zoom-link!
+
+\slide{Goals}
 
 %\hlkimage{6cm}{}
 
+Goals for course
 \begin{list2}
-\item
+\item Multiple days -- longer than one day
+\item Larger with preparation, exercises and perhaps a course certificate
 \end{list2}
 
+Goals for today
+\begin{list2}
+\item Be able to process packets
+\item Understand enough about network packet data from at least a few common protocols DNS and HTTPS
+\item Know a few tool names Zeek and Suricata
+\item Run Zeek on the web, and run Zeek on the Debian VM
+\end{list2}
 
-
-
+We have added exercise days, if you can join great -- we will still do exercises today. Also I have limited the number of slides today!
 
 
 \slide{What is a Secure Network}
@@ -199,12 +221,15 @@ Source: \emph{Crafting the InfoSec Playbook: Security Monitoring and Incident Re
  by Jeff Bollinger, Brandon Enright, and Matthew Valites ISBN: 9781491949405
 
 
-\slide{MITRE ATT\&CK framework}
+\slide{Mitre ATT\&CK framework}
 
-\hlkimage{14cm}{mitre-attack.png}
-
+\hlkimage{10cm}{mitre-attack.png}
 Source: \link{https://attack.mitre.org/} Great resource for attack categorization
 
+\begin{list2}
+\item Most if not all attacks leave a trace, if you collect data. DNS requests, TCP connections, HTTPS certificates, session length -- time and data transmitted
+\item Mitre ATT\&CK framework recommends Application log and Network Traffic for Detection
+\end{list2}
 
 \slide{Indicators of Compromise and Signatures}
 
@@ -251,9 +276,9 @@ Exercises are completely optional
 
 \hlkimage{5cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
 \begin{list2}
-\item Try ping and traceroute
-\item See your own IP settings
-\item Connect to a switch or router -- most have web interfaces
+\item Try Zeek and Suricata
+\item See your own IP traffic -- from your virtual machine
+\item Decode packets and see data from DNS, HTTPS and TCP
 \end{list2}
 
 Linux is a toolbox I will use and participants are free to use whatever they feel like
@@ -269,15 +294,15 @@ Linux is a toolbox I will use and participants are free to use whatever they fee
 \item Kickstart document -- basic information
 \verb+kickstart-prosa-secure-network.pdf+
 \item Slide show - the presentation - this file
-\verb+prosa-secure-network-2025.pdf+
+\verb+prosa-network-traffic-inspection-2025.pdf+
 \item Exercise for today: example secure network \verb+exercise-secure-network-example.pdf+
 \item Exercise/inspiration for today: \verb+kickstart-2-opal-router.pdf+
 \item Exercise booklet -- large PDF with many exercises, stuff to do if you want to learn networks on your own
 \verb+prosa-secure-network-2025-exercises.pdf+
-\item \verb+prosa-network-traffic-inspection-2025.pdf+
+\item \verb+prosa-secure-network-2025.pdf+ Modul 1
 \item Additional resources from the internet like \verb+firewall-book-10-DRAFT-PROSA.pdf+
-\item Later, next times:
-%\verb+prosa-network-monitoring-SIEM-2025.pdf+
+\item Later, next time:
+\verb+prosa-network-monitoring-SIEM-2025.pdf+
 \end{list2}
 
 
@@ -457,11 +482,9 @@ Examples
 {\bfseries USER username}\\
 {\bfseries PASS password}\\
 Stop using FTP on the internet!
-\item DNS sending unencrypted on UDP and TCP\\
-Use DNS over HTTPS (DoH) or DNS over TLS (DoT)
+\item DNS is by default sending unencrypted on UDP and TCP\\
+Use DNS over HTTPS (DoH) or DNS over TLS (DoT) to encrypt your DNS queries
 \end{list2}
-
-
 
 \slide{Person in the middle attacks}
 
@@ -502,6 +525,26 @@ by Chris Sanders, 3rd Edition
 \hlkimage{10cm}{images/wireshark-sni-twitter.png}
 
 \centerline{Current TLS version 1.2 used in HTTPS show the name!}
+
+
+\slide{The Zeek Network Security Monitor}
+
+Together with firewalls -- The Zeek Network Security Monitor is not a single tool, more of a powerful network analysis framework
+
+\hlkimage{8cm}{zeek-ids.png}
+
+\begin{quote}
+While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
+\end{quote}
+
+Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
+
+
+
+\exercise{ex:wireshark-install}
+\exercise{ex:wireshark-capture}
+
+\exercise{ex:zeek-on-debian}
 
 
 
@@ -560,12 +603,6 @@ We can find existing programs that decode packets
 
 What output format do we want
 
-\slide{JSON and jq }
-
-\begin{list2}
-\item jq is a lightweight and flexible command-line JSON processor \url{https://jqlang.org/}
-\end{list2}
-
 
 \slide{Data overview JSON}
 
@@ -607,6 +644,36 @@ Source: \url{https://en.wikipedia.org/wiki/JSON}
 \end{list2}
 
 
+\slide{JSON and jq }
+
+\begin{minted}[fontsize=\footnotesize]{json}
+{
+  "timestamp": "2008-07-22T03:51:08.386060+0200",
+  "flow_id": 1376641579994488,
+  "pcap_cnt": 67,
+  "event_type": "dns",  "proto": "UDP",
+  "src_ip": "192.168.1.64",  "src_port": 27440,
+  "dest_ip": "192.168.1.254",  "dest_port": 53,
+  "pkt_src": "wire/pcap",
+  "dns": {
+    "version": 2,
+    "type": "query",
+    "id": 11992,
+    "rrname": "ssl-google-analytics.l.google.com",
+    "rrtype": "AAAA",
+    "tx_id": 0,
+    "opcode": 0
+  }
+}
+\end{minted}
+
+\begin{list2}
+\item
+\verb+hlk@debian-lab:~/suri$ cat eve.json | jq | head -21+
+jq is a lightweight and flexible command-line JSON processor \url{https://jqlang.org/}
+\end{list2}
+
+
 
 
 \slide{Start programming}
@@ -623,19 +690,6 @@ Example program, reading from HTTP, into Python, out using JSON
 \item And reuse existing software
 \end{list2}
 
-
-
-\slide{The Zeek Network Security Monitor}
-
-Together with firewalls -- The Zeek Network Security Monitor is not a single tool, more of a powerful network analysis framework
-
-\hlkimage{8cm}{zeek-ids.png}
-
-\begin{quote}
-While focusing on network security monitoring, Zeek provides a comprehensive platform for more general network traffic analysis as well. Well grounded in more than 15 years of research, Zeek has successfully bridged the traditional gap between academia and operations since its inception.
-\end{quote}
-
-Zeek is the tool formerly known as Bro, changed name in 2018. \link{https://www.zeek.org/}
 
 
 
@@ -663,15 +717,7 @@ I Recommend the Emerging Threats ET Pro ruleset
 
 \slide{Processing data with Zeek}
 
-Simple example of reading a file with a few packets
-
-\begin{list2}
-\item
-\end{list2}
-
-
-
-\slide{Get Started with Zeek}
+Get Started with Zeek requires the tool installed, and a packet capture
 
 \begin{list2}
 \item To run in “base” mode:\\
@@ -682,6 +728,7 @@ Simple example of reading a file with a few packets
 \verb+zeek -r traffic.pcap myscript.zeek+
 \end{list2}
 
+When you have the tool installed you can then configure live capture, deploy the tool in your network.
 
 \slide{Zeek demo: Run}
 
@@ -722,20 +769,6 @@ More examples at:\\
 \url{https://www.zeek.org/sphinx/script-reference/log-files.html}
 
 
-\exercise{ex:zeekweb}
-
-
-\exercise{ex:zeekdnsbasic}
-\exercise{ex:zeektlsbasic}
-
-
-\slide{Graphics }
-
-Example graphs plots from earlier
-\begin{list2}
-\item
-\end{list2}
-
 
 \slide{Example tools and graphs}
 
@@ -743,15 +776,16 @@ Example graphs plots from earlier
 
 
 \begin{list2}
-  \item Etherape shown, see \url{https://etherape.sourceforge.io/}
+\item Etherape shown, see \url{https://etherape.sourceforge.io/}
+\item A portscan captured would show one node contacting all the rest
 \end{list2}
 
 
 \slide{Parallel coordinate plots}
 
 \hlkimage{16cm}{collberg-parallel-plot.png}
-Source: image from Network Security Visualization Keith Fligg and Genevieve Max\\
-\link{https://www2.cs.arizona.edu/~collberg/Teaching/466-566/2013/Resources/presentations/2012/topic13-final/report.pdf}
+Source: image from Network Security Visualization Keith Fligg and Genevieve Max\\{\footnotesize
+\link{https://www2.cs.arizona.edu/~collberg/Teaching/466-566/2013/Resources/presentations/2012/topic13-final/report.pdf}}
 
 \begin{list2}
 \item \link{https://en.wikipedia.org/wiki/Parallel_coordinates}
@@ -795,6 +829,11 @@ Even has pinning information available:\\ {\small\link{https://blog.censurfridns
 
 \slide{Demo and exercises }
 
+\exercise{ex:zeekweb}
+
+\exercise{ex:zeekdnsbasic}
+\exercise{ex:zeektlsbasic}
+
 
 
 \slide{Discussion}
@@ -823,16 +862,7 @@ From the DNS servers -- query log?
 \item Destination port for UDP or TCP, type and code for ICMP, or 0 for other protocols
 \item IP Type of Service
 \end{list2}
-\item today Netflow version 9 or IPFIX
-\item sFlow, short for "sampled flow", is an industry standard for packet export at Layer 2 of the OSI model,
 \end{list1}
-
-Sources: \\{\footnotesize
-\link{https://en.wikipedia.org/wiki/NetFlow}\\
-\link{https://en.wikipedia.org/wiki/IP_Flow_Information_Export}\\
-\link{https://en.wikipedia.org/wiki/SFlow}
-}
-
 
 
 \slide{Netflow using NFSen}
@@ -875,7 +905,6 @@ Source: Picture and text from \link{https://github.com/robcowart/elastiflow} \\
 This program receives flows (currently Netflow/IPFIX and sFlow), enriches them with interface names (using SNMP), geo information (using IPinfo.io), and exports them to Kafka, then ClickHouse. It also exposes a web interface to browse the collected data.
 \end{quote}
 Source: Picture and text from \url{https://github.com/akvorado/akvorado}
-
 
 
 \slide{Cloud Network Security: Cilium overview}
@@ -940,6 +969,7 @@ Elasticsearch is an open source distributed, RESTful search and analytics engine
 \item Some of the most important parts of a SIEM is searching and dashboards
 \end{list2}
 
+\exercise{ex:suricata-read}
 
 \slide{Reading Summary, False Positives}
 
@@ -993,42 +1023,12 @@ Metadata + Context
 % \hlkrightimage{15cm}{network-layers-1.png}
 
 \begin{list2}
-\item Implement firewalls -- take control over network packets
+\item Implement firewalls -- take control over network packets, flows, protocols, services etc.\\
+also to reduce noise!
 \item Start monitoring with available data feed, sources, netflow, firewall logging, DNS queries etc.
 \item Start from the bottom and from client ports, or from server ports if you like
 \item Learn some Linux and use open source projects, really, will save you thosands of USD/EUR/DKK
 \end{list2}
-
-\slide{Referencer: netværksbøger}
-
-\begin{list2}
-\item Stevens, Comer,
-\item Network Warrior
-\item TCP/IP bogen på dansk
-\item KAME bøgerne
-\item O'Reilly generelt IPv6 Essentials og IPv6 Network Administration
-\item O'Reilly cookbooks: Cisco, BIND og Apache HTTPD
-\item Cisco Press og website
-\item Firewall bøger, Radia Perlman: IPsec,
-\end{list2}
-
-\slide{Bøger om IPv6}
-
-\begin{list1}
-\item \emph{IPv6 Network Administration}
-af David Malone og Niall Richard Murphy
- - god til real-life admins, typisk
-O'Reilly bog
-\item \emph{IPv6 Essentials} af Silvia Hagen, O'Reilly 2nd edition (May 17, 2006)
-	god reference om emnet
-\item \emph{IPv6 Core Protocols Implementation}
-af Qing Li, Tatuya Jinmei og Keiichi Shima
-\item \emph{IPv6 Advanced Protocols Implementation}
-af Qing Li, Jinmei Tatuya og Keiichi Shima
-\item - flere andre
-\end{list1}
-
-
 
 
 \end{document}

@@ -129,7 +129,7 @@ This book is named
 \emph{The Debian Administrator’s Handbook},  - shortened DEB
 
 {\bf Purpose:}\\
-Debian Linux is a mature Unix with great documentation. Kali Linux is based on Debian, so buy learning Debian you can make infrastructure using Debian Linux, and test security using Kali Linux -- and the administration will be the same commands.
+Debian Linux is a mature Unix with great documentation. Kali Linux is based on Debian, so by learning Debian you can make infrastructure using Debian Linux, and test security using Kali Linux -- and the administration will be the same commands.
 
 in a few moments, so better have the instructions ready.
 
@@ -154,7 +154,7 @@ The book DEB is free, but you can buy/donate to Debian, and I recommend it.
 \hlkimage{7cm}{debian-xfce.png}
 
 {\bf Objective:}\\
-I use Debian as the base for exercises -- they are tested on Debian and Kali!
+I use Debian as the base for exercises -- they are tested on Debian AMD64 systems!
 
 If you want to use Debian, make sure your virtual machine is in working order.
 
@@ -518,10 +518,13 @@ You can run Wireshark on your host too, if you want.
 {\bf Purpose:}\\
 Installing Wireshark will allow you to analyse packets and protocols
 
-Tcpdump is a feature included in many operating systems and devices to allow packet capture and saving network traffic into files.
+Tcpdump and packet capture is a feature included in many operating systems and devices to allow packet capture and saving network traffic into files.
 
 {\bf Suggested method:}\\
-Run Wireshark or tcpdump
+Install Wireshark and/or Tcpdump from either their home page or using the Debian packages:\\
+\verb+sudo apt install wireshark tcpdump+
+
+Run Wireshark or tcpdump to capture some packages.
 
 The PPA book page 41 describes Your First Packet Capture.
 
@@ -530,10 +533,50 @@ PCAP is a packet capture library allowing you to read packets from the network.
 Tcpdump uses libpcap library to read packet from the network cards and save them.
 Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
 
-Both tools are already on your Kali Linux, or do: \verb+apt-get install tcpdump wireshark+
+Use the command \verb+ip address+ to show interfaces, mine is enX0 -- and then:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+root@debian-lab:~# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute
+       valid_lft forever preferred_lft forever{\bf
+2: enX0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000}
+    link/ether 00:16:3e:5e:6c:00 brd ff:ff:ff:ff:ff:ff
+    altname enx00163e5e6c00
+    inet 10.137.0.51/24 brd 10.137.0.255 scope global noprefixroute enX0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::216:3eff:fe5e:6c00/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+root@debian-lab:~# tcpdump -nei enX0 icmp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on enX0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+13:55:10.091195 00:16:3e:5e:6c:00 > fe:ff:ff:ff:ff:ff, ethertype IPv4 (0x0800), length 98:
+10.137.0.51 > 9.9.9.9: ICMP echo request, id 1, seq 1, length 64
+13:55:10.105924 fe:ff:ff:ff:ff:ff > 00:16:3e:5e:6c:00, ethertype IPv4 (0x0800), length 98:
+9.9.9.9 > 10.137.0.51: ICMP echo reply, id 1, seq 1, length 64
+13:55:11.092277 00:16:3e:5e:6c:00 > fe:ff:ff:ff:ff:ff, ethertype IPv4 (0x0800), length 98:
+10.137.0.51 > 9.9.9.9: ICMP echo request, id 1, seq 2, length 64
+13:55:11.107360 fe:ff:ff:ff:ff:ff > 00:16:3e:5e:6c:00, ethertype IPv4 (0x0800), length 98:
+9.9.9.9 > 10.137.0.51: ICMP echo reply, id 1, seq 2, length 64
+13:55:12.094214 00:16:3e:5e:6c:00 > fe:ff:ff:ff:ff:ff, ethertype IPv4 (0x0800), length 98:
+10.137.0.51 > 9.9.9.9: ICMP echo request, id 1, seq 3, length 64
+13:55:12.110098 fe:ff:ff:ff:ff:ff > 00:16:3e:5e:6c:00, ethertype IPv4 (0x0800), length 98:
+9.9.9.9 > 10.137.0.51: ICMP echo reply, id 1, seq 3, length 64
+13:55:13.095628 00:16:3e:5e:6c:00 > fe:ff:ff:ff:ff:ff, ethertype IPv4 (0x0800), length 98:
+10.137.0.51 > 9.9.9.9: ICMP echo request, id 1, seq 4, length 64
+13:55:13.109071 fe:ff:ff:ff:ff:ff > 00:16:3e:5e:6c:00, ethertype IPv4 (0x0800), length 98:
+9.9.9.9 > 10.137.0.51: ICMP echo reply, id 1, seq 4, length 64
+\end{minted}
+
+I ran \verb+ping 9.9.9.9+ in another terminal window.
+
+If you want to save packets use option \verb+-w+ like: \verb+tcpdump -i enX0 -w my-capture.cap icmp+
 
 {\bf Solution:}\\
-When Wireshark is installed sniff some packets. We will be working with both live traffic and saved packets from files in this course.
+When Wireshark or Tcpdump is installed and you have captured some packets, you are done. We will be working with both live traffic and saved packets from files in this course.
 
 If you want to capture packets as a non-root user on Debian, then use the command to add a Wireshark group:
 \begin{alltt}
@@ -553,6 +596,125 @@ We can download a lot of packet traces from around the internet, we might use ex
 \link{https://old.zeek.org/community/traces.html}
 
 
+
+\chapter{Capturing network packets -- 15min}
+\label{ex:wireshark-capture}
+
+\hlkimage{4cm}{tcp-three-way.pdf}
+
+
+{\bf Objective:}\\
+Sniff packets and dissect them using Wireshark
+
+{\bf Purpose:}\\
+See real network traffic, also know that a lot of information is available and not encrypted.
+
+Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL
+
+\begin{alltt}
+curl http://www.zencurity.com
+\end{alltt}
+
+{\bf Suggested method:}\\
+Open Wireshark and start a capture\\
+Then in another window execute the ping program while sniffing
+
+or perform a Telnet connection while capturing data
+
+{\bf Hints:}\\
+When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some packets you are done.
+
+{\bf Discussion:}
+Is it ethical to collect packets from an open wireless network?
+
+Also note the TTL values in packets from different operating systems
+
+
+\chapter{Install Zeek on Your Debian -- 15min}
+\label{ex:zeek-on-debian}
+
+{\bf Objective:}\\
+See the installation of the Zeek tool.
+
+{\bf Purpose:}\\
+We will run Zeek on the Web with small pcaps. Running Zeek locally will allow us to run larger packet captures, and/or use live traffic.
+
+{\bf Suggested method:}\\
+Install Git and Ansible, \verb+sudo apt install git ansible+
+
+If you haven't already use Git to clone the kramse-labs repository:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:tt$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{minted}
+
+If you already cloned it, go into the folder and do a \verb+git pull+ to update your copy.
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@debian-lab:~$ cd kramse-labs/suricatazeek/
+hlk@debian-lab:~/kramse-labs/suricatazeek$ git pull
+Already up to date.
+\end{minted}
+
+Then use Ansible to install Zeek with a few modifications:
+
+\begin{list2}
+\item Add the OpenSuse Build Service repository, with key
+\item Install Zeek and some other tools
+\item Make a few modifications to the configuration: JSON output
+\end{list2}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@debian-lab:~/kramse-labs/suricatazeek$
+
+PLAY [run the playbook tasks on the localhost] **************************************************************************
+
+TASK [Gathering Facts] ***************************************************
+ok: [127.0.0.1]
+
+TASK [Exit if running Kali] **********************************************
+skipping: [127.0.0.1]
+
+TASK [lineinfile] ********************************************************
+ok: [127.0.0.1]
+
+TASK [Install a list of dependencies] **************************************************************************
+ok: [127.0.0.1]
+
+PLAY RECAP ***************************************************************
+127.0.0.1                  : ok=3    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+\end{minted}
+
+
+{\bf Hints:}\\
+Zeek installed in this way is the recommended way. This will allow you to update packages using regular Debian upgrade process: \verb+apt update;apt upgrade+
+
+{\bf Solution:}\\
+When you have read the exercise and understand the basics of the installation, you are done.
+
+Don't worry if it didn't go well.
+
+{\bf Discussion:}\\
+If using Ansible easier than copy pasting a lot of commands?
+
+What method would you prefer?
+
+Should the instructor have prepared a complete Virtual Machine image? a Container image?
+
 \chapter{\faInfoCircle\ Nping check ports 10 min}
 \label{ex:nping-tcp}
 {\bf Objective:} \\
@@ -564,7 +726,7 @@ Nping can check if probes can reach through a network, reporting success of fail
 {\bf Suggested method:}\\
 Run the command using a common port like Web HTTP:
 \begin{alltt}\footnotesize
-root@KaliVM:~# nping --tcp -p 80 www.zencurity.com
+root@debian:~# nping --tcp -p 80 www.zencurity.com
 
 Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:06 CEST
 SENT (0.0300s) TCP 10.137.0.24:3805 > 185.129.60.130:80 S ttl=64 id=18933 iplen=40  seq=2984847972 win=1480
@@ -595,7 +757,7 @@ A colleague of ours had problems sending specific IPsec packets through a provid
 \eject
 Things like changing the TTL may provoke ICMP messages, like this:
 \begin{alltt}\footnotesize
-root@KaliVM:~# nping --tcp -p 80 --ttl 3 www.zencurity.com
+root@debian:~# nping --tcp -p 80 --ttl 3 www.zencurity.com
 
 Starting Nping 0.7.70 ( https://nmap.org/nping ) at 2018-09-07 19:08 CEST
 SENT (0.0303s) TCP 10.137.0.24:37244 > 185.129.60.130:80 S ttl=3 id=60780 iplen=40  seq=1997801125 win=1480
@@ -1219,11 +1381,11 @@ The tool was renamed in 2018 from Bro to Zeek. Some commands and files still ref
 
 Also Zeek uses a zeekctl program to start/stop the tool, and a few config files which we should look at. From a Debian system they can be found in \verb+/opt/zeek/etc+ :
 
-This is from the Debian 11 package, checked May 2022
+This is from the Debian package from the Zeek project, which is why it is using the path \verb+/opt+.
 
 \verb+/opt/zeek/etc+:
 \begin{alltt}
-root@debian-lab-11:/opt/zeek/etc# ls -la
+root@debian-lab:/opt/zeek/etc# ls -la
 total 24
 drwxrwsr-x  3 root zeek 4096 Apr 16 20:03 .
 drwxr-xr-x 10 root root 4096 Apr 16 20:03 ..
@@ -1250,14 +1412,14 @@ Try Zeek with example traffic, and see what happens.
 Use Nitroba.pcap can be found in various places around the internet
 
 \begin{minted}[fontsize=\footnotesize]{shell}
-$ cd
-$ wget http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap
-$ mkdir $HOME/zeek;cd $HOME/zeek; zeek -r ../nitroba.pcap
+hlk@debian-lab:~$ cd
+hlk@debian-lab:~$ wget http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap
+hlk@debian-lab:~$ mkdir $HOME/zeek;cd $HOME/zeek; zeek -r ../nitroba.pcap
 ... zeek reads the packets
-~/zeek$ ls
+hlk@debian-lab:~/zeek$ ls
 conn.log  dns.log  dpd.log  files.log  http.log  packet_filter.log
 sip.log  ssl.log  weird.log  x509.log
-$ less *
+hlk@debian-lab:~/zeek$ less *
 \end{minted}
 
 Use :n to jump to the next file in less, go through all of them.
@@ -1286,6 +1448,7 @@ interface=eth0
 There are multiple commands for showing the interfaces and IP addresses on Linux. The old way is using \verb+ifconfig -a+ newer systems would use \verb+ip a+
 
 Note: if your system has a dedicated interface for capturing, you need to turn it on, make it available. This can be done manually using \verb+ifconfig eth0 up+
+
 {\bf Solution:}\\
 When you either run Zeek using a packet capture or using live traffic
 
@@ -1385,6 +1548,68 @@ Hint: VPN
 
 
 
+\chapter{\faExclamationTriangle\ Suricata from files -- 15min}
+\label{ex:suricata-read}
+
+\begin{minted}[fontsize=\footnotesize]{yaml}
+{
+  "timestamp": "2008-07-22T03:51:08.754839+0200",
+  "flow_id": 1271686344663190,
+  "pcap_cnt": 84,
+  "event_type": "dns",
+  "src_ip": "192.168.1.64",
+  "src_port": 2132,
+  "dest_ip": "192.168.1.254",
+  "dest_port": 53,
+  "proto": "UDP",
+  "pkt_src": "wire/pcap",
+  "dns": {
+    "version": 2,
+    "type": "query",
+    "id": 49569,
+    "rrname": "www.blogger.com",
+    "rrtype": "A",
+    "tx_id": 0,
+    "opcode": 0
+  }
+}
+\end{minted}
+
+{\bf Objective:} \\
+Run traffic through Suricata like we did with Zeek, see the various output files.
+
+
+{\bf Purpose:}\\
+See that the Suricata tools basically function similarly to Zeek. Main difference is that Zeek writes everything it decodes, while Suricata is often configured with a ruleset that allows for alerting about known bad things.
+
+{\bf Suggested method:}\\
+Run Suricata like we did with Zeek on the Nitroba packet capture.
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@debian-lab:~$ cd
+hlk@debian-lab:~$ wget http://downloads.digitalcorpora.org/corpora/scenarios/2008-nitroba/nitroba.pcap
+... skip this command if you already downloaded previously
+hlk@debian-lab:~$ mkdir $HOME/suri;cd $HOME/suri;suricata -l . -r ../nitroba.pcap -c /etc/suricata/suricata.yaml
+i: suricata: This is Suricata version 7.0.10 RELEASE running in USER mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: detect: 1 rule files specified, but no rules were loaded!
+W: unix-manager: Unix socket: UNIX socket bind(/var/run/suricata-command.socket) error: Address already in use
+W: unix-manager: Unable to create unix command socket
+i: threads: Threads created -> RX: 1 W: 2 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: pcap: read 1 file, 94410 packets, 54670237 bytes
+hlk@debian-lab:~/suri$ ls
+eve.json  fast.log  stats.log  suricata.log
+\end{minted}
+
+Read the eve.json using  \verb+less eve.json+ or perhaps \verb+cat eve.json | jq | less+
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+When you have multiple log files with data from Suricata, and have looked into some of them. You are welcome to ask questions and look into more files.
+
+{\bf Discussion:}\\
+
 
 \chapter{\faInfoCircle\ Test a DNS server 30min}
 \label{ex:dns-server-test}
@@ -1409,6 +1634,7 @@ The server to use is then \verb+127.0.0.1+, use it to ask for a domain like this
 $ host www.dr.dk 127.0.0.1
 \end{alltt}
 
+Note: this command is in the Debian package \verb+bind9-host+ install with \verb+sudo apt install bind9-host+
 
 {\bf Hints:}\\
 The documentation for Unbound includes a small example with the access-control directive, which is the most important one for recursive use.
@@ -1435,56 +1661,7 @@ If you like, purge the Unbound software including config, with\\
 
 and try installing Pi-Hole \link{https://pi-hole.net/}
 
-
-\chapter{\faInfoCircle\ Monitoring - setup LibreNMS 60 min}
-\label{ex:librenms-setup}
-
-{\bf Objective:}\\
-See and work with LibreNMS - for a little while.
-
-
-{\bf Purpose:}\\
-Show that initial setup of LibreNMS is quite easy, and immediately gives some results.
-
-Note: this requires an endpoint compatible with LibreNMS to get data in.
-
-{\bf Suggested method:}\\
-Choose installation method from:\\
-\link{https://docs.librenms.org/Installation/}
-
-Prebuilt docker and VM images will be fastest.
-
-{\bf Hints:}\\
-As they themselves write on the web page \link{https://www.librenms.org/}
-
-\begin{quote}
-LibreNMS is a fully featured network monitoring system that provides a wealth of features and device support.
-\end{quote}
-
-If you feel this is too much work, ask for login to the central one used for the core network.
-
-{\bf Solution:}\\
-When you have played around with LibreNMS you are done.
-
-It is recommended to look at:
-\begin{itemize}
-\item How basic information about devices are presented, from devices when added - and nothing more.\\
-See how to add a device and add your own. \link{https://docs.librenms.org/Support/Adding-a-Device/}
-\item How SNMP location is used to categorize devices and provice maps, see \link{https://docs.librenms.org/Extensions/World-Map/}
-\item How protocols like LLDP allow LibreNMS to make maps, see \link{https://docs.librenms.org/Extensions/Network-Map/}
-\item How port description can be used for describing ports, \link{https://docs.librenms.org/Extensions/Interface-Description-Parsing/}
-\end{itemize}
-
-Most of this happens with very little effort. Just configure devices consistently and they will be presented nicely.
-
-{\bf Discussion:}\\
-Have you configured port description? Try it!
-
-Real networks have policies for port description settings.
-
-
-
-\chapter{\faInfoCircle\ Configure Mirror Port 10min}
+\chapter{\faInfoCircle\ Configure a Mirror Port 10min}
 \label{ex:mirrorport}
 
 
@@ -1492,6 +1669,8 @@ Real networks have policies for port description settings.
 Mirror ports are a way to copy traffic to Suricata and other devices - for analyzing it. Below are the steps document on a Juniper switch to show how. This could be used for an Intrusion Detection System (IDS).
 
 Most switches which are configurable have this possibility.
+
+{\bf This is a reading exercise -- showing the steps one would go through to configure network wide packet capture}
 
 
 {\bf Purpose:}\\

@@ -1,0 +1,548 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\selectlanguage{english}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+% Start dit home-lab til IT-sikkerhed
+% Kun for medlemmer
+% Byg dit eget mini-datacenter og lær mens du eksperimenterer.
+
+% Vil du gerne dykke dybere ned i netværk, servere, virtualisering og sikkerhed – og lære det hele i praksis? Så er dette foredrag med efterfølgende øvelsesdag din chance for at komme i gang med dit eget home-lab: et privat testmiljø, hvor du kan eksperimentere med komplekse systemer, uden at noget går galt i produktion. Vi gennemgår, hvordan du designer et fleksibelt og realistisk home-lab – også med et lille budget. Du får konkrete eksempler på opsætninger, værktøjer og projekter, så du hurtigt kan bygge dit eget læringsmiljø derhjemme.
+
+% Vi gennemgår bl.a.:
+
+% • Hvordan du planlægger økonomien: hvad kan købes brugt, og hvad bør du investere i
+% • Netværksopsætning og valg af switch/router
+% • Servere, mini-pc’er og virtualisering
+% • Containere og drift af flere systemer samtidigt
+% • Sikkerhed, remote adgang og overvågning
+% • Backupstrategi og simple monitoreringsløsninger
+% • Idéer til konkrete projekter i dit home-lab
+% • Hvornår dit lab bliver så avanceret, at det næsten er et produktionssetup
+
+% Efter foredraget vil du have overblik over, hvordan du samler de første dele til dit eget lab. Og du får inspiration til, hvordan du kan udvide det trin for trin.
+
+% På dagen aftaler vi også en fælles øvelsesdag (online), hvor vi samles og arbejder videre i praksis.
+
+% Nøgleord: TCP/IP, infrastruktur, racks, hardware, servere, virtualisering, containere, sikkerhed
+
+\begin{document}
+
+
+\mytitlepage{Start Your Home Lab for IT-Security}
+{PROSA April 2026}
+
+
+\hlkprofiluk
+
+
+\slide{Goals for today}
+
+\hlkimage{4cm}{bornhack-camp-2024.jpg}
+
+\begin{list2}
+\item Strategies for Learning starting from Small labs
+\item Show various network and server configurations with standard devices
+\item What are the costs -- money and time
+\item Security for your home lab -- including backups
+\item Ideas for home lab projects -- some which I think are important
+\end{list2}
+
+Photo is NWWC camp at BornHack 2024, next is BornHack July 15. to 22. 2026 \link{https://bornhack.dk}\\
+-- a nice \emph{home lab} with public IP addresses!
+
+
+\slide{Time schedule}
+
+\hlkimage{4cm}{kame-noanime-small.png}
+\begin{list2}
+\item 17:00 - 18:15 Introduction and basics
+\item 30min Break, talk or spend time with family
+\item 18:45 - 19:45 My ideas and strategies
+\item 15min small break
+\item 20:00 - 21:00 Security, firewalls introduction, how to do larger setups, that mimic production setups
+\end{list2}
+
+During the presentation, in breaks etc. please do connect to the network, play with TCP/IP, switches and routers.
+
+
+
+
+
+\slide{What is a Home Lab}
+
+\begin{quote}
+"A homelab is a self-contained IT environment that you design and control. It usually includes basic infrastructure like compute, storage, and networking, along with a hypervisor or virtualization layer. Some setups are modest and run on a single machine, while others resemble mini datacenters with multiple nodes and shared storage such as SAN or NAS."
+\end{quote}
+Source: StorMagic, "What Is a Homelab? Why IT Pros Are Building Their Own" (stormagic.com, 2025)
+
+\begin{list2}
+\item it's your own private sandbox — no stakes
+\item no risk to production systems
+\item where you can freely experiment with servers, networking, virtualization, security tools,
+\item and anything else you're curious about.
+\end{list2}
+
+
+
+
+\slide{Prerequisites}
+
+If you are interested in doing experiments -- welcome
+
+If you want to be an expert in IP and network security I recommend doing exercises
+
+\begin{list1}
+\item It is recommended to use virtual machines for the exercises
+\item Network security and most internet related security work has the following requirements:
+\begin{list2}
+\item Network experience
+\item TCP/IP principles - often in more detail than a common user
+\item Programming is an advantage, for automating things -- can be PowerShell, Python, ...
+\item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill} for infosec work\\
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Course Materials}
+
+This material is in multiple parts:
+\begin{list2}
+\item Slide show - presentation - this file
+\item Additional resources from the internet are linked throughout
+\item Wikipedia has a LOT of nice pages about IP protocols, for example:
+\end{list2}
+
+\begin{quote}\small
+Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security over a computer network. The protocol is widely used in applications such as email, instant messaging, and voice over IP, but its use in securing HTTPS remains the most publicly visible.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+
+\slide{Book: Practical Packet Analysis (PPA)}
+
+We often need a basic understanding of networking!
+
+\hlkimage{4cm}{PracticalPacketAnalysis3E_cover.png}
+
+\emph{Practical Packet Analysis,
+Using Wireshark to Solve Real-World Network Problems}
+by Chris Sanders, 3rd Edition
+April 2017, 368 pp.
+ISBN-13:
+978-1-59327-802-1
+\link{https://nostarch.com/packetanalysis3}
+
+I recommend this book for people new to networking, it has been in HumbleBundle book bundles multiple times
+
+
+\slide{Teaching and Learning}
+
+Strategies for Learning
+\begin{list1}
+\item Typically a home lab, as the name says, is for learning at home
+\item You want to learn something!
+\item Learning is different for different people -- I learn great through books and experiments
+\vskip 2cm
+\item Learning something has different parts
+\begin{list2}
+\item Should be \emph{safe} -- experiment freely without risking production systems
+\item Hands-on practice builds real-world confidence and competence
+\item Master the basics first -- avoid unnecessary frustration by building on solid foundations
+\end{list2}
+\end{list1}
+
+
+\slide{Hiim and Hippe's Didactical relationship Model}
+\hlkimage{8cm}{images/hiim-hippe-relationsmodel.png}
+Source: \emph{Læring gennem oplevelse, forståelse og handling} 2007 Hiim, Hilde \& Hippe, Else
+
+\begin{list2}
+\item Learning Conditions (Prerequisites), Settings (Framework Conditions), Learning Goals and Objectives
+\item Content (Curriculum and Subject Matter), Learning Process, Assessment (Evaluation of Learning)
+\end{list2}
+
+\slide{Bloom's Taxonomy}
+
+\hlkimage{10cm}{images/bloom.png}
+Source: Anderson, L., \& Krathwohl, D. R. (2001). \emph{A taxonomy for learning, teaching and assessing: A revision of Bloom's Taxonomy of Educational Objectives.} New York: Longman. -- revised 2001 version
+
+The levels build upon each other -- a learner must master lower levels  before progressing to higher-order thinking.
+
+%Bloom’s is used in three ways: to set learning outcomes, to structure classroom activities and to assess students’ progress.
+%Source: Didactic Plan for IT Security PBA KEA.dk -- now EK.dk
+
+
+
+\slide{Setting Goals }
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  ― Antoine de Saint-Exupéry
+\end{quote}
+
+\hlkimage{8cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+\begin{list1}
+\item Point you towards resources, so you can get started
+\item List a few core concepts I think you should know and learn
+\hskip 2cm {\footnotesize Photo by Pawel Janiak on Unsplash}
+\end{list1}
+
+
+\slide{Core Concepts}
+
+Information Security is a huge domain:
+
+\begin{quote}
+The (ISC)² CBK is a collection of topics relevant to cybersecurity professionals around the world. It establishes a common framework of information security terms and principles which enables cybersecurity and IT/ICT professionals worldwide to discuss, debate and resolve matters pertaining to the profession with a common understanding, taxonomy and lexicon.
+\end{quote}
+Source: \link{https://www.isc2.org/Certifications/CBK}
+
+List of 8 domains in CISSP CBK: Security and Risk Management, Asset Security,
+Security Architecture and Engineering, Communications and Network Security, Identity and Access Management, Security Assessment and Testing, Security Operations, Software Development Security
+
+- then add all the news about new tools, exploits, and networking
+
+
+\slide{Learning Nmap at different levels}
+
+\hlkimage{10cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+
+To illustrate this, I will use the example of:\\
+Nmap - a very famous port scanner.
+
+Unfortunately there are about 100 options, and the man page is some 3100 lines ...
+
+\slide{Prerequisite knowledge}
+
+Plan: You want to learn Nmap!
+
+{\large Often we combine our knowledge with skills into competence, \\
+which enable us to perform some job, task or function.}
+
+\begin{list2}
+\item Knowledge level: What is a port scanner\\
+Need to know TCP/IP, IP address, ports and services -- example HTTP 80/tcp, TCP session setup
+\end{list2}
+
+So get this sorted out first, otherwise you cannot understand what Nmap does, and output returned
+
+\slide{Skills are needed}
+
+\hlkimage{9cm}{nmap-zenmap.png}
+
+
+\begin{list2}
+\item Skills level: Running a port scanner\\
+Need to have operating system -- luckily Nmap supports Mac, Windows, Linux, ...
+\item My recommendation: create a virtual machine with Kali Linux
+\end{list2}
+
+\slide{Combined it becomes a Competence}
+
+\begin{alltt}\footnotesize
+full-tcp-scan: nmap -p 1-65535 -A -oA full-tcp-scan -iL targets
+dns-scan: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+bgpscan: nmap -A -p 179 -oA bgpscan -iL \$LINKNET
+dns-recursive: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
+php-scan: nmap -sV --script=http-php-version -p80,443 -oA php-scan -iL targets
+scan-vtep-tcp: nmap -A -p 1-65535 -oA scan-vtep-tcp 192.0.2.77 192.0.2.78
+snmp-10.x.y.0.gnmap: nmap -sV -A -p 161 -sU --script=snmp-info -oA snmp-10xy 10.x.y.0/19
+snmpscan: nmap -sU -p 161 -oA snmpscan --script=snmp-interfaces -iL targets
+sshscan: nmap -A -p 22 -oA sshscan -iL targets
+vncscan: nmap -A -p 5900-5905 -oA vncscan -iL targets
+\end{alltt}
+
+\begin{list2}
+\item Competence level: Running a quality port scan of an enterprise\\
+Need to have plan for scanning, know which scan functions to use
+\end{list2}
+
+My recommendation: work through a 4 hour course with Nmap as the subject
+
+
+\slide{OSI Model and Internet Protocols}
+
+\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
+
+\slide{Recommended technologies to learn}
+
+
+So to accomplish the goal of using Nmap efficiently you need some basics
+
+Networking: Basic Protocols from the Internet Protocols suite IP/TCP, or TCP/IP
+\begin{list2}
+\item Network Layer: Ethernet, Address Resolution Protocol (ARP), IPv4 and ICMP\\
+Later add Wi-Fi and IPv6
+\item Transport Layer: Transmission Control Protocol (TCP) and User Datagram Protocol (UDP)
+\item Common upper layer: Dynamic Host Configuration Protocol (DHCP), Domain Name System (DNS),
+Hypertext Transfer Protocol (HTTP)\\
+Later add the encrypted/secure versions like Hypertext Transfer Protocol Secure (HTTPS) which uses Transport Layer Security (TLS)
+\end{list2}
+
+Pro tip: always say Ethernet frames and IP packets. No one uses datagram anymore.
+
+Pro tip: If you \emph{really know DNS} you can make a huge impact in the malware area!
+
+\slide{Books and courses}
+
+%\hlkimage{}{}
+
+How:
+
+I like to learn new concepts from books
+\begin{list2}
+\item Have a clear structure, less confusion
+\item They go from a basic level towards a complete goal
+\item Often have exercises available with nice progression
+\item Often you can get Humble bundles with many books for \$25
+\item Some books are "free" if you give your email address, example\\
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 - was available for download for free through Nginx at some point
+\end{list2}
+
+Pro Tip: all my courses and exercise booklets are available on Codeberg!
+
+\slide{ANSM Cycle}
+
+\hlkimage{7cm}{NSM_Phases-300x238.png}
+
+\begin{list1}
+\item ANSM chapter 1: The Practice of Applied
+Network Security Monitoring
+\begin{list2}
+\item Vulnerability-Centric vs. Threat-Centric Defense
+\item The NSM cycle: collection, detection, and analysis
+\item Full Content Data, Session Data, Statistical Data, Packet String Data, and Alert Data
+\item Security Onion is nice, but a bit over the top - quickly gets overloaded
+\end{list2}
+\end{list1}
+
+Sooo much in the first chapter!
+
+\slide{Baseline Skills}
+
+This book is great, since it lays ouy the different subjects nicely:
+\begin{list2}\small
+\item Threat-Centric Security, NSM, and the NSM Cycle
+\item TCP/IP Protocols
+\item Common Application Layer Protocols
+\item Packet Analysis
+\item Windows Architecture
+\item Linux Architecture
+\item Basic Data Parsing (BASH, Grep, SED, AWK, etc)
+\item IDS Usage (Snort, Suricata, etc.)
+\item Indicators of Compromise and IDS Signature Tuning
+\item Open Source Intelligence Gathering
+\item Basic Analytic Diagnostic Methods
+\item Basic Malware Analysis
+\end{list2}
+
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, Chris Sanders \& Jason Smith, 2014
+
+
+\slide{Course Network / Small Networks}
+.
+\hlkrightpic{65mm}{-1cm}{sample-network.png}
+
+\begin{list1}
+\item I often have a course network with me which has the following information:
+\begin{list2}
+\item Routers -- computer with OpenBSD and portable routers
+\item Switches Juniper and TP-Link
+\item Wireless access-points Unifi AP
+% \item IPv4 addresses: 151.216.32.0/21 total 2048
+% \item IPv6 addresses route6: 2001:678:9ec::/48
+% \item Autonomous system number: AS208647 BornHack\\
+\url{https://en.wikipedia.org/wiki/Autonomous_system_(Internet)}
+\end{list2}
+\end{list1}
+
+\vskip 2cm
+{\bf I will highly recommend that you have a production network and a testing network!}\\
+If you get toooo frustrated with the home lab -- go relax, listen to music, stream a movie etc. on the production network \smiley
+
+
+
+
+\slide{Testing network the legal issues}
+
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel indtil 1 år og 6 måneder straffes den, der uberettiget skaffer sig adgang til en andens oplysninger eller programmer, der er bestemt til at bruges i et informationssystem. }
+
+\begin{list2}
+\item Danish law about hacking
+\item Please check with your legal department, or be careful
+\item We {\bf always} contact network between us and the network to be tested
+\item Be good netizens
+\end{list2}
+
+
+
+
+\slide{Hackerlab setup -- easy}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item I recommend getting a hackerlab running on your laptop
+\item Hardware: modern laptop which has CPU virtualization\\
+Dont forget to check BIOS settings for virtualization
+\item Software: your favorite OS: Windows, Mac, Linux
+\item Virtualization software: VMware, Virtual box, HyperV
+\item Hacker software: Kali as a Virtual Machine \link{https://www.kali.org/}
+%\item Soft targets: Metasploitable, Windows 2000, Windows XP, ...
+\end{list2}
+
+
+\slide{Internet in a Box}
+
+\hlkrightimage{10cm}{internet-in-a-box.jpeg}
+
+The main purpose of showing this box, are:
+\begin{list2}
+\item These are standard devices, Juniper EX3300 cheap oldish, works great
+\item Managed switches are a must! You can learn by buying cheap ones,\\
+like the TP-Link T1500G-10PS  shown, VLAN, SNMP, Syslog ...
+\item Multiple systems created using PC Engines APU2C4 (really D4)\\
+running OpenBSD, Unbound, Suricata, Zeek, DHCP, \\
+router advertisement, PF firewall - explicit and nice ICMPv6 filtering ...
+\item Attack systems compact PCs or laptop
+\item Creating a home lab is not expensive, \\
+bought the Arista 7150 24-port 10G used on ebay
+\end{list2}
+
+You should have similar (or better) devices in your production network, and they can be
+configured to do a LOT more than you use them for right now
+
+
+
+\slide{Operating Systems}
+
+
+\slide{Kali Linux the new backtrack}
+
+\hlkimage{16cm}{kali-linux.png}
+
+\begin{list1}
+\item Kali \link{http://www.kali.org/}
+\item Use the documentation on Kali website for installation
+\item Use tools web sites for documentation about tools, like \link{https://nmap.org/} and \link{http://www.hping.org/}
+\end{list1}
+
+
+\slide{Debian with XFCE}
+
+
+\slide{Virtualisation}
+
+Use it,
+
+create many virtual machines:
+
+
+\begin{list2}
+\item Switch context easily, one project - one (or more) VMs
+\item Create a new VM -- keep one updated that you can clone
+\item Install crap -- delete a VM, retry
+\end{list2}
+
+
+\slide{Demo clone a VM }
+
+
+Show it on Qubes OS
+
+Show the KVM virt-manager shortly on Bob
+
+
+\slide{various network and server configurations}
+
+\slide{Minimum Lab -- recommendation}
+
+Buy a router -- can be a physical router Opal
+
+\slide{What are the costs -- money and time}
+
+\slide{Buying stuff}
+
+Try to buy stuff that will last, can be used for more things
+
+- you probably want to expand the lab, do more complex stuff later
+
+
+\slide{Opal router }
+
+slide from basic tcp and security
+
+
+\slide{A small network home lab}
+
+A switch, can be a single uplink port on the production network
+
+A router physical or virtualized
+
+A small \emph{server} -- can be a mini PC
+
+\slide{Demo }
+
+My regular course network
+
+\begin{list2}
+\item Switch -- managed
+\item Physical router or VM with software
+\item Server -- mini-PC for virtualized servers
+\item Cables and a power strip
+\end{list2}
+
+Budget < 5.000DKK
+
+\vskip 2cm
+AP and wireless left out, but a physical router might have it anyway
+
+\begin{list2}
+\item
+\item
+\item
+\item
+\end{list2}
+
+\slide{Buying Used and Refurbished}
+
+ebay
+
+refurb devices -- my PCs
+
+the old pile of stuff in the office!
+
+\slide{My ideas and strategies}
+
+
+
+\slide{Security}
+
+Security, firewalls introduction, how to do larger setups, that mimic production setups
+
+\slide{Security for your home lab -- including backups}
+
+
+\slide{Ideas for home lab projects -- some which I think are important}
+
+
+\slide{Conclusion}
+
+\begin{list1}
+\item You really should try doing experiments
+\item Investigate your existing devices -- you may be able to re-use devices
+\item Choose which devices does which part -- production or testing
+\item Plan ahead -- both which things you want to test, but how to make it efficient
+\end{list1}
+
+\myquestionspage
+
+
+\end{document}

@@ -57,7 +57,8 @@ Photo is NWWC camp at BornHack 2024, next is BornHack July 15. to 22. 2026 \link
 
 \slide{Time schedule}
 
-\hlkimage{4cm}{kame-noanime-small.png}
+\hlkimage{5cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
+
 \begin{list2}
 \item 17:00 - 18:15 Introduction and basics
 \item 30min Break, talk or spend time with family
@@ -83,20 +84,45 @@ Source: StorMagic, "What Is a Homelab? Why IT Pros Are Building Their Own" (stor
 \item it's your own private sandbox — no stakes
 \item no risk to production systems
 \item where you can freely experiment with servers, networking, virtualization, security tools,
-\item and anything else you're curious about.
+\item and anything else you're curious about
+\item I think that doing any kind of experiment, then you \emph{have a lab}
 \end{list2}
 
 
 
+\slide{My Intentions}
+
+
+I suspect you want to work with \emph{a home lab} and \emph{security}, but:
+\begin{list2}
+\item You are responsible for all of it
+\item You don't have the resources, knowledge, time, etc. for getting to know it all
+\item You have to create an architecture, as well as implement it
+\item ... and monitor it, ... and secure it
+
+\end{list2}
+
+My intention is to be your sparring partner today, list all the parts I think must be considered.
+
+There are a lot of people today, but ask questions in the chat
+
+\slide{Why are we here today then?!}
+\hlkrightimage{10cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
+
+We are here to get an overview:
+\begin{list2}
+\item Identify what we \emph{need} for a home lab environment
+\item Consider more parts of the picture
+\item Show solutions that have worked for me, with some example technologies
+\item Provide a kind of check list for your deployment
+\end{list2}
 
 \slide{Prerequisites}
-
-If you are interested in doing experiments -- welcome
 
 If you want to be an expert in IP and network security I recommend doing exercises
 
 \begin{list1}
-\item It is recommended to use virtual machines for the exercises
+\item It is recommended to use virtual machines
 \item Network security and most internet related security work has the following requirements:
 \begin{list2}
 \item Network experience
@@ -186,11 +212,12 @@ The levels build upon each other -- a learner must master lower levels  before p
   ― Antoine de Saint-Exupéry
 \end{quote}
 
-\hlkimage{8cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+\hlkimage{5cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
 
 \begin{list1}
-\item Point you towards resources, so you can get started
-\item List a few core concepts I think you should know and learn
+\item Plan out in some detail what you want to learn
+\item List a few core concepts you should know and learn
+\item Consider making the labs small -- complete them one at a time
 \hskip 2cm {\footnotesize Photo by Pawel Janiak on Unsplash}
 \end{list1}
 
@@ -246,6 +273,7 @@ Need to have operating system -- luckily Nmap supports Mac, Windows, Linux, ...
 
 \slide{Combined it becomes a Competence}
 
+Example production port scans:
 \begin{alltt}\footnotesize
 full-tcp-scan: nmap -p 1-65535 -A -oA full-tcp-scan -iL targets
 dns-scan: nmap -sU -p 53 --script=dns-recursion -iL targets -oA dns-recursive
@@ -308,7 +336,7 @@ I like to learn new concepts from books
 
 Pro Tip: all my courses and exercise booklets are available on Codeberg!
 
-\slide{ANSM Cycle}
+\slide{ANSM Cycle -- Sooo much in the first chapter!}
 
 \hlkimage{7cm}{NSM_Phases-300x238.png}
 
@@ -319,11 +347,10 @@ Network Security Monitoring
 \item Vulnerability-Centric vs. Threat-Centric Defense
 \item The NSM cycle: collection, detection, and analysis
 \item Full Content Data, Session Data, Statistical Data, Packet String Data, and Alert Data
-\item Security Onion is nice, but a bit over the top - quickly gets overloaded
 \end{list2}
 \end{list1}
+Source: \emph{Applied Network Security Monitoring Collection, Detection, and Analysis}, Chris Sanders \& Jason Smith, 2014
 
-Sooo much in the first chapter!
 
 \slide{Baseline Skills}
 
@@ -399,29 +426,128 @@ Dont forget to check BIOS settings for virtualization
 \end{list2}
 
 
-\slide{Internet in a Box}
+\slide{Creating a lab is not expensive}
 
-\hlkrightimage{10cm}{internet-in-a-box.jpeg}
+\hlkrightimage{8cm}{internet-in-a-box.jpeg}
 
-The main purpose of showing this box, are:
+I use ordinary IT-equipment like switches, PCs and servers, with some additional 10Gbps network devices -- nothing really special running Debian Linux
+
 \begin{list2}
-\item These are standard devices, Juniper EX3300 cheap oldish, works great
+\item These are standard network devices, bought the Arista 7150 24-port 10G used on ebay
+\item This specific switch does VXLAN VTEP and BGP, which I use in my labs
 \item Managed switches are a must! You can learn by buying cheap ones,\\
 like the TP-Link T1500G-10PS  shown, VLAN, SNMP, Syslog ...
 \item Multiple systems created using PC Engines APU2C4 (really D4)\\
 running OpenBSD, Unbound, Suricata, Zeek, DHCP, \\
 router advertisement, PF firewall - explicit and nice ICMPv6 filtering ...
 \item Attack systems compact PCs or laptop
-\item Creating a home lab is not expensive, \\
-bought the Arista 7150 24-port 10G used on ebay
 \end{list2}
 
 You should have similar (or better) devices in your production network, and they can be
 configured to do a LOT more than you use them for right now
 
 
-
 \slide{Operating Systems}
+
+Computers need software -- operating systems, and applications run on an OS:
+\begin{list2}
+\item OS is the base for your experiments
+\item Must be managed, installed at least, updated and packages installed on top
+\item Some applications need a regular OS, others are fine with containers
+\item Some applications like Python can even use a virtual environment
+\end{list2}
+
+TL;DR you need even more skills, sorry!
+
+
+\slide{Virtualisation}
+
+Computers can run multiple operating systems, and OS distributions at the same time:
+\begin{list2}
+\item Full virtual machine virtualisation
+\item Containers -- including containers platforms like Kubernetes
+\item Use it, and create many virtual machines/containers
+\item Switch context easily, one project - one (or more) VMs
+\item Create a new VM in seconds -- keep one template VM updated that you can clone
+\item Install crap -- delete a VM, retry
+\item Performance of VMs and containers on modern CPUs is great! Almost like having two physical computers!
+\end{list2}
+
+Good news, you can do it all in a single PC! Even a small one!
+
+\slide{Example software for virtualisation}
+
+%\hlkimage{ cm}{ }
+\begin{list2}
+  \item \textbf{KVM} (Kernel-based Virtual Machine) -- Linux kernel hypervisor, often managed via libvirt/virt-manager
+  \item \textbf{Proxmox VE} -- Open-source platform combining KVM and LXC containers, very popular for home labs
+  \item \textbf{Microsoft Hyper-V} -- Built into Windows Server and Windows 10/11 Pro, easy entry point for Windows users
+  \item \textbf{VirtualBox} -- Free, cross-platform Type-2 hypervisor by Oracle, great for desktop-level home labs
+  \item \textbf{VMware ESXi} -- Enterprise-grade Type-1 hypervisor with a free tier (though licensing has changed under Broadcom)
+  \item \textbf{XCP-ng} -- Open-source fork of Citrix Hypervisor (XenServer), managed via Xen Orchestra
+\end{list2}
+
+I use KVM for labs and production, you need to evaluate which one to use
+
+
+
+\slide{Demo clone a VM }
+
+\hlkimage{8cm}{debian-xfce.png}
+
+\begin{list2}
+\item Laptop Virtualisation: Show it on Qubes OS -- like the Debian XFCE in the picture
+\item Server Virtualisation: Show the KVM virt-manager shortly on Bob
+\item My Debian template takes about 10Gb of space initially
+\end{list2}
+
+\slide{Before your first K8s Production Deployment}
+
+\begin{list2}
+\item Run K8s locally, as in your laptop!
+\item Get it up and running, deploy a sample container
+\item Configure \faWrench\ \verb+kubectl+
+\end{list2}
+
+I don't remember when I ran K8s first, or how many times I have run it locally or in various example labs on the internet. I once ran some K8s BGP labs in my browser, worked great
+
+Trying out K8s on your laptop:
+
+\begin{list2}
+\item Smallest demo with single node minikube running inside Debian 11
+    "start and run a hello world"
+\item Next one might be multiple VMs running K8s nodes -- multi node with OpenBSD VM for BGP
+\item I can run all of this inside Qubes as HVM but often do it on a Linux KVM
+\end{list2}
+
+
+\slide{Virtualisation Server bought in 2023}
+
+\hlkimage{4cm}{asus-expertcenter-pn64.png}
+
+\begin{alltt}\scriptsize
+Varenummer  Produktnavn                                                             Beløb Antal Totalbeløb
+3087799     ASUS ExpertCenter BareBone PN64 BB7014MD / Core i7 12700H - WiFi 6E kr. 4.552,00 1 kr. 4.552,00
+3105325 Kingston NV2 PCI-E 4.0 M.2 NVMe SSD - 1TB kr. 317,97 1 kr. 317,97
+3054767 Kingston FURY Impact SO DDR5-4800 C38 DC - 32GB kr. 787,20 1 kr. 787,20
+...
+Momsgrundlag kr. 5.723,60
+Momsbeløb (25%) kr. 1.430,90
+Totalbeløb kr. 7.154,50        Note: this is quite an expensive server, can be much cheaper!
+\end{alltt}
+
+\link{https://www.asus.com/uk/displays-desktops/mini-pcs/pn-series/asus-expertcenter-pn64/}
+
+
+
+\slide{}
+
+%\hlkimage{ cm}{ }
+\begin{list2}
+\item
+\item
+\item
+\end{list2}
 
 
 \slide{Kali Linux the new backtrack}
@@ -435,50 +561,46 @@ configured to do a LOT more than you use them for right now
 \end{list1}
 
 
-\slide{Debian with XFCE}
+
+\slide{Various network and server configurations}
+
+\slide{A switch}
+
+\hlkimage{10cm}{switch-1.pdf}
+
+\begin{list1}
+\item Today we use switches, Don't buy a hub, not even for experimenting or sniffing
+\item A switch can receive and send data on multiple ports at the same time
+\item Performance only limited by the backplane and switching chips
+\item Can also often route with the same speed and mirror packets
+\end{list1}
 
 
-\slide{Virtualisation}
+\slide{Wireless }
 
-Use it,
+\hlkimage{10cm}{WCG200v2_med.jpg}
 
-create many virtual machines:
+\begin{list1}
+\item A typical home router would have built-in 802.11 Access-Point (AP) and some Ethernet LAN ports
+\end{list1}
 
+\slide{A modern router}
+
+\hlkimage{7cm}{sft1200_1.png}
 
 \begin{list2}
-\item Switch context easily, one project - one (or more) VMs
-\item Create a new VM -- keep one updated that you can clone
-\item Install crap -- delete a VM, retry
+\item Opal (GL-SFT1200) is a pocket-sized travel router supporting 1200Mbps wireless,
+Max. 300 Mbps (2.4GHz) + 867 Mbps (5GHz) Fast Wi-Fi Speeds, Powerful CPU with 3 x Gigabit Ports,
+Excellent Security with VPN -- OpenVPN \& WireGuard, IPv6
 \end{list2}
+Source: \url{https://www.gl-inet.com/products/gl-sft1200/}
 
 
-\slide{Demo clone a VM }
 
-
-Show it on Qubes OS
-
-Show the KVM virt-manager shortly on Bob
-
-
-\slide{various network and server configurations}
 
 \slide{Minimum Lab -- recommendation}
 
 Buy a router -- can be a physical router Opal
-
-\slide{What are the costs -- money and time}
-
-\slide{Buying stuff}
-
-Try to buy stuff that will last, can be used for more things
-
-- you probably want to expand the lab, do more complex stuff later
-
-
-\slide{Opal router }
-
-slide from basic tcp and security
-
 
 \slide{A small network home lab}
 
@@ -488,9 +610,18 @@ A router physical or virtualized
 
 A small \emph{server} -- can be a mini PC
 
+\slide{What are the costs -- money and time}
+
+Try to buy stuff that will last, can be used for more things
+
+- you probably want to expand the lab, do more complex stuff later
+
+End of life devices are sold cheaply on ebay -- and has many enterprise features
+
 \slide{Demo }
 
-My regular course network
+.
+\hlkrightpic{85mm}{-1cm}{sample-network.png}
 
 \begin{list2}
 \item Switch -- managed
@@ -504,12 +635,6 @@ Budget < 5.000DKK
 \vskip 2cm
 AP and wireless left out, but a physical router might have it anyway
 
-\begin{list2}
-\item
-\item
-\item
-\item
-\end{list2}
 
 \slide{Buying Used and Refurbished}
 
@@ -523,15 +648,301 @@ the old pile of stuff in the office!
 
 
 
+
+\slide{Document or it didn't happen}
+
+\hlkimage{12cm}{mythical-man-month-documentary.png}
+
+\begin{list2}
+\item Make sure to document!
+\item There are so many parts, so many decisions, soo many places thing can mess up
+\item Have a minimum of documentation -- and the YAML files are not enough
+\item Hint:  you can read the Mythical Man Month at \link{https://archive.org/details/MythicalManMonth}
+\end{list2}
+
+\slide{Why Have Formal Documents}
+
+\hlkimage{10cm}{mythical-formal-documents.png}
+Source: \emph{The Mythical Man-Month (Anniversary Edition)}
+by Frederick P. Brooks Jr.
+
+\begin{list2}
+\item I use Git version control for my documentation purposes, some is in Zim Personal Wiki \link{https://zim-wiki.org/}
+\item I also use an IPAM \link{https://spritelink.github.io/NIPAP/}
+\end{list2}
+
+
+\slide{Document what you did, what it did}
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+cilium install --version=1.13.0-rc4 \
+                --helm-set ipam.mode=kubernetes --helm-set tunnel=disabled \
+                --helm-set ipv4NativeRoutingCIDR="10.0.0.0/8" --helm-set bgpControlPlane.enabled=true \
+                --helm-set k8s.requireIPv4PodCIDR=true --helm-set kube-proxy-replacement=strict
+ℹ️  Using Cilium version 1.13.0-rc4
+🔮 Auto-detected cluster name: kubernetes
+🔮 Auto-detected datapath mode: tunnel
+🔮 Auto-detected kube-proxy has not been installed
+ℹ️  Cilium will fully replace all functionalities of kube-proxy
+ℹ️  helm template --namespace kube-system cilium cilium/cilium --version 1.13.0-rc4 --set bgpControlPlane.enabled=true,
+cluster.id=0,cluster.name=kubernetes,encryption.nodeEncryption=false,ipam.mode=kubernetes,
+ipv4NativeRoutingCIDR=10.0.0.0/8,k8s.requireIPv4PodCIDR=true,k8sServiceHost=10.137.0.26,
+k8sServicePort=6443,kube-proxyreplacement=strict,kubeProxyReplacement=strict,operator.replicas=1,
+serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator,tunnel=disabled
+...
+⌛ Waiting for Cilium to be installed and ready...
+✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+\end{minted}
+
+
+How I ran the kubeadm for building cluster - note the skip:\\
+\verb+sudo kubeadm init --pod-network-cidr=10.50.0.0/16 --skip-phases=addon/kube-proxy+
+
+
+
 \slide{Security}
 
 Security, firewalls introduction, how to do larger setups, that mimic production setups
 
-\slide{Security for your home lab -- including backups}
+\link{https://codeberg.org/kramse/security-courses/src/courses/networking/prosa-secure-network-2025}
+
+
+\slide{Security for your home lab -- backups}
+
+Make sure to do backup!
+
+\slide{Example, Restricting the Kubernetes API}
+
+%\hlkimage{}{}
+
+Watch out when learning, you may expose an \emph{admin interface}
+\begin{quote}{\bf
+By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS}. In a typical product
+ion Kubernetes cluster, the API serves on port 443. The port can be changed with the --secure-port, and the listening IP address with the --bind
+-address flag.
+
+...
+
+If your cluster uses a {\bf private certificate authority, you need a copy of that CA certificate configured into your ~/.kube/config on the cli
+ent}, so that you can trust the connection and be confident it was not intercepted.
+\end{quote}
+
+\begin{list2}
+\item If an attacker can run Kubectl with credentials -- they can do anything
+\item Defense in Depth is suggested -- so restrict at multiple levels
+\item Only allow connections from specific network -- firewall filtering
+\item Use TLS and verify/copy certificates
+\end{list2}
+
+
+\slide{Lock down management}
+
+\hlkimage{14cm}{generic-network-pressure-points.pdf}
+
+Routers often have a control plane and a data plane. The first is controlling the device, and provides management, while the data plane is forwarding and routing the packets. The data plane is mostly hardware based on high-end devices, and can forward at full wire speed.
+
+{\bf We see people expose VMware vCenter administration and firewall admin interfaces on the Internet still today!}
+
+
+\slide{Control-Plane Access Control Lists (CP-ACL)}
+
+Management of network devices can be done with Access Control lists, other systems may be put into a management VLAN
+
+An example from a Cisco router using secure shell is shown below with a simple standard Access Control List (ACL) named 22 and then referenced for the virtual terminal (vty) secure shell (ssh):
+
+\begin{alltt}\scriptsize
+ip access-list standard 22
+10 permit 192.0.2.2
+20 permit 172.13.22.10
+30 permit 192.168.0.10
+40 permit 203.0.113.10
+line vty 0 4
+  access-class 22 in
+  transport input ssh
+\end{alltt}
+
+This will reduce the likelihood that an attacker can gain access to the administration using leaked username and passwords or because of vulnerabilities in the software.
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\end{list1}
+
+\slide{Network Segmentation: Which VLANs to create}
+
+Using VLANs to segment networks we can extend it to the rest of the network, and an example of isolated segments could be:
+\begin{list2}
+\item Guest network for cabled and Wi-Fi clients
+\item Client networks can be isolated per department, floor or building
+\item Server networks for multiple purposes – development, staging, testing, production, manufacturing, …
+\item Internet servers in a demilitarized zone (DMZ)4 which would make it less likely that compromised internet
+server would affect the rest of the network
+\item Dedicated printer network
+\item Management network for virtualisation, one for network management, one for storage
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Firewalls}
+
+\hlkimage{8cm}{opal-luci-firewall-easy.png}
+
+Firewalls are a great project to look into, there are so many \smiley
+
+I recommend looking into open source firewalls like OPNsense, UFW and OpenBSD and many routers also include firewalls. You can often find images from commercial vendors, that you can try out.
+
+
+
+\slide{Firewall OPNsense GUI based and easy to install}
+
+\hlkimage{12cm}{images/screenshots_OPNsense-1024x518.png}
+
+\begin{list2}
+\item OPNsense \link{https://opnsense.org/}
+\item Firewall built on FreeBSD with web interface
+\item Originally thoughts from m0n0wall and later \link{https://www.pfsense.org/}\\
+\item Danish companies have been using these for many years now
+\end{list2}
+
+
+\slide{Linux Uncomplicated Firewall (UFW)}
+
+Debian / Ubuntu:
+\begin{alltt}\scriptsize
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+\begin{list2}
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\end{list2}
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+\begin{list2}
+\item Filtrering at higher layers is also possible
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists}
+\end{list2}
+
+Also great home lab projects!
+
+\slide{Linux Wireguard VPN}
+
+\begin{quote}\small
+WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
+\end{quote}
+
+Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
+
+\begin{list2}
+\item Very easy to setup!
+\item single round trip key exchange, based on NoiseIK
+\item Short pre-shared static keys—Curve25519
+\item strong perfect forward secrecy
+\item Transport
+speed is accomplished using ChaCha20Poly1305 authenticated-encryption
+\item encapsulation of packets in UDP
+\item WireGuard can be
+simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
+\end{list2}
+
+
+
+\slide{Virtual Private Network (VPN) -- client}
+
+\hlkimage{8cm}{opal-wireguard-client.png}
+
+You can enable VPN functionality as a client or server. Client would be connecting you to your \emph{home network} when travelling. Picture shown is the GL-Inet router Opal web interface
+
+We recommend Wireguard as a modern Virtual Private Network technology
+
+\slide{Virtual Private Network (VPN) -- server}
+
+\hlkimage{8cm}{opal-wireguard-server.png}
+
+Server would be if this was your home router.  Picture shown is the GL-Inet router Opal web interface
+
+We recommend Wireguard as a modern Virtual Private Network technology
+
 
 
 \slide{Ideas for home lab projects -- some which I think are important}
 
+A few ideas, and basic security stuff:
+\begin{list2}
+\item Setup a router, with multiple interfaces and subnets
+\item Setup a firewall, enable filtering with multiple interfaces and subnets
+\item Verify firewall on or off with Nmap
+\item Configure some application server -- and allow it through the firewall
+\item Setup a VPN with Wireguard
+\item Try out sniffing with a monitor port in the network -- centralized monitoring of all subnets from one port, use Wireshark to see initial data
+\item Sniff some un-encrypted data -- DNS and HTTP
+\item Configure some IDS and IDS-like tools -- Suricata IDS engine and Zeek are great!
+\item Find a SIEM tool to try out -- will need log sources, re-use from above
+\end{list2}
+
+
+\slide{Using Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options}
+
+\slide{What about encrypted traffic}
+
+\hlkimage{10cm}{images/wireshark-sni-twitter.png}
+
+\centerline{Current TLS version 1.2 used in HTTPS show the name!}
+
+\slide{Akvorado: flow collector, enricher and visualizer}
+
+\hlkimage{7cm}{akvorado-timeseries.png}
+
+I ran this in my home/home-lab at some point
+\begin{quote}
+This program receives flows (currently Netflow/IPFIX and sFlow), enriches them with interface names (using SNMP), geo information (using IPinfo.io), and exports them to Kafka, then ClickHouse. It also exposes a web interface to browse the collected data.
+\end{quote}
+Source: Picture and text from \url{https://github.com/akvorado/akvorado}
 
 \slide{Conclusion}
 
@@ -540,7 +951,53 @@ Security, firewalls introduction, how to do larger setups, that mimic production
 \item Investigate your existing devices -- you may be able to re-use devices
 \item Choose which devices does which part -- production or testing
 \item Plan ahead -- both which things you want to test, but how to make it efficient
+\item When a \emph{solution} is ready, clean, mature etc. you can perhaps run it in production\\
+Example, you have learnt about VLANs and Wi-Fi SSIDs, and implement a guest network or IoT zone/vlan
 \end{list1}
+
+
+\slide{Building Secure Infrastructures}
+
+\begin{list1}
+\item A real-life setup of an infrastructure from scratch can be daunting!
+\item You need:
+\begin{list2}
+\item Policies
+\item Procedures
+\item Incident Response
+\end{list2}
+\item Running systems which require
+\begin{list2}
+\item Configurations
+\item Settings
+\item Supporting infrastructure -- networks
+\item Supporting infrastructure -- logging, dash boarding, monitoring
+\end{list2}
+\item Building something \emph{secure} is {\bf hard work!}
+\end{list1}
+
+
+
+
+\slide{Concrete advice for enterprise networks}
+
+
+\begin{list2}
+\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updat
+es or isolation
+\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LAN, WAN, Mail, web,
+...
+\item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
+do not allow traffic to and from any new TLD
+\item Use only your own DNS servers, create a pair of Unbound servers, \\
+point your internal DNS running on Windows to these\\
+Create filtering, logging, restrictions on these Unbound DNS servers\\
+\link{https://www.nlnetlabs.nl/projects/unbound/about/} and also \link{https://pi-hole.net/}
+\item Only allow SMTP via your own mail servers, create a simple forwarder if you must
+\end{list2}
+
+Allow lists are better than block list, even if it takes some time to do it
+
 
 \myquestionspage
 

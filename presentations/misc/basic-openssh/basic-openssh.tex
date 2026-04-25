@@ -42,63 +42,62 @@
 
 \slide{Goals for today}
 
-\hlkimage{4cm}{bornhack-camp-2024.jpg}
+\hlkimage{6cm}{openssh-banner.png}
 
+Present one of the most versatile security tools
 \begin{list2}
-\item Present one of the most versatile security tools
-\item
-\item
-\item
-\item
-
+\item What is Secure Shell (SSH) , how does it work
+\item Using OpenSSH and other compatible implementations
+\item Login using keys instead of passwords
+\item Proxy, Jump Hosts and port forwarding
+\item Integration with Ansible, Git, Rsync and other tools
+\item Using OpenSSH for VPN or in combination with WireGuard VPN
+\item Securing and hardening SSH-servers -- including management interfaces on servers and devices
 \end{list2}
-
-Photo is NWWC camp at BornHack 2024, next is BornHack July 15. to 22. 2026 \link{https://bornhack.dk}\\
--- a nice \emph{home lab} with public IP addresses!
-
 
 \slide{Time schedule}
 
 \hlkimage{5cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
 
 \begin{list2}
-\item 17:00 - 18:15 Introduction and basics
+\item 17:00 - 18:15 Introduction and basics\\
+Some slides will only be shown for seconds -- background information, for later or deep dives
 \item 30min Break, talk or spend time with family
 \item 18:45 - 19:45 Port forwarding and Use cases
 \item 15min small break
 \item 20:00 - 21:00 All the rest -- advanced use-cases automation etc
 \end{list2}
 
-An exercise day was announced: I suggest May 5, 2026 online 17:00 - 21:00
 
-
-
-
-
-\slide{What is a Home Lab}
+\slide{OpenSSH 10.3 released April 2, 2026}
 
 \begin{quote}
-"A homelab is a self-contained IT environment that you design and control. It usually includes basic infrastructure like compute, storage, and networking, along with a hypervisor or virtualization layer. Some setups are modest and run on a single machine, while others resemble mini datacenters with multiple nodes and shared storage such as SAN or NAS."
-\end{quote}
-Source: StorMagic, "What Is a Homelab? Why IT Pros Are Building Their Own" (stormagic.com, 2025)
+OpenSSH is the premier connectivity tool for {\bf remote login with the SSH protocol}. It {\bf encrypts all traffic} to eliminate eavesdropping, connection hijacking, and other attacks. In addition, OpenSSH provides a large suite of {\bf secure tunneling capabilities, several authentication methods, and sophisticated configuration options.}
 
+The OpenSSH suite consists of the following tools:
 \begin{list2}
-\item it's your own private sandbox — no stakes
-\item no risk to production systems
-\item where you can freely experiment with servers, networking, virtualization, security tools,
-\item and anything else you're curious about
-\item I think that doing any kind of experiment, then you \emph{have a lab}
+\item Remote operations are done using ssh, scp, and sftp.
+\item Key management with ssh-add, ssh-keysign, ssh-keyscan, and ssh-keygen.
+\item The service side consists of sshd, sftp-server, and ssh-agent.
 \end{list2}
 
+OpenSSH is developed by a few developers of the OpenBSD Project and made available under a BSD-style license. OpenSSH is incorporated into many commercial products, but very few of those companies assist OpenSSH with funding.
+
+Contributions towards OpenSSH can be sent to the OpenBSD Foundation.
+\end{quote}
+Source: \url{https://www.openssh.org/}
 
 
-\slide{My Intentions}
 
+
+\slide{My Intentions and Goals for Today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
 
 I suspect you want to work with \emph{Secure Shell} and \emph{security}, but:
 \begin{list2}
 \item You are unsure of how to do it
-\item Is it really secure -- can we trust it, what about the default settings harden it
+\item Is it really secure -- can we trust it, what about the default settings -- maybe harden it
 \item ... and monitor it, ... and secure it
 
 \end{list2}
@@ -106,21 +105,11 @@ I suspect you want to work with \emph{Secure Shell} and \emph{security}, but:
 My intention is to be your sparring partner today, list all the parts I think must be considered.
 
 There are a lot of people today, but ask questions in the chat
-
-\slide{Why are we here today then?!}
-\hlkrightimage{10cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
-
-We are here to get an overview:
-\begin{list2}
-\item Identify what we \emph{need} for a home lab environment
-\item Consider more parts of the picture
-\item Show solutions that have worked for me, with some example technologies
-\item Provide a kind of check list for your deployment
-\end{list2}
+\hfill  Photo by Thomas Galler on Unsplash
 
 \slide{Prerequisites}
 
-If you want to be an expert in IP and network security I recommend doing exercises
+If you want to be an expert in OpenSSH and network security I recommend doing exercises
 
 \begin{list1}
 \item It is recommended to use virtual machines
@@ -141,9 +130,9 @@ If you want to be an expert in IP and network security I recommend doing exercis
 
 This material is in multiple parts:
 \begin{list2}
-\item Slide show - presentation - this file
+\item Slide show - presentation - this file - on Codeberg.org Open Source
 \item Additional resources from the internet are linked throughout
-\item Wikipedia has a LOT of nice pages about IP protocols, for example:
+\item Wikipedia has a LOT of nice pages, for example:
 \end{list2}
 
 \begin{quote}\small
@@ -153,26 +142,176 @@ Source: \url{https://en.wikipedia.org/wiki/Transport_Layer_Security}
 
 \slide{Book: OpenSSH Mastery}
 
-We often need a basic understanding of networking!
+\hlkimage{4cm}{ssh-mastery-2nd-edition-cover.jpg}
 
-%\hlkimage{4cm}{PracticalPacketAnalysis3E_cover.png}
+\emph{SSH Mastery: OpenSSH, PuTTY, Tunnels and Keys}, 2nd Edition
+by Michael W Lucas, 2018,
+242 pp.
+Tilted Windmill Press
+ISBN-13 9781642350227
 
-%\emph{Practical Packet Analysis,
-%Using Wireshark to Solve Real-World Network Problems}
-%by Chris Sanders, 3rd Edition
-%April 2017, 368 pp.
-%ISBN-13:
-%978-1-59327-802-1
-%\link{https://nostarch.com/packetanalysis3}
+\link{https://mwl.link/ssh-mastery-2nd-edition.html}
 
 I recommend this book for people new to OpenSSH
 
-\slide{Cryptographic basics }
+\slide{Why Even Bother with Secure Shell}
+
+\begin{list1}
+\item Man in The Middle (MiTM) attacks
+\item ARP spoofing, ICMP redirects, the classics
+\begin{list2}
+\item ICMP redirect
+\item ARP spoofing
+\item Wireless listening and spoofing higher levels
+\end{list2}
+\item Usually aimed at unencrypted protocols
+\item Today we only talk about securing the data, not how to perform attacks
+\end{list1}
+
+\slide{Cryptography}
+
+\begin{list1}
+\item Cryptography or cryptology is the practice and study of techniques for secure communication
+\item Modern cryptography is heavily based on mathematical theory and computer science practice; cryptographic algorithms are designed around computational hardness assumptions, making such algorithms hard to break in practice by any adversary
+\item Symmetric-key cryptography refers to encryption methods in which both the sender and receiver share the same key, to ensure confidentiality, example algorithm AES
+\item Public-key cryptography (like RSA) uses two related keys, a key pair of a public key and a private key. This allows for easier key exchanges, and can provide confidentiality, and methods for signatures and other services
+\end{list1}
+
+Source: \link{https://en.wikipedia.org/wiki/Cryptography}
 
 
-symmetric
+\slide{Basic cryptography}
 
-assymmetric
+{~}
+\hlkrightpic{9cm}{-1cm}{mitm-2019.png}
+
+\begin{list2}
+\item Confidentiality - data kept secret
+\item Integrity - data is not subjected to unauthorized changes
+\item Note: availability of data can be less when cryptography is used -- loose access
+\end{list2}
+
+
+\slide{Serious Cryptography}
+
+\hlkimage{5cm}{SeriousCrypto2e.jpg}
+
+\emph{Serious Cryptography: A Practical Introduction to Modern Encryption}, 2nd Edition
+by Jean-Philippe Aumasson
+August 2024, 376 pp
+ISBN-13:
+9781718503847
+
+\link{https://nostarch.com/serious-cryptography-2nd-edition}
+
+\slide{Encryption Decryption -- Symmetric Key}
+
+\hlkimage{12cm}{images/crypto-rot13.pdf}
+
+\begin{list1}
+\item Kryptografi er læren om, hvordan man kan kryptere data
+\item Kryptografi benytter algoritmer som sammen med nøgler giver en
+  ciffertekst
+\item  - der kun kan læses ved hjælp af den tilhørende nøgle
+\end{list1}
+
+
+\slide{Cryptographic principles}
+
+\begin{list1}
+\item Algoritmerne er kendte
+\item Nøglerne er hemmelige
+\item Nøgler har en vis levetid - de skal skiftes ofte
+\item Et successfuldt angreb på en krypto-algoritme er enhver genvej
+  som kræver mindre arbejde end en gennemgang af alle nøglerne
+\item Nye algoritmer, programmer, protokoller m.v. skal gennemgås nøje!
+\item Se evt. Snake Oil Warning Signs:
+Encryption Software to Avoid\\
+\url{https://www.schneier.com/crypto-gram/archives/1999/0215.html#snakeoil}
+\item Wikipedia Snake oil description \link{https://en.wikipedia.org/wiki/Snake_oil_(cryptography)}
+\end{list1}
+
+
+\slide{AES Advanced Encryption Standard}
+
+\hlkimage{10cm}{aes-overview.png}
+
+\begin{list2}
+\item The official Rijndael web site displays this image to promote understanding of the Rijndael round transformation [8].
+\item Key sizes 128,192,256 bit typical
+\item Some extensions in cryptosystems exist: XTS-AES-256 really is 2 instances of AES-128 and 384 is two instances of AES-192 and 512 is two instances of AES-256
+\item \link{https://en.wikipedia.org/wiki/Advanced_Encryption_Standard}
+\end{list2}
+
+
+\slide{RSA}
+
+\begin{quote}
+RSA (Rivest–Shamir–Adleman) is one of the first public-key cryptosystems and is widely used for secure data transmission. ...
+In RSA, this asymmetry is based on the practical difficulty of the factorization of the product of two large prime numbers, the "factoring problem". The acronym RSA is made of the initial letters of the surnames of Ron Rivest, Adi Shamir, and Leonard Adleman, who first publicly described the algorithm in 1978.
+\end{quote}
+
+\begin{list2}
+\item Key sizes	1,024 to 4,096 bit typical
+\item  Quote from: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+\end{list2}
+
+
+\slide{RSA operation}
+
+\begin{quote}\small
+The RSA algorithm involves four steps: key generation, key distribution, encryption and decryption.
+
+A basic principle behind RSA is the observation that it is practical to find three very large positive integers e, d and n such that with modular exponentiation for all integers $m$ (with $0 ≤ m < n$):
+
+${\displaystyle (m^{e})^{d}\equiv m{\pmod {n}}} {\displaystyle (m^{e})^{d}\equiv m{\pmod {n}}}$
+
+and that knowing e and n, or even m, it can be extremely difficult to find d. The triple bar (≡) here denotes modular congruence.
+
+In addition, for some operations it is convenient that the order of the two exponentiations can be changed and that this relation also implies:
+
+${\displaystyle (m^{d})^{e}\equiv m{\pmod {n}}} {\displaystyle (m^{d})^{e}\equiv m{\pmod {n}}}$
+
+RSA involves a public key and a private key. The public key can be known by everyone, and it is used for encrypting messages. The intention is that messages encrypted with the public key can only be decrypted in a reasonable amount of time by using the private key. The public key is represented by the integers n and e; and, the private key, by the integer d (although n is also used during the decryption process. Thus, it might be considered to be a part of the private key, too). m represents the message (previously prepared with a certain technique explained below).
+\end{quote}
+
+Source: \link{https://en.wikipedia.org/wiki/RSA_(cryptosystem)}
+
+
+\slide{Public key kryptografi - 1}
+
+\hlkimage{12cm}{images/crypto-public-key.pdf}
+
+\begin{list1}
+\item privat-nøgle kryptografi (eksempelvis AES) benyttes den samme
+  nøgle til kryptering og dekryptering
+\item offentlig-nøgle kryptografi (eksempelvis RSA) benytter to
+  separate nøgler til kryptering og dekryptering
+\end{list1}
+
+\slide{Public key kryptografi - 2}
+
+\hlkimage{12cm}{images/crypto-public-key-2.pdf}
+
+\begin{list1}
+\item offentlig-nøgle kryptografi (eksempelvis RSA) bruger den private
+  nøgle til at dekryptere
+\item man kan ligeledes bruge offentlig-nøgle kryptografi til at
+  signere dokumenter\\ - som så verificeres med den offentlige nøgle
+\item NB: Kryptering alene sikrer ikke anonymitet
+\end{list1}
+
+\slide{Elliptic Curve }
+
+\begin{quote}
+Elliptic-curve cryptography (ECC) is an approach to public-key cryptography based on the algebraic structure of elliptic curves over finite fields. ECC requires smaller keys compared to non-EC cryptography (based on plain Galois fields) to provide equivalent security.[1]
+\end{quote}
+
+\begin{list2}
+\item Today we use \link{https://en.wikipedia.org/wiki/Elliptic-curve_cryptography}
+\end{list2}
+
+
 
 \slide{Using Wireshark}
 
@@ -204,14 +343,426 @@ Dont forget to check BIOS settings for virtualization
 
 
 
+\slide{Command prompts}
+
+
+\begin{alltt}
+\small
+[hlk@fischer hlk]$ id
+uid=6000(hlk) gid=20(staff) groups=20(staff),
+0(wheel), 80(admin), 160(cvs)
+[hlk@fischer hlk]$ sudo -s
+[root@fischer hlk]#
+[root@fischer hlk]# id {\bf
+uid=0(root) gid=0(wheel)} groups=0(wheel), 1(daemon),
+20(staff), 80(admin)
+[root@fischer hlk]#
+\end{alltt}
+
+Note the difference between running as root and normal user. Usually books and instructions will use a prompt of hash mark \verb+#+ when the root user is assumed and dollar sign \verb+$+ when a normal user prompt.
+
+
+
 \slide{Demo: Connect with SSH}
 
 %\hlkimage{8cm}{debian-xfce.png}
 
+\begin{alltt}\footnotesize
+hlk@zenbook:~$ ssh hlk@10.0.42.10
+The authenticity of host '10.0.42.10 (10.0.42.10)' can't be established.
+ED25519 key fingerprint is SHA256:ah56JydlY5h6b1qD8PA2Kkq20UkfCt07aLWFFugb42A.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.0.42.10' (ED25519) to the list of known hosts.
+
+==========================================================
+Access to this device is limited to authorized users only.
+ WARNING: All unauthorized access is prohibited.
+==========================================================
+
+(hlk@10.0.42.10) Password:
+Last login: Sat Apr 25 18:05:37 2026 from 10.0.42.109
+--- JUNOS xx
+{master:0}
+hlk@ex2300-c>
+\end{alltt}
+
+
 \begin{list2}
-\item
+\item Secure Shell is using Trust on First Use (TOFU) \url{https://en.wikipedia.org/wiki/Trust_on_first_use}
+\item Note: this is using passwords!
 \end{list2}
 
+
+\slide{Demo: Connect with SSH}
+
+%\hlkimage{8cm}{debian-xfce.png}
+
+\begin{alltt}\footnotesize
+hlk@zenbook:~$ ssh 10.0.42.21
+Linux stat01 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (2025-11-05) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+You have mail.
+Last login: Mon Apr 20 19:43:44 2026 from 10.0.42.80
+hlk@stat01:~$
+\end{alltt}
+
+
+\begin{list2}
+\item Note: this is using keys -- and the preferred way to use SSH!
+\end{list2}
+
+\slide{Unix Manual system}
+
+\hlkimage{7cm}{images/Unix-command-1.pdf}
+
+\begin{quote}
+ It is a book about a Spanish guy called Manual. You should read it.
+       -- Dilbert
+\end{quote}
+
+\begin{list1}
+\item Manual system in Unix is always there!
+\item Key word search \verb+man -k+ see also \verb+apropos+
+\item Different sections, can be chosen
+\end{list1}
+
+See \verb+man crontab+ the command vs the file format in section 5 \verb+man 5 crontab+
+
+
+
+\slide{A manual page}
+
+\begin{alltt}\footnotesize
+\small
+NAME
+     cal - displays a calendar
+SYNOPSIS
+     cal [-jy] [[month]  year]
+DESCRIPTION
+   cal displays a simple calendar.  If arguments are not specified, the cur-
+   rent month is displayed.  The options are as follows:
+   -j      Display julian dates (days one-based, numbered from January 1).
+   -y      Display a calendar for the current year.
+
+The Gregorian Reformation is assumed to have occurred in 1752 on the 3rd
+of September.  By this time, most countries had recognized the reforma-
+tion (although a few did not recognize it until the early 1900's.)  Ten
+days following that date were eliminated by the reformation, so the cal-
+endar for that month is a bit unusual.
+\end{alltt}
+
+
+
+\slide{Keys!}
+
+
+\begin{list2}
+\item[1] Generate a key -- \verb+ssh-keygen+
+\item[2] Install key on server -- if password login is enabled, use \verb+ssh-copy-id+
+\item[3] Login with key -- just use \verb+ssh+
+\end{list2}
+
+
+\slide{Generate a key -- ssh-keygen}
+
+
+\begin{alltt}\footnotesize
+root@zenbook:~# ssh-keygen -t ed25519
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/root/.ssh/id_ed25519):
+Enter passphrase for "/root/.ssh/id_ed25519" (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_ed25519
+Your public key has been saved in /root/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:wUrACwZ1OZ5dIal8D0/RcQ5eUvPurUrvsL3wWvRQvpw root@zenbook
+The key's randomart image is:
++--[ED25519 256]--+
+|.o..o....o+o=    |
+|  o.+..oo..* o   |
+| . + *..o.. . . .|
+|    *.+...   . o |
+|     ..=S     + .|
+|        o    o.+o|
+|            + oEo|
+|           . O . |
+|            ++B. |
++----[SHA256]-----+
+\end{alltt}
+
+\slide{Install key on server -- ssh-copy-id}
+
+If password login is enabled, use \verb+ssh-copy-id+
+
+\begin{alltt}\footnotesize
+root@zenbook:~# ssh-copy-id -i .ssh/id_ed25519 hlk@10.0.42.21
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/id_ed25519.pub"
+The authenticity of host '10.0.42.21 (10.0.42.21)' can't be established.
+ED25519 key fingerprint is SHA256:+ig6Bz7vL5/NQRaWZ7teXyesyMO2VgJ0grO0OH8pa+s.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+hlk@10.0.42.21's password:
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with: "ssh -i .ssh/id_ed25519 'hlk@10.0.42.21'"
+and check to make sure that only the key(s) you wanted were added.
+\end{alltt}
+
+If password login is not enabled, install manually or use Ansible configuration management!
+
+\slide{Login with key}
+
+\begin{alltt}\footnotesize
+root@zenbook:~# ssh hlk@10.0.42.21
+Linux stat01 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (2025-11-05) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+You have mail.
+Last login: Sat Apr 25 18:02:20 2026 from 10.0.42.109
+hlk@stat01:~$
+\end{alltt}
+
+Note: this is a default key, in a default directory named \verb+.ssh+ - also found on Microsoft Windows!
+
+Usually you would recommend SSH-Agent, but lets wait with that.\\
+\url{https://en.wikipedia.org/wiki/Ssh-agent}
+
+
+\slide{Common Use cases}
+
+\begin{list2}
+%  \item {\bf Remote Shell Access} --- Securely log in to a remote machine and execute commands via an interactive terminal session.
+  \item {\bf Secure File Transfer} --- Transfer files between hosts using \texttt{scp} (secure copy) or \texttt{sftp} (SSH File Transfer Protocol).
+  \item {\bf Port Forwarding / Tunneling} --- Forward local or remote ports over an encrypted SSH connection to securely access services behind firewalls.
+%  \item {\bf Public Key Authentication} --- Authenticate without passwords using key pairs (\texttt{ssh-keygen}), enabling automated and more secure logins.
+  \item {\bf Reverse SSH Tunneling} --- Expose a local service to a remote host, commonly used to access machines behind NAT or restrictive firewalls.
+%  \item {\bf X11 Forwarding} --- Run graphical applications on a remote host and display them on the local machine over the SSH connection.
+  \item {\bf SOCKS Proxy / Dynamic Port Forwarding} --- Use SSH as a dynamic SOCKS5 proxy to route arbitrary traffic securely through a remote server.
+%  \item {\bf Remote Command Execution} --- Run a single command on a remote host non-interactively, e.g.\ \texttt{ssh user@host "df -h"}.
+%  \item {\bf Git over SSH} --- Authenticate and communicate securely with Git hosting services (GitHub, GitLab, etc.) using SSH keys.
+%  \item {\bf Automated Deployment \& CI/CD} --- Use SSH in scripts and pipelines to deploy code, restart services, or run remote tasks on production servers.
+  \item {\bf SSH Agent Forwarding} --- Forward your local SSH keys through a chain of hosts, avoiding the need to store private keys on intermediate servers.
+%  \item {\bf Mounting Remote Filesystems} --- Use \texttt{sshfs} to mount a remote directory locally over SSH as if it were a local filesystem.
+\end{list2}
+
+
+\slide{SSH Port Forwarding -- Database}
+
+A Simple Use-Case: Accessing a Remote Database Locally
+
+\begin{quote}
+You have a database server running on \verb+remote-server.com+ at port \verb+5432+
+(PostgreSQL), but it only accepts \emph{local} connections for security reasons.
+\end{quote}
+
+Local Port Forwarding
+\verb+ssh -L 5432:localhost:5432 user@remote-server.com+
+
+Now connect your local database client to \verb+localhost:5432+
+
+\begin{list2}
+\item {\bf -L} --- Specifies local port forwarding
+\item {\bf 5432:localhost:5432} --- Local port $\rightarrow$ remote host $\rightarrow$ remote port
+%      \item {\bf user@remote-server.com} --- The SSH gateway host
+\end{list2}
+
+
+
+\slide{SSH Port Forwarding -- Web admin}
+
+A Simple Use-Case: Accessing a Web admin interface across the Internet
+
+\begin{quote}
+You have a web admin interface running on a device reachable from \verb+jumphost+ with HTTPS at port \verb+443/tcp+
+\end{quote}
+
+Local Port Forwarding
+\verb+ssh -L 1443:192.168.1.1:443 user@jumphost+
+
+Now connect your local browser to \verb+https://localhost:1443+
+
+\begin{list2}
+\item {\bf -L} --- Specifies local port forwarding
+\item {\bf 1443:192.168.1.1:443} --- Local port $\rightarrow$ remote host $\rightarrow$ remote port
+\item Using port 1443 locally to avoid permission issues -- privileged ports on Unix
+%      \item {\bf user@remote-server.com} --- The SSH gateway host
+\end{list2}
+
+
+\slide{OpenSSH client config with jump host}
+
+Nobody wants to remember IP addresses, port forwards, user names etc. Put it in \verb+$HOME/.ssh/config+:
+\begin{alltt}\footnotesize
+
+Host jump-01
+  Hostname 10.1.2.3
+  Port 1234
+
+Host fw-site-01 10.1.2.5
+  Hostname 10.1.2.5
+  Port 34
+  User hlk
+  IdentityFile ~/.ssh/id_ed25519-personal
+  ProxyJump jump-01
+  LocalForward 8888 127.0.0.1:8888
+
+Host *
+      User hlk
+\end{alltt}
+
+I configure fw using both hostname and IP,\\
+then I can use name, and any program using IP get this config too
+
+
+\slide{SSH SOCKS Proxy}
+
+Start a dynamic SOCKS5 proxy on local port 1080:
+
+\verb+ssh -D 1080 jumphost+
+
+Then configure your browser or application to use \verb+localhost:1080+ as a SOCKS5 proxy in your browser --
+all traffic is tunnelled through the remote server
+
+\begin{list2}
+\item {\bf -D 1080} --- open a local SOCKS5 proxy on port 1080
+\item {\bf jumphost} --- the SSH server acting as the exit node
+\item The end result is as if you were onsite with a laptop and browser
+\end{list2}
+
+
+
+\slide{Integrations}
+
+% \begin{quote}
+
+% \end{quote}
+% Source:
+
+\begin{list2}
+\item {\bf Secure File Transfer} --- Transfer files between hosts using \texttt{scp} (secure copy) or \verb+sftp+ (SSH File Transfer Protocol).
+\item {\bf Git over SSH} --- Authenticate and communicate securely with Git hosting services (GitHub, GitLab, Codeberg etc.) using SSH keys.
+\item {\bf Ansible} configuration management
+\item {\bf Rsync} file distribution -- can use SSH directly
+\item {\bf Mounting Remote Filesystems} --- Use \verb+sshfs+ to mount a remote directory locally over SSH as if it were a local filesystem -- not discussed further today
+\end{list2}
+
+\slide{Secure File Transfer scp and SFTP}
+
+\begin{alltt}\small
+hlk@zenbook:~$ echo "hejsa" > test-file
+hlk@zenbook:~$ scp test-file hlk@10.0.42.21:
+test-file                                                         100%    6     4.4KB/s   00:00
+hlk@zenbook:~$
+
+hlk@zenbook:~$ sftp 10.0.42.21
+Connected to 10.0.42.21.
+sftp> get test-file
+Fetching /home/hlk/test-file to test-file
+test-file                                                         100%    6     2.7KB/s   00:00
+sftp> bye
+\end{alltt}
+
+Drop-in replacement for rcp (rcopy) and File Transfer Protocol (FTP) commands
+
+\slide{Ansible}
+
+\hlkimage{2cm}{Ansible_logo.png}
+
+\begin{quote}
+From my course materials:\\
+Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor.
+\end{quote}
+
+\begin{list2}
+\item Easy to read, even if you don't know much about YAML
+\item \link{https://www.ansible.com/} and \link{https://en.wikipedia.org/wiki/Ansible_(software)}
+\item Great documentation\\
+ \link{https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html}
+\end{list2}
+
+
+\slide{Ansible Dependencies}
+
+\hlkimage{10cm}{python-logo.png}
+
+\begin{list2}
+\item Ansible based on Python, only need Python installed\\
+\link{https://www.python.org/}
+\item Often you use Secure Shell for connecting to servers\\
+\link{https://www.openssh.com/}
+\item Easy to configure SSH keys, for secure connections
+\end{list2}
+
+
+\slide{Ansible playbooks}
+
+Example playbook content, installing software using APT:
+\begin{alltt}\small
+apt:
+    name: "\{\{ packages \}\}"
+    vars:
+      packages:
+        - nmap
+        - curl
+        - iperf
+        ...
+\end{alltt}
+
+Running it:
+\begin{minted}[fontsize=\small]{shell}
+cd kramse-labs/suricatazeek
+ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
+\end{minted}
+
+"YAML (a recursive acronym for "YAML Ain't Markup Language") is a human-readable data-serialization language."\\
+\link{https://en.wikipedia.org/wiki/YAML}
+
+
+\slide{Demo: output from running a git clone}
+
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+for reference at home later -- includes some sample playbooks
+
+This is a regular clone, but when updating we use SSH
+
+
+\slide{Rsync}
+
+
+
+
+
+\slide{Advanced and Security Stuff }
 
 \slide{Various network and server configurations}
 
@@ -279,6 +830,22 @@ line vty 0 4
 
 This will reduce the likelihood that an attacker can gain access to the administration using leaked username and passwords or because of vulnerabilities in the software.
 
+\slide{Get ready, Up and running with Ansible}
+
+Prequisites for Ansible - you need a Linux machine:
+\begin{list2}
+\item python language - Ansible uses this
+\item ssh keys - remote login without passwords
+\item Sudo - allow regular users to do superuser tasks
+\item Recommended tool: \verb+ssh-copy-id+ for getting your key on new server
+\item Recommended Change: \verb+sshd_config+ - no passwords allowed, no bruteforce
+\item Recommended to use: jump hosts/ProxyCommand in \verb+ssh_config+
+\item Highly recommended: Git and/or github for version control
+\end{list2}
+
+Official docs:\\
+\link{https://docs.ansible.com/ansible/intro_installation.html}
+
 
 \slide{Together with Firewalls - Virtual LAN (VLAN)}
 
@@ -322,7 +889,7 @@ server would affect the rest of the network
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
 
 \slide{Firewalls}
-
+Allow password based login
 \hlkimage{8cm}{opal-luci-firewall-easy.png}
 
 Firewalls are a great project to look into, there are so many \smiley
@@ -368,7 +935,7 @@ Status: active
 
 
 \begin{list2}
-\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+%\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
 \item Better with specific source address: \verb+ufw allow from 192.0.2.199 proto tcp to any port 22+
 \end{list2}
 
@@ -380,6 +947,53 @@ Note: This is my opinion!
 \begin{list2}
 \item Don't use the built-in VPN for sending packets over the SSH tunnel. TCP-in-TCP and all that -- use Wireguard instead
 \end{list2}
+
+
+\slide{OpenSSH VPN -- tunnel interface over SSH}
+
+\begin{alltt}\small
+-w local_tun[:remote_tun]
+    Requests  tunnel  device  forwarding  with  the specified tun(4) devices between the
+    client (local_tun) and the server (remote_tun).
+    The devices may be specified by numerical ID or the keyword “any”,  which  uses  the
+    next available tunnel device.  If remote_tun is not specified, it defaults to “any”.
+    See also the Tunnel and TunnelDevice directives in ssh_config(5).
+
+    If  the  Tunnel directive is unset, it will be set to the default tunnel mode, which
+    is “point-to-point”.  If a different Tunnel forwarding  mode  it  desired,  then  it
+    should be specified before -w.
+\end{alltt}
+
+\begin{list2}
+\item Was added during the years -- and still works
+\item Not my preferred VPN
+\end{list2}
+
+
+\slide{OpenSSH VPN -- howto }
+
+\begin{alltt}\small
+SSH-BASED VIRTUAL PRIVATE NETWORKS
+  ssh  contains  support for Virtual Private Network (VPN) tunnelling using the tun(4) network pseudo-device,
+  allowing two networks to be joined securely.  The  sshd_config(5)  configuration option PermitTunnel
+  controls whether the server supports this, and at what level (layer 2 or 3 traffic).
+
+  The  following  example  would  connect  client  network  10.0.50.0/24  with  remote network 10.0.99.0/24
+  using a point-to-point connection from 10.1.1.1 to 10.1.1.2, provided that  the SSH server running on the
+  gateway to the remote network, at 192.168.1.15, allows it.
+
+  On the client:
+             # ssh -f -w 0:1 192.168.1.15 true
+             # ifconfig tun0 10.1.1.1 10.1.1.2 netmask 255.255.255.252
+             # route add 10.0.99.0/24 10.1.1.2
+  On the server:
+             # ifconfig tun1 10.1.1.2 10.1.1.1 netmask 255.255.255.252
+             # route add 10.0.50.0/24 10.1.1.1
+  ...
+  Since  an SSH-based setup entails a fair amount of overhead, it may be more suited to temporary setups,
+  such as for wireless VPNs.  More permanent VPNs are better  provided  by  tools such as ipsecctl(8)
+  and isakmpd(8).
+\end{alltt}
 
 
 \slide{Linux Wireguard VPN}
@@ -436,6 +1050,14 @@ A few ideas, and basic security stuff:
 
 \slide{Jump Host}
 
+
+\begin{list2}
+\item
+\item
+\end{list2}
+
+
+
 \slide{Default settings -- secure hardened settings}
 
 Use OpenSSH everywhere -- there are many use-cases
@@ -451,7 +1073,188 @@ Do:
 \item Allow users logins with SSH -- accountability
 \item Use keys only
 \item Use firewall filter in front of SSH also -- have a single or a few jumphosts
+\item Optional: move the service to a non-standard port -- less logs and brute force
 \end{list2}
+
+\slide{How to check -- Nmap SSH Servers}
+
+
+\begin{list2}
+\item First scan for the ports: 22, 2200, 2222, etc.
+\item Use the scripts included with Nmap to enumerate algorithms and authentication methods
+\item You can also combine them into one scan:\\
+\verb+nmap -A -p 22,2200,2222 --script "ssh-auth-methods,ssh2-enum-algos" 192.0.2.0/24+
+\end{list2}
+
+\begin{alltt}
+hlk@zenbook:~$ ls -1 /usr/share/nmap/scripts/*ssh*{\bf
+/usr/share/nmap/scripts/ssh2-enum-algos.nse}
+/usr/share/nmap/scripts/sshv1.nse{\bf
+/usr/share/nmap/scripts/ssh-auth-methods.nse}
+/usr/share/nmap/scripts/ssh-brute.nse
+/usr/share/nmap/scripts/ssh-hostkey.nse
+/usr/share/nmap/scripts/ssh-publickey-acceptance.nse
+/usr/share/nmap/scripts/ssh-run.nse
+\end{alltt}
+
+\slide{Nmap example output}
+
+
+\begin{alltt}\footnotesize
+$ sudo nmap -A -p 22 10.0.42.0/28
+Nmap scan report for 10.0.42.10
+Host is up (0.0048s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.5 (protocol 2.0)
+| ssh-hostkey:
+|   2048 e7:75:db:00:89:ed:24:f9:02:7b:32:7e:02:d2:2c:3d (RSA)
+|   256 07:6f:99:17:de:5e:1a:81:d3:8c:ec:c2:e6:bb:aa:3c (ECDSA)
+|_  256 58:bf:be:cd:9e:ba:d5:ec:e3:a1:9b:3c:e2:a2:b2:a0 (ED25519)
+MAC Address: 0C:59:9C:E4:39:1E (Juniper Networks)
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Aggressive OS guesses: FreeNAS 0.69RC2 (FreeBSD 6.4-RELEASE) (93%), Juniper Networks J2320 or MX5-T router; or EX2200, EX3200, EX4200, or EX8200 switch (JUNOS 8.5 - 11.2) (93%), FreeBSD 5.1 (93%), Juniper M7i router (93%), FreeNAS 0.69.2 (FreeBSD 6.3-STABLE - 6.4-RELEASE) (93%), Juniper Networks JUNOS 13.2 (93%), FreeNAS (FreeBSD 6.4-RELEASE-p3) (93%), Juniper Networks JUNOS 8.5B2.5 (93%), Juniper EX2200 switch (JUNOS 12) (93%), Juniper MX960 router (92%)
+No exact OS matches for host (test conditions non-ideal).
+Network Distance: 1 hop
+\end{alltt}
+
+\begin{list2}
+\item This is a juniper switch
+\end{list2}
+
+\slide{Nmap example output}
+
+\begin{alltt}
+$ sudo nmap -A -p 22  --script "ssh-auth-methods,ssh2-enum-algos" 10.0.42.10
+Starting Nmap 7.95 ( https://nmap.org ) at 2026-04-25 17:35 CEST
+Nmap scan report for 10.0.42.10
+Host is up (0.0053s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.5 (protocol 2.0)
+| ssh-auth-methods:
+|   Supported authentication methods:
+|     publickey   // Great
+|     password    // Not so great
+|     keyboard-interactive   //
+|   Banner:
+|
+| ==========================================================
+|
+| Access to this device is limited to authorized users only.
+|
+|  WARNING: All unauthorized access is prohibited.
+|
+| ==========================================================
+|_
+| ssh2-enum-algos:
+|   kex_algorithms: (10)
+|       curve25519-sha256
+|       curve25519-sha256@libssh.org
+|       ecdh-sha2-nistp256
+|       ecdh-sha2-nistp384
+|       ecdh-sha2-nistp521
+|       diffie-hellman-group-exchange-sha256
+|       diffie-hellman-group16-sha512
+|       diffie-hellman-group18-sha512
+|       diffie-hellman-group14-sha256
+|       diffie-hellman-group14-sha1
+|   server_host_key_algorithms: (5)
+|       ssh-rsa
+|       rsa-sha2-512
+|       rsa-sha2-256
+|       ecdsa-sha2-nistp256
+|       ssh-ed25519
+|   encryption_algorithms: (6)
+|       chacha20-poly1305@openssh.com
+|       aes128-ctr
+|       aes192-ctr
+|       aes256-ctr
+|       aes128-gcm@openssh.com
+|       aes256-gcm@openssh.com
+|   mac_algorithms: (10)
+|       umac-64-etm@openssh.com
+|       umac-128-etm@openssh.com
+|       hmac-sha2-256-etm@openssh.com
+|       hmac-sha2-512-etm@openssh.com
+|       hmac-sha1-etm@openssh.com
+|       umac-64@openssh.com
+|       umac-128@openssh.com
+|       hmac-sha2-256
+|       hmac-sha2-512
+|       hmac-sha1
+|   compression_algorithms: (2)
+|       none
+|_      zlib@openssh.com
+\end{alltt}
+
+\begin{list2}
+\item This is a juniper switch
+\end{list2}
+
+\slide{Nmap example output -- hardened OpenBSD}
+
+\begin{alltt}
+$ sudo nmap -A -p 22  --script "ssh-auth-methods" 10.0.42.1
+Starting Nmap 7.95 ( https://nmap.org ) at 2026-04-25 17:40 CEST
+Nmap scan report for 10.0.42.1
+Host is up (0.00044s latency).
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 10.2 (protocol 2.0)
+| ssh-auth-methods:
+|   Supported authentication methods:
+|_    publickey    // only keys can be used!
+MAC Address: 80:EE:73:XX:YY:ZZ (Shuttle)
+\end{alltt}
+
+\begin{list2}
+\item This is an OpenBSD firewall
+\end{list2}
+
+
+\slide{Software Security}
+
+Can we trust the OpenSSH software? -- and run it directly on the Internet!
+
+Yes, I think we can:
+\begin{list2}
+\item OpenBSD project does a great job at fixing bug, and update development methods
+\item OpenSSH is privilege seperated
+\item OpenSSH does a lot to reduce the attack surface, pre-auth vs code running after authentication
+\end{list2}
+
+
+\slide{Reading, Putty CVE-2024-31497}
+
+\begin{quote}{\bf \large
+PuTTY SSH client flaw allows recovery of cryptographic private keys}\\
+The vulnerability tracked as CVE-2024-31497 was discovered by Fabian Bäumer and Marcus Brinkmann of the Ruhr University Bochum and is caused by how PuTTY generates ECDSA nonces (temporary unique cryptographic numbers) for the NIST P-521 curve used for SSH authentication.
+
+...
+
+Brinkmann explained on X that {\bf attackers require 58 signatures} to calculate a {\bf target's private key}, which they can acquire either by {\bf collecting them from logins to an SSH server they control or is compromised, or from signed Git commits.}
+\end{quote}
+
+Source: {\footnotesize\url{https://www.bleepingcomputer.com/news/security/putty-ssh-client-flaw-allows-recovery-of-cryptographic-private-keys/}}
+
+\slide{Reading, Putty CVE-2024-31497}
+
+\begin{quote}\footnotesize{\bf
+2024-04-15 PuTTY 0.81 released}\\
+
+PuTTY 0.81, released today, fixes a critical vulnerability CVE-2024-31497 in the use of 521-bit ECDSA keys (ecdsa-sha2-nistp521). If you have used a 521-bit ECDSA private key with any previous version of PuTTY, consider the private key compromised: remove the public key from \verb+authorized_keys+ files, and generate a new key pair.
+
+However, this only affects that one algorithm and key size. No other size of ECDSA key is affected, and no other key type is affected.
+\end{quote}
+Source: The Putty download page at
+\url{https://www.chiark.greenend.org.uk/~sgtatham/putty/}
+
+\begin{list1}
+\item Random number generation and use is hard!
+\item \url{https://nvd.nist.gov/vuln/detail/CVE-2024-31497}
+\item Another recent SSH related vulnerability which require active MiTM attack \url{https://terrapin-attack.com/}
+\end{list1}
 
 
 

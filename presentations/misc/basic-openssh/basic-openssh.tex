@@ -1,0 +1,513 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+
+\selectlanguage{english}
+
+%\externaldocument{unix-audit-security-oevelser}
+\externaldocument{\jobname-exercises}
+
+% Lær at bruge OpenSSH
+% Kun for medlemmer
+% Sikker forbindelse til servere – med et af de vigtigste værktøjer i IT
+
+% Sikker forbindelse til servere – med et af de vigtigste værktøjer i IT
+
+% Secure Shell (SSH) blev oprindeligt udviklet i 1990’erne af Tatu Ylönen som en sikker erstatning for usikre protokoller som Telnet og rlogin. I dag er SSH et uundværligt værktøj for millioner af udviklere og systemadministratorer verden over, og en hjørnesten i sikker kommunikation.
+% Med OpenSSH får du adgang til mere end bare en krypteret terminal. Du kan overføre filer sikkert, bruge SSH som proxy, forbinde til andre systemer via nøglebaseret login, og endda kombinere SSH med moderne værktøjer som Ansible, Git og Rsync.
+
+% På dette foredrag får du både en grundlæggende introduktion og et indblik i de mange avancerede muligheder, SSH rummer.
+
+% Vi gennemgår bl.a.:
+% • Hvad Secure Shell (SSH) er, og hvordan det virker
+% • Brug af OpenSSH og andre open source-implementeringer
+% • Login med nøgler frem for kodeord
+% • Proxy, Jump Hosts og port forwarding
+% • Integration med Ansible, Git, Rsync og andre værktøjer
+% • Brug af SSH som VPN eller i kombination med WireGuard
+% • Sikring og hærdning af SSH-servere
+
+% Kurset tager udgangspunkt i OpenSSH, som er frit tilgængeligt og kan installeres på de fleste systemer, uanset om du arbejder i Windows, Linux eller macOS.
+
+% Nøgleord: SSH, OpenSSH, kryptering, sikker kommunikation, netværk, VPN, systemadministration
+
+\begin{document}
+
+
+\mytitlepage{OpenSSH Basics for All}
+{PROSA April 2026}
+
+
+\hlkprofiluk
+
+
+\slide{Goals for today}
+
+\hlkimage{4cm}{bornhack-camp-2024.jpg}
+
+\begin{list2}
+\item Present one of the most versatile security tools
+\item
+\item
+\item
+\item
+
+\end{list2}
+
+Photo is NWWC camp at BornHack 2024, next is BornHack July 15. to 22. 2026 \link{https://bornhack.dk}\\
+-- a nice \emph{home lab} with public IP addresses!
+
+
+\slide{Time schedule}
+
+\hlkimage{5cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
+
+\begin{list2}
+\item 17:00 - 18:15 Introduction and basics
+\item 30min Break, talk or spend time with family
+\item 18:45 - 19:45 Port forwarding and Use cases
+\item 15min small break
+\item 20:00 - 21:00 All the rest -- advanced use-cases automation etc
+\end{list2}
+
+An exercise day was announced: I suggest May 5, 2026 online 17:00 - 21:00
+
+
+
+
+
+\slide{What is a Home Lab}
+
+\begin{quote}
+"A homelab is a self-contained IT environment that you design and control. It usually includes basic infrastructure like compute, storage, and networking, along with a hypervisor or virtualization layer. Some setups are modest and run on a single machine, while others resemble mini datacenters with multiple nodes and shared storage such as SAN or NAS."
+\end{quote}
+Source: StorMagic, "What Is a Homelab? Why IT Pros Are Building Their Own" (stormagic.com, 2025)
+
+\begin{list2}
+\item it's your own private sandbox — no stakes
+\item no risk to production systems
+\item where you can freely experiment with servers, networking, virtualization, security tools,
+\item and anything else you're curious about
+\item I think that doing any kind of experiment, then you \emph{have a lab}
+\end{list2}
+
+
+
+\slide{My Intentions}
+
+
+I suspect you want to work with \emph{Secure Shell} and \emph{security}, but:
+\begin{list2}
+\item You are unsure of how to do it
+\item Is it really secure -- can we trust it, what about the default settings harden it
+\item ... and monitor it, ... and secure it
+
+\end{list2}
+
+My intention is to be your sparring partner today, list all the parts I think must be considered.
+
+There are a lot of people today, but ask questions in the chat
+
+\slide{Why are we here today then?!}
+\hlkrightimage{10cm}{eugen-str-CrhsIRY3JWY-unsplash.jpg}
+
+We are here to get an overview:
+\begin{list2}
+\item Identify what we \emph{need} for a home lab environment
+\item Consider more parts of the picture
+\item Show solutions that have worked for me, with some example technologies
+\item Provide a kind of check list for your deployment
+\end{list2}
+
+\slide{Prerequisites}
+
+If you want to be an expert in IP and network security I recommend doing exercises
+
+\begin{list1}
+\item It is recommended to use virtual machines
+\item Network security and most internet related security work has the following requirements:
+\begin{list2}
+\item Network experience
+\item TCP/IP principles - often in more detail than a common user
+\item Programming is an advantage, for automating things -- can be PowerShell, Python, ...
+\item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill} for infosec work\\
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+\end{list2}
+\end{list1}
+
+
+
+
+\slide{Course Materials}
+
+This material is in multiple parts:
+\begin{list2}
+\item Slide show - presentation - this file
+\item Additional resources from the internet are linked throughout
+\item Wikipedia has a LOT of nice pages about IP protocols, for example:
+\end{list2}
+
+\begin{quote}\small
+Transport Layer Security (TLS) is a cryptographic protocol designed to provide communications security over a computer network. The protocol is widely used in applications such as email, instant messaging, and voice over IP, but its use in securing HTTPS remains the most publicly visible.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Transport_Layer_Security}
+
+\slide{Book: OpenSSH Mastery}
+
+We often need a basic understanding of networking!
+
+%\hlkimage{4cm}{PracticalPacketAnalysis3E_cover.png}
+
+%\emph{Practical Packet Analysis,
+%Using Wireshark to Solve Real-World Network Problems}
+%by Chris Sanders, 3rd Edition
+%April 2017, 368 pp.
+%ISBN-13:
+%978-1-59327-802-1
+%\link{https://nostarch.com/packetanalysis3}
+
+I recommend this book for people new to OpenSSH
+
+\slide{Cryptographic basics }
+
+
+symmetric
+
+assymmetric
+
+\slide{Using Wireshark}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options}
+
+\slide{What about encrypted traffic}
+
+\hlkimage{10cm}{images/wireshark-sni-twitter.png}
+
+\centerline{Current TLS version 1.2 used in HTTPS show the name!}
+
+
+
+\slide{Hackerlab setup -- easy}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item I recommend getting a hackerlab running on your laptop
+\item Hardware: modern laptop which has CPU virtualization\\
+Dont forget to check BIOS settings for virtualization
+\item Software: your favorite OS: Windows, Mac, Linux
+\item Virtualization software: VMware, Virtual box, HyperV
+\item Hacker software: Kali as a Virtual Machine \link{https://www.kali.org/}
+%\item Soft targets: Metasploitable, Windows 2000, Windows XP, ...
+\end{list2}
+
+
+
+\slide{Demo: Connect with SSH}
+
+%\hlkimage{8cm}{debian-xfce.png}
+
+\begin{list2}
+\item
+\end{list2}
+
+
+\slide{Various network and server configurations}
+
+\slide{A switch}
+
+\hlkimage{10cm}{switch-1.pdf}
+
+\begin{list1}
+\item Today we use switches, Don't buy a hub, not even for experimenting or sniffing
+\item A switch can receive and send data on multiple ports at the same time
+\item Performance only limited by the backplane and switching chips
+\item Can also often route with the same speed and mirror packets
+\end{list1}
+
+
+\slide{A modern router -- small is beautiful}
+
+\hlkimage{7cm}{sft1200_1.png}
+
+\begin{list2}
+\item Opal (GL-SFT1200) is a pocket-sized travel router supporting 1200Mbps wireless,
+Max. 300 Mbps (2.4GHz) + 867 Mbps (5GHz) Fast Wi-Fi Speeds, Powerful CPU with 3 x Gigabit Ports,
+Excellent Security with VPN -- OpenVPN \& WireGuard, IPv6
+\end{list2}
+Source: \url{https://www.gl-inet.com/products/gl-sft1200/}
+
+\slide{Demo SSH into 4G router }
+
+\slide{A small network home lab}
+
+\hlkimage{6cm}{dell-precision-3240-compact.jpg}
+\begin{list2}
+\item Get a switch, can be a single uplink port on the production network
+\item A small \emph{server} -- can be a mini PC, old laptop, old PC. Beware old rack mounted servers may be nice, but noisy and power hungry!
+\item Install a router -- can be a physical router Opal or virtual router
+\item Picture is a Dell Precision 3240 Compact which is quite small
+\end{list2}
+
+
+\slide{Lock down management}
+
+\hlkimage{14cm}{generic-network-pressure-points.pdf}
+
+Routers often have a control plane and a data plane. The first is controlling the device, and provides management, while the data plane is forwarding and routing the packets. The data plane is mostly hardware based on high-end devices, and can forward at full wire speed.
+
+{\bf We see people expose VMware vCenter administration and firewall admin interfaces on the Internet still today!}
+
+
+\slide{Control-Plane Access Control Lists (CP-ACL)}
+
+Management of network devices can be done with Access Control lists, other systems may be put into a management VLAN
+
+An example from a Cisco router using secure shell is shown below with a simple standard Access Control List (ACL) named 22 and then referenced for the virtual terminal (vty) secure shell (ssh):
+
+\begin{alltt}\scriptsize
+ip access-list standard 22
+10 permit 192.0.2.2
+20 permit 172.13.22.10
+30 permit 192.168.0.10
+40 permit 203.0.113.10
+line vty 0 4
+  access-class 22 in
+  transport input ssh
+\end{alltt}
+
+This will reduce the likelihood that an attacker can gain access to the administration using leaked username and passwords or because of vulnerabilities in the software.
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\end{list1}
+
+\slide{Network Segmentation: Which VLANs to create}
+
+Using VLANs to segment networks we can extend it to the rest of the network, and an example of isolated segments could be:
+\begin{list2}
+\item Guest network for cabled and Wi-Fi clients
+\item Client networks can be isolated per department, floor or building
+\item Server networks for multiple purposes – development, staging, testing, production, manufacturing, …
+\item Internet servers in a demilitarized zone (DMZ)4 which would make it less likely that compromised internet
+server would affect the rest of the network
+\item Dedicated printer network
+\item Management network for virtualisation, one for network management, one for storage
+\end{list2}
+
+
+\slide{Defense in depth}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+\slide{Firewalls}
+
+\hlkimage{8cm}{opal-luci-firewall-easy.png}
+
+Firewalls are a great project to look into, there are so many \smiley
+
+I recommend looking into open source firewalls like OPNsense, UFW and OpenBSD and many routers also include firewalls. You can often find images from commercial vendors, that you can try out.
+
+
+
+\slide{Firewall OPNsense GUI based and easy to install}
+
+\hlkimage{12cm}{images/screenshots_OPNsense-1024x518.png}
+
+\begin{list2}
+\item OPNsense \link{https://opnsense.org/}
+\item Firewall built on FreeBSD with web interface
+\item Originally thoughts from m0n0wall and later \link{https://www.pfsense.org/}\\
+\item Danish companies have been using these for many years now
+\end{list2}
+
+
+\slide{Linux Uncomplicated Firewall (UFW)}
+
+Debian / Ubuntu:
+\begin{alltt}\scriptsize
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+
+
+\begin{list2}
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\item Better with specific source address: \verb+ufw allow from 192.0.2.199 proto tcp to any port 22+
+\end{list2}
+
+
+\slide{Things not to use in OpenSSH}
+
+Note: This is my opinion!
+
+\begin{list2}
+\item Don't use the built-in VPN for sending packets over the SSH tunnel. TCP-in-TCP and all that -- use Wireguard instead
+\end{list2}
+
+
+\slide{Linux Wireguard VPN}
+
+\begin{quote}\small
+WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
+\end{quote}
+
+Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
+
+\begin{list2}
+\item Very easy to setup!
+\item single round trip key exchange, based on NoiseIK
+\item Short pre-shared static keys—Curve25519
+\item strong perfect forward secrecy
+\item Transport
+speed is accomplished using ChaCha20Poly1305 authenticated-encryption
+\item encapsulation of packets in UDP
+\item WireGuard can be
+simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
+\end{list2}
+
+
+
+\slide{Virtual Private Network (VPN) -- client}
+
+\hlkimage{8cm}{opal-wireguard-client.png}
+
+You can enable VPN functionality as a client or server. Client would be connecting you to your \emph{home network} when travelling. Picture shown is the GL-Inet router Opal web interface
+
+We recommend Wireguard as a modern Virtual Private Network technology
+
+\slide{Virtual Private Network (VPN) -- server}
+
+\hlkimage{8cm}{opal-wireguard-server.png}
+
+Server would be if this was your home router.  Picture shown is the GL-Inet router Opal web interface
+
+We recommend Wireguard as a modern Virtual Private Network technology
+
+
+
+\slide{Ideas for home lab projects -- some which I think are important}
+
+A few ideas, and basic security stuff:
+\begin{list2}
+\item Setup a router, with multiple interfaces and subnets
+\item Setup a firewall, enable filtering with multiple interfaces and subnets
+\item Verify firewall on or off with Nmap
+\item Configure management access to router and firewall, allow specific sources
+\item Setup a VPN with Wireguard
+\item Try out sniffing with a monitor port in the network -- centralized monitoring of all subnets from one port, use Wireshark to see initial data
+\end{list2}
+
+\slide{Jump Host}
+
+\slide{Default settings -- secure hardened settings}
+
+Use OpenSSH everywhere -- there are many use-cases
+
+Do NOT:
+\begin{list2}
+\item Allow root logins with SSH -- never a good option
+\item Allow password based login
+\end{list2}
+
+Do:
+\begin{list2}
+\item Allow users logins with SSH -- accountability
+\item Use keys only
+\item Use firewall filter in front of SSH also -- have a single or a few jumphosts
+\end{list2}
+
+
+
+\slide{Conclusion}
+
+\begin{list1}
+\item Use OpenSSH everywhere -- there are many use-cases
+\item Stop exposing insecure services to \emph{the world} -- everyone on the Internet
+
+\end{list1}
+
+
+\slide{Building Secure Infrastructures}
+
+\begin{list1}
+\item A real-life setup of an infrastructure from scratch can be daunting!
+\item You need:
+\begin{list2}
+\item Policies
+\item Procedures
+\item Incident Response
+\end{list2}
+\item Running systems which require
+\begin{list2}
+\item Configurations
+\item Settings
+\item Supporting infrastructure -- networks
+\item Supporting infrastructure -- logging, dash boarding, monitoring
+\end{list2}
+\item Building something \emph{secure} is {\bf hard work!}
+\end{list1}
+
+
+
+
+\slide{Concrete advice for enterprise networks}
+
+
+\begin{list2}
+\item Portscanning - start using portscans in your networks, verify how far malware and hackers can travel, and identify soft systems needing updat
+es or isolation
+\item Have separation -- anywhere, starting with organisation units, management networks, server networks, customers, guests, LAN, WAN, Mail, web,
+...
+\item Use Web proxies - do not allow HTTP directly except for a short allow list, \\
+do not allow traffic to and from any new TLD
+\item Use only your own DNS servers, create a pair of Unbound servers, \\
+point your internal DNS running on Windows to these\\
+Create filtering, logging, restrictions on these Unbound DNS servers\\
+\link{https://www.nlnetlabs.nl/projects/unbound/about/} and also \link{https://pi-hole.net/}
+\item Only allow SMTP via your own mail servers, create a simple forwarder if you must
+\end{list2}
+
+Allow lists are better than block list, even if it takes some time to do it
+
+
+\myquestionspage
+
+
+\end{document}

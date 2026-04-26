@@ -547,17 +547,17 @@ Usually you would recommend SSH-Agent, but lets wait with that.\\
 
 \begin{list2}
 %  \item {\bf Remote Shell Access} --- Securely log in to a remote machine and execute commands via an interactive terminal session.
-  \item {\bf Secure File Transfer} --- Transfer files between hosts using \texttt{scp} (secure copy) or \texttt{sftp} (SSH File Transfer Protocol).
+  \item {\bf Secure File Transfer} --- Transfer files between hosts using \verb+scp+ (secure copy) or \verb+sftp+ (SSH File Transfer Protocol).
   \item {\bf Port Forwarding / Tunneling} --- Forward local or remote ports over an encrypted SSH connection to securely access services behind firewalls.
-%  \item {\bf Public Key Authentication} --- Authenticate without passwords using key pairs (\texttt{ssh-keygen}), enabling automated and more secure logins.
+%  \item {\bf Public Key Authentication} --- Authenticate without passwords using key pairs (\verb+ssh-keygen}), enabling automated and more secure logins.
   \item {\bf Reverse SSH Tunneling} --- Expose a local service to a remote host, commonly used to access machines behind NAT or restrictive firewalls.
 %  \item {\bf X11 Forwarding} --- Run graphical applications on a remote host and display them on the local machine over the SSH connection.
   \item {\bf SOCKS Proxy / Dynamic Port Forwarding} --- Use SSH as a dynamic SOCKS5 proxy to route arbitrary traffic securely through a remote server.
-%  \item {\bf Remote Command Execution} --- Run a single command on a remote host non-interactively, e.g.\ \texttt{ssh user@host "df -h"}.
+%  \item {\bf Remote Command Execution} --- Run a single command on a remote host non-interactively, e.g.\ \verb+ssh user@host "df -h"}.
 %  \item {\bf Git over SSH} --- Authenticate and communicate securely with Git hosting services (GitHub, GitLab, etc.) using SSH keys.
 %  \item {\bf Automated Deployment \& CI/CD} --- Use SSH in scripts and pipelines to deploy code, restart services, or run remote tasks on production servers.
   \item {\bf SSH Agent Forwarding} --- Forward your local SSH keys through a chain of hosts, avoiding the need to store private keys on intermediate servers.
-%  \item {\bf Mounting Remote Filesystems} --- Use \texttt{sshfs} to mount a remote directory locally over SSH as if it were a local filesystem.
+%  \item {\bf Mounting Remote Filesystems} --- Use \verb+sshfs} to mount a remote directory locally over SSH as if it were a local filesystem.
 \end{list2}
 
 
@@ -602,6 +602,15 @@ Now connect your local browser to \verb+https://localhost:1443+
 \item Using port 1443 locally to avoid permission issues -- privileged ports on Unix
 %      \item {\bf user@remote-server.com} --- The SSH gateway host
 \end{list2}
+
+
+\slide{Centralized management SSH, Jump hosts}
+
+\begin{quote}
+A jump server, jump host or jumpbox is a computer on a network used to access and manage devices in a separate security zone. The most common example is managing a host in a DMZ from trusted networks or computers.
+\end{quote}
+
+\link{https://en.wikipedia.org/wiki/Jump_server}
 
 
 \slide{OpenSSH client config with jump host}
@@ -654,7 +663,7 @@ all traffic is tunnelled through the remote server
 % Source:
 
 \begin{list2}
-\item {\bf Secure File Transfer} --- Transfer files between hosts using \texttt{scp} (secure copy) or \verb+sftp+ (SSH File Transfer Protocol).
+\item {\bf Secure File Transfer} --- Transfer files between hosts using \verb+scp} (secure copy) or \verb+sftp+ (SSH File Transfer Protocol).
 \item {\bf Git over SSH} --- Authenticate and communicate securely with Git hosting services (GitHub, GitLab, Codeberg etc.) using SSH keys.
 \item {\bf Ansible} configuration management
 \item {\bf Rsync} file distribution -- can use SSH directly
@@ -754,17 +763,29 @@ Already up to date.
 for reference at home later -- includes some sample playbooks
 
 This is a regular clone, but when updating we use SSH
+\begin{alltt}\footnotesize
+hlk@zenbook:security-courses$ git remote -v
+origin	git@codeberg.org:kramse/security-courses.git (fetch)
+\end{alltt}
 
 
-\slide{Rsync}
+\slide{Rsync over OpenSSH}
 
+\begin{list2}
+    \item rsync is well-known for copying files back and forth
+  \item Basic syntax with SSH \\
+    \verb+rsync -avz -e ssh user@host:/src/ /dst/+
+    \item Custom SSH options \\
+      \verb+rsync -e "ssh -p 2222 -i \textasciitilde/.ssh/id\_ed25519" ...+
 
+  \item {\bf Key options}
+    \begin{list2}
+      \item \verb+-a+ — archive mode (recurse, preserve permissions, times, symlinks)
+      \item \verb+-v+ — verbose output \verb+-z+ — compress data during transfer
+      \item \verb+-e ssh + — use SSH
+    \end{list2}
+\end{list2}
 
-
-
-\slide{Advanced and Security Stuff }
-
-\slide{Various network and server configurations}
 
 \slide{A switch}
 
@@ -790,6 +811,15 @@ Excellent Security with VPN -- OpenVPN \& WireGuard, IPv6
 Source: \url{https://www.gl-inet.com/products/gl-sft1200/}
 
 \slide{Demo SSH into 4G router }
+
+\begin{alltt}
+#! /bin/sh
+echo Telenor ssh router
+echo "User password:  M#1127155201x    "
+route -T1 exec 'ssh -o "StrictHostKeyChecking no" root@192.168.1.1'
+\end{alltt}
+
+Using multiple routing tables on OpenBSD, and allows me to connect to a specific router
 
 \slide{A small network home lab}
 
@@ -951,7 +981,7 @@ Note: This is my opinion!
 
 \slide{OpenSSH VPN -- tunnel interface over SSH}
 
-\begin{alltt}\small
+\begin{alltt}\scriptsize
 -w local_tun[:remote_tun]
     Requests  tunnel  device  forwarding  with  the specified tun(4) devices between the
     client (local_tun) and the server (remote_tun).
@@ -972,7 +1002,7 @@ Note: This is my opinion!
 
 \slide{OpenSSH VPN -- howto }
 
-\begin{alltt}\small
+\begin{alltt}\scriptsize
 SSH-BASED VIRTUAL PRIVATE NETWORKS
   ssh  contains  support for Virtual Private Network (VPN) tunnelling using the tun(4) network pseudo-device,
   allowing two networks to be joined securely.  The  sshd_config(5)  configuration option PermitTunnel
@@ -1046,14 +1076,6 @@ A few ideas, and basic security stuff:
 \item Configure management access to router and firewall, allow specific sources
 \item Setup a VPN with Wireguard
 \item Try out sniffing with a monitor port in the network -- centralized monitoring of all subnets from one port, use Wireshark to see initial data
-\end{list2}
-
-\slide{Jump Host}
-
-
-\begin{list2}
-\item
-\item
 \end{list2}
 
 
@@ -1224,6 +1246,7 @@ Yes, I think we can:
 \item OpenSSH does a lot to reduce the attack surface, pre-auth vs code running after authentication
 \end{list2}
 
+There have been software issues with OpenSSH -- and other SSH implementations!
 
 \slide{Reading, Putty CVE-2024-31497}
 

@@ -1,0 +1,820 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{ek-slides}
+\externaldocument{software-security-exercises}
+\selectlanguage{english}
+
+
+% OB2 Softwaresikkerhed (10 ECTS)
+% Indhold
+% Modulet fokuserer på sikkerhedsperspektivet i software, blandt andet programkvalitet og
+% fejlhåndterings samt datahåndterings betydning for en software arkitekturs sårbarheder.
+% Elementet introducerer også til forskellige designprincipper, herunder ”security by design”.
+% Læringsmål
+% Viden
+% Den studerende har viden om:
+% Hvilken betydning programkvalitet har for it-sikkerhed ift.:
+%* Trusler mod software
+%* Kriterier for programkvalitet
+%* Fejlhåndtering i programmer
+%* Forståelse for security design principles, herunder:
+% * security by design
+% * privacy by design
+% Færdigheder
+% Den studerende kan:
+% Tage højde for sikkerhedsaspekter ved at:
+% * Programmere håndtering af forventede og uventede fejl
+% * Definere lovlige og ikke-lovlige input data, bl.a. til test
+%* Bruge et API og/eller standard biblioteker
+% * Opdage og forhindre sårbarheder i programkoder
+% * Sikkerhedsvurdere et givet software arkitektur
+% Kompetencer
+% Den studerende kan:
+% * Håndtere risikovurdering af programkode for sårbarheder.
+%* Håndtere udvalgte krypteringstiltag
+
+\begin{document}
+
+\mytitlepage
+{0. Introduction}
+{EK Software Security}
+
+\hlkprofiluk
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Welcome, course goals and expectations, get to know eachother
+\item Create a good starting point for learning
+\item Learn to find resources, files and programs/libraries
+\item Concrete Expectations
+\item Prepare tools for the exercises
+\end{list2}
+
+  Photo by Thomas Galler on Unsplash
+
+\slide{Current events}
+
+\begin{list2}
+\item Fortinet CVEs - summary, make this as an exercise, evaluate a new product suggested by your boss
+\item VPN -- protocols belong in the network course, but implementation is at least as important?
+\item NIS2 -- impact on "software security", can you run an open source project with high risk CVEs?
+\item Citrix ADC load balancers are popular in Denmark
+\item CPE routes hacked and become botnet devices
+\item OpenSSH RCE SSH-Agent Qualys
+\item Tetra - crypto backdoors including GSM and Matt Blaze P25, ref A5/1 GSM leaked 1990s
+\end{list2}
+
+We will add more recent ones to this list when they happen during the course and put them in itslearning
+
+\slide{Current CVEs}
+
+We will be talking about software "problems" often named vulnerabilities, with CVE IDs
+Here are some example vulnerabilities Rezilion identified back in 2023:
+\begin{quote}
+\begin{list2}
+\item JsonWebToken (CVE-2022-23529).
+\item ChatGPT (CVE-2023-28858).
+\item Apache Superset (CVE-2023-27524).
+\item PaperCut NG/MF (CVE-2023-27350).
+\item Fortinet FortiOS (CVE-2022-41328).
+\item Adobe ColdFusion (CVE-2023-26360).
+\item MOVEit vulnerability (CVE-2023-34362).
+\end{list2}
+\end{quote}
+
+Source:\\ {\scriptsize
+\link{https://www.scmagazine.com/news/vulnerability-management/top-vulnerabilities-2023-apache-superset-papercut-moveit-chatgpt}}
+
+
+\slide{Microsoft Patch Tuesday: June--August 2026}
+
+\begin{tabularx}{23cm}{Xrrrr}
+Month & CVEs (Microsoft) & Critical & Zero-days & Exploited \\
+\hline
+June  & 198--208  & 32--37 & 3 & 0 at release$^{*}$ \\
+July  & 569--570  & 56--59 & 3 & 2 \\
+August & 398--421 & 42--62 & 1--3 & 1 \\
+\end{tabularx}
+
+\begin{list2}
+\item Vendor counts disagree by month; the ranges above reflect Microsoft's own bulletin count versus third-party trackers (Tenable, BleepingComputer, N-able, Krebs on Security)
+\item Broader trackers that fold in republished third-party and Chromium-based Edge CVEs report far higher totals for the same months, e.g.\ ZDI counted 571 CVEs for June and 621 for July when Chromium fixes are included
+\item July's release is the largest in Patch Tuesday history by any count; Microsoft attributes the volume increase in part to an internal AI-assisted vulnerability discovery system
+\end{list2}
+
+\slide{Microsoft Patch Tuesday -- June 2026}
+\begin{list2}
+\item 198--208 CVEs, 32--37 critical, 3 zero-days, none exploited at release
+\item \emph{CVE-2026-45586} -- CTFMON EoP, public zero-day
+\item \emph{CVE-2026-41089} -- Netlogon RCE CVSS 9.8, disclosed May, confirmed exploited in June
+\end{list2}
+
+\slide{Microsoft Patch Tuesday -- July 2026}
+\begin{list2}
+\item 569--570 CVEs, 56--59 critical, 3 zero-days, 2 exploited
+\item \emph{CVE-2026-56155} -- AD FS EoP, exploited zero-day
+\item \emph{CVE-2026-56164} -- SharePoint EoP, exploited zero-day
+\item Largest Patch Tuesday release ever, AI-assisted vulnerability discovery cited as a factor
+\end{list2}
+
+\slide{Microsoft Patch Tuesday -- August 2026}
+\begin{list2}
+\item 398--421 CVEs, 42--62 critical, 1 exploited zero-day
+\item \emph{CVE-2026-68820} -- afd.sys (WinSock) EoP, CVSS 7.0, on CISA KEV\\
+\link{https://www.tenable.com/blog/microsofts-august-2026-patch-tuesday-addresses-398-cves-cve-2026-68820}\\
+Exercise -- check if any of these still affect your organizations
+\item Vendor counts disagree by month -- Microsoft's own bulletin count vs.\ third-party trackers
+\end{list2}
+
+\slide{Not just Microsoft}
+\begin{list2}
+\item Microsoft is a well-known vendor here, but far from the only vendor with high numbers
+\item \emph{Linux kernel} -- 5{,}681 CVEs in 2025 (highest single year ever recorded); already 2{,}308 CVEs in H1 2026, the single highest vendor count for the period\\
+\link{https://linuxiac.com/linux-tops-2026-cve-charts/}
+\item \emph{Fortinet} -- 27 new CVEs disclosed in a single two-day stretch in April 2026 across FortiOS, FortiSandbox, FortiWeb and more, several critical/unauthenticated\\
+\link{https://www.greenbone.net/en/blog/fortinet-rce-vulnerabilities-2026-critical-vulnerabilities-in-fortisandbox/}
+\item Other vendors worth showing: \emph{Oracle} (1{,}235 CVEs in a single Critical Patch Update, July 2026), \emph{Google/Chromium} (1{,}752 CVEs H1 2026), \emph{Adobe}, \emph{Apache}
+\end{list2}
+
+\slide{Plan for today}
+
+\begin{list2}
+\item Introduce lecturer and students
+\item Expectations for this course
+\item Literature list walkthrough
+\item Prepare tools for the exercises
+\item Kali and Debian Linux introduction
+\end{list2}
+
+Exercises
+\begin{list2}
+\item Software installation
+\item Download some resources
+\end{list2}
+Linux is a toolbox we will use and participants will use virtual machines
+
+
+\slide{Exercises}
+
+Hardware
+
+Since we are going to be doing exercises, each team will need software installed
+
+This time I will try to use Kubernetes -- the smallest installation we can do!\\
+Quick Start: Install Rancher Desktop — \link{https://rancherdesktop.io}
+
+Note: if you already have Docker or other virtualization, wait a bit before installing!
+
+The following are two other recommended systems -- {\bf not required}:
+\begin{list2}
+\item One based on Debian, running software servers and web applications
+\item One based on Kali Linux, running attacks against software
+\item Setup instructions and help \url{https://github.com/kramse/kramse-labs}
+\end{list2}
+
+\slide{Time schedule}
+
+\begin{list1}
+\item 12:45 - 16:45 I will be here at EK
+\vskip 1em
+\item 12:45 - 13:45 -- Plan for the day
+\item 14:00 - 14:45 -- 45min Teaching and exercises
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- 45min Teaching and exercises
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- 45min Teaching and exercises
+
+\end{list1}
+
+\vskip 1cm
+\centerline{\Large This will be the basic plan for each wednesday}
+
+\slide{Course Materials}
+
+\begin{list1}
+\item This material is in multiple parts:
+\begin{list2}
+%\item Introduktionsmateriale med baggrundsinformation
+\item Slide shows - presentation - this file
+\item Exercises - PDF which is updated along the way
+\end{list2}
+\item Books listed in the lecture plan
+\item Additional resources from the internet
+\item Note: the presentation slides are not a substitute for reading the books, papers and doing exercises, many details are not shown
+\end{list1}
+
+
+\slide{Course Data}
+\hlkimage{6cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
+
+{\bf To be updated}
+
+{\bf Course: Software Security
+VF1 Softwaresikkerhed (10 ECTS)}
+
+Teaching dates - fall 2024 tuesdays and thursdays 17:00 - 20:30\\
+29/8, 3/9, 10/9, 12/9, 17/9, 19/8, 24/9, 26/9, \sout{1/10}, 3/10, 8/10, 10/10, 22/10, 24/10
+
+Exam: 5/11 2024
+
+Changed dates: 1/10 moving due to external meeting for Henrik, propose 15/10
+
+\slide{Deliverables and Exam}
+
+{\bf To be updated}
+\begin{list2}
+\item Exam
+\item Individual: Oral based on curriculum
+\item Graded (7 scale)
+\item Draw a question with no preparation. Question covers a topic
+\item Try to discuss the topic, and use practical examples
+\item Exam is 30 minutes in total, including pulling the question and grading
+\item Count on being able to present talk for about 10 minutes
+\item Prepare material (keywords, examples, exercises, wireshark captures) for different topics so that you can use it to help you at the exam
+
+\vskip 5mm
+\item Deliverables:
+\item 1 Mandatory assignments
+\item Both mandatory assignments are required in order to be entitled to the exam.
+\end{list2}
+
+\slide{Course Description}
+
+{\bf To be updated}
+
+From: STUDIEORDNING Diplomuddannelse i it-sikkerhed Januar 2024\\
+Indhold: Modulet fokuserer på sikkerhedsperspektivet i software, blandt andet programkvalitet og
+fejlhåndterings samt datahåndterings betydning for en software arkitekturs sårbarheder.
+Elementet introducerer også til forskellige designprincipper, herunder ”security by design”.
+
+{\bf Viden}
+
+Den studerende har viden om:
+Hvilken betydning programkvalitet har for it-sikkerhed ift.:
+\begin{list2}
+\item Trusler mod software
+\item Kriterier for programkvalitet
+\item Fejlhåndtering i programmer
+\item Forståelse for security design principles, herunder:
+\item Security by design
+\item Privacy by design
+\end{list2}
+
+\slide{Færdigheder}
+
+{\bf To be updated}
+
+{\bf Færdigheder}
+
+Den studerende kan:\\
+Tage højde for sikkerhedsaspekter ved at:
+\begin{list2}
+\item Programmere håndtering af forventede og uventede fejl
+\item Definere lovlige og ikke-lovlige input data, bl.a. til test
+\item Bruge et API og/eller standard biblioteker
+\item Opdage og forhindre sårbarheder i programkoder
+\item Sikkerhedsvurdere et givet software arkitektur
+\end{list2}
+\slide{Kompetencer}
+{\bf To be updated}
+
+{\bf Kompetencer}
+
+
+Den studerende kan:
+\begin{list2}
+\item Håndtere risikovurdering af programkode for sårbarheder.
+\item Håndtere udvalgte krypteringstiltag
+\end{list2}
+
+Final word is the Studieordning which can be downloaded from\\
+{\footnotesize \url{https://kompetence.kea.dk/studieordninger/Studieordning%20Diplom%20i%20IT-sikkerhed%20januar%202024.pdf}}
+
+\slide{Expectations alignment}
+
+\hlkimage{7cm}{Shaking-hands_web.jpg}
+
+%Form groups of 2-3 students
+
+In groups of 2 students, brainstorm for 10 minutes on what topics you would like to have in this course
+
+Use 5 minutes more on Agreeing on 5 topics and prioritize these 5 topics
+
+\vskip 1cm
+PS We will from time to time have exercises, groups dont need to be the same each time.
+
+
+\slide{Prerequisites}
+
+\begin{list1}
+\item This course includes exercises and getting the most of the course requires the participants to carry out these practical exercises
+\item We will use Linux for some exercises but previous Linux and Unix knowledge is not needed
+\item It is recommended to use virtual machines for the exercises
+\item Security and most internet related security work has the following requirements:
+\begin{list2}
+\item Network experience
+\item Server experience
+\item TCP/IP principles - often in more detail than a common user
+\item Programming is an advantage, for automating things
+\item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill}\\
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+\end{list2}
+\end{list1}
+
+
+
+\slide{Goals and plans}
+
+%\hlkimage{}{}
+
+\begin{quote}
+  “A goal without a plan is just a wish.”\\
+  - Antoine de Saint-Exupéry
+\end{quote}
+
+I want this course to
+\begin{list2}
+\item Include everything required by studieordningen
+\item Be practical -- you can do something useful
+\item Kickstart your journey into this subject\\
+Getting the best books and papers
+\item Present a lot of useful sources, tools
+\item Prepare you for production use of the knowledge
+\end{list2}
+
+
+
+\slide{What is Infrastructure -- Software}
+
+
+\hlkimage{10cm}{alexander-schimmeck-SeeM4AnkEHE-unsplash.jpg}
+
+\begin{list2}
+\item Enterprises today have a lot of computing systems supporting the business needs
+\item These are very diverse and often discrete systems
+\end{list2}
+
+\hfill Photo by Alexander Schimmeck on Unsplash
+
+\slide{Business Challenges}
+
+\hlkimage{7cm}{adam-bignell-9tI2z5VZIZg-unsplash.jpg}
+
+\begin{list2}
+\item Accumulation of software
+\item Legacy systems
+\item Partners
+\item Various types of data
+\item Employee churn, replacement \hfill Photo by Adam Bignell on Unsplash
+\end{list2}
+
+
+\slide{Software Challenges}
+
+\hlkimage{7cm}{john-barkiple-l090uFWoPaI-unsplash.jpg}
+
+\begin{list2}
+\item Complexity
+\item Various languages
+\item Various programming paradigms, client server, monolith, Model View Controller
+\item Conflicting data types and available structures
+\item Steam train vs electric train \hfill Photo by John Barkiple on Unsplash
+
+\end{list2}
+
+
+
+
+\slide{Developers Challenges}
+
+\hlkimage{10cm}{kelly-sikkema-YK0HPwWDJ1I-unsplash.jpg}
+
+\begin{list2}
+\item Work in teams across organisation - and partners, vendors, sub-contractors
+\item Work with legacy systems, old technology
+\item Learn new Technologies \hfill Photo by Kelly Sikkema on Unsplash
+\end{list2}
+
+
+
+
+\slide{Integration Challenges}
+
+% hands
+
+\hlkimage{10cm}{thomas-drouault-IBUcu_9vXJc-unsplash.jpg}
+
+\begin{list2}
+\item Enable communication between components
+\item Need mediator, interpreter, translator
+\item Recognize standard patterns \hfill Photo by Thomas Drouault on Unsplash
+\end{list2}
+
+
+\slide{Course overview}
+
+We will now go through a little from the Table of Contents in the books.
+
+and the \emph{Lektionsplan}\\
+\link{https://github.com/kramse/kea-it-sikkerhed/blob/master/softwaresikkerhed/lektionsplan.md}
+
+
+\slide{Primary literature}
+
+\hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
+Primary literature:
+\begin{list2}
+\item \emph{The Art of Software Security Testing Identifying Software Security Flaws},\\
+Chris Wysopal, ISBN: 9780321304865, AoST or the Green Book
+\item \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 called WAS
+\item Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop
+Can be found online for free, but recommend buying the PDF from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
+
+
+\end{list2}
+
+
+\slide{Book: The Art of Software Security Testing}
+
+\hlkimage{5cm}{art-of-security-testing.jpeg}
+
+\emph{The Art of Software Security Testing Identifying Software Security Flaws}\\
+Chris Wysopal ISBN: 9780321304865, AoST or the Green Book
+
+\slide{Web Application Security}
+
+\hlkimage{6cm}{hoffman-web-application-security.jpg}
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 called WAS
+
+
+ \slide{Supporting literature}
+ \begin{list2}
+ \item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
+\item \emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, sixth edition Allen Harper ISBN: 9781264268955
+ \item \emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
+ Raphael Hertzog, Jim O'Gorman - shortened KLR
+ \item \emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+ \url{https://debian-handbook.info/} - shortened DEB
+ \vskip 1cm
+ \item Very optional and older but recommended \emph{24 Deadly Sins of Software Security: Programming Flaws and How to Fix Them}, Michael Howard, David LeBlanc, John Viega, ISBN: 9780071626750, 2010 The McGraw-Hill Companies, named 24-deadly below
+ \end{list2}
+
+\slide{Book: Linux Basics for Hackers (LBfH)}
+
+\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
+
+\emph{Linux Basics for Hackers
+Getting Started with Networking, Scripting, and Security in Kali}
+by OccupyTheWeb
+December 2018, 248 pp.
+ISBN-13:
+9781593278557
+
+\link{https://nostarch.com/linuxbasicsforhackers}
+Not curriculum but explains how to use Linux
+
+\slide{Book: Gray Hat Hacking  (Grayhat)}
+
+\hlkimage{6cm}{9781264268955-gray-hat.jpg}
+
+\emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, sixth edition
+by Allen Harper, Ryan Linn, Stephen Sims, Michael Baucom, Huascar Tejeda, Daniel Fernandez, Moses Frost, Published: March 2022, ISBN: 9781264268955
+
+Not curriculum but has some programming introduction which are very useful.
+Also this book is used in the KEA Network Pentest course -- you may have similar information already in other books
+
+
+
+\slide{Book: Kali Linux Revealed (KLR)}
+
+\hlkimage{6cm}{kali-linux-revealed.jpg}
+
+\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
+
+Not curriculum but explains how to install Kali Linux
+
+
+\slide{Book: The Debian Administrator’s Handbook (DEB)}
+
+\hlkimage{6cm}{book-debian-administrators-handbook.jpg}
+
+\emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
+\url{https://debian-handbook.info/} - shortened DEB
+
+Not curriculum but explains how to use Debian Linux
+
+
+\slide{24 Deadly Sins of Software Security}
+
+\hlkimage{6cm}{24-deadly.jpg}
+\emph{24 Deadly Sins of Software Security: Programming Flaws and How to Fix Them}, Michael Howard, David LeBlanc, John Viega, ISBN: 9780071626750, 2010 The McGraw-Hill Companies, named 24-deadly below
+
+Optional but recommended
+
+
+\exercise{ex:prepare-for-course}
+
+\exercise{ex:sw-downloadDEB}
+
+
+\slide{Hackerlab Setup}
+
+\hlkimage{6cm}{hacklab-1.png}
+
+\begin{list2}
+\item Hardware: modern laptop CPU with virtualisation\\
+Dont forget to enable hardware virtualisation in the BIOS
+\item Virtualisation software: VMware, Virtual box, HyperV pick your poison
+\item Hackersoftware: Kali Virtual Machine amd64 64-bit \link{https://www.kali.org/}
+\item Linux server system: Debian amd64 64-bit \link{https://www.debian.org/}
+\item Setup instructions can be found at \link{https://github.com/kramse/kramse-labs}
+\end{list2}
+
+\centerline{It is enough if these VMs are pr team}
+
+
+\slide{Technologies used in this course}
+
+The following tools and environments are examples that may be introduced in this course:
+
+\begin{list2}
+\item Programming languages and frameworks Java, Python, regular expressions
+\item Development environments -- choose your own IDE / Editor -- I use {\bf Atom}
+\item Networking and network protocols: TCP/IP, HTTP, DNS
+%\item Formats XML, JSON, CSV, raw text, web scraping
+\item Web technologies and services: REST, API, HTML5, CSS, JavaScript
+\item Tools like cURL, Git and Github
+%\item Message queueing systems: MQ and Redis could be added
+\item Optional - but demoed aggregated example platforms: Elastic stack, logstash, elasticsearch, kibana, grafana, Filebeat
+\item Cloud and virtualisation {\bf Docker}\\
+Kubernetes, Azure, AWS, microservices -- are similar and can be added
+\end{list2}
+
+\centerline{This list is not complete or a promise }
+
+
+
+\slide{OWASP Juice Shop Project}
+
+\hlkimage{3cm}{JuiceShop_Logo_100px.png}
+
+We will also use the OWASP Juice Shop Tool Project as a running example. This is an application which is modern AND designed to have security flaws.
+
+Read more about this project at: \link{https://www.owasp.org/index.php/OWASP_Juice_Shop_Project}\\ \link{https://github.com/bkimminich/juice-shop}
+
+It is recommended to buy the Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
+
+
+\slide{Aftale om test af netværk}
+
+\vskip 1cm
+{\bfseries Straffelovens paragraf 263 Stk. 2. Med bøde eller fængsel
+  indtil 6 måneder
+straffes den, som uberettiget skaffer sig adgang til en andens
+oplysninger eller programmer, der er bestemt til at bruges i et anlæg
+til elektronisk databehandling.}
+
+Hacking kan betyde:
+\begin{list2}
+\item At man skal betale erstatning til personer eller virksomheder
+\item At man får konfiskeret sit udstyr af politiet
+\item At man, hvis man er over 15 år og bliver dømt for hacking, kan
+  få en bøde - eller fængselsstraf i alvorlige tilfælde
+\item At man, hvis man er over 15 år og bliver dømt for hacking, får
+en plettet straffeattest. Det kan give problemer, hvis man skal finde
+et job eller hvis man skal rejse til visse lande, fx USA og
+Australien
+\item Frit efter: \link{http://www.stophacking.dk} lavet af Det
+  Kriminalpræventive Råd
+\item Frygten for terror har forstærket ovenstående - så lad være!
+\end{list2}
+
+
+\slide{Mixed exercises}
+Then we will do a mixed bag of exercises to introduce technologies, find your current knowledge level with regards to:
+
+\begin{list2}
+\item Linux
+\item Linux command line
+\item Git, Python and Ansible
+\end{list2}
+
+
+Later we will return to them!
+
+
+\slide{Exercise CHAOS: Don't Panic -- have fun learning}
+
+\hlkimage{6cm}{dont-panic.png}
+
+\begin{quote}
+“It is said that despite its many glaring (and occasionally fatal) inaccuracies, the Hitchhiker’s Guide to the Galaxy itself has outsold the Encyclopedia Galactica because it is slightly cheaper, and because it has the words ‘DON’T PANIC’ in large, friendly letters on the cover.”
+\end{quote}
+Hitchhiker’s Guide to the Galaxy, Douglas Adams
+
+\slide{Your lab setup}
+
+\begin{list2}
+\item Go to GitHub, Find user Kramse, click through kramse-labs
+\item Look into the instructions for the Virtual Machine -- Kali and Debian
+
+\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/}}
+\end{list2}
+
+Hint: you can install the Atom editor as a package using the Ansible tool, by checking out this repo and doing:
+\begin{alltt}
+sudo apt install ansible git
+git clone https://github.com/kramse/kramse-labs.git
+cd work-station
+ansible-playbook -v 1-dependencies
+\end{alltt}
+
+
+\exercise{ex:sw-basicVM}
+
+\exercise{ex:sw-basicDebianVM}
+
+
+\slide{Command prompts in Unix}
+
+\begin{list1}
+\item Shells :
+  \begin{list2}
+    \item sh - Bourne Shell
+\item bash - Bourne Again Shell, often the default in Linux
+\item ksh - Korn shell, original by David Korn, but often the public domain version used
+\item csh - C shell, syntax similar to C language
+\item Multiple others available, zsh is very popular
+  \end{list2}
+\item Windows have \verb+command.com+, \verb+cmd.exe+ but PowerShell is more similar to the Unix shells
+\item Used for scripting, automation and programs
+\end{list1}
+
+
+
+\slide{Command prompts}
+
+
+\begin{alltt}
+\small
+[hlk@fischer hlk]$ id
+uid=6000(hlk) gid=20(staff) groups=20(staff),
+0(wheel), 80(admin), 160(cvs)
+[hlk@fischer hlk]$ sudo -s
+[root@fischer hlk]#
+[root@fischer hlk]# id {\bf
+uid=0(root) gid=0(wheel)} groups=0(wheel), 1(daemon),
+20(staff), 80(admin)
+[root@fischer hlk]#
+\end{alltt}
+
+Note the difference between running as root and normal user. Usually books and instructions will use a prompt of hash mark \verb+#+ when the root user is assumed and dollar sign \verb+$+ when a normal user prompt.
+
+\slide{Command syntax}
+
+
+\begin{alltt}
+echo [-n] [string ...]
+\end{alltt}
+
+\begin{list1}
+\item Commands are written like this:
+\begin{list2}
+\item Always begin with the command to execute, like \verb+echo+ above
+\item Options typically short form with single dash \verb+-n+
+\item or long options \verb+--version+
+\item Some commands allow grouing options, \verb+tar -c -v -f+ becomes \verb+tar -cvf+\\
+NOTE: some options require parameters, so \verb+tar -c -f filename.tar+ not equal to \verb+tar -fc filename.tar+
+\item Optional options are in brackets \verb+[ ]+
+\item Output can be saved using redirection, into new file/overwrite \verb+echo hello > file.txt+ or append \verb+echo hello >> file.txt+
+\item Read from files \verb+wc -l file.txt+ or pipe output into input \verb+cat file.txt | wc -l+\\
+\verb+wc+ is word count, and option l is count lines
+\end{list2}
+\end{list1}
+
+
+
+\slide{Unix Manual system}
+
+\hlkimage{7cm}{images/Unix-command-1.pdf}
+
+\begin{quote}
+ It is a book about a Spanish guy called Manual. You should read it.
+       -- Dilbert
+\end{quote}
+
+\begin{list1}
+\item Manual system in Unix is always there!
+\item Key word search \verb+man -k+ see also \verb+apropos+
+\item Different sections, can be chosen
+\end{list1}
+
+See \verb+man crontab+ the command vs the file format in section 5 \verb+man 5 crontab+
+
+
+
+\slide{A manual page}
+
+\begin{alltt}\footnotesize
+\small
+NAME
+     cal - displays a calendar
+SYNOPSIS
+     cal [-jy] [[month]  year]
+DESCRIPTION
+   cal displays a simple calendar.  If arguments are not specified, the cur-
+   rent month is displayed.  The options are as follows:
+   -j      Display julian dates (days one-based, numbered from January 1).
+   -y      Display a calendar for the current year.
+
+The Gregorian Reformation is assumed to have occurred in 1752 on the 3rd
+of September.  By this time, most countries had recognized the reforma-
+tion (although a few did not recognize it until the early 1900's.)  Ten
+days following that date were eliminated by the reformation, so the cal-
+endar for that month is a bit unusual.
+\end{alltt}
+
+\slide{The year 1752}
+
+\begin{alltt}\footnotesize
+  user@Projects:$ cal 1752
+...
+         April                  May                   June
+  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+            1  2  3  4                  1  2      1  2  3  4  5  6
+   5  6  7  8  9 10 11   3  4  5  6  7  8  9   7  8  9 10 11 12 13
+  12 13 14 15 16 17 18  10 11 12 13 14 15 16  14 15 16 17 18 19 20
+  19 20 21 22 23 24 25  17 18 19 20 21 22 23  21 22 23 24 25 26 27
+  26 27 28 29 30        24 25 26 27 28 29 30  28 29 30
+                        31
+          July                 August              September
+  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+            1  2  3  4                     1  {\bf        1  2 14 15 16}
+   5  6  7  8  9 10 11   2  3  4  5  6  7  8  17 18 19 20 21 22 23
+  12 13 14 15 16 17 18   9 10 11 12 13 14 15  24 25 26 27 28 29 30
+  19 20 21 22 23 24 25  16 17 18 19 20 21 22
+  26 27 28 29 30 31     23 24 25 26 27 28 29
+                        30 31
+...
+\end{alltt}
+
+
+\slide{Linux configuration in /etc}
+
+.
+\hlkrightpic{8cm}{0cm}{Unix-vfs.pdf}
+\begin{list2}
+\item Command line is a requirement in the \emph{studieordningen} \smiley
+\item Linux and Unix uses a single virtual file system\\
+\url{https://en.wikipedia.org/wiki/Unix_filesystem}
+\item No drive letters like the ones in MS-DOS and Microsoft Windows
+\item Everything starts at the root of the file system tree \verb+/+ - NOTE: \emph{forward slash}
+\item One special directory is \verb+/etc/+ and sub directories which usually contain a lot of configuration files
+\end{list2}
+
+\slide{Installing software in Debian -- apt}
+
+%\hlkimage{}{}
+
+\begin{alltt}\footnotesize
+DESCRIPTION
+apt provides a high-level commandline interface for the package management system. It is intended as an end user interface
+and enables some options better suited for interactive usage by default compared to more specialized APT tools like apt-get(8)
+and apt-cache(8).
+
+update (apt-get(8))
+  update is used to download package information from all configured sources. Other commands operate on this data to e.g.
+  perform package upgrades or search in and display details about all packages available for installation.
+
+upgrade (apt-get(8))
+  upgrade is used to install available upgrades of all packages currently installed on the system from the sources configured
+  via sources.list(5). New packages will be installed if required to satisfy dependencies, but existing packages will never
+  be removed. If an upgrade for a package requires the removal of an installed package the upgrade for this package isn't performed.
+
+full-upgrade (apt-get(8))
+  full-upgrade performs the function of upgrade but will remove currently installed packages if this is needed to upgrade the
+  system as a whole.
+\end{alltt}
+
+\begin{list2}
+  \item Install a program using apt, for example \verb+apt install nmap+
+\end{list2}
+
+
+\exercise{ex:sw-basicLinuxetc}
+\exercise{ex:debian-firewall}
+
+\exercise{ex:git-tutorial}
+
+
+
+
+\exercise{ex:sw-startjuice}
+
+\slidenext{Buy the books!}
+
+
+\end{document}

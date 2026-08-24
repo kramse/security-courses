@@ -1,7 +1,8 @@
 \documentclass[Screen16to9,17pt]{foils}
-\usepackage{zencurity-slides}
+\usepackage{ek-slides}
 \externaldocument{software-security-exercises}
 \selectlanguage{english}
+
 
 % OB2 Softwaresikkerhed (10 ECTS)
 % Indhold
@@ -35,7 +36,7 @@
 
 \mytitlepage
 {0. Introduction}
-{KEA Kompetence VF1 Software Security}
+{EK Software Security}
 
 \hlkprofiluk
 
@@ -49,32 +50,58 @@ Todays goals:
 \item Create a good starting point for learning
 \item Learn to find resources, files and programs/libraries
 \item Concrete Expectations
-\item Prepare tools for the exercises, Prepare Virtual Machines
+\item Prepare tools for the exercises
 \end{list2}
 
   Photo by Thomas Galler on Unsplash
 
+
+\slide{Contents}
+\begin{list2}
+\item Hacking in general -- how does things fail
+\item History, cases, vulnerability info etc
+\item Basic Applied Cryptography -- Cryptographic Failures\\
+  * Symmetric and asymmetric encryption\\
+  * TLS (create certificate and install it on server)\\
+  * Hashing and salting
+\item Security principles, least privilege etc.
+\item Security patterns, insecure and secure design
+\end{list2}
+
+\slide{Contents continued}
+\begin{list2}
+\item Attack patterns\\
+buffer overflow, injection, broken access control, Denial-of-Service (DoS)
+\item Linux security\\
+* Basic CLI (folders, privileges), basic filtering and firewalls, basic servers (SSH, databases, web servers)\\
+Server security settings
+\end{list2}
+
+Web security is a great example since the web server runs on top of operating systems and lower, plus it runs application frameworks, code by the developers etc
+
+Lets look at OWASP Top 10:2025 \url{https://owasp.org/Top10/2025/}
+
 \slide{Current events}
 
+Current events are always relevant, as they happen -- right NOW!
 \begin{list2}
-\item OpenSSH RCE SSH-Agent Qualys
-\item Tetra - crypto backdoors including GSM and Matt Blaze P25, ref A5/1 GSM leaked 1990s
-\item Chatcontrol EU
 \item Fortinet CVEs - summary, make this as an exercise, evaluate a new product suggested by your boss
 \item VPN -- protocols belong in the network course, but implementation is at least as important?
 \item NIS2 -- impact on "software security", can you run an open source project with high risk CVEs?
-\item Citrix ADC
-\item CPE routere der hackes til botnet i sommer 2023, Linksys?
+\item Citrix ADC load balancers are popular in Denmark
+\item CPE routes hacked and become botnet devices
+\item OpenSSH RCE SSH-Agent Qualys
+\item Tetra - crypto backdoors including GSM and Matt Blaze P25, ref A5/1 GSM leaked 1990s
 \end{list2}
 
-We will add more recent ones to this list when they happen during the course and put them in Fronter
+We will add more recent ones to this list when they happen during the course and put them in itslearning
 
 \slide{Current CVEs}
 
 We will be talking about software "problems" often named vulnerabilities, with CVE IDs
+Here are some example vulnerabilities Rezilion identified back in 2023:
 \begin{quote}
 \begin{list2}
-\item Here are the vulnerabilities Rezilion identified:
 \item JsonWebToken (CVE-2022-23529).
 \item ChatGPT (CVE-2023-28858).
 \item Apache Superset (CVE-2023-27524).
@@ -85,19 +112,59 @@ We will be talking about software "problems" often named vulnerabilities, with C
 \end{list2}
 \end{quote}
 
-Source: \link{https://www.scmagazine.com/news/vulnerability-management/top-vulnerabilities-2023-apache-superset-papercut-moveit-chatgpt}
+Source:\\ {\scriptsize
+\link{https://www.scmagazine.com/news/vulnerability-management/top-vulnerabilities-2023-apache-superset-papercut-moveit-chatgpt}}
 
-\slide{Other lists}
+
+\slide{Microsoft Patch Tuesday: June--August 2026}
+
+\begin{tabularx}{23cm}{Xrrrr}
+Month & CVEs (Microsoft) & Critical & Zero-days & Exploited \\
+\hline
+June  & 198--208  & 32--37 & 3 & 0 at release$^{*}$ \\
+July  & 569--570  & 56--59 & 3 & 2 \\
+August & 398--421 & 42--62 & 1--3 & 1 \\
+\end{tabularx}
 
 \begin{list2}
-\item \emph{the volume of attack traffic for the top ten vulnerabilities in May}\\
-\link{https://www.f5.com/labs/articles/threat-intelligence/sensor-intel-series-top-cves-may-2023}\\
-Exercise -- check if some of these would affect your organizations today
-\item Patch tuesday from Microsoft - June, July, summer time is vacation time, any of these still affecting your orgs?
+\item Vendor counts disagree by month; the ranges above reflect Microsoft's own bulletin count versus third-party trackers (Tenable, BleepingComputer, N-able, Krebs on Security)
+\item Broader trackers that fold in republished third-party and Chromium-based Edge CVEs report far higher totals for the same months, e.g.\ ZDI counted 571 CVEs for June and 621 for July when Chromium fixes are included
+\item July's release is the largest in Patch Tuesday history by any count; Microsoft attributes the volume increase in part to an internal AI-assisted vulnerability discovery system
 \end{list2}
 
+\slide{Microsoft Patch Tuesday -- June 2026}
+\begin{list2}
+\item 198--208 CVEs, 32--37 critical, 3 zero-days, none exploited at release
+\item \emph{CVE-2026-45586} -- CTFMON EoP, public zero-day
+\item \emph{CVE-2026-41089} -- Netlogon RCE CVSS 9.8, disclosed May, confirmed exploited in June
+\end{list2}
 
+\slide{Microsoft Patch Tuesday -- July 2026}
+\begin{list2}
+\item 569--570 CVEs, 56--59 critical, 3 zero-days, 2 exploited
+\item \emph{CVE-2026-56155} -- AD FS EoP, exploited zero-day
+\item \emph{CVE-2026-56164} -- SharePoint EoP, exploited zero-day
+\item Largest Patch Tuesday release ever, AI-assisted vulnerability discovery cited as a factor
+\end{list2}
 
+\slide{Microsoft Patch Tuesday -- August 2026}
+\begin{list2}
+\item 398--421 CVEs, 42--62 critical, 1 exploited zero-day
+\item \emph{CVE-2026-68820} -- afd.sys (WinSock) EoP, CVSS 7.0, on CISA KEV\\
+\link{https://www.tenable.com/blog/microsofts-august-2026-patch-tuesday-addresses-398-cves-cve-2026-68820}\\
+Exercise -- check if any of these still affect your organizations
+\item Vendor counts disagree by month -- Microsoft's own bulletin count vs.\ third-party trackers
+\end{list2}
+
+\slide{Not just Microsoft}
+\begin{list2}
+\item Microsoft is a well-known vendor here, but far from the only vendor with high numbers
+\item \emph{Linux kernel} -- 5{,}681 CVEs in 2025 (highest single year ever recorded); already 2{,}308 CVEs in H1 2026, the single highest vendor count for the period\\
+\link{https://linuxiac.com/linux-tops-2026-cve-charts/}
+\item \emph{Fortinet} -- 27 new CVEs disclosed in a single two-day stretch in April 2026 across FortiOS, FortiSandbox, FortiWeb and more, several critical/unauthenticated\\
+\link{https://www.greenbone.net/en/blog/fortinet-rce-vulnerabilities-2026-critical-vulnerabilities-in-fortisandbox/}
+\item Other vendors worth showing: \emph{Oracle} (1{,}235 CVEs in a single Critical Patch Update, July 2026), \emph{Google/Chromium} (1{,}752 CVEs H1 2026), \emph{Adobe}, \emph{Apache}
+\end{list2}
 
 \slide{Plan for today}
 
@@ -111,8 +178,8 @@ Exercise -- check if some of these would affect your organizations today
 
 Exercises
 \begin{list2}
-\item Kali Linux installation
-\item Debian Linux installation
+\item Software installation
+\item Download some resources
 \end{list2}
 Linux is a toolbox we will use and participants will use virtual machines
 
@@ -121,32 +188,36 @@ Linux is a toolbox we will use and participants will use virtual machines
 
 Hardware
 
-Since we are going to be doing exercises, each team will need two virtual machines.
+Since we are going to be doing exercises, each team will need software installed
 
-The following are two recommended systems:
+This time I will try to use Kubernetes -- the smallest installation we can do!\\
+Quick Start: Install Rancher Desktop — \link{https://rancherdesktop.io}
+
+Note: if you already have Docker or other virtualization, wait a bit before installing!
+
+The following are two other recommended systems -- {\bf not required}:
 \begin{list2}
 \item One based on Debian, running software servers and web applications
 \item One based on Kali Linux, running attacks against software
 \item Setup instructions and help \url{https://github.com/kramse/kramse-labs}
 \end{list2}
 
-Linux is a toolbox we will use and participants will use virtual machines
-
-
 \slide{Time schedule}
 
 \begin{list1}
-\item 17:00 - 18:15
-Introduction and basics
-\item 18:15 - 18:45 -- 30min break
-% Eat dinner with your family if you like
-\item 18:45 - 19:30 -- 45min Teaching
-\item 19:30 - 19:45 -- 15min break
-\item 19:45 - 20:30 -- 45min Teaching
+\item 12:45 - 16:45 I will be here at EK
+\vskip 1em
+\item 12:45 - 13:45 -- Plan for the day
+\item 14:00 - 14:45 -- 45min Teaching and exercises
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- 45min Teaching and exercises
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- 45min Teaching and exercises
+
 \end{list1}
 
 \vskip 1cm
-\centerline{\Large This will be the basic plan for each evening}
+\centerline{\Large This will be the basic plan for each wednesday}
 
 \slide{Course Materials}
 
@@ -163,40 +234,22 @@ Introduction and basics
 \end{list1}
 
 
-
-\slide{Fronter Platform}
-
-\hlkimage{10cm}{fronter.png}
-
-We will use fronter a lot, both for sharing educational materials and news during the course.
-
-You will also be asked to turn in deliverables through fronter
-
-\link{https://kea-fronter.itslearning.com/}
-
-\vskip 5mm
-\centerline{If you haven't received login yet, let us know}
-
-\slide{Overview Diploma in IT-security}
-
-\hlkimage{17cm}{kea-diplom-oversigt.png}
-
-
 \slide{Course Data}
 \hlkimage{6cm}{pawel-janiak-dxFi8Ea670E-unsplash.jpg}
 
 {\bf Course: Software Security
-VF1 Softwaresikkerhed (10 ECTS)}
+Softwaresikkerhed (10 ECTS)}
 
-Teaching dates - fall 2024 tuesdays and thursdays 17:00 - 20:30\\
-29/8, 3/9, 10/9, 12/9, 17/9, 19/8, 24/9, 26/9, \sout{1/10}, 3/10, 8/10, 10/10, 22/10, 24/10
+Teaching dates - fall 2026 wednesdays 12:45 - 16:45\\
+26/8, 2/9, 9/9, 16/9, 23/9, 30/9, 7/10, 21/10, 28/10, {\bf 4/11} 11/11, 18/11, 25/11, 2/12, 9/12, 16/12
 
-Exam: 5/11 2024
+Exam: not planned yet!
 
-Changed dates: 1/10 moving due to external meeting for Henrik, propose 15/10
+Changes: 4/11 need to go 16:00 sharp!
 
 \slide{Deliverables and Exam}
 
+{\bf To be updated}
 \begin{list2}
 \item Exam
 \item Individual: Oral based on curriculum
@@ -206,14 +259,14 @@ Changed dates: 1/10 moving due to external meeting for Henrik, propose 15/10
 \item Exam is 30 minutes in total, including pulling the question and grading
 \item Count on being able to present talk for about 10 minutes
 \item Prepare material (keywords, examples, exercises, wireshark captures) for different topics so that you can use it to help you at the exam
-
-\vskip 5mm
 \item Deliverables:
 \item 1 Mandatory assignments
 \item Both mandatory assignments are required in order to be entitled to the exam.
 \end{list2}
 
-\slide{Course Description}
+\slide{Course Description {\bf To be updated}}
+
+
 
 From: STUDIEORDNING Diplomuddannelse i it-sikkerhed Januar 2024\\
 Indhold: Modulet fokuserer på sikkerhedsperspektivet i software, blandt andet programkvalitet og
@@ -233,7 +286,9 @@ Hvilken betydning programkvalitet har for it-sikkerhed ift.:
 \item Privacy by design
 \end{list2}
 
-\slide{Færdigheder}
+\slide{Færdigheder {\bf To be updated}}
+
+
 
 {\bf Færdigheder}
 
@@ -246,7 +301,7 @@ Tage højde for sikkerhedsaspekter ved at:
 \item Opdage og forhindre sårbarheder i programkoder
 \item Sikkerhedsvurdere et givet software arkitektur
 \end{list2}
-\slide{Kompetencer}
+\slide{Kompetencer {\bf To be updated}}
 
 {\bf Kompetencer}
 
@@ -286,11 +341,24 @@ PS We will from time to time have exercises, groups dont need to be the same eac
 \item TCP/IP principles - often in more detail than a common user
 \item Programming is an advantage, for automating things
 \item Some Linux and Unix knowledge is in my opinion a {\bf necessary skill}\\
--- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux
+-- too many new tools to ignore, and lots found at sites like Github and Open Source written for Linux.
 \end{list2}
 \end{list1}
 
+\slide{More than half of Microsoft Azure Cloud runs Linux}
 
+%\hlkimage{}{}
+
+\begin{quote}
+
+
+{\Large Run Linux virtual machines (VMs) on Azure}
+
+Efficiently run Linux workloads on Azure with built-in security and management
+
+More than 60\% of customer cores in Azure run Linux workloads. Choose from popular Linux distributions including Red Hat, SUSE, Ubuntu, Debian, Flatcar, and Oracle Linux. Use preconfigured solutions from Oracle and other open-source VM-compatible providers and find Azure-optimized Linux VM images from publishers of your choice.
+\end{quote}
+Source: \url{https://azure.microsoft.com/en-us/products/virtual-machines/linux}
 
 \slide{Goals and plans}
 
@@ -379,88 +447,44 @@ Getting the best books and papers
 \item Recognize standard patterns \hfill Photo by Thomas Drouault on Unsplash
 \end{list2}
 
-
-\slide{Course overview}
-
-We will now go through a little from the Table of Contents in the books.
-
-and the \emph{Lektionsplan}\\
-\link{https://github.com/kramse/kea-it-sikkerhed/blob/master/softwaresikkerhed/lektionsplan.md}
-
-
 \slide{Primary literature}
 
 \hlkrightpic{5cm}{0cm}{old_book_lumen_design_st_01.png}
 Primary literature:
 \begin{list2}
-\item \emph{The Art of Software Security Testing Identifying Software Security Flaws},\\
-Chris Wysopal, ISBN: 9780321304865, AoST or the Green Book
-\item \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 called WAS
-\item Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop
-Can be found online for free, but recommend buying the PDF from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
+%\item \emph{The Art of Software Security Testing Identifying Software Security Flaws},\\
+%Chris Wysopal, ISBN: 9780321304865, AoST or the Green Book
+%\item \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 called WAS
+\item \emph{Windows 11 Security Book: Powerful security by design}, Microsoft 2023, short 80 page PDF\\ {\scriptsize\link{https://www.microsoft.com/content/dam/microsoft/final/en-us/microsoft-brand/documents/MSFT-Windows11-Security-book_Sept2023.pdf}}
 
-
+\item More to come
+\item Even more than that!
 \end{list2}
-
-
-\slide{Book: The Art of Software Security Testing}
-
-\hlkimage{5cm}{art-of-security-testing.jpeg}
-
-\emph{The Art of Software Security Testing Identifying Software Security Flaws}\\
-Chris Wysopal ISBN: 9780321304865, AoST or the Green Book
-
-\slide{Web Application Security}
-
-\hlkimage{6cm}{hoffman-web-application-security.jpg}
-\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118 called WAS
 
 
  \slide{Supporting literature}
  \begin{list2}
- \item \emph{Linux Basics for Hackers Getting Started with Networking, Scripting, and Security in Kali}. OccupyTheWeb, December 2018, 248 pp. ISBN-13: 978-1-59327-855-7 - shortened LBfH
-\item \emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, sixth edition Allen Harper ISBN: 9781264268955
- \item \emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
- Raphael Hertzog, Jim O'Gorman - shortened KLR
+\item \emph{The Linux Command Line: A Complete Introduction}, 2nd Edition\\
+ by William Shotts -- anyone using Linux can benefit from this book
  \item \emph{The Debian Administrator’s Handbook}, Raphaël Hertzog and Roland Mas\\
  \url{https://debian-handbook.info/} - shortened DEB
- \vskip 1cm
- \item Very optional and older but recommended \emph{24 Deadly Sins of Software Security: Programming Flaws and How to Fix Them}, Michael Howard, David LeBlanc, John Viega, ISBN: 9780071626750, 2010 The McGraw-Hill Companies, named 24-deadly below
+\item Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop
+Can be found online for free, but recommend buying the PDF from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
  \end{list2}
 
-\slide{Book: Linux Basics for Hackers (LBfH)}
 
-\hlkimage{6cm}{LinuxBasicsforHackers_cover-front.png}
+\slide{Book: The Linux Command Line}
 
-\emph{Linux Basics for Hackers
-Getting Started with Networking, Scripting, and Security in Kali}
-by OccupyTheWeb
-December 2018, 248 pp.
-ISBN-13:
-9781593278557
+\hlkimage{4cm}{lcl2_front_new.png}
 
-\link{https://nostarch.com/linuxbasicsforhackers}
+\emph{The Linux Command Line: A Complete Introduction }, 2nd Edition
+by William Shotts
+
+Print: \link{https://nostarch.com/tlcl2}\\
+Download -- internet edition \link{https://sourceforge.net/projects/linuxcommand}
+
+
 Not curriculum but explains how to use Linux
-
-\slide{Book: Gray Hat Hacking  (Grayhat)}
-
-\hlkimage{6cm}{9781264268955-gray-hat.jpg}
-
-\emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, sixth edition
-by Allen Harper, Ryan Linn, Stephen Sims, Michael Baucom, Huascar Tejeda, Daniel Fernandez, Moses Frost, Published: March 2022, ISBN: 9781264268955
-
-Not curriculum but has some programming introduction which are very useful.
-Also this book is used in the KEA Network Pentest course -- you may have similar information already in other books
-
-
-
-\slide{Book: Kali Linux Revealed (KLR)}
-
-\hlkimage{6cm}{kali-linux-revealed.jpg}
-
-\emph{Kali Linux Revealed  Mastering the Penetration Testing Distribution}
-
-Not curriculum but explains how to install Kali Linux
 
 
 \slide{Book: The Debian Administrator’s Handbook (DEB)}
@@ -471,19 +495,6 @@ Not curriculum but explains how to install Kali Linux
 \url{https://debian-handbook.info/} - shortened DEB
 
 Not curriculum but explains how to use Debian Linux
-
-
-\slide{24 Deadly Sins of Software Security}
-
-\hlkimage{6cm}{24-deadly.jpg}
-\emph{24 Deadly Sins of Software Security: Programming Flaws and How to Fix Them}, Michael Howard, David LeBlanc, John Viega, ISBN: 9780071626750, 2010 The McGraw-Hill Companies, named 24-deadly below
-
-Optional but recommended
-
-
-\exercise{ex:prepare-for-course}
-
-\exercise{ex:sw-downloadDEB}
 
 
 \slide{Hackerlab Setup}
@@ -522,6 +533,21 @@ Kubernetes, Azure, AWS, microservices -- are similar and can be added
 \centerline{This list is not complete or a promise }
 
 
+\slide{Why Kubernetes / k3s?}
+
+\hlkimage{17cm}{kubernetes-anywhere.png}
+
+We will use a small local Kubernetes cluster (k3s, via Rancher Desktop) as the runtime for exercises.It gives everyone the same container-based exercise environment regardless of laptop OS (Windows, Mac, Linux).
+
+\begin{list2}
+  \item Faster to start, stop, and reset an exercise than a VM
+  \item Same image runs identically on your laptop as it would in production
+  \item Closer to how real-world applications are actually deployed and attacked today
+  \item Lets us study Kubernetes itself as an attack surface (misconfiguration, RBAC, kube-bench, etc.)
+\end{list2}
+
+%Why k3s specifically: a lightweight, single-binary Kubernetes distribution -- easy to run locally, low resource use, same API as "full" Kubernetes.
+Read more at: \link{https://k3s.io/} and \link{https://kubernetes.io/}
 
 \slide{OWASP Juice Shop Project}
 
@@ -532,7 +558,6 @@ We will also use the OWASP Juice Shop Tool Project as a running example. This is
 Read more about this project at: \link{https://www.owasp.org/index.php/OWASP_Juice_Shop_Project}\\ \link{https://github.com/bkimminich/juice-shop}
 
 It is recommended to buy the Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
-
 
 \slide{Aftale om test af netværk}
 
@@ -559,13 +584,13 @@ Australien
 \end{list2}
 
 
-\slide{Mixed exercises}
+\slide{Mixed exercises and Your Lab Setup!}
 Then we will do a mixed bag of exercises to introduce technologies, find your current knowledge level with regards to:
 
 \begin{list2}
 \item Linux
 \item Linux command line
-\item Git, Python and Ansible
+\item Git, Python and perhaps talk about Ansible
 \end{list2}
 
 
@@ -581,36 +606,20 @@ Later we will return to them!
 \end{quote}
 Hitchhiker’s Guide to the Galaxy, Douglas Adams
 
-\slide{Your lab setup}
 
-\begin{list2}
-\item Go to GitHub, Find user Kramse, click through kramse-labs
-\item Look into the instructions for the Virtual Machine -- Kali and Debian
+\exercise{ex:prepare-for-course}
 
-\item Get the lab instructions, from\\ {\footnotesize\url{https://github.com/kramse/kramse-labs/}}
-\end{list2}
-
-Hint: you can install the Atom editor as a package using the Ansible tool, by checking out this repo and doing:
-\begin{alltt}
-sudo apt install ansible git
-git clone https://github.com/kramse/kramse-labs.git
-cd work-station
-ansible-playbook -v 1-dependencies
-\end{alltt}
-
-
-\exercise{ex:sw-basicVM}
-
-\exercise{ex:sw-basicDebianVM}
+\exercise{ex:sw-kubernetes}
 
 
 \slide{Command prompts in Unix}
 
+I will use terminal and commands, as they sometimes have less noise than GUI screenshots.
+
 \begin{list1}
-\item Shells :
-  \begin{list2}
-    \item sh - Bourne Shell
-\item bash - Bourne Again Shell, often the default in Linux
+\item Many shells and interactive command environments exist:
+\begin{list2}
+\item sh - Bourne Shell and bash - Bourne Again Shell, often the default in Linux
 \item ksh - Korn shell, original by David Korn, but often the public domain version used
 \item csh - C shell, syntax similar to C language
 \item Multiple others available, zsh is very popular
@@ -666,11 +675,6 @@ NOTE: some options require parameters, so \verb+tar -c -f filename.tar+ not equa
 \slide{Unix Manual system}
 
 \hlkimage{7cm}{images/Unix-command-1.pdf}
-
-\begin{quote}
- It is a book about a Spanish guy called Manual. You should read it.
-       -- Dilbert
-\end{quote}
 
 \begin{list1}
 \item Manual system in Unix is always there!
@@ -771,16 +775,16 @@ full-upgrade (apt-get(8))
 
 
 \exercise{ex:sw-basicLinuxetc}
-\exercise{ex:debian-firewall}
 
+\exercise{ex:sw-kubebench-k3s}
+\exercise{ex:sw-trivy-k3s}
+
+%\exercise{ex:debian-firewall}
 \exercise{ex:git-tutorial}
-
-
-
 
 \exercise{ex:sw-startjuice}
 
-\slidenext{Buy the books!}
+\slidenext{Get the books!}
 
 
 \end{document}

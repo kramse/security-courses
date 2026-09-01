@@ -40,7 +40,7 @@ Look for \jobname\ in the repo security-courses.
 
 These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
 
-\link{https://github.com/kramse/kramse-labs}
+\link{https://codeberg.org/kramse/kramse-labs}
 
 
 \section*{\color{titlecolor}Prerequisites}
@@ -167,7 +167,7 @@ We need a Kali Linux for running tools during the course.
 If your VM is not installed and updated we will run into trouble later.
 
 {\bf Suggested method:}\\
-Go to \link{https://github.com/kramse/kramse-labs/}
+Go to \link{https://codeberg.org/kramse/kramse-labs/}
 
 Read the instructions for the setup of a Kali VM.
 
@@ -199,7 +199,7 @@ We need a Debian Linux for running a few extra tools during the course.
 If your VM is not installed and updated we will run into trouble later.
 
 {\bf Suggested method:}\\
-Go to \link{https://github.com/kramse/kramse-labs/}
+Go to \link{https://codeberg.org/kramse/kramse-labs/}
 
 Read the instructions for the setup of a Debian VM.
 
@@ -596,7 +596,7 @@ sudo apt -y install ansible git
 
 Most important are Git clone and pull:
 \begin{alltt}\footnotesize
-user@Projects:tt$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+user@Projects:tt$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
 Cloning into 'kramse-labs'...
 remote: Enumerating objects: 283, done.
 remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
@@ -631,7 +631,7 @@ Where hlk is replaced by your user id!
 
 {\bf Hints:}\\
 Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
-and \link{https://guides.github.com/activities/hello-world/}
+and \link{https://guides.codeberg.org/activities/hello-world/}
 
 We will not do the whole tutorials within 15 minutes, but get an idea of the command line, and see examples. Refer back to these tutorials when needed or do them at home.
 
@@ -647,7 +647,7 @@ see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
 
 
 
-\chapter{\faExclamationTriangle\ Run OWASP Juice Shop 45 min}
+\chapter{\faInfoCircle\ Run OWASP Juice Shop 45 min}
 \label{ex:sw-startjuice}
 
 \hlkimage{3cm}{JuiceShop_Logo_100px.png}
@@ -663,25 +663,98 @@ optimise your learning.
 It is named JuiceShop which is written in JavaScript
 
 {\bf Suggested method:}\\
-Go to \link{https://github.com/bkimminich/juice-shop}
-
-Read the instructions for running juice-shop - docker is a simple way.
-
-What you need
+Go to \link{https://codeberg.org/bkimminich/juice-shop}
 
 You need to have browsers and a proxy, plus a basic knowledge of HTTP.
 
-If you could install Firefox it would be great, and we will use the
-free version of Burp Suite, so please make sure you can run Java and
-download the free version from Portswigger from:
+Read the instructions for running juice-shop - {\bf docker is a simple way} and I often recommend that.
 
-\link{https://portswigger.net/burp/communitydownload}
+Running with Kubernetes follows.
 
+First check your cluster, ready and you can connect?
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@alice:~$ kubectl get node
+NAME                   STATUS   ROLES           AGE   VERSION
+lima-rancher-desktop   Ready    control-plane   13d   v1.36.3+k3s1
+hlk@alice:~$
+\end{minted}
+
+\eject
+Create a Deployment, name the file \verb+juice-shop.yml+:
+\begin{alltt}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juice-shop
+  labels:
+    app: juice-shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: juice-shop
+  template:
+    metadata:
+      labels:
+        app: juice-shop
+    spec:
+      containers:
+        - name: juice-shop
+          image: bkimminich/juice-shop:latest
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: juice-shop
+spec:
+  selector:
+    app: juice-shop
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+\end{alltt}
+
+This file can also be downloaded from Git kramse-labs in the directory \verb+kubernetes+\\
+\verb+git clone https://codeberg.org/kramse/kramse-labs+
+
+Run the deployment:
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@alice:~/projects$ kubectl apply -f juice-shop.yml
+deployment.apps/juice-shop created
+service/juice-shop created
+hlk@alice:~/projects$
+\end{minted}
+
+\eject
+After a short while you should have a running pod/container and deployment:
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@alice:~/projects$ kubectl get pods
+NAME                          READY   STATUS    RESTARTS   AGE
+hello                         0/1     Unknown   0          13d
+juice-shop-86c67bcdf4-lf87x   1/1     Running   0          2m27s
+hlk@alice:~/projects$ kubectl get deployments
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+juice-shop   1/1     1            1           2m38s
+\end{minted}
+
+
+Wait for Running, then reach it using port forward:
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@laptop:~$ kubectl port-forward svc/juice-shop 3000:3000
+\end{minted}
+
+
+Note: This needs to be done regularly. familiarise yourself with \verb+kubectl apply+, \verb+kubectl delete+ and \verb+kubectl port-forward+
+
+
+Check using: \link{http://127.0.0.1:3000}
 
 {\bf Hints:}\\
 The application is very modern, very similar to real applications.
 
-The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
 
 JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
 
@@ -695,14 +768,14 @@ to the OWASP.org Open Web Application Security Project which also has a
 lot of resources.
 
 Sources:\\
-\url{https://github.com/bkimminich/juice-shop}\\
+\url{https://codeberg.org/bkimminich/juice-shop}\\
 \url{https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project}
 
 It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop} from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
 
 
 
-\chapter{\faExclamationTriangle\ Setup JuiceShop environment, app and proxy - up to 60min}
+\chapter{\faInfoCircle\ Setup JuiceShop environment, app and proxy - up to 20min}
 \label{ex:js-burp}
 
 {\bf Objective:}\\
@@ -717,14 +790,17 @@ We will learn more about web applications as they are a huge part of the applica
 
 By inserting a web proxy we can inspect the data being sent between browsers and the application.
 
+The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
+
 {\bf Suggested method:}\\
 You need to have browsers and a proxy, plus a basic knowledge of HTTP.
 
 If you could install Firefox it would be great, and we will use the
 free version of Burp Suite, so please make sure you can run Java and
-download the free version \emph{plain JAR file} from Portswigger from:
+download the free version from Portswigger from:
 
 \link{https://portswigger.net/burp/communitydownload}
+
 
 follow the Getting Started instructions at:\\
 \link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}
@@ -737,6 +813,7 @@ Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the but
 
 \hlkimage{10cm}{burp-default-proxy-intercept.png}
 
+\eject
 Then setting it as proxy in Firefox:
 
 \hlkimage{10cm}{firefox-connection-burp.png}
@@ -751,14 +828,14 @@ When web sites and servers start popping up in the Target tab, showing the reque
 Your browser will alert you when visiting TLS enabled sites, HTTPS certificates do not match, as Burp is doing a person-in-the-middle. You need to select advanced and allow this to continue.
 
 {\bf Discussion:}\\
-Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb+chmod +x bin/burp+.
+Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb;chmod +x bin/burp;.
 
-\begin{alltt}
+\begin{minted}[fontsize=\footnotesize]{shell}
 #! /bin/sh
 DIRNAME=`dirname $0`
 BURP=`ls -1tra $DIRNAME/burp*.jar | tail -1`
 java -jar -Xmx6g $BURP &
-\end{alltt}
+\end{minted}
 
 When running in production testing real sites, I typically increase the memory available using JDK / Java settings like \verb+-Xmx16g+
 
@@ -828,7 +905,7 @@ Release Date: December 2008
  \link{http://shop.oreilly.com/product/9780596005955.do}
 
 
-\chapter{\faInfoCircle\ Run parts of a Django tutorial 30min}
+\chapter{\faInfoCircle\ See parts of a Django tutorial 30min}
 \label{ex:django-intro}
 
 {\bf Objective:}\\
@@ -869,6 +946,11 @@ When we have covered basics of what Django is, what frameworks provide and seen 
 
 {\bf Discussion:}\\
 Django is only an example, other languages and projects exist.
+
+Email addresses are a special case, we mostly use them for account logins today.
+
+The original specification for email addresses is wild! Can contain some very strange things! The built-in email verification in frameworks are recommended!
+
 
 \end{document}
 
@@ -1451,7 +1533,7 @@ You should reboot if the kernel is upgraded :-)
 Second make sure your system has ansible and my playbooks: (as root run)
 \begin{minted}[fontsize=\footnotesize]{shell}
 apt -y install ansible git
-git clone https://github.com/kramse/kramse-labs
+git clone https://codeberg.org/kramse/kramse-labs
 \end{minted}
 
 We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
@@ -1474,7 +1556,7 @@ git pull
 Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
 
 Note: these instructions are originally from the course\\
-Go to \url{https://github.com/kramse/kramse-labs/tree/master/suricatazeek}
+Go to \url{https://codeberg.org/kramse/kramse-labs/tree/master/suricatazeek}
 
 {\bf Hints:}\\
 Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
@@ -1766,12 +1848,12 @@ Run the program from your Debian Linux VM, this tool is free and easy to get run
 Follow instructions from the Getting Started\\
 \url{https://pmd.github.io/latest/pmd_userdocs_installation.html}
 
-The download is from latest, so check the releases page: \link{https://github.com/pmd/pmd/releases}
+The download is from latest, so check the releases page: \link{https://codeberg.org/pmd/pmd/releases}
 
 \begin{alltt}\footnotesize
 $ sudo apt install openjdk-17-jre
 $ cd $HOME
-$ wget https://github.com/pmd/pmd/releases/download/pmd_releases/6.49.0/pmd-bin-6.49.0.zip
+$ wget https://codeberg.org/pmd/pmd/releases/download/pmd_releases/6.49.0/pmd-bin-6.49.0.zip
 $ unzip pmd-bin-6.49.0.zip
 $ alias pmd="$HOME/pmd-bin-6.49.0/bin/run.sh pmd"
 $
@@ -1830,7 +1912,7 @@ Note: today we only use client side hooks, for better security we should add hoo
 
 Using our existing repository:
 \begin{alltt}\footnotesize
-user@Projects:projects$ {\bf git clone https://github.com/kramse/kramse-labs.git}
+user@Projects:projects$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
 Cloning into 'kramse-labs'...
 user@Projects:projects$ {\bf cd kramse-labs/}
 user@Projects:kramse-labs$ {\bf cd .git/hooks}
@@ -1902,7 +1984,7 @@ Find the source code, look for the database lookups.
 
 {\bf Hints:}\\
 The JuiceShop software is open source, and available at github:\\
-\link{https://github.com/juice-shop/juice-shop}
+\link{https://codeberg.org/juice-shop/juice-shop}
 
 Git clone and searching locally might give the best results.
 
@@ -2113,7 +2195,7 @@ Find the Django email validation -- how is the validation done, can it be copied
 
 {\bf Hints:}\\
 The Django software is open source, and available at github:\\
-\link{https://github.com/django/django}
+\link{https://codeberg.org/django/django}
 
 Git clone and searching locally might give the best results.
 
@@ -2375,7 +2457,7 @@ When your team has sent +1 million packets per second into the network, from one
 Gigabit Ethernet can send up to 1.4 million packets per second, pps.
 
 There is a presentation about DDoS protection with low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+{\footnotesize \link{https://codeberg.org/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
 
 Receiving systems, and those en route to the service, should be checked for resources like CPU load, bandwidth, logging. Logging can also overload the logging infrastructure, so take care when configuring this in your own networks.
 
@@ -2649,7 +2731,7 @@ When your team has sent +1 million packets per second into the network, from one
 Gigabit Ethernet can send up to 1.4 million packets per second, pps.
 
 There is a presentation about DDoS protection with low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
+{\footnotesize \link{https://codeberg.org/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
 
 Receiving systems, and those en route to the service, should be checked for resources like CPU load, bandwidth, logging. Logging can also overload the logging infrastructure, so take care when configuring this in your own networks.
 
@@ -2669,7 +2751,7 @@ Running Scapy will allow you to produce network packets according to some patter
 On Debian 12 it can be installed easily, on Kali it is probably already there:
 \begin{alltt}\footnotesize
 sudo apt install python3-scapy
-git clone https://github.com/kramse/frankenpacket.git
+git clone https://codeberg.org/kramse/frankenpacket.git
 cd frankenpacket/hlk-mpls-vxlan-datacenter/
 
 python3 mpls-vxlan-datacenter.py

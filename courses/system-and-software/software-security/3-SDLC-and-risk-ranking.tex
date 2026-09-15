@@ -7,7 +7,7 @@
 
 \mytitlepage
 {3. SDLC and Risk Ranking}
-{KEA Kompetence VF1 Software Security}
+{EK  Software Security}
 
 \slide{Goals for today}
 
@@ -31,10 +31,7 @@ Todays goals:
 \begin{list2}
 \item Poor Use of Cryptography
 \item Basic Cryptography introduction
-\item Symmetric Cryptosystems
-\item Data Encryption Standard (DES) / Advanced Encryption Standard (AES)
-\item Public Key Cryptography
-\item Stream and Block Ciphers
+\item Symmetric Cryptosystems / Public Key Cryptography
 \item Software Development Lifecycle
 \item Secure Software Development Lifecycle
 \item Phases of SSDL
@@ -47,13 +44,40 @@ Todays goals:
 \end{list1}
 
 
+\slide{Time schedule}
+
+Plan for the day
+\begin{list1}
+\item 12:45 - 13:45 -- Teaching: Catch up, design, Deadly sins, buffer overflow repeat
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- 45min Exercises: Ex 16: Real Vulnerabilities -- learn to read about vulns
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- 45min Teaching: SDLC
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- 45min Exercises: fun with a few active web scanners, OR revisit Trivy and \verb+kube-bench+
+\vskip 1em
+\item 12:45 - 16:45 I will be here at EK
+\end{list1}
+
+
+
 \slide{Reading Summary}
 
-\begin{list1}
-\item AoST chapters 3: The Secure Software Development Lifecycle
-\item AoST chapters 4: Risk-based Security Testing
-\item AoST chapters 5: Shades of Analysis: white, Gray, and Black Box Testing
-\end{list1}
+After today please read supporting litterature:
+\begin{list2}
+\item 24‑deadly introduction, pages with roman numerals - up until page 1 \emph{Sin 1 SQL: injection}\\
+File named \verb+book-summary-24-deadly-sins.pdf+ in \url{https://ek.itslearning.com/Resources?FolderID=1558835}
+\item Browse Table of Contents for Secure Programming for Linux and Unix HOWTO\\
+\url{http://www.dwheeler.com/secure-programs/}
+\end{list2}
+
+\begin{list2}
+\item
+Before 23/9 please read supporting litterature:\\
+24‑deadly introduction, chapter 1 \emph{Sin 1 SQL: injection}\\
+File named \verb+book-summary-24-deadly-sins.pdf+ in \url{https://ek.itslearning.com/Resources?FolderID=1558835}
+\end{list2}
+
 
 \slide{Goals: }
 
@@ -67,7 +91,7 @@ Here be dragons
 \item Make sure to test specifically for security issues
 \end{list2}
 
-We talked about security design with Qmail and Postfix recently. This year has been bad for Exim mailserver: CVE-2019-10149, CVE-2019-13917 and CVE-2019-15846
+We talked about security design with Qmail and Postfix recently. 2019 was bad for Exim mailserver: CVE-2019-10149, CVE-2019-13917 and CVE-2019-15846
 
 \slide{Exim RCE CVE-2019-10149 June}
 
@@ -79,7 +103,7 @@ This was only recently discovered by the Qualys team while auditing older Exim v
 
 In an email to Linux distro maintainers, Qualys said the vulnerability is "trivially exploitable" and expects attackers to come up with exploit code in the coming days.
 
-This Exim flaw is currently tracked under the CVE-2019-10149 identifier, but Qualys refers to it under the name of "Return of the WIZard" because the vulnerability resembles the ancient WIZ and DEBUG vulnerabilities that impacted the Sendmail email server back in the 90s.
+This Exim flaw is currently tracked under the CVE-2019-10149 identifier, but Qualys refers to it under the name of \textbf{"Return of the WIZard"} because the \textbf{vulnerability resembles the ancient WIZ and DEBUG vulnerabilities that impacted the Sendmail email server back in the 90s.}
 \end{quote}
 
 {\footnotesize\url{https://www.zdnet.com/article/new-rce-vulnerability-impacts-nearly-half-of-the-internets-email-servers/}}
@@ -107,7 +131,7 @@ The Exim mail transfer agent (MTA) software is impacted by a critical severity v
 
 The bug allows local or unauthenticated remote attackers to execute programs with root privileges on servers that accept TLS connections.
 
-The flaw tracked as CVE-2019-15846 — initially reported by 'Zerons' on July 21 and analyzed by Qualys' research team — is "exploitable by sending an SNI ending in a backslash-null sequence during the initial TLS handshake" which leads to RCE with root privileges on the mail server.
+The flaw tracked as CVE-2019-15846 — initially reported by 'Zerons' on July 21 and analyzed by Qualys' research team — is \textbf{"exploitable by sending an SNI ending in a backslash-null sequence during the initial TLS handshake"} which leads to \textbf{RCE with root privileges on the mail server.}
 \end{quote}
 
 \url{https://www.bleepingcomputer.com/news/security/critical-exim-tls-flaw-lets-attackers-remotely-execute-commands-as-root/}
@@ -134,21 +158,6 @@ The flaw tracked as CVE-2019-15846 — initially reported by 'Zerons' on July 21
 
 
 
-\slide{WEP design major cryptographic errors}
-
-\begin{list1}
-\item weak keying - 24 bit already known - 128-bit = 104 bit really
-\item small initialisation vector (IV) - only 24 bit, every IV will be reused more often
-\item CRC-32 integrity check NOT \emph{strong} enough cryptographically
-\item Authentication gives pad - if you get one \emph{encryption pad} for one IV you can produce packets forever
-\end{list1}
-Source:
-\emph{Secure Coding: Principles and Practices}, Mark G. Graff
-and Kenneth R. van Wyk, O'Reilly, 2003
-
-Example of a technology that people depended upon, \link{https://en.wikipedia.org/wiki/Wired_Equivalent_Privacy}
-
-
 \slide{Poor Use of Cryptography}
 
 Common pitfalls
@@ -167,6 +176,23 @@ Cryptography is hard!
 \end{list1}
 
 
+\slide{WEP design major cryptographic errors}
+
+\begin{list1}
+\item weak keying - 24 bit already known - 128-bit = 104 bit really
+\item small initialisation vector (IV) - only 24 bit, every IV will be reused more often
+\item CRC-32 integrity check NOT \emph{strong} enough cryptographically
+\item Authentication gives pad - if you get one \emph{encryption pad} for one IV you can produce packets forever
+\end{list1}
+Source:
+\emph{Secure Coding: Principles and Practices}, Mark G. Graff
+and Kenneth R. van Wyk, O'Reilly, 2003
+
+Example of a technology that people depended upon\\
+\link{https://en.wikipedia.org/wiki/Wired_Equivalent_Privacy}
+
+Old example, but includes both design mistakes and implementation mistakes
+
 
 
 \slide{Basic Cryptography introduction}
@@ -182,8 +208,6 @@ Source: \link{https://en.wikipedia.org/wiki/Cryptography}
 
 
 \slide{Encryption Decryption}
-
-\slide{Kryptografi}
 
 \hlkimage{12cm}{images/crypto-rot13.pdf}
 
@@ -344,19 +368,6 @@ Source: \link{https://weakdh.org/} and \\
 
 Every year in different SSL/TLS implementations there have been problems.
 
-\slide{Why?, because things like Superfish February 2015}
-
-\hlkimage{12cm}{robert-graham-superfish-cert.png}
-
-Lenovo laptops included Adware, which did SSL/TLS Man in the Middle on connections.
-They had a root certificate installed on the Windows operating system, WTF!
-
-{\footnotesize Sources:\\
-\link{https://en.wikipedia.org/wiki/Superfish}\\
-\link{http://blog.erratasec.com/2015/02/extracting-superfish-certificate.html}\\
-\link{http://www.version2.dk/blog/kibana4-superfish-og-emergingthreats-81610}\\
-}{\tiny\link{https://www.eff.org/deeplinks/2015/02/further-evidence-lenovo-breaking-https-security-its-laptops}
-}
 
 
 \slide{Elliptic Curve }
@@ -485,12 +496,8 @@ Originally sslscan from http://www.titania.co.uk
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
 
 
-
-\exercise{ex:sslscan}
-
-
-
 \slide{Software Development Lifecycle}
+
 
 \begin{quote}
   A full lifecycle approach is the only way to achieve secure software.\\
@@ -499,19 +506,32 @@ SSLscan can check your own sites, while Qualys SSLLabs only can test from hostna
 
 \begin{list2}
 \item Often security testing is an afterthought
-\item Vulnerabilities emerge during design and implementation
-\item Before, during and after approach is needed
+\item Vulnerabilities emerge during design and implementation -- before, during and after approach is needed
 \end{list2}
 
+\slide{Naming Variations}
+
+\begin{list2}
+\item Same concept, many names across vendors and standards
+\item SSDL / SDL --- Secure (Software) Development Lifecycle
+\item Microsoft SDL --- Security Development Lifecycle
+\item NIST SSDF --- Secure Software Development Framework (SP 800-218)
+\item BSIMM --- Building Security In Maturity Model
+\item OWASP SAMM --- Software Assurance Maturity Model
+\end{list2}
+
+Many names, goal is to make more secure software
+
 \slide{Secure Software Development Lifecycle}
+
+\hlkimage{8cm}{OWASP-SDLC.jpg}
 
 \begin{list2}
 \item SSDL represents a structured approach toward implementing and performing secure software development
 \item Security issues evaluated and addressed early
-\item During business analysis
-\item through requirements phase
-\item during design and implementation
+\item During business analysis -- through requirements phase -- during design and implementation
 \end{list2}
+
 
 \slide{Functional specification needs to evaluate security}
 
@@ -791,8 +811,10 @@ opstillet en firewall foran serveren.
 
 \slide{Testing Labs}
 
-\hlkimage{8cm}{hacklab-1.png}
+\hlkimage{5cm}{hacklab-1.png}
 
+I is always recommended to have a testing lab, where you can run \emph{dangerous
+ stuff}
 \begin{list2}
 \item Sniffers Wireshark and similar tools
 \item Proxies and fuzzers
@@ -801,8 +823,12 @@ opstillet en firewall foran serveren.
 \item Laptops and network hardware
 \end{list2}
 
+Note: the recent AI \emph{escapes} makes this even more relevant
 
-\exercise{ex:real-vulns}
+\exercise{ex:nikto-webscanner}
+\exercise{ex:whatweb-scanner}
+\exercise{ex:sslscan}
+
 
 \slidenext{}
 

@@ -1375,7 +1375,81 @@ When you can run and understand what the tool does, you are done.
 {\bf Discussion:}\\
 SSLscan can check your own sites, while Qualys SSLLabs only can test from hostname
 
-\end{document}
+
+\chapter{\faExclamationTriangle\ Discover active systems ping and port sweep 15 min}
+\label{ex:nmap-pingsweep}
+\hlkimage{5cm}{nmap-zenmap.png}
+
+{\bf Objective:}\\
+Use nmap to discover active systems and ports
+
+{\bf Purpose:}\\
+Know how to use nmap to scan networks for active systems. These ports receive traffic from \emph{the internet} and can be used for DDoS attacks.
+
+Tip: Yes, filtering traffic further out removes it from processing in routers, firewalls, load balancers, etc. So making a stateless filter on the edge may be recommended.
+
+{\bf Suggested method:}\\
+Try different scans,
+\begin{itemize}
+\item Ping sweep to find active systems
+\item Port sweeps to find active systems with specific ports
+\end{itemize}
+
+{\bf Hints:} \\
+Try nmap in sweep mode - and you may run this from Zenmap
+
+{\bf Solution:}\\
+Use the command below as examples:
+\begin{itemize}
+\item Ping sweep ICMP and port probes: \verb+nmap -sP 10.0.45.*+
+\item Port sweeps 80/tcp and 443/tcp: \verb+nmap -p 80 10.0.45.*+
+\item Port sweeps UDP scans can be done: \verb+nmap -sU -p 161 10.0.45.*+
+\end{itemize}
+
+{\bf Discussion:}\\
+Quick scans quickly reveal interesting hosts, ports and services
+
+Also now make sure you understand difference between single host scan
+10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
+
+We will now assume port 80/443 are open, as well as a few UDP services - maybe we can use them in amplification attacks later.
+
+
+
+\chapter{\faExclamationTriangle\ Execute nmap TCP and UDP port scan 20 min}
+\label{ex:nmap-synscan}
+
+
+{\bf Objective:} \\
+Use nmap to discover important open ports on active systems
+
+{\bf Purpose:}\\
+Finding open ports will allow you to find vulnerabilities on these ports.
+
+{\bf Suggested method:}\\
+Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
+ports and use Nmap without ports. What is scanned then?
+
+Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
+
+If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
+
+{\bf Hints:} \\
+Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
+1024 ports without doing a Ping first
+
+{\bf Solution:}\\
+Discover some active systems and most interesting ports, which are 1-1024 and the built-in list of popular ports.
+
+{\bf Discussion:}\\
+There is a lot of documentation about the nmap portscanner, even a book by the author
+of nmap. Make sure to visit \link{http://www.nmap.org}
+
+TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
+
+When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
+
+
 \chapter{\faExclamationTriangle\ JuiceShop Attacks 60min}
 \label{ex:juiceshop-attack}
 
@@ -1449,7 +1523,53 @@ Using an app like JS instead of real applications with flaws allow you to spend 
 
 
 
+\chapter{\faExclamationTriangle\ Truncate and Encoding Attacks JuiceShop up to 40min}
+\label{ex:truncate-encoding}
 
+{\bf Objective:}\\
+Try out some of the problems described in the book using active methods.
+
+{\bf Purpose:}\\
+The book describes problems with encodings but it can feel a bit fluffy unless you try and see for yourself. We have the JuiceShop which has errors similar to these.
+
+{\bf Suggested method:}\\
+There is an error in the JuiceShop that can be abused for reading files using encoding \verb+%2500+.
+
+Try to download the file \link{http://localhost:3000/ftp/eastere.gg}
+
+
+It should be possible to even retrieve the content of a file like \verb+C:\Windows\system.ini+ or
+\verb+/etc/passwd+ from the server and see if you can read a file. If they exist. This is related to XEE attacks, and seems hard to get working.
+
+Spoiler alert next page!
+\eject
+
+
+
+{\bf Hints:}\\
+Its ok to use the solution and work through the example.
+\url{http://localhost:3000/ftp/eastere.gg%2500.md}
+
+Also make sure to use \verb+NODE_ENV=unsafe+ flag when running docker if you want to try the XEE vuln!
+
+\begin{alltt}
+export NODE_ENV=unsafe
+docker run --rm -p 0.0.0.0:3000:3000 bkimminich/juice-shop
+\end{alltt}
+
+{\bf Solution:}\\
+When you feel you understand the problem of encoding/decoding and sending XML files to an application, reading files, you are done.
+
+{\bf Discussion:}\\
+Another problem are the filtering done in applications.
+
+In the JuiceShop we can access using URLs like this on the About Us page:\\
+\url{http://localhost:3000/ftp/legal.md?md_debug=true}
+
+Consider if the URL would match on .md and we were able to send a large filename ending in \verb+loongfilename.md+, but when truncated cut of exactly the \verb+.md+ part so we referenced another file.
+
+
+\end{document}
 
 \chapter{\faInfoCircle\ Postman API Client 20 min}
 \label{ex:postman-api}
@@ -2215,51 +2335,6 @@ Which other validators would be nice to have, in your own library?
 Via Angular: \url{https://v17.angular.io/api/forms/Validators#email}\\
 \url{https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address}
 
-\chapter{\faExclamationTriangle\ Truncate and Encoding Attacks JuiceShop up to 40min}
-\label{ex:truncate-encoding}
-
-{\bf Objective:}\\
-Try out some of the problems described in the book using active methods.
-
-{\bf Purpose:}\\
-The book describes problems with encodings but it can feel a bit fluffy unless you try and see for yourself. We have the JuiceShop which has errors similar to these.
-
-{\bf Suggested method:}\\
-There is an error in the JuiceShop that can be abused for reading files using encoding \verb+%2500+.
-
-Try to download the file \link{http://localhost:3000/ftp/eastere.gg}
-
-
-It should be possible to even retrieve the content of a file like \verb+C:\Windows\system.ini+ or
-\verb+/etc/passwd+ from the server and see if you can read a file. If they exist. This is related to XEE attacks, and seems hard to get working.
-
-Spoiler alert next page!
-\eject
-
-
-
-{\bf Hints:}\\
-Its ok to use the solution and work through the example.
-\url{http://localhost:3000/ftp/eastere.gg%2500.md}
-
-Also make sure to use \verb+NODE_ENV=unsafe+ flag when running docker if you want to try the XEE vuln!
-
-\begin{alltt}
-export NODE_ENV=unsafe
-docker run --rm -p 0.0.0.0:3000:3000 bkimminich/juice-shop
-\end{alltt}
-
-{\bf Solution:}\\
-When you feel you understand the problem of encoding/decoding and sending XML files to an application, reading files, you are done.
-
-{\bf Discussion:}\\
-Another problem are the filtering done in applications.
-
-In the JuiceShop we can access using URLs like this on the About Us page:\\
-\url{http://localhost:3000/ftp/legal.md?md_debug=true}
-
-Consider if the URL would match on .md and we were able to send a large filename ending in \verb+loongfilename.md+, but when truncated cut of exactly the \verb+.md+ part so we referenced another file.
-
 
 \chapter{\faInfoCircle\ Sniff Your Browser 15min}
 \label{ex:sniff-captive-portal}
@@ -2299,78 +2374,6 @@ Your internet provider can see when you are home, when you start your browser et
 
 
 
-
-\chapter{\faExclamationTriangle\ Execute nmap TCP and UDP port scan 20 min}
-\label{ex:nmap-synscan}
-
-
-{\bf Objective:} \\
-Use nmap to discover important open ports on active systems
-
-{\bf Purpose:}\\
-Finding open ports will allow you to find vulnerabilities on these ports.
-
-{\bf Suggested method:}\\
-Use \verb+nmap -p 1-1024 server+ to scan the first 1024 TCP
-ports and use Nmap without ports. What is scanned then?
-
-Try to use \verb+nmap -sU+ to scan using UDP ports, not really possible if a firewall is in place.
-
-If a firewall blocks ICMP you might need to add \verb+-Pn+ to make nmap scan even if there are no Ping responses
-
-{\bf Hints:} \\
-Sample command: \verb+nmap -Pn -sU -p1-1024 server+ UDP port scanning
-1024 ports without doing a Ping first
-
-{\bf Solution:}\\
-Discover some active systems and most interesting ports, which are 1-1024 and the built-in list of popular ports.
-
-{\bf Discussion:}\\
-There is a lot of documentation about the nmap portscanner, even a book by the author
-of nmap. Make sure to visit \link{http://www.nmap.org}
-
-TCP and UDP is very different when scanning. TCP is connection/flow oriented and requires a handshake which is very easy to identify. UDP does not have a handshake and most applications will not respond to probes from nmap. If there is no firewall the operating system will respond to UDP probes on closed ports - and the ones that do not respond must be open.
-
-When doing UDP scan on the internet you will almost never get a response, so you cannot tell open (not responding services) from blocked ports (firewall drop packets). Instead try using specific service programs for the services, sample program could be \verb+nsping+ which sends DNS packets, and will often get a response from a DNS server running on UDP port 53.
-
-
-\chapter{\faExclamationTriangle\ Discover active systems ping and port sweep 15 min}
-\label{ex:nmap-pingsweep}
-\hlkimage{5cm}{nmap-zenmap.png}
-
-{\bf Objective:}\\
-Use nmap to discover active systems and ports
-
-{\bf Purpose:}\\
-Know how to use nmap to scan networks for active systems. These ports receive traffic from \emph{the internet} and can be used for DDoS attacks.
-
-Tip: Yes, filtering traffic further out removes it from processing in routers, firewalls, load balancers, etc. So making a stateless filter on the edge may be recommended.
-
-{\bf Suggested method:}\\
-Try different scans,
-\begin{itemize}
-\item Ping sweep to find active systems
-\item Port sweeps to find active systems with specific ports
-\end{itemize}
-
-{\bf Hints:} \\
-Try nmap in sweep mode - and you may run this from Zenmap
-
-{\bf Solution:}\\
-Use the command below as examples:
-\begin{itemize}
-\item Ping sweep ICMP and port probes: \verb+nmap -sP 10.0.45.*+
-\item Port sweeps 80/tcp and 443/tcp: \verb+nmap -p 80 10.0.45.*+
-\item Port sweeps UDP scans can be done: \verb+nmap -sU -p 161 10.0.45.*+
-\end{itemize}
-
-{\bf Discussion:}\\
-Quick scans quickly reveal interesting hosts, ports and services
-
-Also now make sure you understand difference between single host scan
-10.0.45.123/32, a whole subnet /24 ~250 hosts 10.0.45.0/24 and other more advanced targeteting like 10.0.45.0/25 and 10.0.45.1-10
-
-We will now assume port 80/443 are open, as well as a few UDP services - maybe we can use them in amplification attacks later.
 
 \chapter{\faInfoCircle\ TCP SYN flooding 30min}
 \label{ex:syn-flood}
@@ -2862,6 +2865,8 @@ There is no solution, the discussion is the solution.
 
 {\bf Discussion:}\\
 There are some things that can be \emph{fixed} in production, and some can't easily be redone without major interruption
+
+
 
 \end{document}
 

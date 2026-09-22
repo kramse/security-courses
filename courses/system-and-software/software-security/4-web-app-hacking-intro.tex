@@ -7,7 +7,7 @@
 
 \mytitlepage
 {4. Web Application Hacking Intro}
-{KEA Kompetence VF1 Software Security}
+{EK  Software Security}
 
 \slide{Goals for today}
 
@@ -41,15 +41,39 @@ Photo by Thomas Galler on Unsplash
 \end{list2}
 \end{list1}
 
-\slide{Reading Summary}
 
+\slide{Time schedule}
+
+Plan for the day
 \begin{list1}
-\item AoST chapters 6: Generic Network Fault Injection
-\item AoST chapters 7: Web Applications: Session  Attacks
-\item AoST chapters 8: Web Applications: Common Issues
-\item AoST chapters 9: Web Proxies: Using Web Scarab
+\item 12:45 - 13:45 -- Teaching: Deadly sins, web hacking
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- 45min Exercises: Web Hacking with Nmap (short) and then JuiceShop Attacks
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- 45min Teaching: What it means for Software Security
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- 45min Exercises: Truncate and Encoding Attacks JuiceShop
+\vskip 1em
+\item 12:45 - 16:45 I will be here at EK
 \end{list1}
 
+
+\slide{Reading Summary}
+
+Please read supporting litterature:
+\begin{list2}
+\item 24‑deadly introduction, pages with roman numerals - up until page 1 \emph{Sin 1 SQL: injection}\\
+File named \verb+book-summary-24-deadly-sins.pdf+ in \url{https://ek.itslearning.com/Resources?FolderID=1558835}
+\item Browse Table of Contents for Secure Programming for Linux and Unix HOWTO\\
+\url{http://www.dwheeler.com/secure-programs/}
+\end{list2}
+
+\begin{list2}
+\item
+Before 23/9 please read supporting litterature:\\
+24‑deadly introduction, chapter 1 \emph{Sin 1 SQL: injection}\\
+File named \verb+book-summary-24-deadly-sins.pdf+ in \url{https://ek.itslearning.com/Resources?FolderID=1558835}
+\end{list2}
 
 
 \slide{Agreements for testing networks}
@@ -314,7 +338,7 @@ Nmap includes Nmap scripting engine (NSE)
 \centerline{efter \emph{opgradering} er serveren ikke sårbar mere}
 
 
-\slide{Curl - the HTTP swiss army knife}
+\slide{Curl - the HTTP swiss army knife, weird example inject header}
 
 \hlkimage{10cm}{curl-example-host.png}
 Adding a Host header, made TDC tell which number connected!
@@ -386,23 +410,6 @@ the most critical web application security flaws are.
 \centerline{\bfseries resultat: webserveren sender data ud via normal HTTP}
 
 
-\slide{Proof of concept programs exist - god or bad?}
-
-\centerline{Some of the tools released shortly after Heartbleed announcement}
-\begin{list2}
-\item \link{https://github.com/FiloSottile/Heartbleed} tool i Go\\
-site \link{http://filippo.io/Heartbleed/}
-\item \link{https://github.com/titanous/heartbleeder} tool i Go
-\item \link{http://s3.jspenguin.org/ssltest.py} PoC
-\item \link{https://gist.github.com/takeshixx/10107280} test tool med STARTTLS support
-\item \link{http://possible.lv/tools/hb/} test site
-\item \link{https://twitter.com/richinseattle/status/453717235379355649} Practical Heartbleed attack against session keys links til, \link{https://www.mattslifebytes.com/?p=533} og "Fully automated here "\\ \link{https://www.michael-p-davis.com/using-heartbleed-for-hijacking-user-sessions/}
-
-\item Metasploit er også opdateret på master repo\\ \link{https://twitter.com/firefart/status/453758091658792960}\\
-\link{https://github.com/rapid7/metasploit-framework/blob/master/modules/auxiliary/scanner/ssl/openssl_heartbleed.rb}
-\end{list2}
-
-
 
 \slide{The Exploit Database - dagens buffer overflow}
 
@@ -460,10 +467,6 @@ present. (GET)
 \item Falske positiv vs falske negativ!
 \end{list1}
 
-\exercise{ex:nikto-webscanner}
-
-\exercise{ex:whatweb-scanner}
-
 \slide{Cross-site scripting}
 
 Vi har primært snakket om server angreb - men klienter er også udsatte
@@ -486,7 +489,7 @@ afvikling i anden "security context"
 
 
 
-\slide{Burpsuite}
+\slide{Burp Suite}
 
 \begin{quote}
 Burp Suite is an integrated platform for performing security testing of web applications. Its various tools work seamlessly together to support the entire testing process, from initial mapping and analysis of an application's attack surface, through to finding and exploiting security vulnerabilities.
@@ -523,6 +526,94 @@ Source: \link{http://sqlmap.org/}
 
 
 
+
+\slide{Attacking Authentication}
+
+
+Passwords vælges ikke tilfældigt
+
+\hlkimage{17cm}{50-most-used-passwords.png}
+
+Source:
+\link{https://wpengine.com/unmasked/}
+
+
+
+
+\slide{Session IDs}
+
+\begin{list2}
+\item Session IDs tie the user with the state on the server
+\item Must be randomly assigned, otherwise an attacker can guess a valid ID
+\item Common problems, time based or predictable in some way
+\item Check code for generating IDs or measure - Phase Space Analysis
+\end{list2}
+
+
+\slide{Brute Force Testing}
+
+\begin{list1}
+\item hvad betyder bruteforcing?\\
+afprøvning af alle mulighederne
+\end{list1}
+
+\begin{alltt}\footnotesize
+Hydra v2.5 (c) 2003 by van Hauser / THC <vh@thc.org>
+Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]]
+[-o FILE] [-t TASKS] [-g TASKS] [-T SERVERS] [-M FILE] [-w TIME]
+[-f] [-e ns] [-s PORT] [-S] [-vV] server service [OPT]
+
+Options:
+  -S        connect via SSL
+  -s PORT   if the service is on a different default port, define it here
+  -l LOGIN  or -L FILE login with LOGIN name, or load several logins from FILE
+  -p PASS   or -P FILE try password PASS, or load several passwords from FILE
+  -e ns     additional checks, "n" for null password, "s" try login as pass
+  -C FILE   colon seperated "login:pass" format, instead of -L/-P option
+  -M FILE   file containing server list (parallizes attacks, see -T)
+  -o FILE   write found login/password pairs to FILE instead of stdout
+...
+\end{alltt}
+
+
+\exercise{ex:nmap-synscan}
+\exercise{ex:nmap-pingsweep}
+\exercise{ex:juiceshop-attack}
+
+
+\slide{What it means for Software Security}
+
+You need processes to work with system environments containing many servers -- all have operating system and applications
+
+Attack the problems differently
+\begin{list2}
+\item Test using pentest
+\item Read and scan source code
+\item Review designs
+\item Select frameworks and languages -- policies
+\end{list2}
+
+\slide{Introduction to Methods}
+
+\begin{list2}
+\item Following slides list some of the methods for eliminating security issues
+\item Sometimes when eliminating is not possible the runtime environment can be improved
+\item Other times the strategy involves the systems used for development - like alleviating the version control systems to enforce policies and restrict developers from doing bad things
+\end{list2}
+
+
+
+\slide{Secure Software Development Lifecycle}
+
+\hlkimage{8cm}{OWASP-SDLC.jpg}
+
+\begin{list2}
+\item SSDL represents a structured approach toward implementing and performing secure software development
+\item Security issues evaluated and addressed early
+\item During business analysis -- through requirements phase -- during design and implementation
+\end{list2}
+
+
 \slide{Udviklingsstandarder}
 
 \begin{list1}
@@ -531,7 +622,8 @@ Source: \link{http://sqlmap.org/}
 \item Man børe være klar over hvilke teknologier man bruger
 \item Standardiser på et mindre antal produkter, biblioteker, sprog
 \item Regler og procedurer skal hele tiden opdateres:
-\begin{list2}
+\begin{list2}\item
+
 \item Kvalitetssikring
 \item Retningslinier for tilladte tags
 \item Retningslinier for brug af SQL
@@ -566,6 +658,28 @@ eks Ruby On Rails Security Guide\\
 \end{list2}
 
 
+\slide{Produktionsmodning af miljøer}
+
+\begin{list1}
+\item Tænk på det miljø som servere og services skal udsættes for
+\item Sørg for hærdning og tænk generel sikring:
+  \begin{list2}
+  \item Opdateret software - ingen kendte sikkerhedshuller eller
+  sårbarheder
+\item Fjern {\bfseries single points of failure} - redundant strøm, ekstra enheder, to DNS servere fremfor en
+\item Adskilte servere - interne og eksterne til forskellige formål
+\item Lav filtre på netværket, eller på data - firewalls og proxy
+  funktioner
+\item Begræns adgangen til at læse information
+\item Begræns adgangen til at skrive information - eksempelvis databaser
+\item Brug {\bfseries least privileges} - sørg for at programmer og brugere
+  kun har de nødvendige rettigheder til at kunne udføre opgaver
+\item Følg med på områderne der har relevans for virksomheden og
+  \emph{jeres} installation
+  \end{list2}
+  \item Meld jer på security mailinglister for de produkter I benytter, også open source
+\end{list1}
+
 
 \slide{Change management}
 
@@ -575,63 +689,373 @@ eks Ruby On Rails Security Guide\\
 \item Foretages rettelser direkte på produktionssystemer
 \item Er der fall-back plan
 \item Burde være god systemadministrator praksis
-\vskip 2cm
-\item Undgå også opdatering af prod databaser med manuelle SQL queries
 \end{list1}
 
 
-\slide{Attacking Authentication}
 
-
-Passwords vælges ikke tilfældigt
-
-\hlkimage{17cm}{50-most-used-passwords.png}
-
-Source:
-\link{https://wpengine.com/unmasked/}
-
-\slide{Brute Force Testing}
+\slide{Fundamentet skal være iorden}
 
 \begin{list1}
-\item hvad betyder bruteforcing?\\
-afprøvning af alle mulighederne
-\end{list1}
-
-\begin{alltt}\footnotesize
-Hydra v2.5 (c) 2003 by van Hauser / THC <vh@thc.org>
-Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]]
-[-o FILE] [-t TASKS] [-g TASKS] [-T SERVERS] [-M FILE] [-w TIME]
-[-f] [-e ns] [-s PORT] [-S] [-vV] server service [OPT]
-
-Options:
-  -S        connect via SSL
-  -s PORT   if the service is on a different default port, define it here
-  -l LOGIN  or -L FILE login with LOGIN name, or load several logins from FILE
-  -p PASS   or -P FILE try password PASS, or load several passwords from FILE
-  -e ns     additional checks, "n" for null password, "s" try login as pass
-  -C FILE   colon seperated "login:pass" format, instead of -L/-P option
-  -M FILE   file containing server list (parallizes attacks, see -T)
-  -o FILE   write found login/password pairs to FILE instead of stdout
-...
-\end{alltt}
-
-
-
-
-\slide{Session IDs}
-
+\item Sørg for at den infrastruktur som I bygger på er sikker:
 \begin{list2}
-\item Session IDs tie the user with the state on the server
-\item Must be randomly assigned, otherwise an attacker can guess a valid ID
-\item Common problems, time based or predictable in some way
-\item Check code for generating IDs or measure - Phase Space Analysis
+ \item redundans
+       \item opdateret
+        \item dokumenteret
+        \item nem at vedligeholde
 \end{list2}
 
+\item  Husk tilgængelighed er også en sikkerhedsparameter
+\end{list1}
 
-\exercise{ex:juiceshop-attack}
 
+\slide{Enhance and secure runtime environment}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+%\centerline{Picture from: http://karenswhimsy.com/public-domain-images}
+
+\centerline{Sidste chance er på afviklingstidspunktet}
+
+
+
+\slide{Chroot, Jails and }
+
+\begin{list1}
+\item Der findes mange typer \emph{jails} på Unix
+\item Ideer fra Unix chroot som ikke er en egentlig sikkerhedsfeature
+\begin{list2}
+\item Unix chroot - bruges stadig, ofte i daemoner som OpenSSH
+\item FreeBSD Jails
+\item SELinux
+\item Solaris Containers og Zones - \emph{jails på steroider}
+\item VMware virtuelle maskiner, er det et jail?
+\end{list2}
+\item Hertil kommer et antal andre måder at adskille processer - sandkasser
+\item Husk også de simple, databaser som \verb+_postgresql+, Postfix postsystem som \verb+_postfix+, SSHD som \verb+sshd+ osv. - simple brugere, få rettigheder
+\end{list1}
+
+\slide{JVM security policies}
+
+\begin{minted}[fontsize=\small]{java}
+// ========== WEB APPLICATION PERMISSIONS =====================================
+// These permissions are granted by default to all web applications
+// In addition, a web application will be given a read FilePermission
+// and JndiPermission for all files and directories in its document root.
+grant {
+    // Required for JNDI lookup of named JDBC DataSource's and
+    // javamail named MimePart DataSource used to send mail
+    permission java.util.PropertyPermission "java.home", "read";
+    permission java.util.PropertyPermission "java.naming.*", "read";
+    permission java.util.PropertyPermission "javax.sql.*", "read";
+...
+};
+// The permission granted to your JDBC driver
+// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
+//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
+// \};
+\end{minted}
+
+\begin{list1}
+\item Eksempel fra \verb+apache-tomcat-6.0.18/conf/catalina.policy+
+\end{list1}
+
+
+\slide{Apple sandbox named generic rules}
+
+\begin{minted}[fontsize=\small]{lisp}
+;; named - sandbox profile
+;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
+;;
+;; WARNING: The sandbox rules in this file currently constitute
+;; Apple System Private Interface and are subject to change at any time and
+;; without notice. The contents of this file are also auto-generated and not
+;; user editable; it may be overwritten at any time.
+;;
+(version 1)
+(debug deny)
+
+(import "bsd.sb")
+
+(deny default)
+(allow process*)
+(deny signal)
+(allow sysctl-read)
+(allow network*)
+\end{minted}
+
+
+\slide{Apple sandbox named specific rules }
+
+\begin{minted}[fontsize=\small]{lisp}
+;; Allow named-specific files
+(allow file-write* file-read-data file-read-metadata
+  (regex "^(/private)?/var/run/named\\pid$"
+         "^/Library/Logs/named\\.log$"))
+
+(allow file-read-data file-read-metadata
+  (regex "^(/private)?/etc/rndc\\.key$"
+         "^(/private)?/etc/resolv\\.conf$"
+         "^(/private)?/etc/named\\.conf$"
+         "^(/private)?/var/named/"))
+\end{minted}
+
+\begin{list1}
+\item Eksempel fra \verb+/usr/share/sandbox+ på Mac OS X
+\end{list1}
+
+
+
+\slide{Design a robust network Isolation and segmentation}
+
+\begin{list1}
+\item Hvad kan man gøre for at få bedre netværkssikkerhed?
+\begin{list2}
+\item Bruge switche - der skal ARP spoofes og bedre performance
+\item Opdele med firewall til flere DMZ zoner for at holde
+      udsatte servere adskilt fra hinanden, det interne netværk og
+      Internet
+\item Overvåge, læse logs og reagere på hændelser
+\end{list2}
+\item Husk du skal også kunne opdatere dine servere
+\end{list1}
+
+\slide{Basic Network Security Pattern Isolate in VLANs}
+
+\hlkimage{10cm}{images/demo-netvaerk.pdf}
+
+\begin{list1}
+\item Du bør opdele dit netværk i segmenter efter trafik
+\item Du bør altid holde interne og eksterne systemer adskilt!
+\item Du bør isolere farlige services i jails og chroots
+\item Brug port security til at sikre basale services DHCP, Spanning Tree osv.
+\end{list1}
+
+
+
+\slide{Building Secure Infrastructures}
+
+\begin{list1}
+\item A real-life setup of an infrastructure from scratch can be daunting!
+\item You need:
+\begin{list2}
+\item Policies
+\item Procedures
+\item Incident Response
+\end{list2}
+\item Running systems which require
+\begin{list2}
+\item Configurations
+\item Settings
+\item Supporting infrastructure -- networks
+\item Supporting infrastructure -- logging, dashboarding, monitoring
+\end{list2}
+\item Building something \emph{secure} is {\bf hard work!}
+\end{list1}
+
+
+
+\slide{Existing infrastructures}
+
+\begin{list1}
+\item or even worse you inherited an infrastructure
+\item Multiple networks, with different vendors, rules
+\item Multiple generations of services, applications, technologies
+\item Built over decades
+\item Varying to no documentation
+\item Organizational challenges
+\item Ingrained culture -- frozen in time
+\end{list1}
+
+How do you get started improving security?
+
+\slide{Integrate or develop?}
+
+\begin{list1}
+\item Dont:
+\begin{list2}
+\item Reinvent the wheel - too many times, unless you can maintain it afterwards
+\item Never invent cryptography yourself
+\item No copy paste of functionality, harder to maintain in the future
+\end{list2}
+\item Do:
+\begin{list2}
+\item Integrate with existing solutions
+\item Use existing well-tested code: cryptography, authentication, hashing
+\item Centralize security in your code and organization
+\end{list2}
+\end{list1}
+
+\slide{Center for Internet Security CIS Controls}
+
+\begin{quote}
+  The CIS ControlsTM are a prioritized set of actions that collectively form a defense-in-depth set
+of best practices that mitigate the most common attacks against systems and networks. The
+CIS Controls are developed by a community of IT experts who apply their first-hand experience
+as cyber defenders to create these globally accepted security best practices. The experts who
+develop the CIS Controls come from a wide range of sectors including retail, manufacturing,
+healthcare, education, government, defense, and others.
+\end{quote}
+
+Source: \link{https://www.cisecurity.org/} CIS-Controls-Version-7-1.pdf
+
+\slide{Center for Internet Security CIS Controls 7.1}
+
+\begin{list2}
+%\item The five critical tenets of an effective cyber defense system as reflected in the CIS Controls are:
+\item {\bf Offense informs defense:} Use knowledge of actual attacks that have
+compromised systems to provide the foundation to continually learn
+from these events to build effective, practical defenses. Include only
+those controls that can be shown to stop known real-world attacks.
+\item {\bf Prioritization:} Invest first in Controls that will provide the greatest risk
+reduction and protection against the most dangerous threat actors
+and that can be feasibly implemented in your computing environment.
+The CIS Implementation Groups discussed below are a great place for
+organizations to start identifying relevant Sub-Controls.
+\item {\bf Measurements and Metrics:} Establish common metrics to provide a
+shared language for executives, IT specialists, auditors, and security
+officials to measure the effectiveness of security measures within
+an organization so that required adjustments can be identified and
+implemented quickly.
+\item {\bf Continuous diagnostics and mitigation:} Carry out continuous
+measurement to test and validate the effectiveness of current security
+measures and to help drive the priority of next steps.
+\item {\bf Automation:} Automate defenses so that organizations can achieve
+reliable, scalable, and continuous measurements of their adherence to
+the Controls and related metrics. \hskip 2cm Source: CIS-Controls-Version-7-1.pdf
+\end{list2}
+
+\slide{Inventory and Control of Hardware Assets}
+
+CIS controls 1-6 are Basic, everyone must do them.
+
+
+\begin{quote}
+CIS Control 1:\\
+Inventory and Control of Hardware Assets\\
+Actively manage (inventory, track, and correct) all hardware devices on the network so that only authorized devices are given access, and unauthorized and unm
+anaged devices are found and prevented from gaining access.
+\end{quote}
+
+\begin{list1}
+\item What is connected to our networks?
+\item What firmware do we need to install on hardware?
+\item Where IS the hardware we own?
+\item What hardware is still supported by vendor?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What licenses do we have? Paying too much?
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item What software do our employees need to support?
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Controlled Use of Administrative Privileges}
+
+\begin{quote}
+CIS Control 4:\\
+Controlled Use of Administrative Privileges\\
+The processes and tools used to track/control/prevent/correct the use, assignment, and configuration of administrative privileges on computers, networks, and applications.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\slide{Secure Configuration for Hardware and Software}
+
+\begin{quote}
+CIS Control 5:\\
+Secure Configuration for Hardware and Software on Mobile Devices, Laptops, Workstations and Servers\\
+Establish, implement, and actively manage (track, report on, correct) the security configuration of mobile devices, laptops, servers, and workstations using a rigorous configuration management and change control process in order to prevent attackers from exploiting vulnerable services and settings.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Maintenance, Monitoring and Analysis of Audit Logs}
+
+\begin{quote}
+CIS Control 6:\\
+Maintenance, Monitoring and Analysis of Audit Logs\\
+Collect, manage, and analyze audit logs of events that could help detect, understand, or recover from an attack.
+\end{quote}
+
+\begin{list1}
+\item ... and present it, use it daily, report it to management!
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+\begin{list1}
+\item
+\item
+\item
+\item
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+\exercise{ex:truncate-encoding}
 
 \slidenext{}
+
+
 
 
 \end{document}

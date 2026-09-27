@@ -7,7 +7,7 @@
 
 \mytitlepage
 {5. Web Application Security: Recon}
-{KEA Kompetence VF1 Software Security}
+{EK  Software Security}
 
 \slide{Goals for today}
 
@@ -15,7 +15,7 @@
 
 Todays goals:
 \begin{list2}
-\item Web Application Hacking -- more structured knowledge about common web apps
+\item Web Application Hacking -- knowledge about common web apps
 \item Do reconnaissance on web applications
 \item Talk about common patterns
 \end{list2}
@@ -43,21 +43,30 @@ Photo by Thomas Galler on Unsplash
 \end{list2}
 \end{list1}
 
+\slide{Time schedule}
+
+Plan for the day
+\begin{list1}
+\item 12:45 - 13:45 -- Teaching: Structured approach to discovery, information gathering, mapping
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- 45min Exercises: More Web Hacking Nmap and JuiceShop Attacks
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- 45min Teaching: Authentication and Authorization Systems, lool into JuiceShop
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- 45min Exercises: Attack JuiceShop Authentication -- SQL injection mostly
+\vskip 1em
+\item 12:45 - 16:45 I will be here at EK
+\end{list1}
+
 
 \slide{Reading Summary}
 
-\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
-\begin{list1}
-\item Part I. Recon, chapters 1-8, very short chapters
-\item 1. The History of Software Security
-\item 2. Introduction to Web Application Reconnaissance
-\item 3. The Structure of a Modern Web Application
-\item 4. Finding Subdomains
-\item 5. API Analysis
-\item 6. Identifying Third-Party Dependencies
-\item 7. Identifying Weak Points in Application Architectur
-\item 8. Part I Summary
-\end{list1}
+We will use these resources to perform attacks:
+\begin{list2}
+\item
+24‑deadly introduction, chapter 1 \emph{Sin 1 SQL: injection}\\
+File named \verb+book-summary-24-deadly-sins.pdf+ in \url{https://ek.itslearning.com/Resources?FolderID=1558835}
+\end{list2}
 
 \slide{Goals: Discovery and Reconnaissance}
 
@@ -66,6 +75,8 @@ Photo by Thomas Galler on Unsplash
 \begin{list1}
 \item Be able to discover parts of web application environments
 \item Perform Information Gathering Web Application Mapping
+\vskip 5mm
+\item Realize it is SQL and perform attacks
 \end{list1}
 
 
@@ -299,7 +310,7 @@ $ firefox /tmp/router.html
 \slide{Data overview JSON}
 
 \begin{quote}
-JavaScript Object Notation (JSON, pronounced /ˈdʒeɪsən/; also /ˈdʒeɪˌsɒn/[note 1]) is an open-standard file format or data interchange format that uses {\bf human-readable text} to transmit data objects consisting of attribute–value pairs and array data types (or any other serializable value). It is a very common data format, with a diverse range of applications, such as serving as replacement for XML in AJAX systems.[6]
+JavaScript Object Notation (JSON, pronounced /ˈdʒeɪsən/; also /ˈdʒeɪˌsɒn/[note 1]) is an open-standard file format or data interchange format that uses \textbf{ human-readable text} to transmit data objects consisting of attribute–value pairs and array data types (or any other serializable value). It is a very common data format, with a diverse range of applications, such as serving as replacement for XML in AJAX systems.[6]
 \end{quote}
 Source: \url{https://en.wikipedia.org/wiki/JSON}
 
@@ -424,6 +435,8 @@ A web service is a software system designed to support interoperable machine-to-
 \end{quote}
 Source -- W3C, Web Services Glossary[3]
 
+As said a few times, Web services are everywhere! Mobile apps, APIs, federated logins like MitID etc.
+
 
 \slide{WSDL - Web Services Description Language}
 
@@ -438,6 +451,68 @@ Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
 %\item
 %\item
 %\end{list2}
+
+
+
+\slide{Danish Web Services -- SOAP/WSDL and XML}
+
+Examples W3C definition: interface in WSDL, SOAP messages, XML over HTTP
+
+\begin{list2}
+\item FMK Fælles Medicinkort (Sundhedsdatastyrelsen) -- SOAP, WSDL-described,\\
+  national medication data used by doctors, hospitals, pharmacies
+\item eIndkomst (Skattestyrelsen) -- SOAP/OIO services, WSDL packages\\
+  published by SKAT, OCES certificate authentication
+\item Serviceplatformen (KOMBIT) -- SOAP services for municipal integrations,\\
+  also routes calls onwards, e.g. skattekort lookups in eIndkomst
+\end{list2}
+
+
+
+
+\slide{Danish Web Services -- non-WSDL}
+
+example Public HTTP services -- but no WSDL, mostly JSON
+\begin{list2}
+\item CVR (Erhvervsstyrelsen) -- Elasticsearch REST API, JSON, search-only access
+\item Datafordeleren (BBR, DAR, MAT, EJF, CVR ...) -- REST, moving to GraphQL
+\item Serviceplatformen (KOMBIT) -- REST for document upload/download
+\end{list2}
+
+\slide{Danish Web Services -- Authentication}
+
+\begin{list1}
+\item MitID -- authentication
+  \begin{list2}
+  \item Service providers cannot integrate with MitID directly --\\
+    they must go through a certified broker (NemLog-in, Criipto, Signicat ...)
+  \item Brokers expose MitID to service providers using OpenID Connect
+  \end{list2}
+\item OpenID Connect (OIDC) -- identity layer on top of OAuth 2.0
+  \begin{list2}
+  \item Browser redirects to the identity provider, back with a one-time code
+  \item Server exchanges code for an ID token: a signed JWT (JSON), not XML
+  \item Configuration published at \verb+/.well-known/openid-configuration+
+  \item Security depends on details: redirect URI checks, state/nonce, PKCE,\\
+    signature validation
+  \end{list2}
+\end{list1}
+
+See more at \url{https://openid.net/developers/how-connect-works/}
+
+\slide{JWT refresher}
+
+\begin{list2}
+\item JSON Web Token, RFC 7519 -- \verb+header.payload.signature+, each base64url
+\item Header: algorithm, e.g. \verb+{"alg":"RS256","kid":"..."}+
+\item Payload: claims -- \verb+iss+, \verb+sub+, \verb+aud+, \verb+exp+, \verb+iat+,\\
+  OIDC ID tokens add \verb+nonce+ and others
+\item Signed, not encrypted -- anyone can read the payload
+\item Classic mistakes: accepting \verb+alg: none+, RS256/HS256 confusion,\\
+  not checking \verb+aud+, \verb+exp+, \verb+iss+
+\end{list2}
+
+\url{https://www.rfc-editor.org/rfc/rfc7519}
 
 \slide{WSDL XML}
 
@@ -455,7 +530,7 @@ Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
 \end{minted}
 Source: \url{https://en.wikipedia.org/wiki/Web_Services_Description_Language}
 
-
+\textbf{Mentioning these to ensure that you DON'T try to manually parse them! Use libraries!}
 
 \slide{WSDL XML types}
 
@@ -670,6 +745,16 @@ Source: {\footnotesize\\
 \link{https://requests.readthedocs.io/en/master/}
 \end{list2}
 
+\slide{REST from the command line: curl and jq}
+
+\inputminted{bash}{programs/rest-jq.sh}
+
+\begin{list2}
+\item \verb+curl -s+ fetches the JSON, \verb+jq+ filters and formats it
+\item \verb+jq .+ pretty prints, \verb+jq -r+ gives raw text without quotes
+\item jq manual: \link{https://jqlang.org/manual/}
+\end{list2}
+
 \slide{Shared Database}
 
 \hlkimage{7cm}{SharedDatabaseIntegration.png}
@@ -688,33 +773,6 @@ MongoDB, CouchDB, Redis, RIAK\\
 
 
 
-
-
-\slide{Elastic stack Kibana}
-
-\hlkimage{10cm}{illustrated-screenshot-hero-kibana.png}
-
-Screenshot from \url{https://www.elastic.co/kibana}
-
-Elasticsearch is a search engine and ocument store used in a lot of different systems, allowing cross application integration.
-
-\slide{Getting started with Elastic Stack}
-
-Easy to get started using the tutorial \emph{Getting started with the Elastic Stack} :\\
-{\footnotesize\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
-
-Today Elastic Stack contains lots of different parts.
-
-\begin{list2}
-\item Elasticsearch - the core engine
-\item Logstash - a tool for parsing logs and other data.\\
-\url{https://www.elastic.co/logstash}
-\begin{quote}
-"Logstash dynamically ingests, transforms, and ships your data regardless of format or complexity. Derive structure from unstructured data with grok, decipher geo coordinates from IP addresses, anonymize or exclude sensitive fields, and ease overall processing."
-\end{quote}
-\item Kibana - a web application for accessing and working with data in Elasticsearch\\
-\url{https://www.elastic.co/kibana}
-\end{list2}
 
 
 
@@ -744,18 +802,44 @@ Source: {\footnotesize\\
 \emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
 
 
+\slide{VictoriaLogs}
+
+\hlkimage{10cm}{victorialogs-overview.png}
+
+VictoriaLogs is an open source log database from VictoriaMetrics, used as the central store that many systems send their logs into, which enables cross-application searching and correlation.
+
+Picture from https://docs.victoriametrics.com/victorialogs/
+
+
+\slide{VictoriaLogs overview}
+
+\begin{list2}
+\item Single executable, zero configuration, sensible defaults --\\
+  single-node and cluster versions, Apache License 2.0
+\item Ingestion -- accepts logs over many common protocols, e.g.\\
+  JSON lines over HTTP, syslog,\\
+  HTTP API JSON and existing shippers like Vector, Fluent Bit, Filebeat work
+\item LogsQL -- query language with full-text search and analytics, e.g.\\
+  \verb+_time:5m log.level:error+
+\item Web UI built in, plus a Grafana plugin for dashboards
+\item Works with command line tools too -- \verb+curl+, \verb+jq+, \verb+grep+, \verb+sort+
+\end{list2}
+
+Documentation:\\
+{\footnotesize\url{https://docs.victoriametrics.com/victorialogs/}}
+
 
 \slide{Exercise: Communicate with HTTP}
 
-Try this - use netcat/ncat, available in Nmap package from \url{Nmap.org}:
+Try this - use netcat/ncat/nc, Ncat available in Nmap package from \url{Nmap.org}:
 \begin{alltt}
 \small
-$ {\bf netcat www.zencurity.com 80
+$ \textbf{ ncat www.zencurity.com 80
 GET / HTTP/1.0}
 
 HTTP/1.1 200 OK
 Server: nginx
-Date: Sat, 01 Feb 2020 20:30:06 GMT
+Date: Sun, 27 Sep 2026 14:27:50 GMT
 Content-Type: text/html
 Content-Length: 0
 Last-Modified: Thu, 04 Jan 2018 15:03:08 GMT
@@ -763,19 +847,12 @@ Connection: close
 ETag: "5a4e422c-0"
 Referrer-Policy: no-referrer
 Accept-Ranges: bytes
-...
 \end{alltt}
 
 
-\slide{Basic test tools TCP - Telnet and OpenSSL}
+\slide{Basic test tools TCP - OpenSSL}
 
 \begin{list1}
-\item Telnet used for terminal connections over TCP, but is clear-text
-\item Telnet can be used for testing connections to many older protocols which uses text commands
-\begin{list2}
-\item \verb+telnet mail.kramse.dk 25+ create connection to port 25/tcp
-\item \verb+telnet www.kramse.dk 80+ create connection to port 80/tcp
-\end{list2}
 \item Encrypted connections often use TLS and can be tested using OpenSSL command line tool \verb+openssl+
 \begin{list2}
 \item \verb+openssl s_client -host www.kramse.dk -port 443+\\
@@ -790,7 +867,9 @@ create connection to port 993/tcp with TLS
 
 
 \slide{Book: Practical Packet Analysis (PPA)}
-\hlkimage{6cm}{PracticalPacketAnalysis3E_cover.png}
+
+If you need more about protocols -- look at:
+\hlkimage{5cm}{PracticalPacketAnalysis3E_cover.png}
 
 \emph{Practical Packet Analysis,
 Using Wireshark to Solve Real-World Network Problems}
@@ -803,30 +882,167 @@ ISBN-13:
 
 
 
-
-\slide{Git intro}
-
-\begin{quote}
-Git (/ɡɪt/)[7] is a distributed version-control system for tracking changes in source code during software development.[8] It is designed for coordinating work among programmers, but it can be used to track changes in any set of files. Its goals include speed,[9] data integrity,[10] and support for distributed, non-linear workflows.[11]
-\end{quote}
-
-Source: \url{https://en.wikipedia.org/wiki/Git}
-
-\begin{list2}
-\item We will introduce Git and Github - commercial Git hosting company\\
-\url{https://en.wikipedia.org/wiki/Git}
-\item Try creating a Git repository, remember to add a README
-\item Checkout the repository
-\item Edit a file
-\item add and commit it
-\end{list2}
-
-Read the Github Hello World example: \url{https://guides.github.com/activities/hello-world/} 
-
-
 \exercise{ex:postman-api}
 
+\slide{Authentication -- overview}
 
+\begin{list2}
+\item Authentication: who are you? Authorization: what are you allowed to do?
+\item Something you know, something you have, something you are
+\item Common methods on the web:
+  \begin{list2}
+  \item HTTP authentication -- Basic, Digest
+  \item Login forms with session cookies
+  \item Tokens -- API keys, Bearer tokens, JWT
+  \item Federated login -- OAuth 2.0, OpenID Connect, MitID
+  \item Client certificates, multi-factor, passkeys
+  \end{list2}
+\item All of them end up as data in HTTP requests -- which the server must check
+\end{list2}
+
+\slide{HTTP Basic authentication}
+
+\begin{alltt}
+$ curl -v -u user:pass https://example.com/
+> Authorization: Basic dXNlcjpwYXNz
+\end{alltt}
+
+\begin{list2}
+\item RFC 7617 -- server replies \verb+401+ with \verb+WWW-Authenticate: Basic realm="..."+
+\item Credentials are \verb+base64(user:pass)+ -- encoding, not encryption
+\item Sent with every request, browser caches them, no real logout
+\item Only acceptable over TLS
+\item Digest authentication (RFC 7616) -- challenge-response with a nonce,\\
+  avoids sending the password, but rarely used today
+\item Still seen on embedded devices, e.g. cameras, printers, older routers
+\end{list2}
+
+\slide{Login forms and session cookies}
+
+\begin{list2}
+\item Most web applications: HTML form, POST username and password
+\item Server checks credentials, creates a session, returns a cookie:\\
+  \verb+Set-Cookie: session=...; Secure; HttpOnly; SameSite=Lax+
+\item \textbf {The cookie is now the credential -- whoever has it is logged in}
+\item Attacks: session hijacking, session fixation, CSRF, XSS stealing cookies
+\item Session ID must be random, long, changed after login, expired on logout
+\end{list2}
+
+\slide{Storing passwords}
+
+\hlkimage{14cm}{salting.png}
+
+\begin{list2}
+\item Never store passwords in clear text
+\item Plain hashes (MD5, SHA-1, SHA-256) are too fast -- easy to brute force
+\item Use a slow, salted password hash: bcrypt, scrypt, Argon2
+\item Salt prevents precomputed tables and identical hashes for identical passwords
+\item Database leaks happen -- design for it
+\end{list2}
+
+\slide{Tokens}
+
+\begin{list2}
+\item API keys -- static secret in a header, common for machine-to-machine
+\item Bearer tokens, RFC 6750 -- \verb+Authorization: Bearer <token>+\\
+  whoever holds the token can use it
+\item JWT -- signed claims, see earlier slides
+\item OAuth 2.0 and OpenID Connect -- tokens issued by a separate identity provider,\\
+  e.g. MitID through a broker
+\item Tokens leak through logs, URLs, browser storage and source code repositories
+\end{list2}
+
+\slide{Stronger authentication}
+
+\hlkimage{10cm}{yubikey-2018.png}
+\begin{list2}
+\item Multi-factor authentication -- one-time codes, app approval, hardware keys
+\item Passkeys, FIDO2/WebAuthn -- public key cryptography, resistant to phishing
+\item MitID -- app or code display as second factor
+\item Client certificates (mutual TLS) -- the client proves identity during the TLS handshake,\\
+  e.g. OCES certificates for eIndkomst web services
+\end{list2}
+
+\slide{Common authentication and authorization failures}
+
+\begin{list2}
+\item OWASP Top 10: Identification and Authentication Failures, Broken Access Control
+\item Default, weak or reused passwords, no rate limiting -- credential stuffing
+\item User enumeration through different error messages
+\item Weak password reset -- guessable security questions, tokens that do not expire
+\item Broken session handling -- predictable IDs, no expiry
+\item JWT mistakes -- accepting \verb+alg: none+, not verifying the signature,\\
+  weak HMAC secrets, no check of \verb+exp+ and \verb+aud+
+\item IDOR, Insecure Direct Object Reference -- \verb+/api/basket/5+ works,\\
+  so try \verb+/api/basket/6+ -- logged in, but not checked if it is yours
+\item And: the login check itself can be vulnerable
+\end{list2}
+
+\slide{Authentication methods -- comparison}
+
+{\small
+\begin{tabular}{p{4cm}p{5cm}p{4.2cm}p{7.2cm}}
+\textbf{Method} & \textbf{What is sent} & \textbf{Typical use} & \textbf{Main weaknesses}\\\hline
+HTTP Basic & base64(user:pass) every request & Embedded devices, simple APIs & Password in every request, needs TLS, no logout\\
+HTTP Digest & Hash response to nonce & Embedded devices, IP cameras & Old hash algorithms, rarely supported well\\
+Form + session cookie & Password once, then cookie & Most web applications & Session hijacking, fixation, CSRF\\
+API key & Static secret in header & Machine-to-machine & Long-lived, leaks into code and logs\\
+Bearer token / JWT & Signed token in header & APIs, single page apps & Theft = access, validation mistakes\\
+OAuth 2.0 / OIDC & Redirects, then tokens & Federated login, MitID & Complex, redirect and state handling\\
+Client certificate & Certificate in TLS handshake & B2B, eIndkomst & Certificate management, revocation\\
+Passkeys / MFA & Signature or one-time code & Added on top of login & Account recovery becomes the weak point\\
+\end{tabular}
+}
+
+\slide{Recommendation for a modern web application}
+
+\begin{list2}
+\item Do not build it yourself -- use the framework's authentication\\
+  or an established identity provider with OpenID Connect
+\item Browser sessions: server-side session, cookie with \verb+Secure+, \verb+HttpOnly+, \verb+SameSite+
+\item Passwords: Argon2id or bcrypt, rate limiting, check against known breached passwords
+\item Offer MFA, consider passkeys (WebAuthn)
+\item APIs: short-lived tokens, validate signature, \verb+iss+, \verb+aud+, \verb+exp+
+\item Check authorization on every request -- avoid IDOR
+\item Parameterized queries everywhere -- including the login
+\item References: OWASP Authentication Cheat Sheet, Session Management Cheat Sheet, ASVS\\
+  \link{https://cheatsheetseries.owasp.org/}
+\end{list2}
+
+
+\slide{The login form is also often code}
+
+\begin{list2}
+\item Behind the form, something like:
+\end{list2}
+
+\begin{alltt}\footnotesize
+SELECT * FROM Users
+ WHERE email = '\emph{input from user}'
+   AND password = '\emph{hash of password}'
+\end{alltt}
+
+\begin{list2}
+\item If the input is inserted directly into the SQL string ...
+\item ... the user controls part of the query
+\item What happens if the email contains a \verb+'+ character?
+\end{list2}
+
+\slide{Exercise: SQL injection in OWASP Juice Shop}
+
+\begin{list2}
+\item Juice Shop login is vulnerable to SQL injection
+\item Try the challenges: log in as the administrator without knowing the password,\\
+  then log in as other users
+\item Use your browser, then Burp to see the actual requests
+\item Think about: how should the query have been written?\\
+  (parameterized queries / prepared statements)
+\end{list2}
+
+
+
+
+\exercise{ex:juice-shop-login}
 
 
 

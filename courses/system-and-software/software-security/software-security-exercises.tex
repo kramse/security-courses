@@ -1508,7 +1508,7 @@ Suggested list of starting vulns:
  {\bf Hints:}\\
  The complete guide \emph{Pwning OWASP Juice Shop}
 written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
-\url{https://bkimminich.gitbooks.io/pwning-owasp-juice-shop/content/}
+\url{https://pwning.owasp-juice.shop/companion-guide/latest/}
 
  {\bf Solution:}\\
  You decide for how long you want to play with JuiceShop.
@@ -1569,7 +1569,7 @@ In the JuiceShop we can access using URLs like this on the About Us page:\\
 Consider if the URL would match on .md and we were able to send a large filename ending in \verb+loongfilename.md+, but when truncated cut of exactly the \verb+.md+ part so we referenced another file.
 
 
-\end{document}
+
 
 \chapter{\faInfoCircle\ Postman API Client 20 min}
 \label{ex:postman-api}
@@ -1590,14 +1590,25 @@ Download the app from
 Available for Windows, Mac and Linux.
 
 {\bf Hints:}\\
-Download the Linux 64-bit version on your Debian.
+Download the Linux version from \link{https://www.postman.com/downloads/}\\
+or directly from the command line.
 
 Unpack using something like:
 \begin{alltt}
-cd ~;mkdir bin;cd bin
-tar zxvf ~/Downloads/Postman-linux*
+cd ~;mkdir -p bin;cd bin
+wget https://dl.pstmn.io/download/latest/linux64 -O postman.tar.gz
+tar zxvf postman.tar.gz
 cd Postman;./Postman
 \end{alltt}
+
+Alternative, using Snap (included on Ubuntu, Debian needs \verb+apt install snapd+):
+\begin{alltt}
+sudo snap install postman
+postman
+\end{alltt}
+
+Do not run Postman as root. A free account is optional,\\
+you can continue without one for basic features.
 
 You can run the application without signing in anywhere.
 
@@ -1614,6 +1625,62 @@ Multiple applications and plugins can perform similar functions. This is a stand
 Tools like Elasticsearch has plugins allowing decoupling of the API and plugins. Example: \link{https://www.elastic.co/what-is/elasticsearch-monitoring} and \link{https://www.elastic.co/what-is/open-x-pack}
 
 
+\chapter{\faExclamationTriangle\ JuiceShop Login 15 min}
+\label{ex:juice-shop-login}
+
+\begin{minted}[fontsize=\footnotesize]{sql}
+models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
+{ model: models.User, plain: true })
+\end{minted}
+
+{\bf Objective:}\\
+Try to find the JuiceShop login box implementation, we know it is vulnerable to SQL injection.
+
+
+{\bf Purpose:}\\
+Seeing bad code is a design pattern -- anti-pattern.
+
+
+{\bf Suggested method:}\\
+Find the source code, look for the database lookups.
+
+
+{\bf Hints:}\\
+The JuiceShop software is open source, and available at github:\\
+\link{https://codeberg.org/juice-shop/juice-shop}
+
+Git clone and searching locally might give the best results.
+
+In this case we can search for \verb+SELECT * FROM+, using a simple tool like grep:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:juice-shop$ grep -ril SELECT | egrep -v "test|frontend|static"
+...
+REFERENCES.md
+routes/vulnCodeFixes.ts
+routes/search.ts
+routes/login.ts // oohhhh looks interesting
+routes/countryMapping.ts
+routes/vulnCodeSnippet.ts
+config/oss.yml
+config/mozilla.yml
+config/default.yml
+README.md
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have found examples of the database lookups, you are done. See also discussion below though.
+
+
+{\bf Discussion:}\\
+Think about how this could be changed. How much would it require to change this into prepared statements.
+Also having good source code tools help a lot! Finding problems, getting an overview of code etc.
+
+
+
+\end{document}
 
 \chapter{\faInfoCircle\ Use Ansible to install Elastic Stack}
 \label{ex:basicansible}
@@ -2076,59 +2143,6 @@ Example links:
 \link{https://thechief.io/c/hebaeid/how-to-start-left-with-security-using-git-pre-commit-hooks}
 \end{list2}
 
-
-\chapter{\faExclamationTriangle\ JuiceShop Login 15 min}
-\label{ex:juice-shop-login}
-
-\begin{minted}[fontsize=\footnotesize]{sql}
-models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}'
-AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
-{ model: models.User, plain: true })
-\end{minted}
-
-{\bf Objective:}\\
-Try to find the JuiceShop login box implementation, we know it is vulnerable to SQL injection.
-
-
-{\bf Purpose:}\\
-Seeing bad code is a design pattern -- anti-pattern.
-
-
-{\bf Suggested method:}\\
-Find the source code, look for the database lookups.
-
-
-{\bf Hints:}\\
-The JuiceShop software is open source, and available at github:\\
-\link{https://codeberg.org/juice-shop/juice-shop}
-
-Git clone and searching locally might give the best results.
-
-In this case we can search for \verb+SELECT * FROM+, using a simple tool like grep:
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-user@Projects:juice-shop$ grep -ril SELECT | egrep -v "test|frontend|static"
-...
-REFERENCES.md
-routes/vulnCodeFixes.ts
-routes/search.ts
-routes/login.ts // oohhhh looks interesting
-routes/countryMapping.ts
-routes/vulnCodeSnippet.ts
-config/oss.yml
-config/mozilla.yml
-config/default.yml
-README.md
-\end{minted}
-
-
-{\bf Solution:}\\
-When you have found examples of the database lookups, you are done. See also discussion below though.
-
-
-{\bf Discussion:}\\
-Think about how this could be changed. How much would it require to change this into prepared statements.
-Also having good source code tools help a lot! Finding problems, getting an overview of code etc.
 
 
 \chapter{\faInfoCircle\ Use a XML library in Python up to 45min}

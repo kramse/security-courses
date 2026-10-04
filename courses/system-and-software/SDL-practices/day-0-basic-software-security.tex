@@ -1043,26 +1043,17 @@ How serious would the vulnerability have been without root privileges?
 
 \slide{Session 3: Code auditing, analysis and security testing}
 \begin{list2}
-\item Code-Auditing Strategies: static analysis and dynamic analysis
 \item Security Testing Versus Traditional Software Testing
+\item Code-Auditing Strategies: static analysis and dynamic analysis
 \vskip 1em
-\item Exercise: clone OWASP Juice Shop and find the SQL injection\\
-using grep or project search in your editor\\
-\link{https://github.com/juice-shop/juice-shop}
-% TODO: \exercise{} reference to existing exercise
+\item Exercise: clone OWASP Juice Shop and find the SQL injection
+using grep or project search in your editor
 \end{list2}
 
 
 
 \slide{Hacker tools}
 
-\begin{list1}
-\item \emph{Improving the Security of Your Site by Breaking Into it}\\ by
-Dan Farmer and Wietse Venema in 1993
-\item Later in 1995 release the software SATAN\\
-\emph{Security Administrator Tool for Analyzing Networks}
-\item Caused some commotion, panic and discussions, every script kiddie can hack, the internet will melt down!
-\vskip 5mm
 \begin{quote}
 We realize that SATAN is a two-edged sword -- like
 many tools, it can be used for good and for evil
@@ -1070,24 +1061,29 @@ purposes. We also realize that intruders (including
 wannabees) have much more capable (read intrusive)
 tools than offered with SATAN.
 \end{quote}
-\end{list1}
-
-\vskip 1cmlabel
 Source:
 \link{http://www.fish2.com/security/admin-guide-to-cracking.html}
 
 
+\begin{list2}
+\item \emph{Improving the Security of Your Site by Breaking Into it}\\ by
+Dan Farmer and Wietse Venema in 1993
+\item Later in 1995 release the software SATAN\\
+\emph{Security Administrator Tool for Analyzing Networks}
+\item Caused some commotion, panic and discussions, every script kiddie can hack, the internet will melt down!
+\end{list2}
+
+
 \slide{Use hacker tools!}
 
+\hlkimage{10cm}{server-client.pdf}
+
 \begin{list1}
-\item Port scan can reveal holes in your defense
+\item Port scans can reveal holes in your defenses
 \item Web testing tools can crawl through your site and find problems
-\item Pentesting is a verification and proactively finding problems
-\item Its not a silverbullet and mostly find known problems in existing systems
-\item Combined with honeypots they may allow better security
+\item Penetration testing verifies your security and finds problems proactively
+\item It is not a silver bullet, and mostly finds known problems in existing systems
 \end{list1}
-
-
 
 
 \slide{Testing - more work now, less work in the long run}
@@ -1127,23 +1123,87 @@ public class TestAdder {
 
 \centerline{Use tools for analysing code and applications}
 
-\slide{Typer af analyse}
+\slide{Hard to do -- manual analysis}
 
 \begin{list1}
-\item  {\Large statisk analyse}\\
-finder fejl uden at køre programmet\\
-typisk findes konstruktioner som indeholder fejl, brug af forkerte funktioner m.v.
-\item {\Large dynamisk analyse}\\
-findes ved at køre programmet, typisk i et specielt miljø
+\item Why not just program securely?
+\item There are many resources available:
+\item Websites: \emph{Secure Programming for Linux and Unix HOWTO}\\
+\link{https://dwheeler.com/secure-programs/}
+\item Books: \emph{24 Deadly Sins of Software Security: Programming Flaws and How to Fix Them}\\
+Michael Howard, David LeBlanc, John Viega + their other books
 \end{list1}
 
-\slide{Statiske analyseværktøjer}
+\vskip 2cm
+\centerline{\Large It is too hard, too expensive, takes too long!?}
+
+\slide{Why can't we just read the code?}
+
+\begin{list2}
+\item Code bases are large -- and most of the code is not yours: frameworks, libraries, dependencies
+\item Code changes every day -- a review is outdated with the next commit
+\item Humans get tired and miss patterns, tools do not
+\item Vulnerabilities often hide in the interaction between components, not in a single line
+\vskip 1em
+\item Manual review is still valuable -- tools find the known patterns,\\
+humans find the logic and design errors
+\end{list2}
+
+
+\slide{Types of analysis}
+
 \begin{list1}
-\item Flawfinder \link{http://www.dwheeler.com/flawfinder/}
-\item RATS Rough Auditing Tool for Security, C, C++, Perl, PHP and Python
-\item PMD static ruleset based Java
-\item {\small \link{http://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis}}
+\item {\Large static analysis}\\
+finds errors without running the program\\
+typically finds constructs containing errors, use of wrong functions etc.\\
+also called SAST -- Static Application Security Testing
+\item {\Large dynamic analysis}\\
+finds errors by running the program, typically in a special environment\\
+includes unit testing, debugging and code coverage -- in security also fuzzing\\
+also called DAST -- Dynamic Application Security Testing
 \end{list1}
+
+\slide{Static analysis tools -- SAST}
+\begin{list2}
+\item Semgrep, many languages, rule based \link{https://semgrep.dev}
+\item Bandit, Python security issues \link{https://github.com/PyCQA/bandit}
+\item Ruff, Python linter including Bandit rules \link{https://docs.astral.sh/ruff/}
+\item Flawfinder, C and C++ \link{https://dwheeler.com/flawfinder/}
+\item PMD, Java and other languages \link{https://pmd.github.io}
+\end{list2}
+
+Many more exist \link{https://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis}
+
+
+\slide{Dynamic analysis for developers -- run it in a harness}
+\begin{list2}
+\item Sanitizers in GCC and Clang: AddressSanitizer, UndefinedBehaviorSanitizer\\
+compile with \verb+-fsanitize=address,undefined+ -- the program aborts on memory errors\\
+{\footnotesize\link{https://github.com/google/sanitizers}}
+\item Valgrind, memory errors and leaks at runtime, no recompile needed\\
+{\footnotesize\link{https://valgrind.org}}
+\item AFL++ and libFuzzer, coverage-guided fuzzing -- feed random input, look for crashes\\
+{\footnotesize\link{https://aflplus.plus}} {\footnotesize\link{https://llvm.org/docs/LibFuzzer.html}}
+\item Atheris, coverage-guided fuzzing for Python\\
+{\footnotesize\link{https://github.com/google/atheris}}
+\item Hypothesis, property-based testing for Python -- generates test input for your unit tests\\
+{\footnotesize\link{https://hypothesis.works}}
+\item OSS-Fuzz, continuous fuzzing of open source projects\\
+{\footnotesize\link{https://google.github.io/oss-fuzz/}}
+\hfill Sorry, I DO NOT use these regularly, some I haven't tried myself!
+\end{list2}
+
+
+\slide{Dynamic analysis tools -- DAST, testing the running application}
+
+\hlkimage{18cm}{burp-default-proxy-intercept.png}
+
+
+\begin{list2}
+\item Burp, web application scanner and proxy \link{https://portswigger.net/burp}
+\item Nikto, web server scanner \link{https://github.com/sullo/nikto}
+\item sqlmap, SQL injection testing \link{https://sqlmap.org}
+\end{list2}
 
 \slide{A Fool with a Tool is still a Fool}
 
@@ -1158,171 +1218,90 @@ Fixing problems?\\
    char tmp[256]; /* Flawfinder: ignore */
    strcpy(tmp, pScreenSize); /* Flawfinder: ignore */
 \end{minted}
-Eksempel fra \link{http://www.dwheeler.com/flawfinder/}
+Example from \link{https://dwheeler.com/flawfinder/}
+
+\slide{Fixing the warning -- Debian OpenSSL 2006--2008}
+
+\begin{list2}
+\item 2006: a Debian developer removes code from OpenSSL\\
+to silence Valgrind warnings about use of uninitialized memory
+\item The removed code fed entropy into the random number generator
+\item Result: the only randomness left was the process ID\\
+-- at most 32,768 different keys per key type and size
+\item May 2008: discovered by Luciano Bello, CVE-2008-0166, DSA-1571-1
+\item Affected SSH keys, OpenVPN keys, DNSSEC keys, X.509 certificates, TLS session keys
+\item Worldwide regeneration of keys -- and weak keys were still found in use years later
+\vskip 1em
+\item The tool was right to warn -- the fix was wrong
+\end{list2}
+More at: {\footnotesize
+\link{https://en.wikipedia.org/wiki/Random_number_generator_attack\#Debian_OpenSSL}}
 
 
-\slide{Pseudo Random Number Generator}
 
-\hlkimage{21cm}{debian-prng.png}
-
-{\small\link{https://en.wikipedia.org/wiki/Random_number_generator_attack\#Debian_OpenSSL}}
-
-\vskip 1cm
 \centerline{The random number generator is VITAL for crypto security}
 
 
+\slide{Exim RCE CVE-2019-10149 June}
 
-
-\slide{Hard to do -  manual analysis}
-
-\begin{list1}
-\item Hvorfor ikke bare programmere sikkert?
-\item Der er mange ressourcer tilgængelige:
-\item Websites: \emph{Secure Programming for Linux and Unix HOWTO }\\
-\link{http://www.dwheeler.com/secure-programs/}
-\item Bøger: \emph{24 Deadly Sins of Software Security: Programming Flaws and How to Fix Them }
-Michael Howard, David LeBlanc, John Viega + deres andre bøger
-
-\end{list1}
-
-\vskip 2cm
-\centerline{\Large Det er for svært, dyrt, tager for lang tid!?}
-
-
-\slide{Dynamic analysis}
-
-%http://www.onjava.com/pub/a/onjava/2003/02/12/static_analysis.html
-
-\begin{list1}
-\item compile time vs. at run time nogle fejl kan ikke findes på compile-time
-\item Er du doven så oversæt og kør programmet på OpenBSD ;-)
-\end{list1}
-
-
-\slide{Break it}
-
-
-\hlkimage{12cm}{300px-Fozziecurtain.JPG}
-
-\centerline{Use fuzzers, hackertools, improve security by breaking it}
-
-
-\slide{Simple fuzzer}
-
-\begin{alltt}
-$ for i in 10 20 30 40 50
->> do
->> ./demo `perl -e "print 'A'x$i"`
->> done
-AAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-Memory fault
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-Memory fault
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-Memory fault
-\end{alltt}
-
-\centerline{Memory fault/segmentation fault - juicy!}
-
-
-
-\slide{Enhance and secure runtime environment}
-
-%\hlkimage{10cm}{Bartizan.png}
-\hlkimage{15cm}{medieval-clipart-5}
-%\centerline{Picture from: http://karenswhimsy.com/public-domain-images}
-
-\centerline{Sidste chance er på afviklingstidspunktet}
-
-
-
-\slide{Chroot, Jails and }
-
-\begin{list1}
-\item Der findes mange typer \emph{jails} på Unix
-\item Ideer fra Unix chroot som ikke er en egentlig sikkerhedsfeature
-\begin{list2}
-\item Unix chroot - bruges stadig, ofte i daemoner som OpenSSH
-\item FreeBSD Jails
-\item SELinux
-\item Solaris Containers og Zones - \emph{jails på steroider}
-\item VMware virtuelle maskiner, er det et jail?
-\end{list2}
-\item Hertil kommer et antal andre måder at adskille processer - sandkasser
-\item Husk også de simple, database som \verb+_postgresql+, Tomcat som \verb+tomcat+, Postfix postsystem som \verb+_postfix+, SSHD som \verb+sshd+ osv. - simple brugere, få rettigheder
-\end{list1}
-
-\slide{JVM security policies}
-
-\begin{minted}[fontsize=\small]{java}
-// ========== WEB APPLICATION PERMISSIONS =====================================
-// These permissions are granted by default to all web applications
-// In addition, a web application will be given a read FilePermission
-// and JndiPermission for all files and directories in its document root.
-grant {
-    // Required for JNDI lookup of named JDBC DataSource's and
-    // javamail named MimePart DataSource used to send mail
-    permission java.util.PropertyPermission "java.home", "read";
-    permission java.util.PropertyPermission "java.naming.*", "read";
-    permission java.util.PropertyPermission "javax.sql.*", "read";
+\begin{quote}
+  VULNERABILITY PATCHED... BY ACCIDENT
 ...
-};
-// The permission granted to your JDBC driver
-// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
-//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
-// \};
+
+This was only recently discovered by the Qualys team while auditing older Exim versions. Now, Qualys researchers are warning Exim users to update to the 4.92 v
+ersion to avoid having their servers taken over by attackers. Per the same June 2019 report on email server market share, only 4.34\% of all Exim servers run t
+he latest 4.92 release.
+
+In an email to Linux distro maintainers, Qualys said the vulnerability is "trivially exploitable" and expects attackers to come up with exploit code in the com
+ing days.
+
+This Exim flaw is currently tracked under the CVE-2019-10149 identifier, but Qualys refers to it under the name of \textbf{"Return of the WIZard"} because the
+\textbf{vulnerability resembles the ancient WIZ and DEBUG vulnerabilities that impacted the Sendmail email server back in the 90s.}
+\end{quote}
+
+{\footnotesize\url{https://www.zdnet.com/article/new-rce-vulnerability-impacts-nearly-half-of-the-internets-email-servers/}}
+
+See also detailed information from the finders:\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\slide{Exim RCE CVE-2019-15846 September}
+
+\begin{quote}
+The Exim mail transfer agent (MTA) software is impacted by a critical severity vulnerability present in versions 4.80 up to and including 4.92.1.
+
+The bug allows local or unauthenticated remote attackers to execute programs with root privileges on servers that accept TLS connections.
+
+The flaw tracked as CVE-2019-15846 — initially reported by 'Zerons' on July 21 and analyzed by Qualys' research team — is \textbf{"exploitable by sending an SNI ending in a backslash-null sequence during the initial TLS handshake"} which leads to \textbf{RCE with root privileges on the mail server.}
+\end{quote}
+
+\url{https://www.bleepingcomputer.com/news/security/critical-exim-tls-flaw-lets-attackers-remotely-execute-commands-as-root/}
+
+
+
+
+
+\slide{Exercise: find the SQL injection in OWASP Juice Shop}
+
+The Juice Shop login is vulnerable to SQL injection -- find the code!
+
+\begin{minted}[fontsize=\footnotesize]{sql}
+models.sequelize.query(SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL,
+{ model: models.User, plain: true })
 \end{minted}
 
-\begin{list1}
-\item Eksempel fra \verb+apache-tomcat-6.0.18/conf/catalina.policy+
-\end{list1}
 
+\begin{list2}
+\item Clone the source code and search for the database lookups
+\item Use a simple tool: grep, or project search in your editor
+\item Tip: search for \verb+SELECT * FROM+ and filter out tests and frontend
+\end{list2}
 
-\slide{Apple sandbox named generic rules}
-
-\begin{minted}[fontsize=\small]{lisp}
-;; named - sandbox profile
-;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
-;;
-;; WARNING: The sandbox rules in this file currently constitute
-;; Apple System Private Interface and are subject to change at any time and
-;; without notice. The contents of this file are also auto-generated and not
-;; user editable; it may be overwritten at any time.
-;;
-(version 1)
-(debug deny)
-
-(import "bsd.sb")
-
-(deny default)
-(allow process*)
-(deny signal)
-(allow sysctl-read)
-(allow network*)
+\begin{minted}[fontsize=\footnotesize]{shell}
+git clone https://github.com/juice-shop/juice-shop.git
+cd juice-shop;grep -ril SELECT | egrep -v "test|frontend|static"
 \end{minted}
 
-
-\slide{Apple sandbox named specific rules }
-
-\begin{minted}[fontsize=\small]{lisp}
-;; Allow named-specific files
-(allow file-write* file-read-data file-read-metadata
-  (regex "^(/private)?/var/run/named\\pid$"
-         "^/Library/Logs/named\\.log$"))
-
-(allow file-read-data file-read-metadata
-  (regex "^(/private)?/etc/rndc\\.key$"
-         "^(/private)?/etc/resolv\\.conf$"
-         "^(/private)?/etc/named\\.conf$"
-         "^(/private)?/var/named/"))
-\end{minted}
-
-\begin{list1}
-\item Eksempel fra \verb+/usr/share/sandbox+ på Mac OS X
-\end{list1}
-
+Discussion: how much would it take to change this into prepared statements?
 
 
 \breakdance
@@ -1353,6 +1332,118 @@ Discuss: which tools does your team run today -- locally, in hooks or in CI?
 \hlkimage{10cm}{38-line-drawing-of-a-pare-fruit.png}
 
 \centerline{Higher quality software is often more secure}
+
+\slide{Hello World}
+
+
+\begin{quote}
+While small test programs have existed since the development of programmable computers, the tradition of using the phrase "Hello, World!" as a test message was influenced by an example program in the seminal 1978 book The C Programming Language.[3] The example program in that book prints "hello, world", and was inherited from a 1974 Bell Laboratories internal memorandum by Brian Kernighan, Programming in C: A Tutorial:[4]
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+main( ) {
+        printf("hello, world\n");
+}
+\end{minted}
+
+\begin{list2}
+\item Very compact, easily readable - more than assembler anyway!
+\end{list2}
+
+Code and quote from
+\url{https://en.wikipedia.org/wiki/%22Hello,_World!%22_program}
+
+\slide{Hello World}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+       (void) argc;
+       (void) argv;
+
+       printf("Hello world!\n");
+
+       return EXIT_SUCCESS;
+}
+\end{minted}
+
+\begin{list2}
+\item Dont forget to define function return value, your variables and arguments to the program and functions
+\item Dont forget to return something useful
+\item Whats an int anyway? integers
+\end{list2}
+
+Source: a better hello world from \url{https://da.wikipedia.org/wiki/Hello_world-program#C}
+
+\slide{Data types}
+
+\begin{list2}
+\item Character types char, signed char, unsigned char
+\item Integer types, short int, int, long int, long long int - plus unsigned
+\item Floating types float, double, long double
+\item Bit fields a specific number of bits in an object
+\item Signed and unsigned!
+\item Byte order, little or big endian - named from 1726 novel Gulliver's Travels by Jonathan Swift
+\item Big endian also called network order, as used in TCP/IP suite
+\item Lots more types we wont discuss in all details
+\end{list2}
+
+Data types have a \emph{range of values}
+
+See more specific at \url{https://en.wikipedia.org/wiki/C_data_types}\\
+also interesting is the float format\\ \url{https://en.wikipedia.org/wiki/Single-precision_floating-point_format}
+
+\slide{Example integer overflow}
+
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+We wont do the match in binary!
+
+
+
+\slide{Overiding types, type conversion}
+
+\begin{alltt}
+Unsigned 00000001 is the same as 0000000000000001
+\end{alltt}
+
+\begin{list2}
+\item Value-preserving - there is space in the new type to store all values
+\item Value-changing - new type cannot represent the same values, damn!
+\item To a wider type, we can \emph{sign extend} for signed types and \emph{zero extend} for unsigned types
+\item To a more narrow, need to truncate - bye bye bits, loose precision!
+\item Again, we wont repeat all the bit values and arithmetics, and how C extends the values
+\item Casting can be used to specify the explicit type conversion\\ \verb+(unsigned char) bob+ - treat variable bob as an unsigned char type
+\end{list2}
+
+Audit tip: The compiler can optimize out certain conversions! This can affect both cryptographic processes and other things! Beware
+
+
+
+
+\slide{Type Conversion Vulnerabilities}
+
+\inputminted{c}{programs/conversion1.c}
+
+\begin{list2}
+\item Signed/unsigned conversions
+\item If you pass signed int to this, a conversion might result in a large value insted
+\item This large value will most likely result in overflow
+\item Most libc routines that take a size have \verb+size_t+ which is unsigned!
+\item Signed negative values become very large unsigned
+\end{list2}
+
+
+
 
 \slide{Coding standards - style}
 
@@ -1447,6 +1538,32 @@ int main(int argc, char **argv)
 
 
 
+\slide{Suricata VXLAN decode - defensive checks}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+int DecodeVXLAN(ThreadVars *tv, DecodeThreadVars *dtv, Packet *p,
+        const uint8_t *pkt, uint32_t len, PacketQueue *pq)
+{
+    if (unlikely(!g_vxlan_enabled))
+        return TM_ECODE_FAILED;
+    if (len < (sizeof(VXLANHeader) + sizeof(EthernetHdr)))
+        return TM_ECODE_FAILED;
+    const VXLANHeader *vxlanh = (const VXLANHeader *)pkt;
+    if ((vxlanh->flags[0] & 0x08) == 0 || vxlanh->res != 0) {
+        return TM_ECODE_FAILED;
+    }
+#if DEBUG
+    uint32_t vni = (vxlanh->vni[0] << 16) + (vxlanh->vni[1] << 8) + (vxlanh->vni[2]);
+    SCLogDebug("VXLAN vni %u", vni);
+#endif
+    StatsIncr(tv, dtv->counter_vxlan);
+\end{minted}
+
+Source: excerpt from \url{https://github.com/OISF/suricata/blob/master/src/decode-vxlan.c}\\
+Dont read past end of buffer!
+
+
+
 \slide{Version control sample hooks scripts}
 
 \begin{list1}
@@ -1499,12 +1616,246 @@ of PO files committed to the repository are encoded in UTF-8.
 
 {\small \link{http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/verify-po.py}}
 
-\slide{Design for security - more work}
 
-\hlkimage{14cm}{johnny_automatic_blueprints.png}
-\centerline{Security is cheapest and most effective when done during design phase.}
+\slide{Break it}
 
 
+\hlkimage{12cm}{300px-Fozziecurtain.JPG}
+
+\centerline{Use fuzzers, hackertools, improve security by breaking it}
+
+
+\slide{Simple fuzzer}
+
+\begin{alltt}
+$ for i in 10 20 30 40 50
+>> do
+>> ./demo `perl -e "print 'A'x$i"`
+>> done
+AAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory fault
+\end{alltt}
+
+\centerline{Memory fault/segmentation fault - juicy!}
+
+
+
+\slide{Enhance and secure runtime environment}
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{15cm}{medieval-clipart-5}
+%\centerline{Picture from: http://karenswhimsy.com/public-domain-images}
+
+\centerline{Last chance when executing code! Crash is better than running malicious code!}
+
+\slide{Isolation: chroot, jails, containers and sandboxes}
+
+\begin{list1}
+\item Many ways to isolate processes -- all build on least privilege
+\begin{list2}
+\item Unix chroot -- changes the root directory, \emph{not} a security boundary, still used inside daemons like OpenSSH
+\item FreeBSD Jails, OpenBSD \verb+pledge(2)+ and \verb+unveil(2)+ -- the program restricts itself
+\item Linux capabilities -- split root into small privileges, e.g.\ \verb+CAP_NET_BIND_SERVICE+
+\item Linux namespaces and cgroups -- the building blocks of containers: Docker, Podman, containerd
+\item seccomp -- filter which system calls a process may use
+\item Mandatory access control: SELinux, AppArmor, Landlock
+\item Stronger isolation: gVisor, Kata Containers, Firecracker microVMs -- and full virtual machines
+\end{list2}
+\item Containers share the host kernel -- unlike virtual machines, a kernel bug can break the isolation
+\end{list1}
+
+
+\slide{JVM security policies}
+
+\begin{minted}[fontsize=\small]{java}
+// ========== WEB APPLICATION PERMISSIONS =====================================
+// These permissions are granted by default to all web applications
+// In addition, a web application will be given a read FilePermission
+// and JndiPermission for all files and directories in its document root.
+grant {
+    // Required for JNDI lookup of named JDBC DataSource's and
+    // javamail named MimePart DataSource used to send mail
+    permission java.util.PropertyPermission "java.home", "read";
+    permission java.util.PropertyPermission "java.naming.*", "read";
+    permission java.util.PropertyPermission "javax.sql.*", "read";
+...
+};
+// The permission granted to your JDBC driver
+// grant codeBase "jar:file:${catalina.home}/webapps/examples/WEB-INF/lib/driver.jar!/-" \{
+//      permission java.net.SocketPermission "dbhost.mycompany.com:5432", "connect";
+// \};
+\end{minted}
+
+\begin{list1}
+\item Example from \verb+apache-tomcat-6.0.18/conf/catalina.policy+
+\end{list1}
+
+
+\slide{Apple sandbox named generic rules}
+
+\begin{minted}[fontsize=\small]{lisp}
+;; named - sandbox profile
+;; Copyright (c) 2006-2007 Apple Inc.  All Rights reserved.
+;;
+;; WARNING: The sandbox rules in this file currently constitute
+;; Apple System Private Interface and are subject to change at any time and
+;; without notice. The contents of this file are also auto-generated and not
+;; user editable; it may be overwritten at any time.
+;;
+(version 1)
+(debug deny)
+
+(import "bsd.sb")
+
+(deny default)
+(allow process*)
+(deny signal)
+(allow sysctl-read)
+(allow network*)
+\end{minted}
+
+
+\slide{Apple sandbox named specific rules }
+
+\begin{minted}[fontsize=\small]{lisp}
+;; Allow named-specific files
+(allow file-write* file-read-data file-read-metadata
+  (regex "^(/private)?/var/run/named\\pid$"
+         "^/Library/Logs/named\\.log$"))
+
+(allow file-read-data file-read-metadata
+  (regex "^(/private)?/etc/rndc\\.key$"
+         "^(/private)?/etc/resolv\\.conf$"
+         "^(/private)?/etc/named\\.conf$"
+         "^(/private)?/var/named/"))
+\end{minted}
+
+\begin{list1}
+\item Example from \verb+/usr/share/sandbox+ on Mac OS X, old version
+\end{list1}
+
+
+
+\slide{Isolation in practice -- Kubernetes}
+
+\begin{list1}
+\item Kubernetes Pod Security Standards, profile \emph{restricted} -- do not run containers as root
+\end{list1}
+
+\begin{minted}[fontsize=\footnotesize]{yaml}
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: juice-shop
+    image: bkimminich/juice-shop
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+\end{minted}
+
+Source: Kubernetes, Pod Security Standards
+{\footnotesize\link{https://kubernetes.io/docs/concepts/security/pod-security-standards/}}
+
+{\footnotesize Enforce it for a whole namespace:\verb+kubectl label ns juice-shop pod-security.kubernetes.io/enforce=restricted+}
+
+
+\slide{Systemd service hardening}
+
+\begin{list1}
+\item Named user, few rights -- PostgreSQL on Debian runs as \verb+postgres+
+\item Add hardening without changing the package -- \verb+systemctl edit postgresql@17-main+
+\end{list1}
+
+\begin{minted}[fontsize=\footnotesize]{ini}
+[Service]
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/postgresql /var/run/postgresql /var/log/postgresql
+CapabilityBoundingSet=
+\end{minted}
+
+\begin{list1}
+\item Check the result with \verb+systemd-analyze security postgresql@17-main+
+\item Same idea for Postfix as \verb+postfix+, SSHD privilege separation as \verb+sshd+
+\end{list1}
+
+
+
+\slide{Container and isolation vulnerabilities -- a timeline}
+
+... but no software is perfect
+
+\begin{list2}
+\item 2016: Dirty COW, CVE-2016-5195 -- Linux kernel, write to read-only memory
+\item 2019: runc, CVE-2019-5736 -- overwrite the host runc binary from inside a container
+\item 2022: Dirty Pipe, CVE-2022-0847 -- Linux kernel, overwrite read-only files
+\item 2024: Leaky Vessels, CVE-2024-21626 -- runc, leaked file descriptor gives access to host filesystem
+\item 2025: runc, CVE-2025-31133, CVE-2025-52565, CVE-2025-52881 -- container escape via mount races
+\vskip 1em
+\item Kernel and container runtime bugs break the isolation -- every few years, again and again
+\item Containers share the host kernel -- patch the host, not just the images
+\end{list2}
+
+\slide{runc November 2025 -- patch and least privilege}
+
+\begin{list1}
+\item Three container escape vulnerabilities in runc, disclosed November 2025
+\begin{list2}
+\item runc is the runtime under Docker, containerd, CRI-O and Kubernetes
+\item A malicious or compromised container image can write to host \verb+/proc+ and escape
+\item CVE-2025-52881 is an incomplete fix for CVE-2019-16884 -- old bugs come back
+\end{list2}
+\item Mitigations:
+\begin{list2}
+\item Update runc -- fixed in 1.2.8, 1.3.3 and 1.4.0-rc.3
+\item Do not run containers as root, enable no new privileges
+\item Use user namespaces, so host root is not mapped into the container
+\item Avoid untrusted container images
+\end{list2}
+\end{list1}
+
+{\footnotesize\link{https://sysdig.com/blog/runc-container-escape-vulnerabilities}}
+
+
+
+\slide{Analysis on Docker Hub malicious images}
+
+\hlkimage{10cm}{sysdig-malicious-images.png}
+This article is relevant, talking about malicious docker images\\
+\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
+
+
+
+\slide{Exercise: Semgrep as Git hook and CI tool}
+
+Part 1 -- research, try visiting:
+\begin{list2}
+\item Semgrep main site \link{https://semgrep.dev}
+\item Running Semgrep as a pre-commit hook\\
+{\footnotesize\link{https://semgrep.dev/docs/extensions/pre-commit}}
+\item The pre-commit hooks for Semgrep\\
+{\footnotesize\link{https://github.com/semgrep/pre-commit}}
+\end{list2}
+
+Part 2 -- discuss in smaller groups
+\begin{list2}
+\item Could Semgrep have stopped the Juice Shop SQL injection before the commit?
+\item Which tools does your team run today?
+\item Where do they run -- locally, in Git hooks or in CI?
+\item What happens when a tool finds something -- does the build fail?
+\end{list2}
 
 \breakdance
 
@@ -1623,6 +1974,104 @@ How do you get started improving security?
 \end{list1}
 
 
+\slide{What it means for Software Security}
+
+You need processes for working with system environments containing many servers -- all with operating systems and applications
+
+Attack the problems differently
+\begin{list2}
+\item Test using penetration testing
+\item Read and scan source code
+\item Review designs
+\item Select frameworks and languages -- policies
+\end{list2}
+
+\slide{Secure Software Development Lifecycle}
+
+\hlkimage{6cm}{OWASP-SDLC.jpg}
+
+\begin{list2}
+\item SSDL is a structured approach to implementing and performing secure software development
+\item Security issues are evaluated and addressed early
+\item During business analysis -- through the requirements phase -- during design and implementation
+\item Picture from OWASP Testing Guide project, \link{https://owasp.org/www-project-web-security-testing-guide/}
+\end{list2}
+
+
+\slide{Development Standards}
+
+\begin{list1}
+\item What do you do to avoid problems like the ones mentioned here?
+-- can you do more?
+\item You should be aware of which technologies you use
+\item Standardize on a smaller number of products, libraries, languages
+\item Rules and procedures must be updated continuously:
+\begin{list2}
+\item Quality assurance
+\item Guidelines for allowed tags
+\item Guidelines for use of SQL
+\end{list2}
+\item By limiting the number of products you may reduce the opportunities for errors -- high quality is often more secure
+\item {\bf New products can be dangerous until you get to know them!}
+\end{list1}
+
+\slide{Guidelines}
+
+\begin{list2}
+\item If there are no guidelines for development, establish them
+\item Example:\\
+JavaScript may be used to validate forms to give quick feedback to the user
+\item The server receiving input from the user validates all data for security
+\item Guidelines help make a balanced investment in security
+\item Avoid holes in security -- keep a consistent level
+\item Guides exist for both old and new languages/systems,\\
+e.g.\ Ruby on Rails Security Guide\\
+\link{https://guides.rubyonrails.org/security.html}
+\item OWASP Cheat Sheet Series\\
+\link{https://cheatsheetseries.owasp.org}
+\end{list2}
+
+\slide{Preparing environments for production}
+
+\begin{list1}
+\item Consider the environment that servers and services will be exposed to
+\item Ensure hardening and think about general security:
+  \begin{list2}
+  \item Updated software -- no known security holes or vulnerabilities
+  \item Remove {\bfseries single points of failure} -- redundant power, extra units, two DNS servers instead of one
+  \item Separate servers -- internal and external for different purposes
+  \item Filter on the network or on data -- firewalls and proxy functions
+  \item Restrict access to read information
+  \item Restrict access to write information -- for example databases
+  \item Use {\bfseries least privilege} -- make sure programs and users only have the rights needed to perform their tasks
+  \item Keep up with the areas relevant to the company and \emph{your} installation
+  \end{list2}
+\item Subscribe to security mailing lists for the products you use, also open source
+\end{list1}
+
+\slide{Change management}
+
+\begin{list1}
+\item Is there enough focus on software in production?
+\item Can any server easily be re-established?
+\item Are changes made directly on production systems?
+\item Is there a fall-back plan?
+\item This should be good system administration practice
+\end{list1}
+
+\slide{The foundation must be in order}
+
+\begin{list1}
+\item Make sure the infrastructure you build on is secure:
+\begin{list2}
+\item redundant
+\item updated
+\item documented
+\item easy to maintain
+\end{list2}
+\item Remember availability is also a security parameter
+\end{list1}
+
 
 \slide{ISO/IEC 27001:2022 Information Security Management Systems}
 
@@ -1670,7 +2119,7 @@ Rules for secure development of software and systems are established and applied
 \item Are developers trained in secure development?
 \end{list1}
 
-Source: ISO/IEC 27001:2022 Annex A 8.25, see also Session 5 SDL/SSDL
+Source: ISO/IEC 27001:2022 Annex A 8.25
 
 \slide{Application Security Requirements}
 
@@ -1772,28 +2221,33 @@ Source: ISO/IEC 27001:2022 Annex A 8.30
 
 \slide{Exercise: Where Are Our Gaps?}
 
-\begin{list2}
-\item In groups, go through 8.25--8.30 using the questions on the previous slides
-\item For each control:
+Imagine your manager asks about ISO/IEC 27001:2022 Annex A 8.25--8.30.\\
+Can you help them, using the questions on the previous slides?
+
 \begin{list1}
+\item For each control:
+\begin{list2}
 \item What do we already do -- process, tools, documentation?
 \item What is missing or only informal?
 \item What would be the first concrete step?
-\end{list1}
+\end{list2}
 \item Use what you shared in Session 4 about the tools you run today
 \item Continues in the optional part at the end of the day
-\end{list2}
+\end{list1}
 
-I invite you to reflect on today's subjects, and how they can help mature your development work.
+We cannot do a complete gap analysis project now, but hopefully your vocabulary has expanded.
+\vskip 1em
+I invite you to consider today's subjects and reflect on how you can change and mature your development work.
+
+
+\myquestionspage
+
+
 
 \breakdance
 
 % Lesson 6
 \slide{Part 7: Optional: Exercises, questions}
-
-
-
-\slide{Prerequisites}
 
 \begin{list2}
 \item I recommend doing exercises
@@ -1817,14 +2271,6 @@ Efficiently run Linux workloads on Azure with built-in security and management
 More than 60\% of customer cores in Azure run Linux workloads. Choose from popular Linux distributions including Red Hat, SUSE, Ubuntu, Debian, Flatcar, and Oracle Linux. Use preconfigured solutions from Oracle and other open-source VM-compatible providers and find Azure-optimized Linux VM images from publishers of your choice.
 \end{quote}
 Source: \url{https://azure.microsoft.com/en-us/products/virtual-machines/linux}
-
-
-
-\slide{Analysis on Docker Hub malicious images}
-
-\hlkimage{10cm}{sysdig-malicious-images.png}
-This article is relevant, talking about malicious docker images\\
-\link{https://sysdig.com/blog/analysis-of-supply-chain-attacks-through-public-docker-images/}
 
 
 

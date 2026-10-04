@@ -1,0 +1,1030 @@
+\documentclass[a4paper,11pt,notitlepage]{report}
+% Henrik Kramselund  , February 2001
+% hlk@security6.net,
+% My standard packages
+\usepackage{zencurity-exercises}
+
+\begin{document}
+
+\rm
+\selectlanguage{english}
+
+\newcommand{\subject}[1]{Software Security course}
+\newcommand{\kursus}[1]{Software Security course}
+\newcommand{\kursusnavn}[1]{Software Security course\\ exercises}
+
+\mytitle{SDL Practices}{exercises}
+
+\pagenumbering{roman}
+
+\setcounter{tocdepth}{0}
+
+\normal
+
+{\color{titlecolor}\tableofcontents}
+%\listoffigures - not used
+%\listoftables - not used
+
+\normal
+\pagestyle{fancyplain}
+\chapter*{\color{titlecolor}Preface}
+\markboth{Preface}{}
+
+This material is prepared for use in \emph{SDL Practices course} and was prepared by
+Henrik Kramselund, \link{http://www.zencurity.com} .
+It describes the networking setup and
+applications for trainings and courses where hands-on exercises are needed.
+
+Further presentations are used which are available as PDF from \url{https://codeberg.org/kramse}\\
+Look for \jobname\ in the repo security-courses.
+
+These exercises are expected to be performed in a training setting with network connected systems. The exercises use a number of tools which can be copied and reused after training. A lot is described about setting up your workstation in the repo
+
+\link{https://codeberg.org/kramse/kramse-labs}
+
+
+\section*{\color{titlecolor}Prerequisites}
+
+This material expect that participants have a working knowledge of
+TCP/IP from a user perspective. Basic concepts such as web site addresses and email should be known as well as IP-addresses, ports and common protocols like HTTP/HTTPS.
+
+\vskip 1cm
+Have fun and learn
+\eject
+
+% =================== body of the document ===============
+% Arabic page numbers
+\pagenumbering{arabic}
+\rhead{\fancyplain{}{\bf \chaptername\ \thechapter}}
+
+% Main chapters
+%---------------------------------------------------------------------
+% gennemgang af emnet
+% check questions
+
+\chapter*{\color{titlecolor}Exercise content}
+\markboth{Exercise content}{}
+
+Most exercises follow the same procedure and has the following content:
+\begin{itemize}
+\item {\bf Objective:} What is the exercise about, the objective
+\item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
+\item {\bf Suggested method:} suggest a way to get started
+\item {\bf Hints:} one or more hints and tips or even description how to
+do the actual exercises
+\item {\bf Solution:} one possible solution is specified
+\item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
+\end{itemize}
+
+Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
+
+
+\chapter{\faExclamationTriangle\ Prepare your workstation 15 min}
+\label{ex:prepare-for-course}
+
+{\bf Objective:}\\
+Get your workstation ready for the hacker lab.
+
+
+{\bf Purpose:}\\
+We will be running multiple tools
+
+
+{\bf Suggested method:}\\
+\begin{list2}
+\item Create a folder for files from this course
+\end{list2}
+
+
+{\bf Hints:}\\
+There are Git repositories on \link{https://codeberg.org/kramse/}
+
+
+{\bf Solution:}\\
+When you have created a folder for files you are done, the rest can wait a bit.
+
+{\bf Discussion:}\\
+Do we need to run local VMs, can we run docker or Kubernetes instead -- yes for some exercises, no for others.
+
+You can work together in groups and only one workstation might have applications running.
+
+
+\chapter{\faExclamationTriangle\ Git tutorials - 15min}
+\label{ex:git-tutorial}
+
+
+\hlkimage{3cm}{git-logo.png}
+
+{\bf Objective:}\\
+Try the program Git locally on your workstation
+
+{\bf Purpose:}\\
+Running Git will allow you to clone repositories from others easily. This is a great way to get new software packages, and share your own.
+
+Git is the name of the tool, and Github is a popular site for hosting git repositories.
+
+{\bf Suggested method:}\\
+Run the program from your Linux VM. You can also clone from your Windows or Mac OS X computer. Multiple graphical front-end programs exist too.
+
+
+First make sure your system is updated, as root run:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+\end{minted}
+You should reboot if the kernel is upgraded :-)
+
+Second make sure your system has Git, ansible and my playbooks: (as root run, or with sudo as shown)
+\begin{minted}[fontsize=\footnotesize]{shell}
+sudo apt -y install ansible git
+\end{minted}
+
+
+Most important are Git clone and pull:
+\begin{alltt}\footnotesize
+user@Projects:tt$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+remote: Enumerating objects: 283, done.
+remote: Total 283 (delta 0), reused 0 (delta 0), pack-reused 283
+Receiving objects: 100% (283/283), 215.04 KiB | 898.00 KiB/s, done.
+Resolving deltas: 100% (145/145), done.
+
+user@Projects:tt$ {\bf cd kramse-labs/}
+
+user@Projects:kramse-labs$ {\bf ls}
+LICENSE  README.md  core-net-lab  lab-network  suricatazeek  work-station
+user@Projects:kramse-labs$ git pull
+Already up to date.
+\end{alltt}
+
+If you want to run Ansible playbooks, then run it with:
+\begin{minted}[fontsize=\footnotesize]{shell}
+ansible-playbook -v example.yml
+\end{minted}
+
+{\bf Hints:}\\
+Browse the Git tutorials on \link{https://git-scm.com/docs/gittutorial}\\
+and \link{https://guides.codeberg.org/activities/hello-world/}
+
+We will not do the whole tutorials within 15 minutes, but get an idea of the command line, and see examples. Refer back to these tutorials when needed or do them at home.
+
+Note: you don't need an account on Github to download/clone repositories, but having an acccount allows you to save repositories yourself and is recommended.
+
+{\bf Solution:}\\
+When you have tried the tool and seen the tutorials you are done.
+
+{\bf Discussion:}\\
+Before Git there has been a range of version control systems,\\
+see \link{https://en.wikipedia.org/wiki/Version\_control} for more details.
+
+
+\chapter{\faExclamationTriangle\ Install and Run Kubernetes 45 min}
+\label{ex:sw-kubernetes}
+
+%\hlkimage{10cm}{kali-linux.png}
+
+{\Large \bf This is a fairly large exercise, and part of this course}
+
+{\bf Objective:}\\
+We will use containers, images, Linux for many exercises.
+
+Kubernetes is an easy and standardized way to run many applications, which will allow us to \emph{deploy} applications for testing quickly with just a few commands.
+
+{\bf Purpose:}\\
+The course standardizes on Kubernetes k3s, so that everyone ends up on the same Kubernetes distribution and the exercise manifests should work the same for everyone.
+
+Run different applications across your computers in a common way, to see the same versions and setups with minimal differences.
+
+{\bf Suggested method:}\\
+This exercise has two install paths and one shared check at the end.
+
+We expect a Kubernetes install for each team, up to three members per team.
+
+{\bf Read this first:}\\
+If you already have Docker, Podman, VirtualBox, VMware, Hyper-V, WSL2 distros, KVM/libvirt, or any other container or virtualization tooling installed and want to keep it — skip straight to \emph{Advanced Install} below. Don't install Rancher Desktop on top of an existing setup; go to Advanced Install instead.
+
+If your laptop is clean — no containers, no VMs, nothing like that — use \emph{Quick Start} which uses Rancher Desktop.
+
+Requirements are not especially high for Rancher Desktop, mostly you need:\\
+64-bit CPU with hardware virtualization (Intel VT-x or AMD-V), enabled in BIOS/UEFI.
+
+Mac OS X laptops require macOS 13 (Ventura) or newer. Apple Silicon (aarch64) or Intel (\verb+x86_64+) CPU with VT-x. Recommended: 8 GB RAM, 4 CPU cores.
+
+
+{\bf Quick Start (nothing installed yet)}\\
+This is the expected path for most of you.
+
+\begin{list2}
+\item[1.] {\bf Uninstall leftovers first, if any.} If you've ever installed Docker Desktop, VirtualBox, or WSL distros for another course and aren't using them anymore, remove them before continuing — running two virtualization stacks side by side is a common source of very confusing errors.
+\item[2.] {\bf Install Rancher Desktop} — \url{https://rancherdesktop.io} . One installer per OS (Windows / macOS / Linux), free and open source, no license or account needed.
+\item[3.] On first launch - use the following settings:
+   \verb+Enable Kubernetes: on+   (is probably on by default) and
+   \verb+Engine: containerd+      (select this, probably docker is default)
+\item[4.] Wait for Rancher Desktop to show the cluster as running (first launch takes a few minutes — it's downloading k3s).
+\item[5.] Continue to \emph{Check Your Environment} below.
+\end{list2}
+
+---
+
+{\bf Advanced Install (you already have something)}\\
+This path is for people who already have working tooling and don't want Rancher Desktop's VM layer on top of it. It's higher-level than Quick Start — you're expected to be comfortable following official docs for your specific tool.
+
+
+{\bf Already have Docker / Docker Engine installed and running?}\\
+→ Install k3d — \url{https://k3d.io} (k3s running inside Docker containers you already have). No new VM, reuses your existing Docker install.
+\begin{alltt}
+k3d cluster create softsec
+\end{alltt}
+
+{\bf On Linux, with KVM/libvirt available (or no virtualization tooling at all)?}\\
+→ Install k3s — \url{https://k3s.io} directly on the host. On Linux, Kubernetes doesn't need a VM at all — the host *is* the container host.
+\begin{alltt}
+curl -sfL https://get.k3s.io | sh -
+\end{alltt}
+
+{\bf On Windows or Mac, with WSL2 or another VM already set up that you want to keep using?}\\
+→ Install k3s inside that existing VM/WSL2 distro directly, following the k3s docs at \url{https://docs.k3s.io}, rather than adding Rancher Desktop's own VM alongside it.
+
+{\bf Already running Docker Desktop's own Kubernetes, minikube, or kind?}
+→ These work differently enough from k3s (different defaults, sometimes different Kubernetes version) that we'd still recommend adding k3s/k3d alongside for this course, so your environment matches the exercises. Keep your existing tool for anything else you use it for.
+
+If your situation doesn't match any of the above, lets discuss.
+
+
+{\bf Check Your Environment}\\
+Run once your cluster (Rancher Desktop or Advanced) is up.
+
+{\bf 1. Confirm `kubectl` can see your cluster:}\\
+\begin{alltt}
+kubectl get nodes
+\end{alltt}
+Expect one node, status `Ready`. Example output:
+\begin{alltt}
+hlk@alice:~$ kubectl get nodes
+NAME                   STATUS   ROLES           AGE   VERSION
+lima-rancher-desktop   Ready    control-plane   17m   v1.36.3+k3s1
+\end{alltt}
+
+{\bf 2. Run a test pod:}\\
+\begin{alltt}
+kubectl run hello --image=nginx --restart=Never
+kubectl get pods
+\end{alltt}
+Expect `hello` to reach `Running` within about a minute (`kubectl get pods -w` to watch it live). Example output:
+\begin{alltt}
+hlk@alice:~$ kubectl run hello --image=nginx --restart=Never
+// wait a bit and then
+hlk@alice:~$ kubectl get pods
+NAME    READY   STATUS    RESTARTS   AGE
+hello   1/1     Running   0          5m45s
+\end{alltt}
+
+{\bf 3. Confirm you can reach it:}\\
+\begin{alltt}
+kubectl port-forward pod/hello 8080:80
+\end{alltt}
+then open `http://localhost:8080` in a browser — you should see the nginx welcome page. Ctrl+C to stop the port-forward. Example output:
+\begin{alltt}
+hlk@alice:~$ kubectl port-forward pod/hello 8080:80
+Forwarding from 127.0.0.1:8080 -> 80
+Forwarding from [::1]:8080 -> 80
+Handling connection for 8080
+Handling connection for 8080
+\end{alltt}
+
+{\bf 4. Clean up:}\\
+\begin{alltt}
+kubectl delete pod hello
+\end{alltt}
+
+If all four steps worked, your environment is ready for the exercises. If step 1 fails, your cluster isn't running — go back to whichever install path you used. If steps 2–4 fail but step 1 worked, flag it before the first exercise session.
+
+
+{\bf Hints:}\\
+If you are low on memory and disk you might have problems.
+
+{\bf Solution:}\\
+When you have a k8s/k3s cluster running as a team, then we are good.
+
+{\bf Discussion:}\\
+Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
+
+
+
+\chapter{\faInfoCircle\ Run OWASP Juice Shop 45 min}
+\label{ex:sw-startjuice}
+
+\hlkimage{3cm}{JuiceShop_Logo_100px.png}
+
+{\bf Objective:}\\
+Lets try starting the OWASP Juice Shop
+
+{\bf Purpose:}\\
+We will be doing some web hacking where you will be the hacker. There
+will be an application we try to hack, designed to
+optimise your learning.
+
+It is named JuiceShop which is written in JavaScript
+
+{\bf Suggested method:}\\
+Go to \link{https://github.com/juice-shop/juice-shop}
+
+You need to have browsers and a proxy, plus a basic knowledge of HTTP.
+
+Read the instructions for running juice-shop - {\bf docker or Kubernetes is a simple way} and I often recommend that.
+
+Running with Kubernetes follows.
+
+First check your cluster, ready and you can connect?
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@alice:~$ kubectl get node
+NAME                   STATUS   ROLES           AGE   VERSION
+lima-rancher-desktop   Ready    control-plane   13d   v1.36.3+k3s1
+hlk@alice:~$
+\end{minted}
+
+\eject
+Create a Deployment, name the file \verb+juice-shop.yml+:
+\begin{alltt}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juice-shop
+  labels:
+    app: juice-shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: juice-shop
+  template:
+    metadata:
+      labels:
+        app: juice-shop
+    spec:
+      containers:
+        - name: juice-shop
+          image: bkimminich/juice-shop:latest
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: juice-shop
+spec:
+  selector:
+    app: juice-shop
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+\end{alltt}
+
+This file can also be downloaded from Git kramse-labs in the directory \verb+kubernetes+\\
+\verb+git clone https://codeberg.org/kramse/kramse-labs+
+
+Run the deployment:
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@alice:~/projects$ kubectl apply -f juice-shop.yml
+deployment.apps/juice-shop created
+service/juice-shop created
+hlk@alice:~/projects$
+\end{minted}
+
+\eject
+After a short while you should have a running pod/container and deployment:
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@alice:~/projects$ kubectl get pods
+NAME                          READY   STATUS    RESTARTS   AGE
+hello                         0/1     Unknown   0          13d
+juice-shop-86c67bcdf4-lf87x   1/1     Running   0          2m27s
+hlk@alice:~/projects$ kubectl get deployments
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+juice-shop   1/1     1            1           2m38s
+\end{minted}
+
+
+Wait for Running, then reach it using port forward:
+\begin{minted}[fontsize=\footnotesize]{shell}
+hlk@laptop:~$ kubectl port-forward svc/juice-shop 3000:3000
+\end{minted}
+
+
+Note: This needs to be done regularly. familiarise yourself with \verb+kubectl apply+, \verb+kubectl delete+ and \verb+kubectl port-forward+
+
+
+Check using: \link{http://127.0.0.1:3000}
+
+{\bf Hints:}\\
+The application is very modern, very similar to real applications.
+
+
+JuiceShop can be run as a docker, and sometimes running it on Kali is the easiest learning environment.
+
+{\bf Solution:}\\
+When you have a running Juice Shop web application in your team, then we are good.
+
+{\bf Discussion:}\\
+It has lots of security problems which can be used for learning
+hacking, and thereby how to secure your applications. It is  related
+to the OWASP.org Open Web Application Security Project which also has a
+lot of resources.
+
+Sources:\\
+\url{https://codeberg.org/bkimminich/juice-shop}\\
+\url{https://www.owasp.org/index.php/Category:OWASP_WebGoat_Project}
+
+It is recommended to buy the \emph{Pwning OWASP Juice Shop Official companion guide to the OWASP Juice Shop} from \link{https://leanpub.com/juice-shop} - suggested price USD 5.99
+
+
+
+\chapter{\faInfoCircle\ Setup JuiceShop and proxy - up to 20min}
+\label{ex:js-burp}
+
+{\bf Objective:}\\
+Run JuiceShop with Burp proxy.
+
+Start JuiceShop and make sure it works, visit using browser.
+
+Then add a web proxy in-between. We will use Burp suite which is a commercial product, in the community edition.
+
+{\bf Purpose:}\\
+We will learn more about web applications as they are a huge part of the applications used in enterprises and on the internet. Most mobile apps are also web applications in disguise.
+
+By inserting a web proxy we can inspect the data being sent between browsers and the application.
+
+The Burp proxy is an advanced tool! Dont be scared, we will use small parts at different times.
+
+{\bf Suggested method:}\\
+You need to have browsers and a proxy, plus a basic knowledge of HTTP.
+
+If you could install Firefox it would be great, and we will use the
+free version of Burp Suite, so please make sure you can run Java and
+download the free version from Portswigger from:
+
+\link{https://portswigger.net/burp/communitydownload}
+
+
+follow the Getting Started instructions at:\\
+\link{https://support.portswigger.net/customer/portal/articles/1816883-getting-started-with-burp-suite}
+
+
+{\bf Hints:}\\
+Recommend running Burp on the default address and port 127.0.0.1 port 8080.
+
+Note: Burp by default has \verb+intercept is on+ in the Proxy tab, press the button to allow data to flow.
+
+
+\hlkimage{10cm}{burp-default-proxy-intercept.png}
+
+\eject
+Then setting it as proxy in Firefox:
+
+\hlkimage{10cm}{firefox-connection-burp.png}
+
+After setting up proxy, you can visit \url{http://burp} and get a CA certificate that can be installed, making it easier to run against HTTPS sites.
+
+The newest versions of Burp include a browser, making it much easier to run the tasks, pre-configured with proxy.
+
+
+\textbf{Firefox prevents hijacking localhost by default! Use about:config and set flag}
+
+\verb+network.proxy.allow_hijacking_localhost+ set to \verb+TRUE+
+
+
+
+
+
+{\bf Solution:}\\
+When web sites and servers start popping up in the Target tab, showing the requests and responses - you are done.
+
+Your browser will alert you when visiting TLS enabled sites, HTTPS certificates do not match, as Burp is doing a person-in-the-middle. You need to select advanced and allow this to continue.
+
+{\bf Discussion:}\\
+Since Burp is often updated I use a small script for starting Burp which I save in \verb+~/bin/burp+ - dont forget to add to PATH and \verb;chmod +x bin/burp;.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+#! /bin/sh
+DIRNAME=`dirname $0`
+BURP=`ls -1tra $DIRNAME/burp*.jar | tail -1`
+java -jar -Xmx6g $BURP &
+\end{minted}
+
+When running in production testing real sites, I typically increase the memory available using JDK / Java settings like \verb+-Xmx16g+
+
+
+
+
+\chapter{\faInfoCircle\ CIS benchmark scan with kube-bench up to 30 min}
+\label{ex:sw-kubebench-k3s}
+{\bf Objective:}\\
+We will run kube-bench against our local k3s cluster to check it against the CIS Kubernetes Benchmark -- a checklist of security configuration recommendations for Kubernetes clusters.
+
+{\bf Purpose:}\\
+See what a configuration/hardening scanner looks like, as opposed to a vulnerability scanner like Trivy from another exercise. kube-bench doesn't look for known CVEs -- it checks whether the cluster itself (API server, kubelet, etcd, etc.) is configured according to security best practice.
+
+{\bf Suggested method:}\\
+Run kube-bench as a Job inside your k3s cluster using \verb+kubectl+, since that gives it access to the node's config files and binaries needed to check things like file permissions. Then read through the output.
+
+{\bf Hints:}\\
+The kube-bench project publishes ready-made Kubernetes manifests to run it as a Job:
+\begin{alltt}\footnotesize
+hlk@laptop:~$ kubectl apply -f https://raw.githubusercontent.com/aquasecurity/kube-bench/main/job.yaml
+\end{alltt}
+Wait for it to finish, then read the logs:
+\begin{alltt}\footnotesize
+hlk@laptop:~$ kubectl get pods | grep kube-bench
+hlk@laptop:~$ kubectl logs job/kube-bench
+\end{alltt}
+k3s bundles components a bit differently than a "vanilla" kubeadm cluster (e.g. no separate etcd pod, different config file paths), so don't be surprised if some checks come back as \verb+[INFO]+ or \verb+[WARN]+ "not applicable" rather than a clean pass/fail -- there is a k3s-specific config/target you can look for in the kube-bench docs if you want more accurate results.
+Clean up afterwards:
+\begin{alltt}\footnotesize
+hlk@laptop:~$ kubectl delete -f https://raw.githubusercontent.com/aquasecurity/kube-bench/main/job.yaml
+\end{alltt}
+
+{\bf Solution:}\\
+You are done once you can point to at least one \verb+[FAIL]+ or \verb+[WARN]+ result in the output, explain in your own words what the check was actually verifying, and say whether it's something you'd realistically fix on a student laptop cluster or only on a production cluster.
+
+{\bf Discussion:}\\
+Lookup Trivy scanner, and compare kube-bench to Trivy: Trivy tells you \emph{what known-vulnerable software} is running; kube-bench tells you \emph{whether the cluster is configured safely}, regardless of software versions. Both are needed. Discuss:
+\begin{itemize}
+  \item Why a perfectly patched cluster can still be insecure if it's misconfigured (e.g. anonymous API access enabled)
+  \item Why some checks are unrealistic to fully satisfy on a local dev cluster (e.g. those about running on dedicated, hardened hosts) but matter a lot in production
+  \item How this fits into a broader "Secure by Design" pipeline: SCA (Trivy) + config auditing (kube-bench) + your own code's static analysis (PMD)
+\end{itemize}
+
+
+\chapter{\faInfoCircle\ Trivy scan of container images in k3s up to 40 min}
+\label{ex:sw-trivy-k3s}
+{\bf Objective:}\\
+We will use Trivy to scan the container images actually running in our local k3s cluster (the one set up with Rancher Desktop earlier in the course) for known vulnerabilities. We use \verb+kubectl+ to find out which images are running, and Trivy to scan them.
+
+{\bf Purpose:}\\
+Get hands-on experience with a real vulnerability scanner and see how it maps found issues back to:
+\begin{itemize}
+  \item CVE identifiers
+  \item CWE categories (compare with the OWASP Top 10 and CWE Top 25 discussed in class)
+  \item Severity ratings (CRITICAL / HIGH / MEDIUM / LOW)
+\end{itemize}
+This is your first taste of Software Composition Analysis (SCA) -- scanning not code you wrote, but the third-party layers you depend on (base images, OS packages, libraries).
+
+{\bf Suggested method:}\\
+Make sure your k3s cluster (Rancher Desktop) is running and that you have something deployed in it -- e.g. NGINX from an earlier exercise. If nothing is deployed yet, deploy something first.
+Install Trivy on your workstation (not inside the cluster). Follow the instructions from\\
+ \url{https://trivy.dev/docs/latest/getting-started/installation/}
+
+Use \verb+kubectl+ to list which images are actually running, then scan those images directly with Trivy.
+
+{\bf Hints:}\\
+Find the images currently running in your cluster:
+\begin{alltt}
+hlk@laptop:~$ kubectl get pods -A -o jsonpath="\{.items[*].spec.containers[*].image\}" \
+  | tr -s ' ' '\\n' | sort -u
+\end{alltt}
+Scan a single image:
+\begin{alltt}
+hlk@laptop:~$ trivy image bkimminich/juice-shop:latest
+\end{alltt}
+Trivy has a dedicated Kubernetes mode that talks to your cluster directly via your kubeconfig, and will enumerate and scan all running workloads for you -- try it once you have scanned a single image manually:
+\begin{alltt}
+hlk@laptop:~$ trivy k8s --report summary cluster
+\end{alltt}
+If you want vulnerability data only (skip secrets/misconfig scanning, faster):
+\begin{alltt}
+hlk@laptop:~$ trivy image --scanners vuln bkimminich/juice-shop:latest
+\end{alltt}
+Try filtering to only show what matters for patching:
+\begin{alltt}
+hlk@laptop:~$ trivy image --severity CRITICAL,HIGH bkimminich/juice-shop:latest
+\end{alltt}
+
+{\bf Solution:}\\
+A finished run produces a table (or JSON, with \verb+-f json+) listing, for each vulnerable package, the installed version, the fixed version (if one exists), the CVE ID, and severity. You are done once you can:
+\begin{itemize}
+  \item Explain what one specific CVE in the output actually is (look it up)
+  \item State whether a fix is available for it
+  \item Say whether it applies to the OS layer (e.g. Debian/Alpine packages) or the application layer (e.g. npm packages)
+\end{itemize}
+
+{\bf Discussion:}\\
+Trivy will usually report far more vulnerabilities than you can realistically fix -- this is normal, and mirrors real-world alert fatigue in vulnerability management. Discuss:
+\begin{itemize}
+  \item Why base image choice (e.g. \verb+alpine+ vs \verb+debian+ vs \verb+distroless+) drastically changes the vulnerability count
+  \item Why ``no fix available'' is common and what you'd do about it in practice (accept risk, find an alternative package, mitigate elsewhere)
+  \item How this connects to CI/CD -- scanning should happen before deploy, not just ad-hoc like we just did
+  \item The difference between scanning an image (Trivy) and scanning your own source code for weaknesses (static analysis, e.g. PMD from an earlier exercise) -- Trivy tells you about vulnerabilities in dependencies, not bugs in your own code
+\end{itemize}
+
+
+\chapter{\faExclamationTriangle\ JuiceShop Attacks 60min}
+\label{ex:juiceshop-attack}
+
+\hlkimage{2cm}{JuiceShop_Logo_100px.png}
+
+ {\bf Objective:}\\
+Hack a web application!
+
+Try a few attacks in the JuiceShop with web proxy
+
+\begin{quote}
+The OWASP Juice Shop is a pure web application implemented in JavaScript. In the
+frontend the popular AngularJS framework is used to create a so-called Single Page
+Application. The user interface layout is provided by Twitter's Bootstrap framework - which
+works nicely in combination with AngularJS.
+JavaScript is also used in the backend as the exclusive programming language: An Express
+application hosted in a Node.js server delivers the client-side code to the browser. It also
+provides the necessary backend functionality to the client via a RESTful API.
+
+...
+
+The vulnerabilities found in the OWASP Juice Shop are categorized into several different
+classes. Most of them cover different risk or vulnerabiliy types from well-known lists or
+documents, such as OWASP Top 10 or MITRE's Common Weakness Enumeration. The
+following table presents a mapping of the Juice Shop's categories to OWASP and CWE
+(without claiming to be complete).
+\end{quote}
+
+\hlkimage{10cm}{juiceshop-mappings.png}
+Source: \emph{Pwning OWASP Juice Shop}
+
+
+ {\bf Purpose:}\\
+ Try out some of the described web application flaws in a controlled environment. See how an attacker would be able to gather information and attack through HTTP, browser and proxies.
+
+ {\bf Suggested method:}\\
+Start the web application, start Burp or another proxy - start your browser.
+
+Access the web application through your browser and get a feel for how it works. First step is to register your user, before you can shop.
+
+Dont forget to use web developer tools like the JavaScript console!
+
+Then afterwards find and try to exploit vulnerabilities, using the book from Björn and starting with some easy ones:
+
+Suggested list of starting vulns:
+\begin{list2}
+\item Admin Section Access the Admin Section
+\item Error handling Provoke and error
+\item Forged Feedback Post some feedback in another users name.
+\item Access a confidential document
+\item Forgotten Sales Backup Access a salesman's forgotten backup file.
+\item Retrieve a list of all user credentials via SQL Injection
+\end{list2}
+
+
+ {\bf Hints:}\\
+ The complete guide \emph{Pwning OWASP Juice Shop}
+written by Björn Kimminich is available as PDF which you can buy, or you can read it online at:\\
+\url{https://pwning.owasp-juice.shop/companion-guide/latest/}
+
+ {\bf Solution:}\\
+ You decide for how long you want to play with JuiceShop.
+
+ Do know that some attackers on the internet spend all their time researching, exploiting and abusing web applications.
+
+ {\bf Discussion:}\\
+The vulnerabilities contained in systems like JuiceShop mimic real ones, and do a very good job. You might not think this is possible in real applications, but there is evidence to the contrary.
+
+Using an app like JS instead of real applications with flaws allow you to spend less on installing apps, and more on exploiting.
+
+
+
+
+\chapter{\faExclamationTriangle\ Truncate and Encoding Attacks JuiceShop up to 40min}
+\label{ex:truncate-encoding}
+
+{\bf Objective:}\\
+Try out some of the problems described in the book using active methods.
+
+{\bf Purpose:}\\
+The book describes problems with encodings but it can feel a bit fluffy unless you try and see for yourself. We have the JuiceShop which has errors similar to these.
+
+{\bf Suggested method:}\\
+There is an error in the JuiceShop that can be abused for reading files using encoding \verb+%2500+.
+
+Try to download the file \link{http://localhost:3000/ftp/eastere.gg}
+
+
+It should be possible to even retrieve the content of a file like \verb+C:\Windows\system.ini+ or
+\verb+/etc/passwd+ from the server and see if you can read a file. If they exist. This is related to XEE attacks, and seems hard to get working.
+
+Spoiler alert next page!
+\eject
+
+
+
+{\bf Hints:}\\
+Its ok to use the solution and work through the example.
+\url{http://localhost:3000/ftp/eastere.gg%2500.md}
+
+Also make sure to use \verb+NODE_ENV=unsafe+ flag when running docker if you want to try the XEE vuln!
+
+\begin{alltt}
+export NODE_ENV=unsafe
+docker run --rm -p 0.0.0.0:3000:3000 bkimminich/juice-shop
+\end{alltt}
+
+{\bf Solution:}\\
+When you feel you understand the problem of encoding/decoding and sending XML files to an application, reading files, you are done.
+
+{\bf Discussion:}\\
+Another problem are the filtering done in applications.
+
+In the JuiceShop we can access using URLs like this on the About Us page:\\
+\url{http://localhost:3000/ftp/legal.md?md_debug=true}
+
+Consider if the URL would match on .md and we were able to send a large filename ending in \verb+loongfilename.md+, but when truncated cut of exactly the \verb+.md+ part so we referenced another file.
+
+
+
+\chapter{\faExclamationTriangle\ JuiceShop Login 15 min}
+\label{ex:juice-shop-login}
+
+\begin{minted}[fontsize=\footnotesize]{sql}
+models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
+{ model: models.User, plain: true })
+\end{minted}
+
+{\bf Objective:}\\
+Try to find the JuiceShop login box implementation, we know it is vulnerable to SQL injection.
+
+
+{\bf Purpose:}\\
+Seeing bad code is a design pattern -- anti-pattern.
+
+
+{\bf Suggested method:}\\
+Find the source code, look for the database lookups.
+
+
+{\bf Hints:}\\
+The JuiceShop software is open source, and available at github:\\
+\link{https://codeberg.org/juice-shop/juice-shop}
+
+Git clone and searching locally might give the best results.
+
+In this case we can search for \verb+SELECT * FROM+, using a simple tool like grep:
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+user@Projects:juice-shop$ grep -ril SELECT | egrep -v "test|frontend|static"
+...
+REFERENCES.md
+routes/vulnCodeFixes.ts
+routes/search.ts
+routes/login.ts // oohhhh looks interesting
+routes/countryMapping.ts
+routes/vulnCodeSnippet.ts
+config/oss.yml
+config/mozilla.yml
+config/default.yml
+README.md
+\end{minted}
+
+
+{\bf Solution:}\\
+When you have found examples of the database lookups, you are done. See also discussion below though.
+
+
+{\bf Discussion:}\\
+Think about how this could be changed. How much would it require to change this into prepared statements.
+Also having good source code tools help a lot! Finding problems, getting an overview of code etc.
+
+
+\chapter{\faExclamationTriangle\ Git hook 30 min}
+\label{ex:git-hook}
+
+{\bf Objective:}\\
+Try using a Git hook locally on your workstation, to prevent something.
+
+
+{\bf Purpose:}\\
+Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
+
+First read the documentation:\\
+\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
+
+
+Note: today we only use client side hooks, for better security we should add hooks on the server side.
+
+Using our existing repository:
+\begin{alltt}\footnotesize
+user@Projects:projects$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+user@Projects:projects$ {\bf cd kramse-labs/}
+user@Projects:kramse-labs$ {\bf cd .git/hooks}
+user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
+// Look at this file, and activate it using:
+user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
+\end{alltt}
+
+Back in the repository try adding a new file with bad name:
+
+\begin{alltt}\footnotesize
+user@Projects:kramse-labs$ {\bf }
+user@Projects:kramse-labs$ touch henrikÆØÅ
+user@Projects:kramse-labs$ git add henrikÆØÅ
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+Error: Attempt to add a non-ASCII file name.
+This can cause problems if you want to work with people on other platforms.
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+  git config hooks.allow
+\end{alltt}
+
+
+
+{\bf Suggested method:}\\
+Run the program Git from your Debian Linux VM
+
+
+{\bf Hints:}\\
+Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
+
+{\bf Solution:}\\
+When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
+
+{\bf Discussion:}\\
+Many examples can be found on the internet.
+
+Example links:
+\begin{list2}
+\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
+\item A framework for managing and maintaining multi-language pre-commit hooks.\\
+\link{https://pre-commit.com/}
+\item Blog showing how to use this framework for checking a Kubernetes file:\\
+\link{https://thechief.io/c/hebaeid/how-to-start-left-with-security-using-git-pre-commit-hooks}
+\end{list2}
+
+
+
+
+\chapter{\faExclamationTriangle\ Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+
+\chapter{\faExclamationTriangle\ Pointers and Structure padding 30min}
+\label{ex:structure-padding}
+
+{\bf Objective:}\\
+Look at some real code from Suricata and Zeek, note how they prevent structure padding.
+
+{\bf Purpose:}\\
+These software applications usually used for security dissect raw packets, which cannot be trusted.
+
+{\bf Suggested method:}\\
+Download the source for some software - either of :
+\begin{list2}
+\item Zeek from \url{https://zeek.org/get-zeek/}
+\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
+\end{list2}
+
+Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
+
+{\bf Hints:}\\
+DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+src+ and doing \verb+less *dns*.h+ or use an editor.
+
+
+{\bf Solution:}\\
+When you have seen the code for a few \verb+struct+ you are done.
+
+If you notice structs with \verb+__attribute__((__packed__))+. Note: This ensures that structure fields align on one-byte boundaries - on all architectures.
+
+Maybe also investigate the rest of the file \verb+decode-vxlan.c+ if you downloaded Suricata.
+
+{\bf Discussion:}\\
+Manual for Gnu C Compiler Collection can be found at:\\
+\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
+
+
+\begin{quote}
+packed\\
+This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
+\end{quote}
+
+Bonus, can we find some structs missing this?
+
+
+
+
+\chapter{\faExclamationTriangle\ Trying PMD static analysis 30 min}
+\label{ex:pmd-static}
+
+{\bf Objective:}\\
+Try the program PMD locally on your workstation
+
+
+{\bf Purpose:}\\
+Running PMD will allow you to use static analysis for code.
+
+{\bf Suggested method:}\\
+Run the program from your Debian Linux VM, this tool is free and easy to get running. It uses Java, so if you like run it on your Windows or Mac instead.
+
+Follow instructions from the Getting Started\\
+\url{https://pmd.github.io/latest/pmd_userdocs_installation.html}
+
+The download is from latest, so check the releases page: \link{https://codeberg.org/pmd/pmd/releases}
+
+\begin{alltt}\footnotesize
+$ sudo apt install openjdk-17-jre
+$ cd $HOME
+$ wget https://codeberg.org/pmd/pmd/releases/download/pmd_releases/6.49.0/pmd-bin-6.49.0.zip
+$ unzip pmd-bin-6.49.0.zip
+$ alias pmd="$HOME/pmd-bin-6.49.0/bin/run.sh pmd"
+$
+\end{alltt}
+
+Note: this only creates the alias \verb+pmd+ for this session. To make this more permanent, you could add this to a profile like \verb+.bashrc+
+
+Next get some source code and run PMD:
+\begin{alltt}\footnotesize
+$ git clone --branch rel/2.17.2 https://gitbox.apache.org/repos/asf/logging-log4j2.git
+... downloads the source code for log4j
+$ pmd -d logging-log4j2 -R rulesets/java/quickstart.xml -f text
+\end{alltt}
+
+
+{\bf Hints:}\\
+PMD uses Java, so there should be a JDK/JRE on the system, I install the one from OpenJDK above.
+
+You may need to adjust the version numbers for the JDK/JRE, PMD and select another version of log4j to download.
+
+{\bf Solution:}\\
+When you have gotten a run of PMD going, you are done.
+
+{\bf Discussion:}\\
+Doing the above probably output more than 4500 lines from the PMD program!
+
+How would you proceed?
+
+There seem to be some tedious, but easy to fix, like \emph{Unused import} -- importing some library which is not really used. Things like \emph{empty method}, \emph{empty catch block} etc. may be source missing.
+
+First time use of a new tool will probably find a LOT.
+
+If you are using Maven you could also use their reporting\\
+\link{https://maven.apache.org/plugins/maven-pmd-plugin/project-reports.html}
+%If you like also check out this OWASP document about JSP and Java\\
+%\link{https://owasp.org/www-chapter-belgium/assets/2013/2013-06-06/Securing_Development_with_PMD_-_Teaching_an_Old_Dog_New_Tricks_-_OWASP.pdf}
+
+
+
+
+
+\end{document}
+
+
+
+\chapter{ xx min}
+\label{ex:}
+
+{\bf Objective:}\\
+Try the program XX locally your workstation
+
+
+{\bf Purpose:}\\
+Running XXX will allow you to analyse
+
+
+\begin{alltt}
+
+
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+
+
+{\bf Hints:}\\
+
+{\bf Solution:}\\
+When you have tried the tool and seen some data you are done.
+
+{\bf Discussion:}\\

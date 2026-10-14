@@ -762,6 +762,19 @@ e.g. slim, Alpine, distroless -- no shell is a feature
 \end{list2}
 
 
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
+\link{https://github.com/anchore/anchore-engine}\\
+"As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype."
+\item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} SBOM generation and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype} vulnerability scanning -- alternatives to Trivy from day 0
+\item Allow direct download from the internet into your cluster, may become a problem\\
+-- use your own registry or a pull-through proxy
+\item Malicious people are typosquatting popular containers!
+\item Supply chain attacks in general are a problem -- Session 4
+\end{list2}
+
 \slide{Example Dockerfile}
 
 \begin{minted}[fontsize=\footnotesize]{docker}
@@ -803,6 +816,66 @@ requires a CNI that enforces them
 
 {\footnotesize\link{https://kubernetes.io/docs/concepts/security/}}
 
+\slide{Restricting the Kubernetes API}
+
+\begin{quote}{\bf
+By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS}. In a typical production Kubernetes cluster, the API serves on port 443. The port can be changed with the --secure-port, and the listening IP address with the --bind-address flag.
+
+...
+
+If your cluster uses a {\bf private certificate authority, you need a copy of that CA certificate configured into your ~/.kube/config on the client}, so that you can trust the connection and be confident it was not intercepted.
+\end{quote}
+
+\begin{list2}
+\item If an attacker can run kubectl with credentials -- they can do anything their role allows
+\item Defense in Depth is suggested -- so restrict at multiple levels
+\item Only allow connections from specific networks -- firewall filtering,\\
+managed clusters: private endpoint or authorized networks
+\item Use TLS and verify/copy certificates
+\item Kubeconfig files are credentials -- keep them out of Git, like any other secret
+\end{list2}
+
+
+\slide{RBAC, groups and Namespace}
+
+\begin{quote}
+Kubernetes starts with three initial namespaces:
+\begin{list2}
+\item[*] default The default namespace for objects with no other namespace
+\item[*] kube-system The namespace for objects created by the Kubernetes system
+\item[*] kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
+\end{list2}
+\end{quote}
+Source: \link{https://kubernetes.io/docs/tasks/administer-cluster/namespaces/}
+
+\begin{list2}
+\item I like namespaces, easy way to isolate stuff
+\item Allow for quotas -- don't allow a test application to use all resources
+\item Easy network segregation -- network policies
+\item Allows easy data isolation -- who can access sensitive data
+\item I recommend groups, namespaces and roles for granting access -- {\bf do not grant permission to named users!}
+\end{list2}
+
+
+\slide{RBAC Audit tools}
+
+Multiple tools exist -- I most often only link open source tools in my presentations, feel free to suggest others
+\begin{list2}
+\item \faWrench\ \verb+rbac-tool+ -- A collection of Kubernetes RBAC tools to sugar coat Kubernetes RBAC complexity\\
+\link{https://github.com/alcideio/rbac-tool}
+
+\item \faWrench\ \verb+KubiScan+ -- a tool by Eviatar Gerzi to scan Kubernetes cluster for risky RBAC permissions \link{https://github.com/cyberark/KubiScan}
+\item \faWrench\ \verb+krane+ -- a Kubernetes RBAC static analysis and visualisation tool \link{https://github.com/appvia/krane}
+\item \faWrench\ \verb+rbac-view+ and \verb+rback+ -- visualise RBAC as HTML or graphs
+\item Built in: \verb+kubectl auth can-i --list+ -- what can I do?\\
+\verb+kubectl auth can-i --list --as=system:serviceaccount:juice-shop:default+
+\item What is best current practice? More tools and articles available at:
+\link{https://rbac.dev/}
+\end{list2}
+
+You MUST control your permissions, so find the tools that work for you!\\
+Same exercise as GitHub in Session 0 -- who can do what?
+
 
 \slide{Example: default deny network policy}
 
@@ -825,6 +898,78 @@ spec:
 \item Remember DNS when restricting egress
 \end{list2}
 
+\slide{Cilium overview}
+
+\hlkimage{11cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+\begin{list2}
+\item Network policies are only enforced if the CNI supports them -- Cilium and Calico do
+\end{list2}
+
+
+\slide{Network Policy Editor for Kubernetes}
+
+\hlkimage{18cm}{cilium-editor-ui.png}
+
+\begin{list2}
+\item Nice Editor for Policies \link{https://editor.cilium.io/}
+\item Recommendation: always specify a Network Policy - be specific, who CAN access
+\item Make positive lists - as normally only a limited number of other resources will need access
+\item Then also make sure to specify an egress policy - so both ingress and egress rules
+\end{list2}
+
+
+\slide{Example Network Policy}
+
+\begin{minipage}[t]{0.48\textwidth}
+\begin{minted}[fontsize=\scriptsize]{yaml}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example-policy
+  namespace: juice-shop
+spec:
+  podSelector: {}   # all pods in namespace
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 185.129.60.123/32
+    ports:
+    - port: 80
+      protocol: TCP
+    - port: 443
+      protocol: TCP
+\end{minted}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{minted}[fontsize=\scriptsize]{yaml}
+  # continued -- DNS only,
+  # all other egress denied
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+\end{minted}
+\end{minipage}
+
+{\footnotesize\link{https://kubernetes.io/docs/concepts/services-networking/network-policies/}}
 
 \slide{Admission control -- enforce rules before things run}
 
@@ -1401,6 +1546,20 @@ Source: ISO/IEC 27001:2022 Annex A 8.31
 \end{list2}
 
 
+\slide{Soft Multi tenancy}
+
+Depending on your needs, it might be interesting to investigate soft multi tenancy;
+
+\begin{quote}
+The level of isolation offered is sometimes described using terms like “hard” multi-tenancy, which implies strong isolation, and “soft” multi-tenancy, which implies weaker isolation. In particular, "hard" multi-tenancy is often used to describe cases where the tenants do not trust each other, often from security and resource sharing perspectives (e.g. guarding against attacks such as data exfiltration or DoS). Since data planes typically have much larger attack surfaces, "hard" multi-tenancy often requires extra attention to isolating the data-plane, though control plane isolation also remains critical.
+\end{quote}
+Source: \link{https://kubernetes.io/docs/concepts/security/multi-tenancy/}
+
+\begin{list2}
+\item Namespaces give soft multi tenancy -- prevent accidents, breaking other groups services
+\item Production and test do not trust each other in the same way -- prefer separate clusters
+\end{list2}
+
 \slide{Preparing environments for production}
 
 \begin{list2}
@@ -1477,6 +1636,23 @@ DNS, HTTP, TLS, ... \link{https://zeek.org/}
 \end{list2}
 
 
+\slide{Intrusion Detection on Kubernetes}
+
+\begin{quote}
+{\bf Chapter 9. Intrusion Detection}\\
+In this chapter we will see how container intrusion detection operates with the new low-level eBPF interface, what forensics looks like for a container, and how to catch attackers who have evaded all other controls.
+\end{quote}
+Source: \emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
+
+\begin{list2}
+\item Tool they present is Falco an eBPF-Based IDS
+\item They also mention my favourites Zeek \link{https://zeek.org/} and Suricata \link{https://suricata.io/}
+\item Cilium has Hubble for network flow observability -- who talks to whom\\
+\link{https://docs.cilium.io/en/stable/observability/hubble/}
+\item I recommend doing your usual, and then evaluate options
+\end{list2}
+
+
 \slide{Runtime monitoring for containers -- Falco}
 
 \begin{list2}
@@ -1508,6 +1684,25 @@ did any of our servers connect to these?
 \item Organisations with default deny egress were not reachable by the second stage
 \vskip 1em
 \item Logging you set up before the incident is the logging you can use during it
+\end{list2}
+
+\slide{Monitoring and updating -- upgrades}
+
+\begin{quote}
+Since Kubernetes is a complex system, I recommend making an initial deployment plan which is longer than a release cycle of Kubernetes. Currently new releases are coming out rapidly, so a 3-4 month plan should suffice.
+
+{\bf Main goal is to try upgrading the cluster \emph{before} you have production running!}
+\end{quote}
+
+\link{https://kubernetes.io/releases/}
+
+You need to upgrade all parts, so remember which parts you use:
+\begin{list2}
+\item Firmwares and supporting systems, routers, switches, server control, storage, ...
+\item Operating systems
+\item Kubernetes core components
+\item CNI like Cilium, policy engines like Kyverno, and various other plugins
+\item Your own images -- rebuild for new base images, Session 2
 \end{list2}
 
 
@@ -1545,8 +1740,6 @@ did any of our servers connect to these?
 \myquestionspage
 
 
-\breakdance
-
 \slide{Optional: Exercises, questions}
 
 \begin{list2}
@@ -1562,6 +1755,7 @@ did any of our servers connect to these?
 \end{list2}
 \end{list2}
 
+\end{document}
 
 \demo{ex:github-perms}
 \demo{ex:research-middleware-csrf}

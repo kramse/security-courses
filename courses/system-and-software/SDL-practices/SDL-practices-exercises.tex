@@ -1004,6 +1004,689 @@ If you are using Maven you could also use their reporting\\
 
 
 
+
+% =====================================================================
+% Day 1 exercises -- in-session exercises
+% =====================================================================
+
+\chapter{\faExclamationTriangle\ RBAC Access permissions on GitHub 15 min}
+\label{ex:github-perms}
+
+{\bf Objective:}\\
+See the actual permissions in your own organisation -- a real life example of role based access control (RBAC).
+
+{\bf Purpose:}\\
+GitHub is a very popular code sharing site, and whoever has write or admin access to a repository can change the code, the workflows and often the deployment. Most organisations have more people with high permissions than they think.
+
+{\bf Suggested method:}\\
+Open your organisation on GitHub, or a repository you work on, and look at the people, teams and settings. If you do not have access to an organisation, use the documentation and a repository of your own.
+
+Questions to answer:
+\begin{list2}
+\item Who are organisation owners? Owners have admin access to every repository in the organisation
+\item How many people or teams have Write, Maintain or Admin on the repository?
+\item Are there outside collaborators -- do they still need access?
+\item Is the default branch protected -- can anyone push directly to it?
+\item Are there deploy keys -- who has the private key?
+\end{list2}
+
+{\bf Hints:}\\
+GitHub repository roles, from least to most access: Read, Triage, Write, Maintain, Admin. The documentation has a table of what each role can do, including who can create and change GitHub Actions secrets and workflows:\\
+\link{https://docs.github.com/articles/repository-permission-levels-for-an-organization}
+
+Note: someone holding the private key of a deploy key can keep reading from or writing to the repository, even after being removed from the organisation.
+
+{\bf Solution:}\\
+When you have looked at the real permissions for at least one repository and compared them with what you expected, you are done.
+
+{\bf Discussion:}\\
+Discuss with your neighbour: would you have expected this? Who reviews these permissions, and how often?
+
+The internet is decentralized, but recent years see more centralization -- GitHub, DNS with Google DNS, Cloudflare. What are some problems in this?
+
+
+\chapter{\faExclamationTriangle\ Research CSRF protection in Django and the OWASP patterns 15 min}
+\label{ex:research-middleware-csrf}
+
+{\bf Objective:}\\
+See how a mature framework implements Cross-Site Request Forgery (CSRF) protection, and compare with the patterns recommended by OWASP.
+
+{\bf Purpose:}\\
+Creating anti-CSRF tokens is best left to existing middleware. The OWASP CSRF Prevention Cheat Sheet starts by recommending: check if your framework has built-in CSRF protection, and use it.
+
+{\bf Suggested method:}\\
+Read the Django description of its CSRF protection:\\
+\link{https://docs.djangoproject.com/en/stable/ref/csrf/}
+
+Then read the overview section of the OWASP CSRF Prevention Cheat Sheet:\\
+\url{https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html}
+
+The cheat sheet describes these patterns, among others:
+\begin{list2}
+\item Synchronizer token pattern -- for stateful software, the token is stored in the session
+\item Double submit cookie -- for stateless software
+\item Fetch Metadata headers -- for software targeting modern browsers
+\item SameSite cookies and checking the Origin header -- as defense in depth
+\end{list2}
+
+{\bf Hints:}\\
+Django has a LOT of security features built-in and is a good example, even if you do not use Python. Look at how the protection is enabled, and how a developer can turn it off for a single view.
+
+Then check the framework you use yourself: Spring, ASP.NET Core, Express, Angular, ...
+
+{\bf Solution:}\\
+When you can say which OWASP pattern Django uses, and whether your own framework has CSRF protection enabled by default, you are done.
+
+{\bf Discussion:}\\
+Where in your own code base would something like \verb+@csrf_exempt+ hide? Could you search for it in a Git hook or in CI?
+
+Note: an XSS vulnerability can be used to defeat token based CSRF defenses -- so XSS prevention is also CSRF prevention.
+
+
+\chapter{\faExclamationTriangle\ Kyverno Playground 15 min}
+\label{ex:kyverno-playground}
+
+{\bf Objective:}\\
+Read and try Kubernetes policies written for the Kyverno policy engine -- without installing anything.
+
+{\bf Purpose:}\\
+Policy engines like Kyverno run as admission controllers in Kubernetes and can validate, mutate and generate resources and verify image signatures. They allow you to enforce rules like ``containers must not run as root'' before anything runs in the cluster. The Kyverno Playground simulates Kyverno in the browser.
+
+{\bf Suggested method:}\\
+Open the Kyverno Playground:\\
+\link{https://playground.kyverno.io/}
+
+Follow the built-in tutorial. Then load a policy from the catalog, for example from the Pod Security Standards category, and test it against a pod.
+
+{\bf Hints:}\\
+Use this pod, similar to the Juice Shop example from day 0, as resource:
+\begin{minted}[fontsize=\footnotesize]{yaml}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: juice-shop
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: juice-shop
+    image: bkimminich/juice-shop
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+\end{minted}
+
+Does it pass? Now remove \verb+runAsNonRoot+, or add \verb+privileged: true+ -- what happens?
+
+The policy library has many ready-made policies, with categories and descriptions:\\
+\link{https://kyverno.io/policies/}
+
+{\bf Solution:}\\
+When you have evaluated at least one policy against a resource that passes and one that fails, you are done.
+
+{\bf Discussion:}\\
+Policies can run in audit mode, reporting violations, or enforce mode, rejecting resources. Would you enforce from day one, or start with audit?
+
+Kubernetes has a built-in Pod Security Admission controller for the Pod Security Standards. When do you need a policy engine in addition? Think about rules like ``only images from our own registry'' or ``images must be signed''.
+
+The Kyverno CLI can apply the same policies in CI -- before the resource ever reaches the cluster.
+
+
+\chapter{\faExclamationTriangle\ Threat-model your pipeline 15 min}
+\label{ex:pipeline-threat-model}
+
+{\bf Objective:}\\
+Think about how to secure the build and deployment pipeline itself -- not just which tools to add to it.
+
+{\bf Purpose:}\\
+A CI/CD pipeline can read the source code, holds secrets and can deploy to production. It is a production system and an attractive target. The tj-actions/changed-files compromise in March 2025 (CVE-2025-30066) showed how a third-party GitHub Action with moved version tags could leak secrets from more than 23,000 repositories.
+
+{\bf Suggested method:}\\
+Take one of your own pipelines, alone or with your neighbour, and answer:
+\begin{list2}
+\item Who can change the pipeline/workflow files -- is that reviewed like other code?
+\item Which secrets can a job reach -- and can a pull request from a fork reach them?
+\item Are third-party actions, plugins and images pinned to a commit SHA or digest, or to a tag that can be moved?
+\item Where do the jobs run -- shared runners, self-hosted runners reused between jobs?
+\item If you added a scanner aggregator like MegaLinter tomorrow: how many tools would you implicitly trust, who updates them, and where do the results go?
+\item What would happen if one of these tools was compromised, like tj-actions?
+\end{list2}
+
+{\bf Hints:}\\
+MegaLinter runs many linters and security scanners in one container, see the security flavor:\\
+\link{https://megalinter.io/}
+
+CISA alert about the tj-actions compromise:\\
+{\footnotesize\link{https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction}}
+
+{\bf Solution:}\\
+When you have answered the questions for one pipeline and found at least one thing you would change, you are done.
+
+{\bf Discussion:}\\
+The answers are mostly about permissions, pinning and isolation -- not about which scanner to add. Least privilege, separation and logging apply to the pipeline just like everywhere else.
+
+What is the trade-off with pinning? Pinned dependencies must be updated deliberately -- tools like Dependabot and Renovate can update pins for you.
+
+
+\chapter{\faExclamationTriangle\ npm audit and osv-scanner on Juice Shop 30 min}
+\label{ex:npm-audit-osv}
+
+{\bf Objective:}\\
+Check the dependencies of a real application for known vulnerabilities and known malicious packages, using \verb+npm audit+ and \verb+osv-scanner+.
+
+{\bf Purpose:}\\
+Most of the code in a modern application is dependencies. This exercise shows how many there are, how many have known vulnerabilities, and how the way you install them matters for supply chain attacks like the npm compromises in September 2025.
+
+{\bf Suggested method:}\\
+You need Git and Node.js with npm. If you do not have Node.js installed, run it in a container -- the official \verb+node+ images include Git:
+\begin{alltt}\footnotesize
+docker run --rm -it node:22 bash
+\end{alltt}
+
+Part 1:
+\begin{alltt}\footnotesize
+git clone --depth 1 https://github.com/juice-shop/juice-shop.git
+cd juice-shop
+cat .npmrc
+npm install --package-lock-only --package-lock=true --ignore-scripts
+npm audit
+\end{alltt}
+
+Then install osv-scanner, a single binary from the GitHub releases page -- pick the file for your platform:\\
+\link{https://github.com/google/osv-scanner/releases}
+
+\begin{alltt}\footnotesize
+./osv-scanner scan source -L package-lock.json
+\end{alltt}
+% Tested 2026-10-14 with osv-scanner v2.7.0 (released 2026-10-12)
+% TODO: pin a release a few weeks old before the course
+
+Part 2, after the break:
+\begin{list2}
+\item Compare your \verb+npm audit+ result with your neighbour -- is it the same number?
+\item Find \verb+debug+ and \verb+chalk+ in \verb+package-lock.json+ -- which versions?
+\item What would \verb+npm install+ have given you on 8 September 2025?
+\item What protects you: a committed lockfile, \verb+npm ci+, \verb+--ignore-scripts+, waiting a few days before taking new versions?
+\end{list2}
+
+{\bf Hints:}\\
+Juice Shop does not commit a lockfile -- its \verb+.npmrc+ contains \verb+package-lock=false+. The command above creates one without installing anything into \verb+node_modules+.
+
+\verb+--ignore-scripts+ is important: a normal \verb+npm install+ runs the lifecycle scripts of the packages, like \verb+postinstall+. This is how the Shai-Hulud worm ran on developer machines and CI runners in September 2025.
+
+When tested in October 2026 the lockfile had around 1,350 packages, and \verb+npm audit+ reported 46 vulnerabilities (2 low, 17 moderate, 18 high, 9 critical). Your numbers will differ.
+
+The \verb+frontend/+ directory has its own \verb+package.json+ -- you can do the same there.
+
+{\bf Solution:}\\
+When you have run both \verb+npm audit+ and \verb+osv-scanner+ and can explain one finding, you are done.
+
+{\bf Discussion:}\\
+Without a committed lockfile, the version ranges in \verb+package.json+ resolve to the newest matching versions at the time of install. Two people running the same command on different days get different dependency trees. This is why the result changes from day to day -- and why anyone running \verb+npm install+ on 8 September 2025 could get the malicious \verb+debug+ or \verb+chalk+.
+
+Juice Shop is deliberately vulnerable, so many findings are expected.
+
+\verb+npm audit+ uses the GitHub Advisory Database. \verb+osv-scanner+ uses OSV, which also contains known malicious packages from the OpenSSF Malicious Packages repository, with IDs starting with \verb+MAL-+. Note that both only report a malicious package if your lockfile contains the exact malicious version.
+
+Bonus question: how would you find out whether any of the packages in your tree was compromised at \emph{some} point in time, even if your version is clean?
+
+
+% =====================================================================
+% Day 1 exercises -- optional, for the open part and later
+% =====================================================================
+
+\chapter{\faInfoCircle\ Identify Session Tokens 30 min}
+\label{ex:identify-tokens}
+
+\begin{alltt}\small
+Cookie: login=CustomerId=900180&LanguageId=9; OldBrowser=\%220\%22; Pool=rosalina;
+ShowNativeLogin=true; DebugCustomerId=900180; DebugPersonId=400954;
+OnboardingCompletedFeatures=h=1c744782963a2478d5db92a9981d401a&ofc_47=True&ofd_49=True;
+ASP.NET_SessionId=u0245fara4x3qmkli5refddg;...
+\end{alltt}
+
+{\bf Objective:}\\
+Look at a real application and identify session tokens.
+
+Verify session settings, like Anti-XSS and Anti-CSRF tokens, if present.
+
+{\bf Purpose:}\\
+Web applications are \emph{faking sessions}, each request are independent by design of the protocol. This is done using session cookies and similar methods.
+
+Running Burp while performing a login will allow you to look into session identifiers.
+
+Running a test using Mozilla Observatory first will allow you to analyse the settings for the web site.
+
+Some things to look for
+\begin{list2}
+\item Cookie settings, Secure Flag and http-only, SameSite
+\item HSTS header \url{https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security}
+\item Random -- how to check that?
+\end{list2}
+
+{\bf Suggested method:}\\
+Use the Juice Shop with Burp from the day 0 exercises, or the developer tools in your browser, and log in to an application you use -- preferably one of your own in a test environment.
+
+{\bf Hints:}\\
+Look in the header section, and look for \verb+Cookie:+. Common ones are \verb+ASP.NET_SessionId+, \verb+JSESSIONID+ or \verb+PHPSESSID+. Juice Shop uses a JWT -- decode it, what is in the payload?
+
+{\bf Solution:}\\
+When you have identified session cookies or tokens and checked the settings using a scanner, test web site or similar you are done. It is recommended though to dive a bit into the application and how these are used.
+
+{\bf Discussion:}\\
+Most sites today have switched to using HTTPS, but some are not according to best practice. To prevent the use of credentials or cookies over insecure connections, we should not allow calls to happen over HTTP.
+
+Various tools like OWASP Zap and Burp suite can also be used for analyzing the session cookies, for randomness/entropy:\\
+\link{https://portswigger.net/burp/documentation/desktop/tools/sequencer/getting-started}
+
+Checkout the story of the old extension Firesheep on wikipedia, what could happen when session cookies were not protected:\\
+\link{https://en.wikipedia.org/wiki/Firesheep}
+
+
+\chapter{\faInfoCircle\ Postman API Client 20 min}
+\label{ex:postman-api}
+
+{\bf Objective:}\\
+Get a program capable of sending REST HTTP calls installed.
+
+{\bf Purpose:}\\
+Debugging REST APIs is often needed, including testing authentication with tokens.
+
+{\bf Suggested method:}\\
+Download the app from
+\link{https://www.postman.com/downloads/}
+
+Available for Windows, Mac and Linux.
+
+{\bf Hints:}\\
+Do not run Postman as root. A free account is optional, you can continue without one for basic features.
+
+Command line alternatives are \verb+curl+ and \verb+jq+, which work everywhere.
+
+{\bf Solution:}\\
+When you have performed a REST call from within this tool, you are done.
+
+Example: use the fake site \link{https://jsonplaceholder.typicode.com/todos/1} and other similar methods from the same (fake) REST API
+
+If you have Juice Shop running, try its REST API, for example the product search at \verb+/rest/products/search?q=+
+
+{\bf Discussion:}\\
+Multiple applications and plugins can perform similar functions. This is a standalone app.
+
+Where do tools like this store your tokens and API keys? Are they synchronised to a cloud account?
+
+
+\chapter{\faInfoCircle\ PHP Passwords 30 min}
+\label{ex:php-passwords}
+
+\begin{minted}[fontsize=\footnotesize]{php}
+<?php
+/**
+ * We just want to hash our password using the current DEFAULT algorithm.
+ * This is presently BCRYPT, and will produce a 60 character result.
+ *
+ * Beware that DEFAULT may change over time, so you would want to prepare
+ * By allowing your storage to expand past 60 characters (255 would be good)
+ */
+echo "Password: henrik42 hash: ";
+echo password_hash("henrik42", PASSWORD_DEFAULT);
+?>
+\end{minted}
+
+{\bf Objective:}\\
+Try the PHP function \verb+password_hash+ on the same password with different algorithms and compare hashes
+
+{\bf Purpose:}\\
+Running the PHP \verb+password_hash+ function will enable you to use a quality implementation of hashing algorithms.
+
+{\bf Suggested method:}\\
+Run the program using PHP on the command line, using the documentation\\
+\link{https://www.php.net/manual/en/function.password-hash.php}
+
+If you do not have PHP installed, a container works: \verb+docker run --rm -it php:cli bash+
+
+{\bf Hints:}\\
+Create a program that hash a password using multiple algorithms.
+
+You can ask the user for input, or hard-code in the program source.
+
+The output is expected similar to:
+
+\begin{alltt}
+\$ php my_passwordprogram.php
+The password is: henrik42
+The password hash using default is: \$2y\$10\$.fwefw...2kljhfwe
+... print all of the hashes possible
+\end{alltt}
+
+{\bf Solution:}\\
+When you have a PHP program that can hash a password you are done.
+
+Also, explain why above example start with \verb+$2y$10$+
+
+{\bf Discussion:}\\
+There are multiple tunable parameters for some algorithms. Feel free to experiment with them and compare output.
+
+Note the length of output from the hashing algoritms do NOT say how strong they are. An algorithm which output less can be more secure than one with longer output.
+
+Password hashing is not easy, and consider an environment with 100s of applications!
+
+Which function does your own framework use for password hashing?
+
+
+\chapter{\faInfoCircle\ Django String Handling 20min}
+\label{ex:django-string}
+
+Recommendations for handling strings, how does Python help, how does Django handle strings, and input validation
+
+{\bf Objective:}\\
+Look into string handling in Django framework
+
+{\bf Purpose:}\\
+See that Python 3 and Django includes functions for conversion, so you dont need to write these yourself.
+
+{\bf Suggested method:}\\
+First look into Python3 string handling, for example by looking at\\
+\url{https://docs.python.org/3/library/text.html}
+
+Then look at Django string and unicode handling:
+\begin{list2}
+\item Look for string, url, encode, decode in\\
+\url{https://docs.djangoproject.com/en/stable/ref/utils/}
+\item \url{https://docs.djangoproject.com/en/stable/ref/unicode/}
+\end{list2}
+
+{\bf Hints:}\\
+Follow the URLs above.
+
+{\bf Solution:}\\
+When you have looked up and seen the names of a few relevant functions like these below, you are done:
+
+\begin{alltt}
+django.utils.html escape(text)
+django.utils.safestring
+django.utils.dateparse
+\end{alltt}
+
+Note the links where you can see the source implementation of the functions.
+
+{\bf Discussion:}\\
+Are strings easy to work with?
+
+
+\chapter{\faInfoCircle\ Django ORM 20 min}
+\label{ex:django-orm}
+
+\begin{minted}[fontsize=\small]{python}
+from django.db import models
+
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+\end{minted}
+
+\begin{minted}[fontsize=\small]{sql}
+CREATE TABLE myapp_person (
+    "id" serial NOT NULL PRIMARY KEY,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL
+);
+\end{minted}
+
+{\bf Objective:}\\
+See how a mapping model, Object–relational mapping (ORM) can help reduce complexity for you.
+
+{\bf Purpose:}\\
+Using an ORM frees you from a lot of low level detail, and keeps your application more portable between database systems. It also uses parameterized queries, preventing most SQL injection.
+
+{\bf Suggested method:}\\
+Read about the Django  Object–relational mapping (ORM) at:
+
+\begin{list2}
+\item \link{https://docs.djangoproject.com/en/stable/topics/db/models/}
+\item \link{https://docs.djangoproject.com/en/stable/topics/db/queries/}
+\end{list2}
+
+{\bf Hints:}\\
+Many programming languages use ORM and have similar functions. See Wikipedia for a list:\\
+\url{https://en.wikipedia.org/wiki/List_of_object-relational_mapping_software}
+
+{\bf Solution:}\\
+When you have read about either the Django model, or a similar method in another framework or programming language you are done.
+
+{\bf Discussion:}\\
+Look for the escape hatches: how can a developer write raw SQL in Django, and how do you make that safe?
+
+I have myself used Grails,
+\emph{A powerful Groovy-based web application framework for the JVM built on top of Spring Boot}
+
+\link{https://grails.org/}
+
+
+\chapter{\faInfoCircle\ Django email validation 30 min}
+\label{ex:django-email}
+
+{\bf Objective:}\\
+Find a mature implementation for validating email, a common requirement in modern applications.
+
+We will use Django as an example.
+
+{\bf Purpose:}\\
+See if we can find an implementation that will suit our own projects, even if not using Django.
+
+{\bf Suggested method:}\\
+Find the Django email validation -- how is the validation done, can it be copied and reused somewhere else.
+
+{\bf Hints:}\\
+The Django software is open source, and available at:\\
+\link{https://github.com/django/django}
+
+Git clone and searching locally might give the best results.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ git clone --depth 1 https://github.com/django/django.git
+$ cd django
+$ grep -ril email | less
+\end{minted}
+
+One file includes \verb+class EmailValidator:+ which sounds promising.
+
+{\bf Solution:}\\
+When you have found the files implementing the actual email validation, not all related files, only the one doing the validation -- you are done.
+
+{\bf Discussion:}\\
+Email addresses are notoriously hard to validate, since the standard is very complex. Often we can do with less, say if we want to use it as a user-id. Then we might decide NOT to support comments and things like \verb?hlk+test@kramse.org?
+
+Which other validators would be nice to have, in your own library?
+
+Via Angular: \url{https://v17.angular.io/api/forms/Validators#email}\\
+\url{https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address}
+
+
+\chapter{\faInfoCircle\ Try American fuzzy lop up to 60min}
+\label{ex:american-fuzzy-lop}
+
+{\bf Objective:}\\
+Try a fuzzer. We will use the popular american fuzzy lop named after a breed of rabits, today maintained as the fork AFL++.
+
+{\bf Purpose:}
+\begin{quote}
+American fuzzy lop is a security-oriented fuzzer that employs a novel type of compile-time instrumentation and genetic algorithms to automatically discover clean, interesting test cases that trigger new internal states in the targeted binary. This substantially improves the functional coverage for the fuzzed code. The compact synthesized corpora produced by the tool are also useful for seeding other, more labor- or resource-intensive testing regimes down the road.
+\end{quote}
+Source: \link{http://lcamtuf.coredump.cx/afl/}
+
+{\bf Suggested method:}\\
+The original AFL is no longer developed. Use AFL++ which is packaged in many Linux distributions, e.g. \verb|apt install afl++| on Debian, and follow the tutorials:\\
+\link{https://github.com/AFLplusplus/AFLplusplus}
+
+Later if you like, fuzz the small C programs from the day 0 exercises.
+
+{\bf Hints:}\\
+Look at the many projects which have been tested by AFL, the \emph{bug-o-rama trophy case} on the original web page.
+
+{\bf Solution:}\\
+When AFL++ is installed and has run a fuzzing session against a program - no matter if it found anything.
+
+{\bf Discussion:}\\
+For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
+
+Could fuzzing be part of your CI pipeline? Some projects run continuous fuzzing, like Google OSS-Fuzz.
+
+
+\chapter{\faInfoCircle\ Real Vulnerabilities up to 30min}
+\label{ex:real-vulns}
+
+{\bf Objective:}\\
+Look at real vulnerabilities. Choose a few real vulnerabilities, prioritize them.
+
+{\bf Purpose:}\\
+See that the error types described in the books - are still causing problems.
+
+{\bf Suggested method:}\\
+We will use the 2019 Exim errors as examples. Download the descriptions from:
+\begin{list2}
+\item Exim RCE CVE-2019-10149 June\\ \url{https://www.qualys.com/2019/06/05/cve-2019-10149/return-wizard-rce-exim.txt}
+
+\item Exim RCE CVE-2019-15846 September\\
+\url{https://exim.org/static/doc/security/CVE-2019-15846.txt}
+\end{list2}
+
+When done with these think about your own dependencies. What software do you depend on? How many vulnerabilities and CVEs are for that?
+
+I depend on the OpenBSD operating system, and it has flaws too:\\
+\url{https://www.openbsd.org/errata.html}
+
+You may depend on OpenSSH from the OpenBSD project, which has had a few problems too:\\
+\url{https://www.openssh.com/security.html}
+
+{\bf Hints:}\\
+Remote Code Execution can be caused by various things, but most often some kind of input validation failure.
+
+{\bf Solution:}\\
+When you have identified the specific error type, is it buffer overflows? Then you are done.
+
+{\bf Discussion:}\\
+How do you feel about running internet services. Lets discuss how we can handle running insecure code.
+
+What other methods can we use to restrict problems caused by similar vulnerabilities.
+
+A new product will often use a generic small computer and framework with security problems.
+
+
+\chapter{\faInfoCircle\ Security.txt 15 min}
+\label{ex:security.txt}
+
+{\bf Objective:}\\
+Learn how to contact sites with security problems, through \verb+security.txt+ files.
+
+{\bf Purpose:}\\
+Contacting a site which has a security problem can be a difficult task. Sending information through the usual support often requires a contract, and you are helping the company?!
+
+Also, how do you make sure people can contact YOUR organisation with security issues in your sites. Receiving vulnerability reports is the incoming side of vulnerability management.
+
+\begin{quote}\footnotesize
+Summary\\
+“When security risks in web services are discovered by independent security researchers who understand the severity of the risk, they often lack the channels to disclose them properly. As a result, security issues may be left unreported. security.txt defines a standard to help organizations define the process for security researchers to disclose security vulnerabilities securely.”
+
+security.txt files have been implemented by Google, Facebook, GitHub, the UK government, and many other organisations. In addition, the UK’s Ministry of Justice, the Cybersecurity and Infrastructure Security Agency (US), the French government, the Italian government, and the Australian Cyber Security Centre endorse the use of security.txt files.
+\end{quote}
+
+Source: \link{https://securitytxt.org/}
+
+{\bf Suggested method:}\\
+Run the wizard on the site to create a template file for your own purposes.
+
+{\bf Hints:}\\
+Looking at other sites can help, since they have run these for some time. So find a few examples, the web site mentions a few. The file is found at \verb+/.well-known/security.txt+
+
+{\bf Solution:}\\
+When you have seen a few security.txt files, and possibly created one yourself, you are done.
+
+{\bf Discussion:}\\
+Does your organisation have one? Who reads the mailbox it points to?
+
+Before this initiative there was a common set of email addresses, used for specific purposes. I still recommend them to customers:
+
+\begin{alltt}\footnotesize
+MAILBOX       AREA                USAGE
+-----------   ----------------    ---------------------------
+ABUSE         Customer Relations  Inappropriate public behaviour
+NOC           Network Operations  Network infrastructure
+SECURITY      Network Security    Security bulletins or queries
+...
+MAILBOX       SERVICE             SPECIFICATIONS
+-----------   ----------------    ---------------------------
+POSTMASTER    SMTP                [RFC821], [RFC822]
+HOSTMASTER    DNS                 [RFC1033-RFC1035]
+WEBMASTER     HTTP                [RFC 2068]
+WWW           HTTP                Synonym for WEBMASTER
+\end{alltt}
+
+
+\chapter{\faInfoCircle\ Securing the JuiceShop}
+\label{ex:secure-juiceshop}
+
+{\bf Objective:}\\
+Layout a plan for securing the Juice Shop
+
+{\bf Purpose:}\\
+Lets discuss how we can proceed if JuiceShop was a real shop in our organisation
+
+{\bf Suggested method:}\\
+Break down the immediate steps for securing this shop.
+
+Should we go and buy a security product for filtering requests?
+
+Should we start logging all requests and analyzing them?\\
+To see when we are attacked
+
+Use the final recommendations from day 1 as a checklist: dependencies, authentication, container hardening, policies, pipeline, separation of environments, logging and monitoring.
+
+{\bf Hints:}\\
+There are some gaping holes that can be removed, files that could be downloaded.
+
+Some functions are old and can be removed or turned off.
+
+{\bf Solution:}\\
+There is no solution, the discussion is the solution.
+
+{\bf Discussion:}\\
+There are some things that can be \emph{fixed} in production, and some can't easily be redone without major interruption
+
+
+\chapter{\faInfoCircle\ Lynis Auditing, System hardening, and Compliance testing 20min}
+\label{ex:lynis-first}
+
+\hlkimage{10cm}{lynis.png}
+
+{\bf Objective:}\\
+Try out the Lynis tool for scanning your local Unix server.
+
+{\bf Purpose:}\\
+Lynis is a quick tool to run, and gives concrete advise for things to change. It is the host level equivalent of kube-bench from day 0.
+
+{\bf Suggested method:}\\
+Install using APT on a Debian or Ubuntu system, a virtual machine or a test server, and run the tool
+
+\begin{alltt}
+sudo apt install lynis
+sudo lynis audit system
+\end{alltt}
+
+{\bf Hints:}\\
+Use the web site for the tool Lynis \url{https://cisofy.com/lynis/} and audit your system
+
+{\bf Solution:}\\
+When you have run the tool you are done. Better if you have browsed some of the output
+
+{\bf Discussion:}\\
+Which suggestions would you apply to a production server -- and which would you put in your base image or configuration management, so every new server gets them?
+
+
+
 \end{document}
 
 

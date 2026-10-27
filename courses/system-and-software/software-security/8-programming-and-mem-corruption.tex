@@ -1,0 +1,915 @@
+\documentclass[Screen16to9,17pt]{foils}
+\usepackage{zencurity-slides}
+\externaldocument{software-security-exercises}
+\selectlanguage{english}
+
+% quotes from the Web Application Security book, between \small and \normalsize
+\newcommand{\quotesize}{\fontsize{16pt}{20pt}\selectfont}
+
+\begin{document}
+
+\mytitlepage
+{8. Programming and Memory Corruption}
+{EK  Software Security}
+
+\slide{Goals for today}
+
+\hlkimage{6cm}{thomas-galler-hZ3uF1-z2Qc-unsplash.jpg}
+
+Todays goals:
+\begin{list2}
+\item Web Application Hacking -- do offensive testing on web applications
+\item Perform analysis of the underlying factors, why is it possible
+\item Understand more C, and problems associated with C
+\item Talk about the Design Patterns concept, and the ones often found in programs
+\item Patterns can also be found in other areas, like Patterns in Network Architecture
+\end{list2}
+
+Photo by Thomas Galler on Unsplash
+
+
+
+\slide{Plan for today}
+
+\begin{list1}
+\item Subjects
+\begin{list2}
+\item Offense against web applications: XSS, CSRF, XXE, injection, DoS, third-party dependencies
+\item C language issues, memory corruption errors, buffer overflows, stack errors
+\item Common constructs and recurring code patterns
+\item Example programs with flaws: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop
+\end{list2}
+\item Exercises
+\begin{list2}
+\item JuiceShop attacks, including SQL injection login
+\item Writing and exploiting a small buffer overflow, run debugger
+\item Pointers and Structure padding
+\item Static analysis with PMD, Git hook example, use a XML library in Python
+\end{list2}
+\end{list1}
+
+\slide{Time schedule}
+
+Plan for the day
+\begin{list1}
+\item 12:45 - 13:45 -- Teaching: Offense against web applications, XSS, CSRF, XXE, injection
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- 45min Exercises: JuiceShop attacks, including SQL injection login
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- 45min Teaching: C issues, memory corruption, program building blocks
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- 45min Exercises: Buffer overflow and debugger, structure padding
+\vskip 1em
+\item 12:45 - 16:45 I will be here at EK
+\end{list1}
+
+% ---- Content from 6-web-app-hacking-offensive.tex ----
+
+\slide{Next up Offensive Web Hacking}
+
+Input from this book -- you dont need to have it, the slides cover the important parts:\\
+\emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+\begin{list1}
+\item Part II. Offense, chapters 9-16, very short chapters
+\item 9. Introduction to Hacking Web Applications
+\item 10. Cross-Site Scripting (XSS)
+\item 11. Cross-Site Request Forgery (CSRF)
+\item 12. XML External Entity (XXE)
+\item 13. Injection
+\item 14. Denial of Service (DoS)
+\item 15. Exploiting Third-Party Dependencies
+\item 16. Part II Summary
+\end{list1}
+
+\slide{What we learnt from the recon part}
+
+%\hlkimage{}{}
+
+\begin{quote}\quotesize
+In Part I of this book, “Recon,” we explored a number of ways to investigate and
+document the structure and function of a web application. We evaluated ways of
+finding APIs on a server, including those that exist on subdomains rather than at just the
+top-level domain. We considered methods of enumerating the endpoints that those
+APIs exposed, and the HTTP verbs that they accepted.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+\begin{list2}
+\item We are allowed to do reconnaissance
+\item Having a good inventory of software, hardware, devices, etc. makes it easier to control and secure
+\item Having knowledge about patching levels is vital!
+\end{list2}
+
+
+\slide{Exploiting web applications is exploiting software}
+
+%\hlkimage{}{}
+
+\begin{quote}\quotesize
+  In the next few chapters, you will learn how to take advantage of web applications
+  through a number of powerful and common exploitation techniques. As you learn
+  about these techniques, consider the lessons from the previous part and attempt to
+  brainstorm how those recon techniques would be useful in helping you find weaknesses in an application where the upcoming exploits you’ll learn about be applied.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+\begin{list2}
+\item Attacking web applications attack the whole organisation
+\item Web applications are exposing the organisation
+\item Vulnerabilities in the web applications typically allow access to data/databases
+\end{list2}
+
+
+
+\slide{Part II. Offense, chapters 9-16}
+
+{\large 9. Introduction to Hacking Web Applications}
+
+\begin{quote}\quotesize
+Software engineers measure productivity in value-add through features, or improvements to an existing codebase. A software engineer might say, “I added features x and y, hence today was a good day.” Alternatively, they might say, “I improved the performance of features a and b by 10\%,” alluding to the fact that the work of a software engineer, while difficult to measure compared to traditional occupations, is still quantifiably measurable.
+
+Hackers measure productivity in ways that are much more difficult to discern and measure. This is because the majority of hacking is actually data gathering and analysis. Often this process is riddled with false positives and might look like time wasted to an uneducated onlooker.
+\end{quote}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
+
+
+
+\slide{10. Cross-Site Scripting (XSS)}
+
+\begin{quote}\quotesize
+  Cross-Site Scripting (XSS) vulnerabilities are some of the most common vulnerabilities throughout the internet, and have appeared as a direct response to the increasing
+  amount of user interaction in today’s web applications.
+  At its core, an XSS attack functions by taking advantage of the fact that web applications execute scripts on users’ browsers. Any type of dynamically created script that is
+  executed puts a web application at risk if the script being executed can be contaminated or modified in any way—in particular by an end user.
+\end{quote}
+
+XSS attacks are categorized a number of ways, with the big three being:
+\begin{list2}
+  \item Stored (the code is stored on a database prior to execution)
+\item Reflected (the code is not stored in a database, but reflected by a server)
+\item DOM-based (code is both stored and executed in the browser)
+\end{list2}
+
+Note: attacks the user, his/her data mostly.
+
+\slide{11. Cross-Site Request Forgery (CSRF)}
+
+\begin{quote}\quotesize
+Sometimes we already know an API endpoint exists that would allow us to perform an operation we wish to perform, but we do not have access to that endpoint because it requires privileged access (e.g., an admin account).
+
+In this chapter, we will be building Cross-Site Request Forgery (CSRF) exploits that result in an admin or privileged account performing an operation on our behalf rather than using a JavaScript code snippet.
+
+CSRF attacks take advantage of the way browsers operate and the trust relationship between a website and the browser. By finding API calls that rely on this relationship to ensure security—but yield too much trust to the browser—we can craft links and forms that with a little bit of effort can cause a user to make requests on his or her own behalf—unknown to the user generating the request.
+\end{quote}
+
+\begin{list2}
+  \item Often seen in small CPE routers in homes, if the user activates and evil link, their router might be reconfigured or taken over
+\end{list2}
+
+\slide{12. XML External Entity (XXE)}
+
+\begin{quote}\quotesize
+XML External Entity (XXE) is a classification of attack that is often very simple to execute, but with devastating results. This classification of attack relies on an improperly configured XML parser within an application’s code.
+
+Generally speaking, almost all XXE attack vulnerabilities are found as a result of an API endpoint that accepts an XML (or XML-like) payload. You may think that HTTP endpoints accepting XML is uncommon, but XML-like formats include SVG, HTML/DOM, PDF (XFDF), and RTF. These XML-like formats share many common similarities with the XML spec, and as result, many XML parsers also accept them as inputs.
+
+The magic behind an XXE attack is that the XML specification includes a special annotation for importing external files. This special directive, called an external entity, is interpreted on the machine on which the XML file is evaluated. This means that a specially crafted XML payload sent to a server’s XML parser could result in compromising files in that server’s file structure.
+\end{quote}
+
+\begin{list2}
+  \item Often I consider these along the same lines as Java serialization attacks, sending data in JAVA that gets converted/expanded etc.
+\end{list2}
+
+\slide{13. Injection}
+
+\begin{quote}\quotesize
+One of the most commonly known types of attacks against a web application is SQL injection. SQL injection is a type of injection attack that specifically targets SQL databases, allowing a malicious user to either provide their own parameters to an existing SQL query, or to escape an SQL query and provide their own query. Naturally, this typically results in a compromised database because of the escalated permissions the SQL interpreter is given by default.
+
+SQL injection is the most common form of injection, {\bf but not the only form}. Injection attacks have two major components: an interpreter and a payload from a user that is somehow read into the interpreter. This means that injection attacks can occur against command-line utilities like FFMPEG (a video compressor) as well as against databases (like the traditional SQL injection case).
+\end{quote}
+
+\begin{list2}
+\item Injecting SQL commands, perform database actions
+\item Escape into the operating system via SQL, easier in the old days
+\item Escape into shell from URL parameters, often happens
+\item Compare to shellshock vuln, sending data that later ends up in the Unix shells
+\end{list2}
+
+
+\slide{Sqlmap}
+
+\begin{quote}\small
+sqlmap is an open source penetration testing tool that automates the process of detecting and exploiting SQL injection flaws and taking over of database servers. It comes with a powerful detection engine, many niche features for the ultimate penetration tester and a broad range of switches lasting from database fingerprinting, over data fetching from the database, to accessing the underlying file system and executing commands on the operating system via out-of-band connections.
+
+\end{quote}
+
+\begin{list1}
+\item Automatic SQL injection and database takeover tool
+\link{http://sqlmap.org/}
+\end{list1}
+
+
+\slide{sqlmap features}
+
+\hlkimage{16cm}{sqlmap-features-1.png}
+
+Not a complete list!
+
+Source: \link{http://sqlmap.org/}
+
+\slide{Command injection flaws}
+
+Running operating system commands can often be done using \emph{escaping}
+\begin{alltt}
+<pre>
+<?php passthru("{\bfseries netstat -an && ifconfig -a}"); ?>
+</pre>
+\end{alltt}
+\begin{list1}
+\item Other shell escapes:
+\begin{list2}
+\item Perl: \verb+print `/usr/bin/finger $input{'command'}`;+
+\item UNIX shell: \verb+`echo hej`+
+\item Microsoft SQL: \verb+exec master..xp_cmdshell 'net user test testpass /ADD'+
+\end{list2}
+\end{list1}
+%$
+
+\vskip 1 cm
+
+\centerline{\bfseries May be exploited through web applications if data is not sanitized}
+
+
+\slide{Shellshock CVE-2014-6271 - and others}
+
+\hlkimage{13cm}{shellshock-ubuntu.png}
+
+Can result in data being sent through several systems, before it reaches some shell program
+
+Source:
+\link{https://en.wikipedia.org/wiki/Shellshock_(software_bug)}
+
+
+
+
+\slide{November 2021: Log4Shell}
+\begin{quote}\small
+It would not be possible to discuss 2021 in the context of vulnerabilities without the mention of Log
+4Shell. {\bf A widely used Java-based logging library caused headaches for Security professionals wor
+ldwide}. Many scrambled to quantify their use of Log4j within their estates.
+
+A zero-day exploit quickly followed, confirming the worst - {\bf Remote Code Execution (RCE) was inde
+ed possible.} However, what made the nature of the vulnerability even more challenging was the abilit
+y to exploit a backend logging system from an unaffected front end host. For example, an attacker can
+ craft a weaponised log entry on a mobile app or webserver not running Log4j. The attacker could make
+ their way through to backend middleware itself running Log4j, which significantly extends the attack
+ surface of the vulnerability.
+
+The NCSC even took the step of recommending the update was immediately applied, whether or not Log4Sh
+ell was known to be in use. As is commonly the case with critical vulnerabilities, two successive Log
+4j patches were subsequently released in the week following the original addressing Denial of Service
+ (DoS) and a further RCE. This further increased workloads of Security and IT teams just as they thou
+ght the worst of 2021 had been and gone.
+\end{quote}
+Source - for this description:\\
+\link{https://chessict.co.uk/resources/blog/posts/2022/january/2021-top-security-vulnerabilities/}
+
+See also \link{https://en.wikipedia.org/wiki/Log4Shell}
+
+
+
+
+
+\slide{14. Denial of Service (DoS)}
+
+\begin{quote}\quotesize
+Perhaps one of the most popular types of attacks, and the most widely publicized, is the distributed denial of service (DDoS) attack. This attack is a form of denial of service (DoS), in which a large network of devices flood a server with requests, slowing down the server or rendering it unusable for legitimate users.
+
+DoS attacks come in many forms, from the well-known distributed version that involves thousands or more coordinated devices, to code-level DoS that affects a single user as a result of a faulty regex implementation, resulting in long times to validate a string of text. DoS attacks also range in seriousness from reducing an active server, to a functionless electric bill, to causing a user’s web page to load slightly slower than usual or pausing their video midbuffer.
+
+Because of this, it is very difficult to test for DoS attacks (in particular, the less severe
+ones). Most bug bounty programs outright ban DoS submissions to prevent bounty
+hunters from interfering with regular application usage.
+\end{quote}
+
+\begin{list2}
+\item There have been some hash-based attacks and attacks using data to create bad performance, see PHP security advisories
+\end{list2}
+
+\slide{15. Exploiting Third-Party Dependencies}
+
+\begin{quote}\quotesize
+The rampant use of third-party dependencies, in particular from the OSS realm, has created an easy-to-overlook gap in the security of many web applications. A hacker, bug bounty hunter, or penetration tester can take advantage of these integrations and jumpstart their search for live vulnerabilities. Third-party dependencies can be attacked a number of ways, from shoddy integrations to fourth-party code or just by finding known exploits discovered by other researchers or companies.
+\end{quote}
+
+\begin{list2}
+  \item Be careful what you include in your environment
+\end{list2}
+
+
+\slide{CIS Controls: Offense informs defense}
+
+\begin{list2}
+%\item The five critical tenets of an effective cyber defense system as reflected in the CIS Controls are:
+\item {\bf Offense informs defense:} Use knowledge of actual attacks that have
+compromised systems to provide the foundation to continually learn
+from these events to build effective, practical defenses. Include only
+those controls that can be shown to stop known real-world attacks.
+\item {\bf Prioritization:} Invest first in Controls that will provide the greatest risk
+reduction and protection against the most dangerous threat actors
+and that can be feasibly implemented in your computing environment.
+The CIS Implementation Groups discussed below are a great place for
+organizations to start identifying relevant Sub-Controls.
+\item {\bf Measurements and Metrics:} Establish common metrics to provide a
+shared language for executives, IT specialists, auditors, and security
+officials to measure the effectiveness of security measures within
+an organization so that required adjustments can be identified and
+implemented quickly.
+\item {\bf Continuous diagnostics and mitigation:} Carry out continuous
+measurement to test and validate the effectiveness of current security
+measures and to help drive the priority of next steps.
+\item {\bf Automation:} Automate defenses so that organizations can achieve
+reliable, scalable, and continuous measurements of their adherence to
+the Controls and related metrics. \hfill {\footnotesize Source: CIS-Controls-Version-7-1.pdf}
+\end{list2}
+
+
+\slide{Application Software Security}
+
+\begin{quote}
+CIS Control 18:\\
+Application Software Security\\
+Manage the security life cycle of all in-house developed and acquired software in order to prevent, detect, and correct security weaknesses.
+\end{quote}
+
+Source: Center for Internet Security CIS Controls 7.1 \verb+CIS-Controls-Version-7-1.pdf+
+
+\begin{quote}
+CIS Control 16:\\
+Application Software Security\\
+Manage the security life cycle of in-house developed, hosted,
+or acquired software to prevent, detect, and remediate security
+weaknesses before they can impact the enterprise.
+\end{quote}
+
+Source: Center for Internet Security CIS Controls v8 \verb+CIS_Controls_v8_Guide.pdf+
+
+
+
+
+\slide{Testing Labs}
+
+\hlkimage{8cm}{hacklab-1.png}
+
+\begin{list2}
+\item Sniffers Wireshark and similar tools
+\item Proxies and fuzzers
+\item Debuggers
+\item Virtualisation - can also emulate ARM on Intel etc.
+\item Laptops and network hardware - dont use a HUB! Cheap managed switch with mirror port is better
+\end{list2}
+
+\exercise{ex:juiceshop-attack}
+
+% ---- Content from 7-sw-programming-and-mem-corruption.tex ----
+
+\slide{What is C}
+
+\begin{quote}
+C is a general-purpose, procedural computer programming language supporting structured programming, lexical variable scope, and recursion, while a static type system prevents unintended operations. By design, C provides constructs that map efficiently to typical machine instructions and has found lasting use in applications previously coded in assembly language. Such applications include operating systems and various application software for computers, from supercomputers to embedded systems.
+{\bf
+C was originally developed at Bell Labs by Dennis Ritchie between 1972 and 1973 to make utilities running on Unix.} Later, it was applied to re-implementing the kernel of the Unix operating system.[6] During the 1980s, C gradually gained popularity. {\bf Nowadays, it is one of the most widely used programming languages},[7][8] with C compilers from various vendors available for the majority of existing computer architectures and operating systems. C has been standardized by the ANSI since 1989 (see ANSI C) and by the International Organization for Standardization.
+\end{quote}
+
+Source:
+\url{https://en.wikipedia.org/wiki/C_(programming_language)}
+
+
+\slide{C language issues}
+
+\hlkimage{3cm}{kernighan-ritchie-c.jpg}
+\begin{list2}
+\item C was very portable
+\item C was standardized
+\item Still lots of unspecified behaviour / undefined behaviour and implementation-defined
+\item So C on one operating system can be very different!
+\item Writing portable and correct code is hard!
+\end{list2}
+
+\url{https://en.wikipedia.org/wiki/Unspecified_behavior}
+
+
+
+\slide{Hello World}
+
+
+\begin{quote}
+While small test programs have existed since the development of programmable computers, the tradition of using the phrase "Hello, World!" as a test message was influenced by an example program in the seminal 1978 book The C Programming Language.[3] The example program in that book prints "hello, world", and was inherited from a 1974 Bell Laboratories internal memorandum by Brian Kernighan, Programming in C: A Tutorial:[4]
+\end{quote}
+
+\begin{minted}[fontsize=\small]{c}
+main( ) {
+        printf("hello, world\n");
+}
+\end{minted}
+
+\begin{list2}
+\item Very compact, easily readable - more than assembler anyway!
+\end{list2}
+
+Code and quote from
+\url{https://en.wikipedia.org/wiki/%22Hello,_World!%22_program}
+
+\slide{Hello World}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+       (void) argc;
+       (void) argv;
+
+       printf("Hello world!\n");
+
+       return EXIT_SUCCESS;
+}
+\end{minted}
+
+\begin{list2}
+\item Dont forget to define function return value, your variables and arguments to the program and functions
+\item Dont forget to return something useful
+\item Whats an int anyway? integers
+\end{list2}
+
+Source: a better hello world from \url{https://da.wikipedia.org/wiki/Hello_world-program#C}
+
+
+
+\slide{Data types}
+
+\begin{list2}
+\item Character types char, signed char, unsigned char
+\item Integer types, short int, int, long int, long long int - plus unsigned
+\item Floating types float, double, long double
+\item Bit fields a specific number of bits in an object
+\item Signed and unsigned!
+\item Byte order, little or big endian - named from 1726 novel Gulliver's Travels by Jonathan Swift
+\item Big endian also called network order, as used in TCP/IP suite
+\item Lots more types we wont discuss in all details
+\end{list2}
+
+Data types have a \emph{range of values}
+
+See more specific at \url{https://en.wikipedia.org/wiki/C_data_types}\\
+also interesting is the float format\\ \url{https://en.wikipedia.org/wiki/Single-precision_floating-point_format}
+
+\slide{Example integer overflow}
+
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+We wont do the match in binary!
+
+\slide{Integer overflows}
+
+\begin{alltt}\footnotesize
+----[ 1.2 What is an integer overflow?
+Since an integer is a fixed size (32 bits for the purposes of this paper),
+there is a fixed maximum value it can store.  When an attempt is made to
+store a value greater than this maximum value it is known as an integer
+overflow.  The ISO C99 standard says that an integer overflow causes
+"undefined behaviour", meaning that compilers conforming to the standard
+may do anything they like from completely ignoring the overflow to aborting
+the program.  Most compilers seem to ignore the overflow, resulting in an
+unexpected or erroneous result being stored.
+
+----[ 1.3 Why can they be dangerous?
+Integer overflows cannot be detected after they have happened, so there is
+not way for an application to tell if a result it has calculated previously
+is in fact correct.  This can get dangerous if the calculation has to do
+with the size of a buffer or how far into an array to index.  Of course
+most integer overflows are not exploitable because memory is not being
+directly overwritten, but sometimes they can lead to other classes of bugs,
+frequently buffer overflows.  As well as this, integer overflows can be
+difficult to spot, so even well audited code can spring surprises.
+\end{alltt}
+
+Source:
+\emph{Basic Integer Overflows} by blexim
+\url{http://www.phrack.com/issues.html?issue=60&id=10#article}
+
+\slide{Integer overflows}
+
+\begin{alltt}\footnotesize
+----[ 1.2 What is an integer overflow?
+Since an integer is a fixed size (32 bits for the purposes of this paper),
+there is a fixed maximum value it can store.  When an attempt is made to
+store a value greater than this maximum value it is known as an integer
+overflow.  The ISO C99 standard says that an integer overflow causes
+"undefined behaviour", meaning that compilers conforming to the standard
+may do anything they like from completely ignoring the overflow to aborting
+the program.  Most compilers seem to ignore the overflow, resulting in an
+unexpected or erroneous result being stored.
+
+----[ 1.3 Why can they be dangerous?
+Integer overflows cannot be detected after they have happened, so there is
+not way for an application to tell if a result it has calculated previously
+is in fact correct.  This can get dangerous if the calculation has to do
+with the size of a buffer or how far into an array to index.  Of course
+most integer overflows are not exploitable because memory is not being
+directly overwritten, but sometimes they can lead to other classes of bugs,
+frequently buffer overflows.  As well as this, integer overflows can be
+difficult to spot, so even well audited code can spring surprises.
+\end{alltt}
+
+Source:
+\emph{Basic Integer Overflows} by blexim
+\url{http://www.phrack.com/issues.html?issue=60&id=10#article}
+
+
+\slide{Overiding types, type conversion}
+
+\begin{alltt}
+Unsigned 00000001 is the same as 0000000000000001
+\end{alltt}
+
+\begin{list2}
+\item Value-preserving - there is space in the new type to store all values
+\item Value-changing - new type cannot represent the same values, damn!
+\item To a wider type, we can \emph{sign extend} for signed types and \emph{zero extend} for unsigned types
+\item To a more narrow, need to truncate - bye bye bits, loose precision!
+\item Again, we wont repeat all the bit values and arithmetics, and how C extends the values
+\item Casting can be used to specify the explicit type conversion\\ \verb+(unsigned char) bob+ - treat variable bob as an unsigned char type
+\end{list2}
+
+Audit tip: The compiler can optimize out certain conversions! This can affect both cryptographic processes and other things! Beware
+
+
+
+\slide{Type Conversion Vulnerabilities}
+
+\inputminted{c}{programs/conversion1.c}
+
+\begin{list2}
+\item Signed/unsigned conversions
+\item If you pass signed int to this, a conversion might result in a large value insted
+\item This large value will most likely result in overflow
+\item Most libc routines that take a size have \verb+size_t+ which is unsigned!
+\item Signed negative values become very large unsigned
+\end{list2}
+
+
+
+
+
+\slide{Compiling C code}
+
+\begin{alltt}\footnotesize
+  user@Projects:~$ mkdir openssh ; cd openssh
+  user@Projects:openssh$ wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz
+  2019-09-16 20:52:14 (5.13 MB/s) - ‘openssh-8.0p1.tar.gz’ saved [1597697/1597697]
+  user@Projects:openssh$ wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz.asc
+    2019-09-16 20:52:18 (26.5 MB/s) - ‘openssh-8.0p1.tar.gz.asc’ saved [683/683]
+  user@Projects:openssh$ gpg --verify openssh-8.0p1.tar.gz.asc
+  gpg: assuming signed data in 'openssh-8.0p1.tar.gz'
+  gpg: Signature made Thu 18 Apr 2019 12:54:07 AM CEST
+  gpg:                using RSA key 59C2118ED206D927E667EBE3D3E5F56B6D920D30
+  gpg: Can't check signature: No public key
+// fix by getting key etc.{\bf
+user@Projects:openssh$ tar zxf openssh-8.0p1.tar.gz
+user@Projects:openssh$ cd openssh-8.0p1
+user@Projects:openssh-8.0p1$ ./configure && make && sudo make install}
+\end{alltt}
+
+\begin{list2}
+\item \verb+./configure+ checks compiler, headers, libraries like OpenSSL and zlib, system settings -- writes the Makefile, stops if a library is missing, e.g. install \verb+libssl-dev+
+\item Select features and paths, see \verb+./configure --help+, e.g. \verb+--prefix=/usr/local --with-pam+
+\item \verb+sudo make install+ runs the build scripts as root -- verify the signature first!
+\end{list2}
+
+\slide{Summary compiling software}
+
+\begin{list2}
+\item Very often Linux/Unix software was distributed as archives - tgz - tar gzipped
+\item Configure checks for libraries and such things, see GNU Autoconf -- which options are required, which other libraries are available etc.
+\item Today most systems provide precompiled binaries as signed packages -- and the distribution adds its own patches in the process
+\item Patches can fix vulnerabilities without changing the version number, a scanner reporting ``old version'' may be wrong -- check with \verb+apt changelog openssl+
+\item Patches often align the configuration with the operating system conventions, file locations, users, startup scripts
+\item Preferred to use binary package systems like Debian apt!
+\item Binary packages can be upgraded -- and downgraded more easily, e.g. \verb+apt install openssl=<version>+
+\end{list2}
+
+
+
+
+
+\slide{Lets browse chapter 2 programming}
+
+\emph{Gray Hat Hacking: The Ethical Hacker's Handbook}, 6th ed., Allen Harper and others, ISBN: 9781264268948 -- examples show small programs, hello world style
+\begin{list2}
+\item Introduces control structures, if/then/else, for loops, while loops
+\item Variables and arithmetics - including comparison
+\item Functions - in deep details with registers and stack pointers
+\item Talks about compilation and assembly - same process is done in interpreted languages before instructions run
+\item Strings are introduced, with types and pointers, hard concepts
+\item Format strings, how to print a string with printf
+\item The stack is described in detail, important for security/exploiting
+\item Above are the most important parts of the chapter, IMHO
+\end{list2}
+
+\centerline{Many books contain such material -- use the one you have}
+
+
+
+
+
+
+
+
+\slide{Pointers}
+
+\begin{list2}
+\item Copy example already used pointers
+\item They point to a location in memory - a variable, a structure, some object of some kind
+\item Pointer arithmectic is dangerous
+\item ... but often used for reading structures, from the network
+\item Mismatched values, wrong asumptions, may result in pointers going wrong
+\end{list2}
+
+
+
+\slide{Suricata VXLAN decode - defensive checks}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+int DecodeVXLAN(ThreadVars *tv, DecodeThreadVars *dtv, Packet *p,
+        const uint8_t *pkt, uint32_t len, PacketQueue *pq)
+{
+    if (unlikely(!g_vxlan_enabled))
+        return TM_ECODE_FAILED;
+    if (len < (sizeof(VXLANHeader) + sizeof(EthernetHdr)))
+        return TM_ECODE_FAILED;
+    const VXLANHeader *vxlanh = (const VXLANHeader *)pkt;
+    if ((vxlanh->flags[0] & 0x08) == 0 || vxlanh->res != 0) {
+        return TM_ECODE_FAILED;
+    }
+#if DEBUG
+    uint32_t vni = (vxlanh->vni[0] << 16) + (vxlanh->vni[1] << 8) + (vxlanh->vni[2]);
+    SCLogDebug("VXLAN vni %u", vni);
+#endif
+    StatsIncr(tv, dtv->counter_vxlan);
+\end{minted}
+
+Source: excerpt from \url{https://github.com/OISF/suricata/blob/master/src/decode-vxlan.c}\\
+Dont read past end of buffer!
+
+
+\slide{Structures}
+
+\begin{list2}
+\item Pointers and Structure padding
+\item Look how the structures for packets are defined
+\end{list2}
+
+\begin{minted}[fontsize=\footnotesize]{c}
+/* ARP stuff */
+struct arp_data { /* ARP and Ethernet fields*/
+    u_int16_t formathw;
+    u_int16_t formatproto;
+    u_int8_t lenhw;
+    u_int8_t lenproto;
+    u_int16_t op;
+    /* Ethernet Data */
+    u_int8_t mac_source[ETHER_ADDR_LEN];
+    u_int8_t mac_dest[ETHER_ADDR_LEN];
+};
+\end{minted}
+
+Source: Yersinia 0.7 \verb+src/arp.h+, a layer 2 attack tool
+
+
+
+\slide{Look at the Wireshark 3.3 Packet Diagram}
+
+\begin{list2}
+\item Wireshark 3.3 has a packet diagram, which might be quite handy!
+\item Lets look into it, and if possible run a couple of network dumps
+\item Hopefully it will illustrate how network data is transferred
+\item Maybe install the newest version on your laptop
+\item Alternatively Lets look at C code from Suricata or Zeek, you choose
+\end{list2}
+
+
+
+
+\slide{Lets browse the buffer overflow papers}
+
+\begin{list2}
+\item \emph{Smashing The Stack For Fun And Profit}, Aleph One, Phrack 49, 1996 -- stack based buffer overflow, shellcode, NOP sled\\
+{\footnotesize\link{https://phrack.org/issues/49/14}}
+\item \emph{Bypassing non-executable-stack during exploitation using return-to-libc}, c0ntex, 2006 -- return to \verb+system("/bin/sh")+ instead of shellcode\\
+{\footnotesize\link{https://www.exploit-db.com/papers/13204}}
+\item \emph{Basic Integer Overflows}, blexim, Phrack 60, 2002 -- widthness, arithmetic and signedness bugs\\
+{\footnotesize\link{https://phrack.org/issues/60/10}}
+\end{list2}
+
+For each paper find: the vulnerable C code, what gets overwritten, and how execution is redirected
+
+\vskip 5mm
+\centerline{Papers from the 90s and 2000s -- surely nobody writes code like that anymore\dots right?}
+
+
+\slide{Real vulns}
+
+\begin{quote}
+Hold tight, this may blow your mind…
+A low-privileged user account on most Linux operating systems with UID value anything greater than 2147483647 can execute any systemctl command unauthorizedly—thanks to a newly discovered vulnerability.
+The reported vulnerability actually resides in PolicyKit (also known as polkit)—an application-level toolkit for Unix-like operating systems that defines policies, handles system-wide privileges and provides a way for non-privileged processes to communicate with privileged ones, such as "sudo," that does not grant root permission to an entire process.
+The issue, tracked as {\bf CVE-2018-19788}, impacts PolicyKit version 0.115 which comes pre-installed on most popular Linux distributions, including Red Hat, Debian, Ubuntu, and CentOS.
+...
+Where, \verb+INT_MAX+ is a constant in computer programming that defines what maximum value an integer variable can store, which equals to 2147483647 (in hexadecimal 0x7FFFFFFF).
+\end{quote}
+
+\begin{list2}
+\item Reality bites again:\\
+\link{https://thehackernews.com/2018/12/linux-user-privilege-policykit.html}
+\item \emph{Red Hat has recommended system administrators not to allow any negative UIDs or UIDs greater than 2147483646 in order to mitigate the issue until the patch is released.}
+\end{list2}
+
+
+
+\slide{Buffer overflows a C problem}
+
+\begin{list1}
+\item {\bfseries A buffer overflow} is what happens when writing more data than allocated in some area of memory. Typically the program will crash, but under ce
+rtain circumstances an attacker can write structures allowing take over of return addresses, parameters for system calls or program execution.
+\item {\bfseries Stack protection} is today used as a generic term for multiple technologies used in operating systems, libraries, compilers etc. that protect t
+he stack and other structures from being overwritten or changed through buffer overflows. StackGuard
+and Propolice are examples of this.
+\end{list1}
+
+
+
+\slide{Buffers and stacks, simplified}
+
+\hlkimage{18cm}{buffer-overflow-1.pdf}
+
+\begin{minted}[fontsize=\small]{c}
+main(int argc, char **argv)
+{      char buf[200];
+        strcpy(buf, argv[1]);
+        printf("%s\n",buf);
+}
+\end{minted}
+
+
+
+\slide{Overflow -- segmentation fault}
+
+\hlkimage{18cm}{buffer-overflow-2.pdf}
+
+
+\begin{list2}
+\item Bad function overwrites return value!
+\item Control return address
+\item Run shellcode from buffer, or from other place
+\end{list2}
+
+
+\slide{Shell code}
+
+\begin{minted}[fontsize=\small]{c}
+char *args[] = { "/bin/sh", NULL };
+
+execve("/bin/sh", args, NULL);
+\end{minted}
+
+
+\begin{list2}
+\item Shell code is the small payload an exploit runs after taking control -- classically it spawns a shell with the \verb+execve+ system call above
+\item Written against system calls directly, so it needs no linker or libc -- often hand-tuned assembly
+\item Shell code can be quite small, smallest seems to be 21 bytes for Linux x86
+\item Must avoid bytes that break the input path, e.g. a null byte stops \verb+strcpy+
+\item A NOP sled (\verb+0x90+ \dots) in front lets an approximate return address still land in the payload
+\item You rarely write it yourself: generators like \verb+msfvenom+ produce it for a chosen platform
+\end{list2}
+
+Defensive note: understanding shell code is how we reason about non-executable memory and other protections
+
+
+\slide{Executable-space protection}
+
+Also most modern operating systems have various prevention mechanisms like ASLR, DEP, W xor X, NX, ...
+
+\begin{list2}
+\item Executable space protection on Windows is called "Data Execution Prevention" (DEP).\\
+\url{https://en.wikipedia.org/wiki/Executable-space_protection#Windows}
+\item Mac OS X has no special brand name -- it just uses the NX bit (W\^{}X): NX stack from 10.4, NX stack+heap for 64-bit from 10.5
+\item \verb+W^X+ "write xor execute" W xor X \url{https://en.wikipedia.org/wiki/W%5EX}
+\item NX-bit no-execute \url{https://en.wikipedia.org/wiki/NX_bit}
+\item Address space layout randomization (ASLR) \url{https://en.wikipedia.org/wiki/Address_space_layout_randomization}
+\end{list2}
+
+\slide{Return-to-libc}
+
+\begin{alltt}\footnotesize
+  How does the technique look on the stack - a basic view will be something
+  similar to this:
+  [-] Buffer overflow smashing EIP and jumping forward to shellcode
+                                                   1                    2
+  |-------------------|-----------|------------|---------------------------|
+  |             AAAAAAAAAAAA      |    RET     |        SHELLCODE          |
+  |-------------------|-----------|------------|---------------------------|
+                     args              EBP        EIP
+  [-] Buffer overflow doing return-to-libc and executing system function
+                                                    1             2         3
+  |-------------------------------|------------|--------------|------------|
+  |            buffer             |   system   |   fake_ret   |   /bin/sh  |
+  |-------------------------------|------------|--------------|------------|
+                     args               EBP        EIP
+\end{alltt}
+Instead of putting code on the stack, that cannot be executed, put on a fake return address which goes to a function in the C library, like \verb+system("/bin/sh")+
+
+Source:
+\emph{Bypassing non-executable-stack during exploitation using return-to-libc}
+ by c0ntex | c0ntex[at]gmail.com
+
+
+\slide{Return-oriented programming (ROP)}
+
+To continue exploiting hacker have invented Return-oriented programming (ROP)
+which is one of the buzzing advanced exploitation techniques these days to bypass NX, ASLR
+
+The main idea is to create a list of instructions from endings of functions, prepare a stack so when it returns into a function, it carries out some small part of the whole -- a gadget.
+
+Sources BlackHat\\
+\link{http://www.blackhat.com/html/bh-us-10/bh-us-10-archives.html}\\
+{\footnotesize\link{https://media.blackhat.com/bh-us-10/presentations/Zovi/BlackHat-USA-2010-DaiZovi-Return-Oriented-Exploitation-slides.pdf}}
+
+\slide{Return Oriented Programming}
+
+\hlkimage{10cm}{rop-gadget.png}
+
+\begin{list2}
+\item By doing \emph{return chaining} build shell-code from existin program
+\item Instead of returning to
+functions, return to
+instruction sequences
+followed by a return
+instruction
+
+\item Can return into middle of
+existing instructions to
+simulate different
+instructions
+
+\item All we need are useable
+byte sequences anywhere
+in executable memory
+pages
+\item Scan executable memory regions of common shared
+libraries for useful instructions followed by return
+instructions
+\end{list2}
+
+{\footnotesize\link{https://media.blackhat.com/bh-us-10/presentations/Zovi/BlackHat-USA-2010-DaiZovi-Return-Oriented-Exploitation-slides.pdf}}
+
+
+
+
+
+\slide{Function call return}
+
+\begin{list2}
+\item Function calls are implemented using stacks, and they usually return
+\item By finding functions that do something small, and then return an exploit might be able to pack a stack, and return through an exploitation technique known as \emph{Return Oriented Programming} (ROP)
+\item Note: there is a paper on the schedule Removing ROP Gadgets from OpenBSD Todd Mortimer mortimer@openbsd.org, can be downloaded at\\ \url{https://www.openbsd.org/papers/asiabsdcon2019-rop-paper.pdf}
+\item This changes the rules, by changing the entry (prologue) and return from functions (epilogue):\\
+RETGUARD is a mechanism that adds instrumentation to the
+prologue and epilogue of each function that terminates in a
+return instruction.
+\end{list2}
+
+
+\exercise{ex:c-types}
+
+\exercise{ex:structure-padding}
+
+\exercise{ex:wireshark-install}
+
+\exercise{ex:pmd-static}
+
+\exercise{ex:git-hook}
+
+\exercise{ex-python-library}
+
+\slidenext{}
+
+\end{document}

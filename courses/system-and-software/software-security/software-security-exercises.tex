@@ -868,7 +868,7 @@ Use and editor, leafpad, atom, VI/VIM, joe, EMACS, Nano ...
 
 Create two files, I named them \verb+python-example.py+ and \verb+shell-example.sh+:
 
-\VerbatimInput{python-example.py}
+\VerbatimInput{programs/python-example.py}
 
 \VerbatimInput{shell-example.sh}
 
@@ -1680,6 +1680,340 @@ Also having good source code tools help a lot! Finding problems, getting an over
 
 
 
+\chapter{\faExclamationTriangle\ Small programs with data types 15min}
+\label{ex:c-types}
+
+{\bf Objective:}\\
+Try out small programs similar to:
+\inputminted{c}{programs/int1.c}
+
+\begin{alltt}
+user@Projects:programs$ gcc -o int1 int1.c && ./int1
+First debug int is 32767
+Second debug int is now -32768
+\end{alltt}
+
+{\bf Purpose:}\\
+See actual overflows when going above the maximum for the selected types.
+
+
+{\bf Suggested method:}\\
+Compile program as is. Run it. See the problem.
+
+Then try changing the int type, try with signed and unsigned. Note differences
+
+{\bf Hints:}\\
+Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
+
+{\bf Solution:}\\
+When you have tried adding one to a value and seeing it going negative, you are done.
+
+{\bf Discussion:}\\
+
+
+\chapter{\faExclamationTriangle\ Pointers and Structure padding 30min}
+\label{ex:structure-padding}
+
+{\bf Objective:}\\
+Look at some real code from Suricata and Zeek, note how they prevent structure padding.
+
+{\bf Purpose:}\\
+These software applications usually used for security dissect raw packets, which cannot be trusted.
+
+{\bf Suggested method:}\\
+Download the source for some software - either of :
+\begin{list2}
+\item Zeek from \url{https://zeek.org/get-zeek/}
+\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
+\end{list2}
+
+Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
+
+{\bf Hints:}\\
+DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+src+ and doing \verb+less *dns*.h+ or use an editor.
+
+
+{\bf Solution:}\\
+When you have seen the code for a few \verb+struct+ you are done.
+
+If you notice structs with \verb+__attribute__((__packed__))+. Note: This ensures that structure fields align on one-byte boundaries - on all architectures.
+
+Maybe also investigate the rest of the file \verb+decode-vxlan.c+ if you downloaded Suricata.
+
+{\bf Discussion:}\\
+The object for this exercise is also to show real code bases. Note the large number of files, directories and details to keep track of.
+
+Manual for Gnu C Compiler Collection can be found at:\\
+\url{https://gcc.gnu.org/onlinedocs/gcc/Common-Attributes.html}
+
+
+\begin{quote}
+packed\\
+This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
+\end{quote}
+
+Bonus, can we find some structs missing this?
+
+
+
+\chapter{\faInfoCircle\ Wireshark 15 min}
+\label{ex:wireshark-install}
+
+\hlkimage{10cm}{wireshark-http.png}
+
+
+{\bf Objective:}\\
+Try the program Wireshark locally your workstation, or tcpdump
+
+You can run Wireshark on your host too, if you want.
+
+{\bf Purpose:}\\
+Installing Wireshark will allow you to analyse packets and protocols
+
+See real network traffic, also know that a lot of information is available and not encrypted.
+
+Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL while capturing
+
+\begin{alltt}
+curl http://www.zencurity.com
+\end{alltt}
+
+
+{\bf Suggested method:}\\
+Run Wireshark from your Kali Linux
+
+Open Wireshark and start a capture\\
+Then in another window execute the ping program while sniffing
+
+or perform a Telnet connection while capturing data
+
+{\bf Hints:}\\
+PCAP is a packet capture library allowing you to read packets from the network.
+Tcpdump uses libpcap library to read packet from the network cards and save them.
+Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
+
+It is already on your Kali Linux, or do: \verb+apt-get install wireshark+
+
+When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
+
+{\bf Solution:}\\
+When you have collected some HTTP/TCP sessions you are done.
+
+If you want to capture packets as a non-root user on Debian, then use the command to add a Wireshark group:
+\begin{alltt}
+sudo dpkg-reconfigure wireshark-common
+\end{alltt}
+
+and add your user to this:
+\begin{alltt}
+sudo gpasswd -a $USER wireshark
+\end{alltt}
+Dont forget to logout/login to pick up this new group.
+
+{\bf Discussion:}\\
+Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
+
+We can download a lot of packet traces from around the internet, we might use examples from\\
+\link{https://old.zeek.org/community/traces.html}
+
+
+\chapter{\faExclamationTriangle\ Trying PMD static analysis 30 min}
+\label{ex:pmd-static}
+
+{\bf Objective:}\\
+Try the program PMD locally on your workstation
+
+
+{\bf Purpose:}\\
+Running PMD will allow you to use static analysis for code.
+
+{\bf Suggested method:}\\
+Run the program from your Debian Linux VM, this tool is free and easy to get running. It uses Java, so if you like run it on your Windows or Mac instead.
+
+Follow instructions from the Getting Started\\
+\url{https://docs.pmd-code.org/latest/pmd_userdocs_installation.html}
+
+The download is from latest, so check the releases page: \link{https://github.com/pmd/pmd/releases}
+
+\begin{alltt}\footnotesize
+$ sudo apt install openjdk-17-jre
+$ cd $HOME
+$ wget https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.28.0/pmd-dist-7.28.0-bin.zip
+$ unzip pmd-dist-7.28.0-bin.zip
+$ alias pmd="$HOME/pmd-bin-7.28.0/bin/pmd"
+$
+\end{alltt}
+
+Note: this only creates the alias \verb+pmd+ for this session. To make this more permanent, you could add this to a profile like \verb+.bashrc+
+
+Next get some source code and run PMD:
+\begin{alltt}\footnotesize
+$ git clone --branch rel/2.17.2 https://gitbox.apache.org/repos/asf/logging-log4j2.git
+... downloads the source code for log4j
+$ pmd check -d logging-log4j2 -R rulesets/java/quickstart.xml -f text
+\end{alltt}
+
+
+{\bf Hints:}\\
+PMD uses Java, so there should be a JDK/JRE on the system, I install the one from OpenJDK above.
+
+You may need to adjust the version numbers for the JDK/JRE, PMD and select another version of log4j to download.
+
+{\bf Solution:}\\
+When you have gotten a run of PMD going, you are done.
+
+{\bf Discussion:}\\
+Doing the above probably output more than 4500 lines from the PMD program!
+
+How would you proceed?
+
+There seem to be some tedious, but easy to fix, like \emph{Unused import} -- importing some library which is not really used. Things like \emph{empty method}, \emph{empty catch block} etc. may be source missing.
+
+First time use of a new tool will probably find a LOT.
+
+If you are using Maven you could also use their reporting\\
+\link{https://maven.apache.org/plugins/maven-pmd-plugin/project-reports.html}
+%If you like also check out this OWASP document about JSP and Java\\
+%\link{https://owasp.org/www-chapter-belgium/assets/2013/2013-06-06/Securing_Development_with_PMD_-_Teaching_an_Old_Dog_New_Tricks_-_OWASP.pdf}
+
+
+
+
+\chapter{\faExclamationTriangle\ Git hook 30 min}
+\label{ex:git-hook}
+
+{\bf Objective:}\\
+Try using a Git hook locally on your workstation, to prevent something.
+
+
+{\bf Purpose:}\\
+Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
+
+First read the documentation:\\
+\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
+
+
+Note: today we only use client side hooks, for better security we should add hooks on the server side.
+
+Using our existing repository:
+\begin{alltt}\footnotesize
+user@Projects:projects$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
+Cloning into 'kramse-labs'...
+user@Projects:projects$ {\bf cd kramse-labs/}
+user@Projects:kramse-labs$ {\bf cd .git/hooks}
+user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
+// Look at this file, and activate it using:
+user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
+\end{alltt}
+
+Back in the repository try adding a new file with bad name:
+
+\begin{alltt}\footnotesize
+user@Projects:kramse-labs$ {\bf }
+user@Projects:kramse-labs$ touch henrikÆØÅ
+user@Projects:kramse-labs$ git add henrikÆØÅ
+user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
+Error: Attempt to add a non-ASCII file name.
+This can cause problems if you want to work with people on other platforms.
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+  git config hooks.allow
+\end{alltt}
+
+
+
+{\bf Suggested method:}\\
+Run the program Git from your Debian Linux VM
+
+
+{\bf Hints:}\\
+Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
+
+{\bf Solution:}\\
+When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
+
+{\bf Discussion:}\\
+Many examples can be found on the internet.
+
+Example links:
+\begin{list2}
+\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
+\item A framework for managing and maintaining multi-language pre-commit hooks.\\
+\link{https://pre-commit.com/}
+\item Blog showing how to use this framework for checking a Kubernetes file:\\
+\link{https://thechief.io/c/hebaeid/how-to-start-left-with-security-using-git-pre-commit-hooks}
+\end{list2}
+
+
+
+\chapter{\faInfoCircle\ Use a XML library in Python up to 45min}
+\label{ex-python-library}
+
+{\bf Objective:}\\
+Try using a programing library in the Python programming language.
+
+{\bf Purpose:}\\
+See how easy it is to produce functionality by re-using existing functions and features available in a popular language.
+
+{\bf Suggested method:}\\
+Start by getting an XML file. Suggested method is to boot your Kali Linux and run a command like \verb+nmap -p 80,443 -A -oA testfile www.zencurity.com+. Output should be testfile.xml and two other files, grepable output \verb+testfile.gnmap+ and text output \verb+testfile.nmap+.
+
+Then using Python import a library to parse XML and print a few values from the XML, or all of them.
+
+Recommended values to print from the file:
+\begin{list2}
+\item Nmap version
+\item Date of the Nmap run, note either use start and convert from Unix time or startstr which is a string
+\item Nmaprun args - aka the command line
+\item Host address
+\item Ports like from the <port protocol="tcp" portid="443">
+\item Anything you feel like
+\end{list2}
+
+You will probably not get it all running in the time allowed, but you get an idea of the complexity.
+
+{\bf Hints:}\\
+One option is to use the Python ElementTree XML API:\\
+\url{https://docs.python.org/3/library/xml.etree.elementtree.html}
+
+Also - always use Python3!
+
+{\bf Solution:}\\
+When you can read a file and process it using Python3.
+
+Improvements, you might consider:
+\begin{list2}
+\item Use Python3 to run the Nmap process
+\item Create command line parameters for the program, making it more useful
+\item Pretty print using formatted output
+\end{list2}
+{\bf Discussion:}\\
+Many examples contain code like this:
+
+\begin{quote}
+Getting child tag's attribute value in a XML using ElementTree
+
+Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
+\end{quote}
+\begin{minted}[fontsize=\footnotesize]{python}
+>>> import xml.etree.ElementTree as ET
+>>> xmlstr = '<foo><bar key="value">text</bar></foo>'
+>>> root = ET.fromstring(xmlstr)
+>>> root.tag
+'foo'
+>>> root[0].tag
+'bar'
+>>> root[0].attrib['key']
+'value'
+\end{minted}
+Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
+
+What is the point of referring to a specific numbered child, when we specifically have the tags?!
+
+What happens if the XML output changes a bit, so another tag is before the expected one! Dont trust Stackoverflow, unless you want a stack overflow \smiley.
+
+
 \end{document}
 
 \chapter{\faInfoCircle\ Use Ansible to install Elastic Stack}
@@ -1877,339 +2211,6 @@ You can also try calling the REST API from Python
 
 Similar to what we did previously in this course:
 \inputminted{python}{programs/rest-1.py}
-
-
-\chapter{\faExclamationTriangle\ Small programs with data types 15min}
-\label{ex:c-types}
-
-{\bf Objective:}\\
-Try out small programs similar to:
-\inputminted{c}{programs/int1.c}
-
-\begin{alltt}
-user@Projects:programs$ gcc -o int1 int1.c && ./int1
-First debug int is 32767
-Second debug int is now -32768
-\end{alltt}
-
-{\bf Purpose:}\\
-See actual overflows when going above the maximum for the selected types.
-
-
-{\bf Suggested method:}\\
-Compile program as is. Run it. See the problem.
-
-Then try changing the int type, try with signed and unsigned. Note differences
-
-{\bf Hints:}\\
-Use a calculator to find the maximum, like $2^{16}$, $2^{32}$ etc.
-
-{\bf Solution:}\\
-When you have tried adding one to a value and seeing it going negative, you are done.
-
-{\bf Discussion:}\\
-
-
-\chapter{\faExclamationTriangle\ Pointers and Structure padding 30min}
-\label{ex:structure-padding}
-
-{\bf Objective:}\\
-Look at some real code from Suricata and Zeek, note how they prevent structure padding.
-
-{\bf Purpose:}\\
-These software applications usually used for security dissect raw packets, which cannot be trusted.
-
-{\bf Suggested method:}\\
-Download the source for some software - either of :
-\begin{list2}
-\item Zeek from \url{https://zeek.org/get-zeek/}
-\item Suricata from \url{https://www.openinfosecfoundation.org/download/}
-\end{list2}
-
-Unpack using \verb+tar zxf+ and use an editor to look up DNS or other packets.
-
-{\bf Hints:}\\
-DNS is a complex protocol, but looking at the header files should give you an idea. Try going into \verb+src+ and doing \verb+less *dns*.h+ or use an editor.
-
-
-{\bf Solution:}\\
-When you have seen the code for a few \verb+struct+ you are done.
-
-If you notice structs with \verb+__attribute__((__packed__))+. Note: This ensures that structure fields align on one-byte boundaries - on all architectures.
-
-Maybe also investigate the rest of the file \verb+decode-vxlan.c+ if you downloaded Suricata.
-
-{\bf Discussion:}\\
-Manual for Gnu C Compiler Collection can be found at:\\
-\url{https://gcc.gnu.org/onlinedocs/gcc-5.2.0/gcc/Type-Attributes.html}
-
-
-\begin{quote}
-packed\\
-This attribute, attached to struct or union type definition, specifies that each member (other than zero-width bit-fields) of the structure or union is placed to minimize the memory required. When attached to an enum definition, it indicates that the smallest integral type should be used.
-\end{quote}
-
-Bonus, can we find some structs missing this?
-
-
-
-\chapter{\faInfoCircle\ Wireshark 15 min}
-\label{ex:wireshark-install}
-
-\hlkimage{10cm}{wireshark-http.png}
-
-
-{\bf Objective:}\\
-Try the program Wireshark locally your workstation, or tcpdump
-
-You can run Wireshark on your host too, if you want.
-
-{\bf Purpose:}\\
-Installing Wireshark will allow you to analyse packets and protocols
-
-See real network traffic, also know that a lot of information is available and not encrypted.
-
-Note the three way handshake between hosts running TCP. You can either use a browser or command line tools like cURL while capturing
-
-\begin{alltt}
-curl http://www.zencurity.com
-\end{alltt}
-
-
-{\bf Suggested method:}\\
-Run Wireshark from your Kali Linux
-
-Open Wireshark and start a capture\\
-Then in another window execute the ping program while sniffing
-
-or perform a Telnet connection while capturing data
-
-{\bf Hints:}\\
-PCAP is a packet capture library allowing you to read packets from the network.
-Tcpdump uses libpcap library to read packet from the network cards and save them.
-Wireshark is a graphical application to allow you to browse through traffic, packets and protocols.
-
-It is already on your Kali Linux, or do: \verb+apt-get install wireshark+
-
-When running on Linux the network cards are usually named eth0 for the first Ethernet and wlan0 for the first Wireless network card. In Windows the names of the network cards are long and if you cannot see which cards to use then try them one by one.
-
-{\bf Solution:}\\
-When you have collected some HTTP/TCP sessions you are done.
-
-If you want to capture packets as a non-root user on Debian, then use the command to add a Wireshark group:
-\begin{alltt}
-sudo dpkg-reconfigure wireshark-common
-\end{alltt}
-
-and add your user to this:
-\begin{alltt}
-sudo gpasswd -a $USER wireshark
-\end{alltt}
-Dont forget to logout/login to pick up this new group.
-
-{\bf Discussion:}\\
-Wireshark is just an example other packet analyzers exist, some commercial and some open source like Wireshark
-
-We can download a lot of packet traces from around the internet, we might use examples from\\
-\link{https://old.zeek.org/community/traces.html}
-
-
-
-\chapter{\faExclamationTriangle\ Trying PMD static analysis 30 min}
-\label{ex:pmd-static}
-
-{\bf Objective:}\\
-Try the program PMD locally on your workstation
-
-
-{\bf Purpose:}\\
-Running PMD will allow you to use static analysis for code.
-
-{\bf Suggested method:}\\
-Run the program from your Debian Linux VM, this tool is free and easy to get running. It uses Java, so if you like run it on your Windows or Mac instead.
-
-Follow instructions from the Getting Started\\
-\url{https://pmd.github.io/latest/pmd_userdocs_installation.html}
-
-The download is from latest, so check the releases page: \link{https://codeberg.org/pmd/pmd/releases}
-
-\begin{alltt}\footnotesize
-$ sudo apt install openjdk-17-jre
-$ cd $HOME
-$ wget https://codeberg.org/pmd/pmd/releases/download/pmd_releases/6.49.0/pmd-bin-6.49.0.zip
-$ unzip pmd-bin-6.49.0.zip
-$ alias pmd="$HOME/pmd-bin-6.49.0/bin/run.sh pmd"
-$
-\end{alltt}
-
-Note: this only creates the alias \verb+pmd+ for this session. To make this more permanent, you could add this to a profile like \verb+.bashrc+
-
-Next get some source code and run PMD:
-\begin{alltt}\footnotesize
-$ git clone --branch rel/2.17.2 https://gitbox.apache.org/repos/asf/logging-log4j2.git
-... downloads the source code for log4j
-$ pmd -d logging-log4j2 -R rulesets/java/quickstart.xml -f text
-\end{alltt}
-
-
-{\bf Hints:}\\
-PMD uses Java, so there should be a JDK/JRE on the system, I install the one from OpenJDK above.
-
-You may need to adjust the version numbers for the JDK/JRE, PMD and select another version of log4j to download.
-
-{\bf Solution:}\\
-When you have gotten a run of PMD going, you are done.
-
-{\bf Discussion:}\\
-Doing the above probably output more than 4500 lines from the PMD program!
-
-How would you proceed?
-
-There seem to be some tedious, but easy to fix, like \emph{Unused import} -- importing some library which is not really used. Things like \emph{empty method}, \emph{empty catch block} etc. may be source missing.
-
-First time use of a new tool will probably find a LOT.
-
-If you are using Maven you could also use their reporting\\
-\link{https://maven.apache.org/plugins/maven-pmd-plugin/project-reports.html}
-%If you like also check out this OWASP document about JSP and Java\\
-%\link{https://owasp.org/www-chapter-belgium/assets/2013/2013-06-06/Securing_Development_with_PMD_-_Teaching_an_Old_Dog_New_Tricks_-_OWASP.pdf}
-
-
-
-
-\chapter{\faExclamationTriangle\ Git hook 30 min}
-\label{ex:git-hook}
-
-{\bf Objective:}\\
-Try using a Git hook locally on your workstation, to prevent something.
-
-
-{\bf Purpose:}\\
-Running Git with hooks will allow you to perform actions when adding source code. For security we can prevent you from adding something to the source tree which breaks policies we agreed.
-
-First read the documentation:\\
-\link{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}
-
-
-Note: today we only use client side hooks, for better security we should add hooks on the server side.
-
-Using our existing repository:
-\begin{alltt}\footnotesize
-user@Projects:projects$ {\bf git clone https://codeberg.org/kramse/kramse-labs.git}
-Cloning into 'kramse-labs'...
-user@Projects:projects$ {\bf cd kramse-labs/}
-user@Projects:kramse-labs$ {\bf cd .git/hooks}
-user@Projects:kramse-labs/.git/hooks$ {\bf cat pre-commit.sample}
-// Look at this file, and activate it using:
-user@Projects:kramse-labs/.git/hooks$ {\bf cp pre-commit.sample pre-commit}
-\end{alltt}
-
-Back in the repository try adding a new file with bad name:
-
-\begin{alltt}\footnotesize
-user@Projects:kramse-labs$ {\bf }
-user@Projects:kramse-labs$ touch henrikÆØÅ
-user@Projects:kramse-labs$ git add henrikÆØÅ
-user@Projects:kramse-labs$ git commit -m "Adding henrikÆØÅ"
-Error: Attempt to add a non-ASCII file name.
-This can cause problems if you want to work with people on other platforms.
-To be portable it is advisable to rename the file.
-
-If you know what you are doing you can disable this check using:
-  git config hooks.allow
-\end{alltt}
-
-
-
-{\bf Suggested method:}\\
-Run the program Git from your Debian Linux VM
-
-
-{\bf Hints:}\\
-Many hooks will depend on the language and what your policy states. Some hooks will be easy to implement, others will require others to agree. Think tabs vs spaces which will forever stay unresolved.
-
-{\bf Solution:}\\
-When you have tried adding a file with a bad name, and gotten an error, you are done. Feel free to experiment more with the hook.
-
-{\bf Discussion:}\\
-Many examples can be found on the internet.
-
-Example links:
-\begin{list2}
-\item \link{https://blogs.vmware.com/opensource/2020/02/03/git-repo-pre-commit-hooks/} which links to the next one
-\item A framework for managing and maintaining multi-language pre-commit hooks.\\
-\link{https://pre-commit.com/}
-\item Blog showing how to use this framework for checking a Kubernetes file:\\
-\link{https://thechief.io/c/hebaeid/how-to-start-left-with-security-using-git-pre-commit-hooks}
-\end{list2}
-
-
-
-\chapter{\faInfoCircle\ Use a XML library in Python up to 45min}
-\label{ex-python-library}
-
-{\bf Objective:}\\
-Try using a programing library in the Python programming language.
-
-{\bf Purpose:}\\
-See how easy it is to produce functionality by re-using existing functions and features available in a popular language.
-
-{\bf Suggested method:}\\
-Start by getting an XML file. Suggested method is to boot your Kali Linux and run a command like \verb+nmap -p 80,443 -A -oA testfile www.zencurity.com+. Output should be testfile.xml and two other files, grepable output \verb+testfile.gnmap+ and text output \verb+testfile.nmap+.
-
-Then using Python import a library to parse XML and print a few values from the XML, or all of them.
-
-Recommended values to print from the file:
-\begin{list2}
-\item Nmap version
-\item Date of the Nmap run, note either use start and convert from Unix time or startstr which is a string
-\item Nmaprun args - aka the command line
-\item Host address
-\item Ports like from the <port protocol="tcp" portid="443">
-\item Anything you feel like
-\end{list2}
-
-You will probably not get it all running in the time allowed, but you get an idea of the complexity.
-
-{\bf Hints:}\\
-One option is to use the Python ElementTree XML API:\\
-\url{https://docs.python.org/3/library/xml.etree.elementtree.html}
-
-Also - always use Python3!
-
-{\bf Solution:}\\
-When you can read a file and process it using Python3.
-
-Improvements, you might consider:
-\begin{list2}
-\item Use Python3 to run the Nmap process
-\item Create command line parameters for the program, making it more useful
-\item Pretty print using formatted output
-\end{list2}
-{\bf Discussion:}\\
-Many examples contain code like this:
-
-\begin{quote}
-Getting child tag's attribute value in a XML using ElementTree
-
-Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
-\end{quote}
-\begin{minted}[fontsize=\footnotesize]{python}
->>> import xml.etree.ElementTree as ET
->>> xmlstr = '<foo><bar key="value">text</bar></foo>'
->>> root = ET.fromstring(xmlstr)
->>> root.tag
-'foo'
->>> root[0].tag
-'bar'
->>> root[0].attrib['key']
-'value'
-\end{minted}
-Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
-
-What is the point of referring to a specific numbered child, when we specifically have the tags?!
-
-What happens if the XML output changes a bit, so another tag is before the expected one! Dont trust Stackoverflow, unless you want a stack overflow \smiley.
 
 
 \chapter{\faExclamationTriangle\ Django String Handling 20min}

@@ -16,8 +16,8 @@
 
 Todays goals:
 \begin{list2}
-\item Talk about the Design Patterns concept
-\item Present some of the ones often found in programs
+\item Talk about the Design Patterns concept in a broader sense
+\item Present some decisions concerning security and running applications securely
 \item Patterns can also be found in other areas, like Patterns in Network Architecture
 \end{list2}
 
@@ -35,17 +35,30 @@ Todays goals:
 \item Exercises
 \begin{list2}
 \item Static analysis with PMD
-\item Git hook example
-\item JuiceShop SQL login
+\item SBOM Scanning
 \item Use a XML library in Python
 \end{list2}
 \end{list1}
 
-\slide{Reading Summary}
 
+\slide{Time schedule}
+
+Plan for the day
 \begin{list1}
-\item 
+\item 12:45 - 13:45 -- Session 0: Teaching: Code Patterns and Running Software Securely
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- Session 1: Exercises: PMD Static Analysis and SBOM Scanning
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 15:45 -- Session 2: Teaching: Sample Infrastructure, API Versioning and Containers
+\item 15:45 - 16:00 -- 15min break
+\item 16:00 - 16:45 -- Session 3: Exercises: XML Library in Python
+
+\vskip 1em
+\item 12:45 - 16:20 I will be here at EK
 \end{list1}
+
+\slide{Session 0: Teaching: Code Patterns and Running Software Securely}
+
 
 
 
@@ -89,19 +102,6 @@ Various pitfalls, and areas
 \item Question: would object oriented programming help?
 \end{list2}
 
-
-
-\slide{Relevant examples}
-
-
-\begin{list2}
-\item Apache was the worlds most popular web server!
-\item \verb+mod_dav+ implements a very complex protocol, file server features using http!
-\item Bind and the resolver libraries were the de facto, and still is, for DNS resolving in most of the open source software world!
-\item Sendmail was the most popular mail server for many years, but replaced mostly by Qmail, Postfix and Exim. Sendmail was used on both open source and commercial Unix operating systems like SunOS, AIX, HP-UX etc.
-\item OpenSSH mentioned next is also the most popular SSH protocol implementation, found in almost all Linux distributions and a wide range of network devices and other internet conected things
-\item OpenSSL is of course the most popular open source crypto library ... famous for the heartbleed bug and other hits
-\end{list2}
 
 
 \slide{Structure and Object Mismanagement}
@@ -244,53 +244,64 @@ if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
 \item ...
 \end{list2}
 
-
-\slide{Side effects, corner cases and 32-bit vs 64-bit}
-
-\begin{list2}
-%\item Chapter lists a couple of corner cases
-\item Functions can change variables in global scope while doing something
-\item Allocating memory can go wrong, check return values
-\item Asking for 0 bytes of memory is technically legal but may cause problems
-\item Doing 64-bit check with if and then being truncated to 32-bit when doing actual memory allocation function, result in unintended behaviour
-\item Double free is also mentioned, freeing an already free location may exploit heap management routines\\
-Check malloc and free very carefully
-\end{list2}
-
-
 \slide{Who do you trust?}
 
-
 \begin{list2}
-\item Example programs shown with flaws in this chapter: OpenSSH, OpenSSL, Windows MS-RPC DCOM, Linux teardrop
+\item Example programs with flaws: OpenSSH, OpenSSL, Microsoft Windows, Linux
 \item Who do you trust?
 \item Can we trust any software?
 
 \item What about Suricata? - CVE list\\
 {\footnotesize\url{https://www.cvedetails.com/vulnerability-list/vendor_id-13364/product_id-27771/Openinfosecfoundation-Suricata.html}}
 \item Spoiler: Bypass vulnerabilities, getting data past the IDS, Denial of Service crashing the IDS
+\item Trust is also a design decision -- more on supply chain later
 \end{list2}
 
+\slide{Suricata IDS -- older CVEs}
 
-\slide{Example applications from Microsoft}
+\begin{list2}
+\item CVE-2013-5919 Suricata < 1.4.6, CVSS 5.0: crash on malformed SSL record\\
+      \url{https://www.cvedetails.com/cve/CVE-2013-5919/}
+\item CVE-2014-6603 Suricata < 2.0.4, CVSS 5.0: crafted SSH banner, rule bypass,
+      large allocation or OOB write\\
+      \url{https://www.cvedetails.com/cve/CVE-2014-6603/}
+\item CVE-2015-0971 Suricata < 2.0.8, CVSS 5.0: DER parser crash via
+      SSL/TLS certificates\\
+      \url{https://www.cvedetails.com/cve/CVE-2015-0971/}
+\item CVE-2015-8954 Suricata < 2.0.6, CVSS 9.8: \verb+MemcmpLowercase+ skips
+      first byte, IPS bypass via crafted HTTP\\
+      \url{https://www.cvedetails.com/cve/CVE-2015-8954/}
+\item CVE-2017-7177 Suricata < 3.2.1, CVSS 7.5: IPv4 defrag evasion,
+      IP protocol not checked when matching fragments\\
+      \url{https://www.cvedetails.com/cve/CVE-2017-7177/}
+\item CVE-2017-15377 Suricata < 4.x, CVSS 7.5: redundant content checks
+      until recursion limit (3000), DoS\\
+      \url{https://www.cvedetails.com/cve/CVE-2017-15377/}
+\end{list2}
 
-How to get ahead? - use existing good examples!
+\slide{Suricata IDS -- selected CVEs}
 
-Microsoft has released sample applications.
+\begin{list2}
+\item CVE-2018-6794 Suricata < 4.0.4, CVSS 5.3: TCP data before handshake,
+      HTTP response signatures bypassed (Snort 2.9.4 too)\\
+      \url{https://www.exploit-db.com/exploits/44247}
+\item CVE-2024-32664 Suricata, CVSS 5.3: base64 out-of-bounds write
+      via crafted traffic or datasets\\
+      \url{https://github.com/OISF/suricata/security/advisories/GHSA-79vh-hpwq-3jh7}
+\item CVE-2024-37151 Suricata, CVSS 7.5: fragments reusing IP ID break
+      reassembly, policy bypass\\
+      \url{https://github.com/OISF/suricata/security/advisories/GHSA-qrp7-g66m-px24}
+\item CVE-2025-59147 Suricata, CVSS 7.5: crafted multiple SYNs, TCP
+      detection bypass\\
+      \url{https://bugzilla.redhat.com/show_bug.cgi?id=2400928}
+\item CVE-2025-64330 Suricata, CVSS 7.5: heap over-read logging verdict
+      in eve.alert (non-default config)\\
+      \url{https://github.com/OISF/suricata/security/advisories/GHSA-83v7-gm34-f437}
+\end{list2}
 
-\begin{quote}
-Secure Development Documentation
-Learn how to develop and deploy secure applications on Azure with our sample apps, best practices, and guidance.
-
-Get started
-Develop a secure web application on Azure
-\end{quote}
-
-Source:
-\url{https://docs.microsoft.com/en-us/azure/security/develop/}
-
-Yes, this describes how to run Alpine Linux on their Azure Cloud.
-
+\begin{list1}
+\item An IDS must parse hostile traffic -- and agree with the endpoint on how it should be understood
+\end{list1}
 
 
 \slide{Resources}
@@ -319,53 +330,74 @@ In the following articles, we recommend security controls and activities that ca
 Source:
 \url{https://docs.microsoft.com/en-us/azure/security/develop/secure-dev-overview}
 
+\slide{Architecture for modern-day web applications}
 
-\slide{Good security}
-
-\hlkimage{12cm}{god-sikkerhed.pdf}
-
-\begin{list1}
-\item You always have limited resources for protection - use them as best as possible
-\end{list1}
-
-
-\slide{Balanced security}
-
-\hlkimage{21cm}{afbalanceret-sikkerhed.pdf}
-
-\begin{list1}
-\item Better to have the same level of security
-\item If you have bad security in some part - guess where attackers will end up
-\item Hackers are not required to take the hardest path into the network
-\item Realize there is no such thing as 100\% security
-\end{list1}
-
-
-
-\slide{Jumping through networks and systems}
-
-\begin{list1}
-\item Hackers break into systems they can reach
-\item and hackers break into systems they can reach from hacked systems \smiley
-\item In real life networks, a remote root exploit from the internet to the main database is rare
-\item but jumping through others can possibly break the whole network
-\item There are a lot of hackers which have presented how they hacked companies, example\\
-{\tiny\url{https://arstechnica.com/security/2016/04/how-hacking-team-got-hacked-phineas-phisher/}}
-\end{list1}
-
-\slide{Example hacks we have done during testing}
-
-\begin{list1}
-\item My own examples include pentest assignments where we:
+The average modern-day web application probably makes use of several of the follow‐
+ing technologies:
 \begin{list2}
-\item Two servers under test, Solaris\\
-had NFS world export, we could mount, found a backup of the other system, extracted /etc/passwd from backip, user logins with empty password, Solaris Telnet allows login, your password is empty - enter one
-\item Another test had SRX firewall as a core component. Due to misconfiguration we could access with SNMP, and thereby found the complete network structure revealed, how many network segments, subnets, netmask, ARP, interface counters - which lead to access files with password pictures, it was a bank
-\item Countless times we have found either a password file for a database, and used the same passwords for the operating system, or vice versa
-\item Countless times we have found either a password file in test systems, and people have used the same password in production, or vice versa
+\item  REST API
+\item  JSON or XML
+\item  JavaScript
+\item  SPA framework (React, Vue, EmberJS, AngularJS)
+\item  An authentication and authorization system
+\item  One or more web servers (typically on a Linux server)
+\item  One or more web server software packages (ExpressJS, Apache, NginX)
+\item  One or more databases (MySQL, MongoDB, etc.)
+\item  A local data store on the client (cookies, web storage, IndexDB)
 \end{list2}
-\end{list1}
+Source: \emph{Web Application Security}, Andrew Hoffman, 2020, ISBN: 9781492053118
 
+Note: the list could have come from many places, very similar structure
+
+
+\slide{Enterprise Integration Patterns}
+
+\hlkimage{14cm}{eip-patterns.png}
+Source: \url{https://www.enterpriseintegrationpatterns.com/}
+Use patterns when building systems!
+
+
+\slide{OSI Model and Internet Protocols}
+
+\hlkimage{10cm,angle=90}{images/compare-osi-ip.pdf}
+
+
+
+\slide{Document or it didn't happen}
+
+\hlkimage{12cm}{mythical-man-month-documentary.png}
+
+\begin{list2}
+\item Make sure to document!
+\item There are so many parts, so many decisions, soo many places thing can mess up
+\item Have a minimum of documentation -- and the source files are not enough
+\item Hint:  you can read the Mythical Man Month at \link{https://archive.org/details/MythicalManMonth}
+\end{list2}
+
+\slide{Why Have Formal Documents}
+
+\hlkimage{10cm}{mythical-formal-documents.png}
+Source: \emph{The Mythical Man-Month (Anniversary Edition)}
+by Frederick P. Brooks Jr.
+
+\begin{list2}
+\item I use Git version control for my documentation purposes, some is in Zim Personal Wiki \link{https://zim-wiki.org/}
+\item I also use an IPAM \link{https://spritelink.github.io/NIPAP/}
+\end{list2}
+
+
+
+\slide{Operating Systems}
+
+Computers need software -- operating systems, and applications run on an OS:
+\begin{list2}
+\item OS is the base for your experiments
+\item Must be managed, installed at least, updated and packages installed on top
+\item Some applications need a regular OS, others are fine with containers
+\item Some applications like Python can even use a virtual environment
+\end{list2}
+
+Select good operating systems, make sure to configure it -- \textbf{hardened/secure configuration}
 
 \slide{First advice use the modern operating systems}
 
@@ -385,11 +417,511 @@ had NFS world export, we could mount, found a backup of the other system, extrac
 
 \centerline{Always try to make life worse and more costly for attackers}
 
-\slide{EIP Patterns}
 
-\hlkimage{14cm}{eip-patterns.png}
 
-Following slides are mostly inspiration, and not specifically curriculum
+\slide{Virtualization}
+
+Computers can run multiple operating systems, and OS distributions at the same time:
+\begin{list2}
+\item Full virtual machine virtualization
+\item Containers -- including containers platforms like Kubernetes
+\item Use it, and create many virtual machines/containers
+\item Switch context easily, one project - one (or more) VMs
+\item Create a new VM in seconds -- keep one template VM updated that you can clone
+\item Install crap -- delete a VM, retry
+\item Performance of VMs and containers on modern CPUs is great! Almost like having two physical computers!
+\end{list2}
+
+Maybe sometime use different physical hosts -- one for internal use, one for external use
+
+
+\slide{Virtualization Overview}
+
+\hlkimage{20cm}{containers.png}
+
+
+
+\slide{Containers}
+
+\hlkimage{11cm}{containers_only.png}
+
+\begin{list2}
+\item Containers package an application and all its dependencies into a single portable unit
+\item Share the host OS kernel -- lighter and faster to start than full virtual machines
+\item Docker is the dominant developer-facing tool; images are built from a \verb+Dockerfile+ and stored in registries
+\item Images are not Docker-specific -- the industry standard is the {\bf OCI image format}, supported by all modern tools
+\item {\bf Compose files} allow multi-container applications (e.g.\ app + database) to be defined and run together
+\item Pre-packaged systems that require less administration -- {\bf only configuration}
+\end{list2}
+
+
+\slide{Container Standards and Runtimes}
+
+\begin{list2}
+\item The {\bf Open Container Initiative (OCI)} defines three open standards:\\
+image-spec, runtime-spec, and distribution-spec \link{https://opencontainers.org}
+\item Any OCI-compliant image can be built with one tool (e.g.\ Buildah, Docker) and run with another -- no vendor lock-in
+\item {\bf runc} is the reference low-level runtime implementing the OCI runtime-spec; most runtimes use it under the hood
+\item Kubernetes communicates with runtimes via the {\bf Container Runtime Interface (CRI)} -- a gRPC-based plugin API
+\item {\bf containerd} and {\bf CRI-O} are the two main CRI-compliant runtimes; Docker's direct integration was removed in Kubernetes v1.24 \link{https://kubernetes.io/docs/setup/production-environment/container-runtimes/}
+\item CRI-O is purpose-built for Kubernetes -- lightweight, OCI-compliant, and the default in Red Hat OpenShift \link{https://cri-o.io}
+\end{list2}
+
+
+
+\slide{Kubernetes}
+
+\hlkimage{24cm}{kubernetes-anywhere.png}
+
+\begin{list2}
+\item Kubernetes (K8s) is an open-source system for automating deployment and management of containers at scale
+\item Organises containers into \textit{Pods}, grouped by \textit{Deployments}, and exposed via \textit{Services}
+\item Provides automatic scaling, self-healing, and rolling updates with zero downtime
+\item Suited to large, complex microservice architectures -- significant operational overhead for small projects
+\item Managed offerings (GKE, EKS, AKS) reduce setup burden but increase cloud dependency
+\end{list2}
+
+\slide{Kubernetes Security is more than just the core}
+
+\hlkimage{12cm}{rice-container-security-1.png}
+Source: \emph{Container Security}, (CS) Liz Rice, O'Reilly, Apr 2020
+
+\begin{list2}
+\item Attacks from inside, attacks inside containers
+\item Some just use up resources, some attack others, some attack the system from the inside
+\item \emph{Hacking Kubernetes} has a whole \emph{Chapter 3 Container Runtime Isolation}
+\end{list2}
+
+\slide{Kata Containers – containers in lightweight VMs}
+
+\begin{list1}
+\item Open source container runtime that runs each pod inside its own lightweight virtual machine
+\item Each pod gets its own guest kernel instead of sharing the host kernel with all other containers
+\item For Kubernetes and the user it still looks and behaves like normal containers
+\item Uses a hypervisor like QEMU, Cloud Hypervisor or Firecracker to start the VM
+\item An agent inside the VM, \emph{kata-agent}, starts and manages the containers on request from the runtime on the host
+\item Container files are shared from the host into the VM with virtio-fs
+\item Confidential Containers: the VM runs with encrypted memory (Intel TDX, AMD SEV-SNP), so even the host operator cannot look inside
+\end{list1}
+
+
+\slide{Kata Containers 2026 vulnerabilities – host escapes}
+
+\begin{list2}
+\item CVE-2026-44210 (8.8) – pod annotations inject arguments into virtiofsd, which serves the host root filesystem into the guest. Fixed in 3.31.0
+\item CVE-2026-47243 (8.7) – guest root to host root escape via virtio-fs in runtime-rs
+\item CVE-2026-50540 (9.6) – an unvalidated configuration path annotation gives code execution on the host. Fixed in 4.0.0
+\item Common pattern: pod annotations that are enabled by default are an attack surface, because whoever can create a pod can influence the host side
+\end{list2}
+
+\slide{Kata Containers 2026 vulnerabilities – guest and CoCo}
+
+\begin{list2}
+\item CVE-2026-24834 – a container user can modify the guest VM filesystem and get root in the guest (Cloud Hypervisor). Fixed in 3.27.0
+\item CVE-2026-41326 (8.2) – symlinks bypass the CopyFile policy, so the host can overwrite binaries inside the guest, even in CVMs. Fixed in 3.29.0
+\item CVE-2026-64676 (5.7) – two mem-agent ttRPC methods skip the agent policy check. Fixed in 4.0.0
+\item CVE-2026-77176 – genpolicy does not validate CreateContainer mount and storage rules well enough, so a malicious host operator can cause information disclosure
+\item Advisories: \\ \url{https://github.com/kata-containers/kata-containers/security/advisories}
+\end{list2}
+
+
+\slide{Summary: Technology Comparison}
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+{\bf Technology} & {\bf Best For} & {\bf Complexity} & {\bf Scalability} \\
+\hline
+VPS              & Single apps, full OS control   & Low    & Vertical (manual)   \\
+Containers       & Portable, consistent deploys   & Medium & Horizontal (manual) \\
+Kubernetes       & Large-scale microservices      & High   & Horizontal (auto)   \\
+Virtual Hosts    & Multi-site on one server       & Low    & Limited             \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{list2}
+\item Above does not consider if you are a private person running systems for yourself, friends, family
+\item If you are a company with a few services
+\item If you are a large company that want to switch over to something privately owned
+\item Above are in my opinion good options for running your complete infrastructure!
+\end{list2}
+
+
+\slide{OWASP Kubernetes Security Cheat Sheet:\\
+Container Sandboxing}
+
+\begin{quote}
+Cgroups and namespaces isolate containers, but the kernel still presents a large attack surface
+\end{quote}
+
+Recommends an extra sandbox layer for multi-tenant and highly untrusted clusters, with these open source options:
+\begin{list2}
+\item Kata Containers – stripped-down VMs with a small resource footprint
+\item gVisor – its own kernel written in Go, sitting between the container and the host kernel
+\item Firecracker – a very lightweight VM locked down with seccomp, cgroups and namespaces
+\end{list2}
+
+The OWASP Secure AI Model Ops Cheat Sheet also recommends microVMs, gVisor, Kata Containers or confidential compute for high-sensitivity workloads
+
+Source: {\footnotesize\\
+\emph{Kubernetes Security Cheat Sheet}, OWASP Cheat Sheet Series \\
+\url{https://cheatsheetseries.owasp.org/cheatsheets/Kubernetes_Security_Cheat_Sheet.html}}
+
+
+\slide{Virtual Hosts in Web Servers}
+
+\begin{alltt}\footnotesize
+server \{ server_name example.com www.example.com; root /var/www/example.com; \}
+server \{ server_name example.org; root /var/www/example.org; \}
+\end{alltt}
+
+
+\begin{list2}
+\item One server with one IP address can serve many websites
+\item DNS for both {\bf example.com} and {\bf example.org} points to the same IP
+\item The browser sends the name it wants in the HTTP {\bf Host} header, the web server picks the matching site
+\item With HTTPS the name is also sent in TLS as {\bf SNI}, so the server can present the right certificate
+\end{list2}
+
+Side note: Digital Ocean and NGINX as a reverse proxy
+
+That said DigitalOcean has very good documentation for lots of things! example:\\
+\link{https://www.digitalocean.com/community/tutorials/how-to-configure-nginx-as-a-reverse-proxy-on-ubuntu-22-04}
+
+
+\slide{NGINX as a Reverse Proxy}
+
+\hlkimage{15cm}{nginx_reverse_proxy.png}
+\begin{list2}
+\item A reverse proxy sits in front of backend servers, accepting client requests and forwarding them internally
+\item NGINX uses the \verb+proxy_pass+ directive to route traffic to upstream services by hostname or IP
+\item Can provide TLS termination, load balancing, caching, and request buffering at the edge\\
+A single system with NGINX get certificates with Let's Encrypt (or alternatives)
+\end{list2}
+
+% \link{https://en.wikipedia.org/wiki/Reverse_proxy}
+
+
+
+\slide{Kubernetes Network parts -- NetworkPolicy}
+
+
+\hlkimage{12cm}{cilium-overview.png}
+\begin{list2}
+\item Container Network Interface (CNI) and Cloud Native Computing Foundation (CNCF) project\\
+\link{https://github.com/containernetworking/cni}
+\item Multiple options -- popular and common ones Calico, Flannel and Cilium
+\item Cilium - I have followed Cilium for a while, so I choose that
+\end{list2}
+
+
+\slide{Together with Firewalls - Virtual LAN (VLAN)}
+
+\hlkimage{8cm}{vlan-portbased.pdf}
+
+\begin{list1}
+\item Managed switches often allow splitting into zones called virtual LANs
+\item Most simple version is port based
+\item Like putting ports 1-4 into one LAN and remaining in another LAN
+\item Packets must traverse a router or firewall to cross between VLANs
+\end{list1}
+
+\slide{Virtual LAN (VLAN) IEEE 802.1q}
+
+\hlkimage{16cm}{vlan-8021q.pdf}
+
+\begin{list1}
+\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
+\item Virtual LAN, to pass from one to another, must use a router/firewall
+\item Allows separation/segmentation and protects traffic from many security issues
+\end{list1}
+
+\slide{Network Segmentation: Which VLANs to create}
+
+Using VLANs to segment networks we can extend it to the rest of the network, and an example of isolated segments could be:
+\begin{list2}
+\item Guest network for cabled and Wi-Fi clients
+\item Client networks can be isolated per department, floor or building
+\item Server networks for multiple purposes – development, staging, testing, production, manufacturing, …
+\item Internet servers in a demilitarized zone (DMZ) which would make it less likely that compromised internet
+server would affect the rest of the network
+\item Dedicated printer network
+\item \textbf{Management network for virtualisation, one for network management, one for storage}
+\end{list2}
+
+
+\slide{Example, Restricting the Kubernetes API}
+
+%\hlkimage{}{}
+
+Watch out when learning, you may expose an \emph{admin interface}
+\begin{quote}{\bf
+By default, the Kubernetes API server listens on port 6443 on the first non-localhost network interface, protected by TLS}. In a typical product
+ion Kubernetes cluster, the API serves on port 443. The port can be changed with the --secure-port, and the listening IP address with the --bind
+-address flag.
+
+...
+
+If your cluster uses a {\bf private certificate authority, you need a copy of that CA certificate configured into your ~/.kube/config on the cli
+ent}, so that you can trust the connection and be confident it was not intercepted.
+\end{quote}
+
+\begin{list2}
+\item If an attacker can run Kubectl with credentials -- they can do anything
+\item Defense in Depth is suggested -- so restrict at multiple levels
+\item Only allow connections from specific network -- firewall filtering
+\item Use TLS and verify/copy certificates
+\end{list2}
+
+
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+Filtering at higher layers is also possible
+\begin{list2}
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists} or automation for downloading block lists
+\end{list2}
+
+Also great home lab projects!
+
+\slide{CrowdSec -- Crowd sourced security information}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Detect and block Log4j exploitation attempts with CrowdSec}\\
+If you work in Infosec, you had a very lousy weekend. And that’s because of the Log4j zero-day vulnerability (CVE-2021-44228) that was discovered. We had no cho
+ice but to roll up our sleeves to help our community before things got messier than they already were.
+
+As a result, we have released a scenario that will help you detect and block exploitation attempts of the vulnerability. This new scenario can be directly downl
+oaded from our Hub and installed in a blink of an eye. Check this quick video to see the plugin in action:
+\end{quote}
+
+\url{https://www.crowdsec.net/blog/detect-block-log4j-exploitation-attempts}
+
+
+\begin{list2}
+\item Log4j is a popular software library in the Java world
+\item CrowdSec quickly provided a list of systems scanning the internet for this vulnerability\\
+ \link{https://gist.github.com/blotus/f87ed46718bfdc634c9081110d243166}
+\item Full disclosure they gave me a hoodie at an event \smiley
+\end{list2}
+
+
+\slide{CrowdSec with NGINX}
+
+%\hlkimage{8cm}{crowdsec_nginx.png}
+
+\begin{list2}
+\item {\bf CrowdSec} is an open-source, community-driven security engine -- the llama company \link{https://crowdsec.net}
+\item {\bf NGINX Bouncer} -- a Lua plugin enforcing ban decisions in real time via \verb+access_by_lua_block+,
+blocking malicious IPs before requests reach the backend
+\item {\bf Security Engine} -- reads NGINX logs and detects behavioural patterns: HTTP probing,
+scanning, brute force, and matches against the community blocklist
+\item {\bf AppSec/WAF component} -- inline virtual patching, SQLi, XSS, and known CVE protection;
+install with:
+\verb+cscli collections install crowdsecurity/appsec-virtual-patching+
+\item {\bf Community Blocklist} -- crowd-sourced IP reputation feed, continuously updated from
+millions of sensors worldwide; free tier available
+\item Two complementary modes: reactive (log-based, bans offenders) and
+inline (WAF, blocks the request before it is processed)
+\end{list2}
+Source: Docs: \link{https://docs.crowdsec.net/u/bouncers/nginx/}
+
+
+\slide{The OWASP Core Rule Set for WAF}
+
+\begin{list2}
+\item {\bf OWASP Core Rule Set (CRS)} -- the standard open source rules, protects against SQL injection, XSS, remote code execution and other common attacks \link{https://coreruleset.org}
+\item CRS uses {\bf anomaly scoring} -- each matching rule adds points, the request is blocked when the total passes a threshold. {\bf Paranoia levels} 1--4 -- higher levels catch more attacks, but also block more legitimate traffic, start at level 1
+\item Expect tuning: false positives are normal, run in detection-only mode first and read the logs
+\item {\bf ModSecurity} -- open source Web Application Firewall engine, inspects each HTTP request and response against rules. Works with Apache, NGINX and IIS, version 3 (libmodsecurity) uses a connector module for NGINX
+\item Trustwave ended support in July 2024, ModSecurity is now an OWASP project\\
+\link{https://owasp.org/www-project-modsecurity/}
+\item {\bf Coraza} -- newer OWASP WAF engine written in Go, first stable release 2021, fully compatible with CRS v4\\
+\link{https://coraza.io}
+
+\end{list2}
+
+
+
+\slide{Image hygiene}
+
+\begin{list2}
+\item Small base images -- fewer packages, fewer CVEs, less for an attacker to use\\
+e.g. slim, Alpine, distroless -- no shell is a feature
+\item Multi-stage builds -- compilers and build tools stay out of the runtime image
+\item Run as a named non-root user -- \verb+USER app+ in the Dockerfile
+\item Pin base images by digest, not only by tag -- tags can move
+\item No secrets in images -- layers keep history, \verb+docker history+ shows it
+\item Scan images -- e.g. Syft and Grype, or Trivy
+\item Rebuild regularly -- base images get security updates, your image does not
+\end{list2}
+
+
+\slide{Keeping Container Images secure}
+
+\begin{list2}
+\item \faWrench\ \verb+anchore+ open-source project that provides a centralized service for inspection, analysis, and certification of container images
+\link{https://github.com/anchore/anchore-engine}\\
+``As of 2023, Anchore Engine is no longer maintained. There will be no future versions released. Users are advised to use Syft and Grype.''
+\item \faWrench\ \verb+Syft+ \link{https://github.com/anchore/syft} SBOM generation and \faWrench\ \verb+Grype+ \link{https://github.com/anchore/grype} vulnerability scanning -- alternatives to Trivy
+\item Allow direct download from the internet into your cluster, may become a problem\\
+-- use your own registry or a pull-through proxy
+\item Malicious people are typosquatting popular containers!
+\item Supply chain attacks in general are a problem
+\end{list2}
+
+
+\slide{Inventory and Control of Software Assets}
+
+\begin{quote}
+CIS Control 2:\\
+Inventory and Control of Software Assets\\
+Actively manage (inventory, track, and correct) all software on the network so that only authorized software is installed and can execute, and that all unauthorized and unmanaged software is found and prevented from installation or execution.
+\end{quote}
+
+\begin{list1}
+\item What versions of software do we depend on?
+\item What software needs to be phased out, upgraded?
+\item SBOM -- Software Bill of Materials, a machine-readable list of components\\
+formats CycloneDX and SPDX, generated by tools like syft and trivy
+\item EU Cyber Resilience Act -- manufacturers must keep an SBOM
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{Continuous Vulnerability Management}
+
+\begin{quote}
+CIS Control 3:\\
+Continuous Vulnerability Management\\
+Continuously acquire, assess, and take action on new information in order to identify vulnerabilities, remediate, and minimize the window of opportunity for attackers.
+\end{quote}
+
+\begin{list1}
+\item Acquire -- CVE feeds, vendor advisories, OSV, scanners in CI and registry
+\item Assess -- not all critical CVEs are critical for you: reachable? exposed? exploited?\\
+CISA Known Exploited Vulnerabilities (KEV) catalog helps prioritize
+\item Act -- patch, upgrade, mitigate, or accept the risk with a documented reason
+\item Continuously -- an image that was clean last month is not clean today
+\end{list1}
+
+Source: Center for Internet Security CIS Controls 7.1 CIS-Controls-Version-7-1.pdf
+
+
+\slide{OSV -- vulnerabilities and malicious packages}
+
+\begin{list2}
+\item OSV -- Open Source Vulnerabilities, a database and a format, covering many ecosystems\\
+npm, PyPI, Maven, Go, crates.io, Debian, ...
+\item Vulnerabilities have IDs like \verb+CVE-+ and \verb+GHSA-+
+\item Malicious packages have IDs starting with \verb+MAL-+\\
+from the OpenSSF Malicious Packages repository
+\item \verb+osv-scanner+ -- scans lockfiles, SBOMs and directories against OSV
+\item \verb+npm audit+ -- uses the GitHub Advisory Database
+\end{list2}
+
+{\footnotesize\link{https://osv.dev/}\\
+\link{https://github.com/ossf/malicious-packages}\\
+\link{https://google.github.io/osv-scanner/}}
+
+
+\slide{Overview virtualization}
+\hlkimage{17cm}{zencurity-virtualisering.png}
+
+Example servers with KVM and Mixed VM and Kubernetes
+
+\slide{Overview services}
+\hlkimage{16cm}{zencurity-services.png}
+
+\slide{Kubernetes setup only VPN access to Nextcloud}
+\hlkimage{13cm}{zencurity-k8s-netvaerk.png}
+I do not use all Nextcloud features, so it is only reachable through WireGuard VPN
+
+\slide{Real World: Upgrading Nextcloud on Kubernetes}
+
+Critical PHP security advisory -- PHP 8.3 to 8.4, Nextcloud 33 to 34, about 30 minutes of work:
+\begin{list2}
+\item Behind a VPN there is no rush -- I could upgrade the next day at a good time, not late in the evening
+\item Run applications in isolated rooms: own Kubernetes namespace, strict NetworkPolicy with both ingress and egress filters
+\item Full backup first: a script dumping the 3 databases, and tar of all Nextcloud files
+\item Check the kernel log with \verb+journalctl -k+ for PHP segfaults -- nothing found
+\item Look for new PHP files from the last week -- not a guarantee, but cheap to run
+\item Fetch the latest Helm chart for Nextcloud All-in-One, diff the settings for new required values
+\item Start the upgrade and wait
+\item The fulltextsearch app had a missing import, a one-line hotpatch\\
+\link{https://github.com/nextcloud/fulltextsearch/issues/1005}
+\item Wait a bit more, done
+\end{list2}
+
+\begin{alltt}\footnotesize
+helm upgrade nextcloud-aio nextcloud-aio/nextcloud-aio-helm-chart --version 14.4.1
+\end{alltt}
+
+\slide{All Software Has Errors -- Know What You Run}
+
+\begin{list2}
+\item Every package, library and container image will get vulnerabilities -- also the ones you forgot you installed
+\item Scanning tells you what to fix, patching does the fixing -- you need both
+\item Remove what you do not use -- fewer packages, fewer findings
+\item {\bf SBOM} -- Software Bill of Materials, a list of everything installed on a system or in an image
+\item Example tools: {\bf Grype} matches packages against known vulnerabilities, {\bf Syft} builds SBOMs -- both open source from Anchore\\
+\link{https://github.com/anchore/grype}
+\item Debian hosts: the list of installed apt packages goes straight into Grype
+\item Kubernetes: Syft builds an SBOM for each container image, then Grype scans the SBOM\\
+The image is only downloaded once per version
+\end{list2}
+
+\slide{Example: Scanning My Own Infrastructure}
+
+\begin{list2}
+\item Debian and KVM hosts: a scanner VM collects package lists from 19 hosts over SSH,\\
+using a restricted user that can only run a read-only export
+\item Grype runs nightly, only High/Critical with a fix available
+\item Push notification with ntfy, only when something new shows up
+\item First run: 8367 findings -- after removing old leftover packages: 827
+\item 37 Kubernetes images: 1274 findings, nginx:alpine went from 117 to 3 just by pulling the current image
+\item Floating tags like \verb+latest+ bring fixes but change without review -- pinned versions are controlled but go stale
+\item Do not take a new version the minute it is published -- most malicious versions are found within days
+\end{list2}
+
+\slide{Installed Is Not the Same as Running}
+
+\begin{list2}
+\item The scanner sees what is {\bf installed} -- a patched kernel package looks clean, but the old kernel is still {\bf running} until you reboot
+\item Simple check: compare the running kernel with the newest installed one
+\item If they differ, the host needs a reboot -- the nightly scan sends a notification
+\item Same problem for libraries: a running service keeps using the old version until it is restarted, \verb+needrestart+ on Debian can show which
+\item Kubernetes nodes: kured reboots nodes one at a time, inside a reboot window
+\end{list2}
+
+The dpkg log shows the install time, and the last boot shows when the new kernel actually started running:
+\begin{alltt}\footnotesize
+for h in cheese01 cheese02 gouda01; do
+  echo "== $h"
+  ssh $h 'zgrep -h " install linux-image-6.12.113" /var/log/dpkg.log*; uptime -s'
+done
+\end{alltt}
+
+\breakdance
+
+
+\slide{Session 1: Exercises: PMD Static Analysis and SBOM Scanning}
+
+\exercise{ex:pmd-static}
+
+\exercise{ex:syft-grype-juiceshop}
+
+\slide{Session 2: Teaching: Sample Infrastructure, API Versioning and Containers}
+
 
 \slide{Microservices for Java chapter 1}
 
@@ -398,7 +930,7 @@ Following slides are mostly inspiration, and not specifically curriculum
 Microservices for Java Developers , Christian Posta, 2016 O’Reilly\\
  \link{https://www.oreilly.com/programming/free/files/microservices-for-java-developers.pdf}
 
-We will use the introduction, which is recommended.
+We will use the introduction, which is recommended reading.
 
 \slide{Whats in the book}
 
@@ -601,16 +1133,32 @@ Source: {\footnotesize\\
 \emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
 
 
-\slide{REST Service Capability Granularity}
 
-\hlkimage{12cm}{soabook-7-19-rest-service.png}
+\slide{Kubernetes API Versioning -- excerpt}
 
+\begin{list1}
+\item Alpha, e.g. \emph{v1alpha1}
 \begin{list2}
-\item REST using HTTP has the standard HTTP methods available (e.g., GET, POST, PUT, DELETE);
-\item See also \link{https://en.wikipedia.org/wiki/Representational_state_transfer}
+\item Disabled by default, must be enabled explicitly
+\item May contain bugs, can be dropped at any time without notice
+\item May change incompatibly, only for short-lived test clusters
 \end{list2}
+\item Beta, e.g. \emph{v2beta3}
+\begin{list2}
+\item Disabled by default (except betas introduced before 1.22)
+\item Well tested, the feature will not be dropped, but details may change
+\item Incompatible changes come with migration instructions
+\item Max lifetime: 9 months or 3 releases to deprecation, and the same again to removal
+\end{list2}
+\item Stable, e.g. \emph{v1}
+\begin{list2}
+\item Available in all future releases within a major version
+\end{list2}
+\end{list1}
+
 Source: {\footnotesize\\
-\emph{Service‑Oriented Architecture: Analysis and Design for Services and Microservices}, Thomas Erl, 2017}
+\emph{API Overview}, Kubernetes Documentation, CC BY 4.0
+\url{https://kubernetes.io/docs/reference/using-api/}}
 
 
 
@@ -653,67 +1201,11 @@ Source: {\footnotesize
 \link{https://docs.docker.com/storage/storagedriver/}}
 
 
-
-\slide{Kubernetes}
-
-%\hlkimage{}{}
-
-\begin{quote}
-  Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
-  It groups containers that make up an application into logical units for easy management and discovery. Kubernetes builds upon 15 years of experience of running production workloads at Google, combined with best-of-breed ideas and practices from the community.
-\end{quote}
-Source: {\footnotesize
-\link{https://kubernetes.io/}}
-
-Key points:
-\begin{list2}
-\item Open source originally from Google
-\item Scalable
-\item Uses containers inside
-\item Infrastructure as code
-\end{list2}
-
-
-\slide{Infrastructure as code}
-
-%\hlkimage{}{}
-
-\begin{quote}
-{\bf Infrastructure as code (IaC)} is the process of managing and provisioning computer data centers through machine-readable definition files, rather than physical hardware configuration or interactive configuration tools.[1] The IT infrastructure managed by this comprises both physical equipment such as bare-metal servers as well as virtual machines and associated configuration resources. The definitions may be in a version control system. It can use either scripts or declarative definitions, rather than manual processes, but the term is more often used to promote declarative approaches.
-\end{quote}
-Source: {\footnotesize
-\link{https://en.wikipedia.org/wiki/Infrastructure_as_code}}
-
-\begin{list2}
-  \item Has become the norm in many places
-\end{list2}
-
-\slide{Getting started with Kubernetes: Minikube}
-
-\centerline{Not running it now, but do on your own, if you like}
-\begin{alltt}
-  minikube start --cpus 2 --memory 2048 --disk-­size 10g
-\end{alltt}
-The last parameter is important; it specifies which VM driver to use (see Minikube documentation for details). After the installation is complete, you can get the status of Minikube:
-\begin{alltt}
-  $ minikube status
-  minikubeVM: Running
-  localkube: Running
-  kubectl: Correctly Configured: pointing to minikube-­vm at 192.168.64.2
-\end{alltt}
-
-This means the local Kubernetes cluster is up and running.
-
-This is a nice way to try Kubernetes -- can be done locally or in the cloud:\\
-\link{https://kubernetes.io/docs/tutorials/hello-minikube/}
-
-\exercise{ex:pmd-static}
-
-\exercise{ex:git-hook}
-
-\exercise{ex:juice-shop-login}
+\slide{Session 3: Exercises: XML Library in Python}
 
 \exercise{ex-python-library}
+\exercise{ex:whatweb-scanner}
+
 
 \slidenext{}
 

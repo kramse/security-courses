@@ -180,21 +180,21 @@ Keywords: hosting, self-hosting, digital sovereignty, infrastructure, web soluti
 %\hlkimage{}{}
 
 \begin{quote}
-From fully managed cloud to bare metal in your own rack —
+From fully managed cloud to bare metal in your own rack --
 choosing a hosting model means trading off control, cost, complexity, and trust.
 \end{quote}
 
 \begin{list2}
-\item {\bf SaaS} — Software as a Service: vendor runs everything, just use it\\
-(Gmail, Office 365, Salesforce) — no ops, but no control
-\item {\bf PaaS} — Platform as a Service: deploy your code, vendor manages
+\item {\bf SaaS} -- Software as a Service: vendor runs everything, just use it\\
+(Gmail, Office 365, Salesforce) -- no ops, but no control
+\item {\bf PaaS} -- Platform as a Service: deploy your code, vendor manages
 the runtime, scaling, and OS\\ (Heroku, Render, fly.io)
-\item {\bf IaaS} — Infrastructure as a Service: you get virtual machines, you manage
+\item {\bf IaaS} -- Infrastructure as a Service: you get virtual machines, you manage
 everything above the hypervisor\\ (AWS EC2, Hetzner Cloud, DigitalOcean)
-\item {\bf VPS} — a cheap, simple IaaS instance; the typical entry point for self-hosters
-\item {\bf On-premises / self-hosted} — your own hardware, your own network,
+\item {\bf VPS} -- a cheap, simple IaaS instance; the typical entry point for self-hosters
+\item {\bf On-premises / self-hosted} -- your own hardware, your own network,
 full control and full responsibility
-\item {\bf Hybrid} — mix of the above; e.g.\ data on-prem, compute in the cloud
+\item {\bf Hybrid} -- mix of the above; e.g.\ data on-prem, compute in the cloud
 \item Key questions: Who owns the data? Who is on call at 3am? What is the ongoing cost, price increase next-year, and exit cost?
 \end{list2}
 
@@ -476,9 +476,16 @@ Note: yes, you can run your services at home, but I definitely prefer hosting th
 \item No built-in redundancy -- hardware failure, fire, or flood can mean permanent data loss without disciplined offsite backups
 \end{list2}
 
-\slide{}
+\slide{Discussion: Where Should Your Services Run?}
 
-\emph{Samlet slide om beslutningen: hjemme eller VPS, dansk/EU eller udenlandsk udbyder, hvad du skal kunne, og hvem der har vagten.}
+\begin{list2}
+\item Name one service you use today -- would you move it home, to a Danish/EU provider, or leave it where it is?
+\item Does it need to be reachable from the internet, or is VPN access enough?
+\item How long can you live without it if it breaks -- an hour, a day, a week?
+\item Who fixes it when it breaks while you are on holiday?
+\item Your VPS is in Frankfurt, but the company is American -- whose law applies to your data?
+\item Where is the offsite copy of your backup, and when did you last restore from it?
+\end{list2}
 
 \breakdance
 
@@ -701,6 +708,17 @@ Status: active
 \item Perfect for a VPS, virtual server somewhere
 \end{list2}
 
+\slide{Kubernetes Network parts -- NetworkPolicy}
+
+
+\hlkimage{12cm}{cilium-overview.png}
+\begin{list2}
+\item Container Network Interface (CNI) and Cloud Native Computing Foundation (CNCF) project\\
+\link{https://github.com/containernetworking/cni}
+\item Multiple options -- popular and common ones Calico, Flannel and Cilium
+\item Cilium - I have followed Cilium for a while, so I choose that
+\end{list2}
+
 
 \slide{Together with Firewalls - Virtual LAN (VLAN)}
 
@@ -733,24 +751,9 @@ Using VLANs to segment networks we can extend it to the rest of the network, and
 \item Internet servers in a demilitarized zone (DMZ) which would make it less likely that compromised internet
 server would affect the rest of the network
 \item Dedicated printer network
-\item Management network for virtualisation, one for network management, one for storage
+\item \textbf{Management network for virtualisation, one for network management, one for storage}
 \end{list2}
 
-
-
-\slide{Proxy servers and Web Application Firewalls (WAF)}
-
-\begin{list2}
-\item Filtering at higher layers is also possible
-\item Web proxies for clients can help security a lot -- a centralized filter for everyone
-
-\item Reverse proxies for web applications are called
-Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
-\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
-\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists}
-\end{list2}
-
-Also great home lab projects!
 
 \slide{Example, Restricting the Kubernetes API}
 
@@ -774,6 +777,22 @@ ent}, so that you can trust the connection and be confident it was not intercept
 \item Only allow connections from specific network -- firewall filtering
 \item Use TLS and verify/copy certificates
 \end{list2}
+
+
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+Filtering at higher layers is also possible
+\begin{list2}
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists} or automation for downloading block lists
+\end{list2}
+
+Also great home lab projects!
 
 \slide{CrowdSec -- Crowd sourced security information}
 
@@ -857,7 +876,7 @@ Note: I am NOT currently running any of these, considering still
 
 \slide{Backup tools}
 
-A few sample KVM-Specific Backup Tools
+A few sample Backup Tools
 \begin{list2}
   \item {\bf Proxmox Backup Server (PBS)} -- Dedicated backup server for Proxmox/KVM environments. Supports deduplication, compression, and incremental backups.
   \item {\bf Virt-backup} -- Lightweight Python tool for backing up libvirt/KVM virtual machines. Simple and scriptable.
@@ -892,7 +911,7 @@ Source: {\footnotesize
 
 \begin{quote}
 {\bf Docker Compose} is a tool for defining and running multi-container applications
-using a declarative YAML file — \verb+docker-compose.yml+. The entire application stack,
+using a declarative YAML file -- \verb+docker-compose.yml+. The entire application stack,
 including services, networks, volumes, and environment configuration, is described
 in a single file that can be version-controlled, reviewed, and reproduced identically
 on any machine with Docker installed.
@@ -903,8 +922,8 @@ Source: {\footnotesize
 
 \begin{list2}
 \item A Compose file defines {\bf services} (containers), {\bf networks}, and {\bf volumes} declaratively
-\item Running \verb+docker compose up+ brings up the entire stack — no manual steps
-\item Files live in version control alongside application code — changes are auditable
+\item Running \verb+docker compose up+ brings up the entire stack -- no manual steps
+\item Files live in version control alongside application code -- changes are auditable
 \item Ideal for development environments, CI pipelines, and simple self-hosted deployments
 \item Compose files are valid IaC: they are machine-readable, repeatable, and diff-able
 \end{list2}
@@ -917,7 +936,7 @@ Source: {\footnotesize
 \begin{quote}
 {\bf Kubernetes} manages containerised workloads through declarative YAML manifests.
 Rather than issuing imperative commands, operators describe the {\bf desired state}
-of the cluster — deployments, services, ingress rules, storage claims — and
+of the cluster -- deployments, services, ingress rules, storage claims -- and
 Kubernetes continuously reconciles the actual state to match. These manifests
 are plain text files that belong in version control, making the entire
 infrastructure reviewable, auditable, and reproducible.
@@ -1055,27 +1074,27 @@ How I ran the kubeadm for building cluster initially - note the skip:\\
 
 
 
-\slide{Zencurity ApS — Self-Hosted Infrastructure}
+\slide{Zencurity ApS -- Self-Hosted Infrastructure}
 
 Datacenter - a small rack setup with:
 \begin{list2}
-\item {\bf Own LIR at RIPE NCC} — assigned a {\bf /22 IPv4} and {\bf /29 IPv6} prefix,
+\item {\bf Own LIR at RIPE NCC} -- assigned a {\bf /22 IPv4} and {\bf /29 IPv6} prefix,
 fully in control of our address space and routing
-\item {\bf Authoritative DNS} — self-hosted primary, with a friendly company
+\item {\bf Authoritative DNS} -- self-hosted primary, with a friendly company
 lending us \verb+ns03+ as secondary
-\item {\bf Email} — {\bf Postfix} for SMTP and {\bf Dovecot} for IMAP,
+\item {\bf Email} -- {\bf Postfix} for SMTP and {\bf Dovecot} for IMAP,
 self-hosted with full control over data and delivery
-\item {\bf Web} — {\bf NGINX} as reverse proxy and web server,
+\item {\bf Web} -- {\bf NGINX} as reverse proxy and web server,
 with {\bf Kubernetes} for container orchestration of services
-\item {\bf Virtualisation} — {\bf Debian} with {\bf KVM} as the hypervisor,
+\item {\bf Virtualisation} -- {\bf Debian} with {\bf KVM} as the hypervisor,
 running virtual machines on our own hardware
-\item {\bf Guest operating systems} — {\bf Debian} for Linux workloads,
+\item {\bf Guest operating systems} -- {\bf Debian} for Linux workloads,
 {\bf OpenBSD} for security-sensitive and network-facing services -- like Wireguard VPN
-\item Almost everything is version-controlled and automated — infrastructure as code
+\item Almost everything is version-controlled and automated -- infrastructure as code
 from hypervisor to application layer
 \item Self-hosting means we own the data, control the stack,
-and are on call — a deliberate choice
-\item {\bf Internal services} — self-hosted Git, file sync (Dropbox replacement),
+and are on call -- a deliberate choice
+\item {\bf Internal services} -- self-hosted Git, file sync (Dropbox replacement),
 PostgreSQL, LibreNMS, NIPAP, Zim-Wiki, and more
 \end{list2}
 
@@ -1156,28 +1175,6 @@ for h in cheese01 cheese02 gouda01; do
 done
 \end{alltt}
 
-\slide{Example: Is the Kernel Patched?}
-
-October 2026: CVE-2026-98432, Linux TCP race, CVSS 9.8 -- fixed in Debian trixie kernel 6.12.113-1
-\begin{alltt}\footnotesize
-$ for h in cheese01 cheese02 gouda01; do
->   echo "== $h"
->   ssh $h 'uname -r; uname -v; cat /proc/sys/net/mptcp/enabled'
-> done
-== cheese01
-6.12.113+deb13-amd64
-#1 SMP PREEMPT_DYNAMIC Debian 6.12.113-1 (2026-10-15)
-1
-...
-\end{alltt}
-
-\begin{list2}
-\item \verb+uname -r+ shows the running kernel, \verb+uname -v+ the Debian package version
-\item The dpkg log showed the fixed kernel was installed on 17 October -- but only running after a reboot on 25 October
-\item Installed is not the same as running -- 8 days with the patch on disk and the old kernel still active
-\item Since Go 1.24 programs open MPTCP listeners by default -- kube-apiserver, kubelet, etcd and cilium-agent all did
-\end{list2}
-
 
 \slide{OpenBSD hosts are not scanned}
 
@@ -1206,14 +1203,14 @@ These are production systems like mail and name servers!
 Owning your domain is the single most important first step toward digital sovereignty.
 
 \begin{list2}
-\item {\bf Register your own domain} — pick a registrar you trust, pay the yearly fee
-\item {\bf DNS is the foundation} — controlling your own zone means you control
+\item {\bf Register your own domain} -- pick a registrar you trust, pay the yearly fee
+\item {\bf DNS is the foundation} -- controlling your own zone means you control
 where email, web, and all other services point, and you can move them at any time
-\item {\bf Use your own domain for email} — \verb+you@yourdomain.com+ instead of
+\item {\bf Use your own domain for email} -- \verb+you@yourdomain.com+ instead of
 \verb+you@gmail.com+
-\item {\bf MX records} point your domain's email to whichever mail server you choose —
+\item {\bf MX records} point your domain's email to whichever mail server you choose --
 self-hosted Postfix/Dovecot?
-\item {\bf SPF, DKIM, and DMARC} are mandatory — without them your outgoing mail
+\item {\bf SPF, DKIM, and DMARC} are mandatory -- without them your outgoing mail
 lands in spam; DNS records
 \item {\bf Practical path:} register domain $\rightarrow$ set up DNS $\rightarrow$
 point MX at a trusted mail host $\rightarrow$ migrate email $\rightarrow$
@@ -1228,20 +1225,20 @@ self-host when ready
 \begin{quote}
 SMTP is the standard protocol for sending email between servers.
 Defined in RFC 821 (1982) and updated by RFC 5321 (2008) as Extended SMTP (ESMTP).
-All mail servers use it — sending, relaying, and receiving between domains.
+All mail servers use it -- sending, relaying, and receiving between domains.
 \end{quote}
 
 Source: \link{https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol}
 
 \begin{list2}
-\item {\bf Port 25} — server-to-server SMTP (often blocked by ISPs on home connections)
-\item {\bf Port 587} — submission port for mail clients to send via their mail server
-\item {\bf Port 465} — SMTPS, submission over TLS
+\item {\bf Port 25} -- server-to-server SMTP (often blocked by ISPs on home connections)
+\item {\bf Port 587} -- submission port for mail clients to send via their mail server
+\item {\bf Port 465} -- SMTPS, submission over TLS
 \item {\bf Postfix} is the most widely deployed open source SMTP server \link{https://www.postfix.org}
-\item {\bf Dovecot} handles IMAP/POP3 — the retrieval side; pairs naturally with Postfix \link{https://www.dovecot.org}
-\item {\bf SPF, DKIM, DMARC} are DNS-based authentication layers built on top of SMTP —
+\item {\bf Dovecot} handles IMAP/POP3 -- the retrieval side; pairs naturally with Postfix \link{https://www.dovecot.org}
+\item {\bf SPF, DKIM, DMARC} are DNS-based authentication layers built on top of SMTP --
 without them, your mail will be rejected or marked as spam
-\item Self-hosting email is rewarding but demanding — start with a VPS with a clean IP reputation
+\item Self-hosting email is rewarding but demanding -- start with a VPS with a clean IP reputation
 \end{list2}
 \slide{Internet Message Access Protocol (IMAP)}
 
@@ -1343,7 +1340,7 @@ My recommendations are:
 
 I would NOT use these:
 \begin{list2}
-\item Exim - multiple Remote Code Execution in 2019, fatal security vulns \\
+\item Exim - multiple Remote Code Execution over the years, fatal security vulns \\
 \url{https://www.exim.org/static/doc/security/}
 \item OpenSMTPD has had some really strange vulnerabilities recently\\
 \url{https://www.opensmtpd.org/security.html}
@@ -1455,17 +1452,17 @@ v=DMARC1; p=reject;
 \begin{quote}
 Self-hosting does not mean doing everything yourself from scratch.
 There is a thriving ecosystem of communities, cooperatives, and associations
-that run shared infrastructure for their members — combining the benefits
+that run shared infrastructure for their members -- combining the benefits
 of self-hosting with shared operational responsibility.
 \end{quote}
 
 \begin{list2}
-\item Associations and cooperatives can pool resources — shared hardware,
+\item Associations and cooperatives can pool resources -- shared hardware,
 shared skills, shared on-call burden
 \item Members retain control and trust in the people running the service,
 rather than a faceless corporation
 \item A great middle ground between full DIY and surrendering to Big Tech
-\item The following examples show real organisations doing exactly this —
+\item The following examples show real organisations doing exactly this --
 each with different scope, values, and technical approaches
 \item They may also inspire you to start something similar in your own community,
 workplace, or interest group
@@ -1550,42 +1547,37 @@ with self-hosted open source software
 \end{quote}
 
 \begin{list2}
-\item {\bf Nextcloud} — the most complete self-hosted collaboration platform:
+\item {\bf Nextcloud} -- the most complete self-hosted collaboration platform:
 files, calendar, contacts, video calls, office documents, and more \link{https://nextcloud.com}
-\item {\bf Syncthing} — decentralised file synchronisation between your own devices,
+\item {\bf Syncthing} -- decentralised file synchronisation between your own devices,
 no server required \link{https://syncthing.net}
-\item {\bf Seafile} — fast, reliable file sync with a focus on performance and simplicity \link{https://seafile.com}
+\item {\bf Seafile} -- fast, reliable file sync with a focus on performance and simplicity \link{https://seafile.com}
 \item {\bf OnlyOffice} and {\bf Collabora Online} integrate with Nextcloud to provide
 browser-based editing of Word, Excel, and PowerPoint compatible documents
-\item {\bf Cryptpad} — end-to-end encrypted collaborative documents, spreadsheets,
+\item {\bf Cryptpad} -- end-to-end encrypted collaborative documents, spreadsheets,
 and kanban boards \link{https://cryptpad.fr}
-\item All of these run well in Docker containers — a \verb+docker-compose.yml+ and
-an NGINX reverse proxy is usually all you need to get started
+\item {\bf Home Assistant} runs locally and keeps your smart
+home data off vendor clouds \link{https://www.home-assistant.io}
+\item The self-hosting community maintains {\bf Awesome-Selfhosted} --
+a curated list \link{https://awesome-selfhosted.net}
+\item Many of these run well in containers -- a \verb+docker-compose.yml+ or YAML and an NGINX reverse proxy is usually all you need to get started
 \end{list2}
 
 
 \slide{Things We Didn't Cover: Communication and Messaging}
 
-%\hlkimage{}{}
-
-\begin{quote}
-Microsoft Teams, Slack, and Zoom dominate workplaces —
-but self-hosted alternatives exist for all of them,
-with better privacy and no per-seat licensing costs.
-\end{quote}
-
 \begin{list2}
-\item {\bf Mattermost} — open source Slack alternative, self-hosted,
+\item {\bf Mattermost} -- open source Slack alternative, self-hosted,
 with threads, channels, and integrations \link{https://mattermost.com}
-\item {\bf Matrix / Element} — federated, encrypted messaging and team chat;
+\item {\bf Matrix / Element} -- federated, encrypted messaging and team chat;
 run your own homeserver with Synapse or Conduit \link{https://matrix.org}
-\item {\bf Jitsi Meet} — self-hosted video conferencing, no account required,
+\item {\bf Jitsi Meet} -- self-hosted video conferencing, no account required,
 works in the browser \link{https://jitsi.org}
-\item {\bf Rocket.Chat} — team messaging with video, file sharing,
+\item {\bf Rocket.Chat} -- team messaging with video, file sharing,
 and a large plugin ecosystem \link{https://rocket.chat}
-\item {\bf XMPP} — the original open federated messaging protocol, still widely used,
+\item {\bf XMPP} -- the original open federated messaging protocol, still widely used,
 clients include Conversations (Android) and Gajim (desktop)
-\item Federation matters: Matrix and XMPP allow communication across different servers —
+\item Federation matters: Matrix and XMPP allow communication across different servers --
 you are not locked into a single provider or instance
 \end{list2}
 
@@ -1594,37 +1586,35 @@ you are not locked into a single provider or instance
 
 
 \begin{list2}
-\item {\bf Monitoring} — {\bf LibreNMS} for network monitoring \link{https://librenms.org},
+\item {\bf Monitoring} -- {\bf LibreNMS} for network monitoring \link{https://librenms.org},
 {\bf Grafana} + {\bf Prometheus} for metrics and dashboards \link{https://grafana.com}
-\item {\bf Password management} — {\bf Bitwarden} offers an official self-hosted server
+\item {\bf Logging} -- {\bf VictoriaLogs} for central log storage and search, single binary, works with Grafana \link{https://docs.victoriametrics.com/victorialogs/}
+\item {\bf Password management} -- {\bf Bitwarden} offers an official self-hosted server
 \link{https://bitwarden.com}; {\bf Vaultwarden} is a lightweight community reimplementation
 in Rust, compatible with all Bitwarden clients and easier to run on modest hardware
+\item {\bf MFA} -- hardware keys like {\bf YubiKey} \link{https://www.yubico.com} and {\bf Nitrokey} \link{https://www.nitrokey.com}
 \link{https://github.com/dani-garcia/vaultwarden}
-\item {\bf DNS filtering} — {\bf Pi-hole} block ads and
+\item {\bf DNS filtering} -- {\bf Pi-hole} block ads and
 tracking domains network-wide via DNS \link{https://pi-hole.net}
-\item {\bf Git hosting} — {\bf Gitea} or {\bf Forgejo} provide a lightweight self-hosted
+\item {\bf Git hosting} -- {\bf Gitea} or {\bf Forgejo} provide a lightweight self-hosted
 GitHub alternative for code and documentation \link{https://forgejo.org}
-\item {\bf Home automation} — {\bf Home Assistant} runs locally and keeps your smart
-home data off vendor clouds \link{https://www.home-assistant.io}
-\item The self-hosting community maintains {\bf Awesome-Selfhosted} —
-a curated list of hundreds of options \link{https://awesome-selfhosted.net}
 \end{list2}
 
 
 \slide{Things We Didn't Cover: Client Operating Systems}
 
 \begin{list2}
-\item {\bf Debian} — rock-solid, well-supported Linux desktop and laptop OS;
+\item {\bf Debian} -- rock-solid, well-supported Linux desktop and laptop OS;
 what we use at Zencurity for workstations \link{https://www.debian.org}
-\item {\bf Ubuntu} — Debian-based, more beginner-friendly, large community and
+\item {\bf Ubuntu} -- Debian-based, more beginner-friendly, large community and
 good hardware support; a natural first step from Windows or macOS \link{https://ubuntu.com}
-\item {\bf Fedora} — Red Hat sponsored, cutting-edge packages, good for developers \link{https://fedoraproject.org}
-\item {\bf Linux Mint} — often recommended as the most approachable desktop Linux
+\item {\bf Fedora} -- Red Hat sponsored, cutting-edge packages, good for developers \link{https://fedoraproject.org}
+\item {\bf Linux Mint} -- often recommended as the most approachable desktop Linux
 for people switching from Windows \link{https://linuxmint.com}
-\item {\bf Qubes OS} — security through compartmentalisation; runs each application
+\item {\bf Qubes OS} -- security through compartmentalisation; runs each application
 or context in a separate VM (qube); not for everyone, but very powerful for
-high-security workstations — used at Zencurity \link{https://www.qubes-os.org}
-\item All of the above are free, open source, and run well on modest hardware —
+high-security workstations -- used at Zencurity \link{https://www.qubes-os.org}
+\item All of the above are free, open source, and run well on modest hardware --
 including older laptops that Windows 11 refuses to support
 \end{list2}
 
@@ -1633,19 +1623,19 @@ including older laptops that Windows 11 refuses to support
 %\hlkimage{}{}
 
 
-Self-hosting is not for everyone — but for those who choose it,
+Self-hosting is not for everyone -- but for those who choose it,
 it offers genuine independence, real learning, and ownership of your data
 
 
 \begin{list2}
-\item {\bf Start small} — a single VPS with NGINX and UFW is already self-hosting
-\item {\bf Use open standards} — OCI images, open protocols, open formats keep your options open
-\item {\bf Version control everything} — if it is not in Git, it does not exist
-\item {\bf Security is not optional} — firewalls, TLS, patching, and backups from day one
-\item {\bf You are on call} — know this going in, and plan for it
-\item {\bf Communities help} — cooperatives, associations, and friendly sysadmins
+\item {\bf Start small} -- a single VPS with NGINX and UFW is already self-hosting
+\item {\bf Use open standards} -- OCI images, open protocols, open formats keep your options open
+\item {\bf Version control everything} -- if it is not in Git, it does not exist
+\item {\bf Security is not optional} -- firewalls, TLS, patching, and backups from day one
+\item {\bf You are on call} -- know this going in, and plan for it
+\item {\bf Communities help} -- cooperatives, associations, and friendly sysadmins
 share the burden and the knowledge
-\item {\bf Digital sovereignty is a journey} — every service you move away from Big Tech
+\item {\bf Digital sovereignty is a journey} -- every service you move away from Big Tech
 is a step toward independence
 \end{list2}
 

@@ -66,7 +66,7 @@ Have fun and learn
 \markboth{Exercise content}{}
 
 Most exercises follow the same procedure and has the following content:
-\begin{itemize}
+\begin{list2}
 \item {\bf Objective:} What is the exercise about, the objective
 \item {\bf Purpose:} What is to be the expected outcome and goal of doing this exercise
 \item {\bf Suggested method:} suggest a way to get started
@@ -74,7 +74,7 @@ Most exercises follow the same procedure and has the following content:
 do the actual exercises
 \item {\bf Solution:} one possible solution is specified
 \item {\bf Discussion:} Further things to note about the exercises, things to remember and discuss
-\end{itemize}
+\end{list2}
 
 Please note that the method and contents are similar to real life scenarios and does not detail every step of doing the exercises. Entering commands directly from a book only teaches typing, while the exercises are designed to help you become able to learn and actually research solutions.
 
@@ -355,10 +355,10 @@ We will investigate the /etc directory on Linux. We need a Debian Linux and a Ka
 
 {\bf Purpose:}\\
 Start seeing example configuration files, including:
-\begin{itemize}
+\begin{list2}
   \item User database \verb+/etc/passwd+ and \verb+/etc/group+
   \item The password database \verb+/etc/shadow+
-\end{itemize}
+\end{list2}
 
 {\bf Suggested method:}\\
 Find a nearby Linux VM -- ask a friend.
@@ -433,11 +433,11 @@ You are done once you can point to at least one \verb+[FAIL]+ or \verb+[WARN]+ r
 
 {\bf Discussion:}\\
 Lookup Trivy scanner, and compare kube-bench to Trivy: Trivy tells you \emph{what known-vulnerable software} is running; kube-bench tells you \emph{whether the cluster is configured safely}, regardless of software versions. Both are needed. Discuss:
-\begin{itemize}
+\begin{list2}
   \item Why a perfectly patched cluster can still be insecure if it's misconfigured (e.g. anonymous API access enabled)
   \item Why some checks are unrealistic to fully satisfy on a local dev cluster (e.g. those about running on dedicated, hardened hosts) but matter a lot in production
   \item How this fits into a broader "Secure by Design" pipeline: SCA (Trivy) + config auditing (kube-bench) + your own code's static analysis (PMD)
-\end{itemize}
+\end{list2}
 
 
 \chapter{\faInfoCircle\ Trivy scan of container images in k3s up to 40 min}
@@ -447,11 +447,11 @@ We will use Trivy to scan the container images actually running in our local k3s
 
 {\bf Purpose:}\\
 Get hands-on experience with a real vulnerability scanner and see how it maps found issues back to:
-\begin{itemize}
+\begin{list2}
   \item CVE identifiers
   \item CWE categories (compare with the OWASP Top 10 and CWE Top 25 discussed in class)
   \item Severity ratings (CRITICAL / HIGH / MEDIUM / LOW)
-\end{itemize}
+\end{list2}
 This is your first taste of Software Composition Analysis (SCA) -- scanning not code you wrote, but the third-party layers you depend on (base images, OS packages, libraries).
 
 {\bf Suggested method:}\\
@@ -486,20 +486,20 @@ hlk@laptop:~$ trivy image --severity CRITICAL,HIGH bkimminich/juice-shop:latest
 
 {\bf Solution:}\\
 A finished run produces a table (or JSON, with \verb+-f json+) listing, for each vulnerable package, the installed version, the fixed version (if one exists), the CVE ID, and severity. You are done once you can:
-\begin{itemize}
+\begin{list2}
   \item Explain what one specific CVE in the output actually is (look it up)
   \item State whether a fix is available for it
   \item Say whether it applies to the OS layer (e.g. Debian/Alpine packages) or the application layer (e.g. npm packages)
-\end{itemize}
+\end{list2}
 
 {\bf Discussion:}\\
 Trivy will usually report far more vulnerabilities than you can realistically fix -- this is normal, and mirrors real-world alert fatigue in vulnerability management. Discuss:
-\begin{itemize}
+\begin{list2}
   \item Why base image choice (e.g. \verb+alpine+ vs \verb+debian+ vs \verb+distroless+) drastically changes the vulnerability count
   \item Why ``no fix available'' is common and what you'd do about it in practice (accept risk, find an alternative package, mitigate elsewhere)
   \item How this connects to CI/CD -- scanning should happen before deploy, not just ad-hoc like we just did
   \item The difference between scanning an image (Trivy) and scanning your own source code for weaknesses (static analysis, e.g. PMD from an earlier exercise) -- Trivy tells you about vulnerabilities in dependencies, not bugs in your own code
-\end{itemize}
+\end{list2}
 
 
 \chapter{\faInfoCircle\ Enable UFW firewall - 10 min}
@@ -1390,21 +1390,21 @@ Tip: Yes, filtering traffic further out removes it from processing in routers, f
 
 {\bf Suggested method:}\\
 Try different scans,
-\begin{itemize}
+\begin{list2}
 \item Ping sweep to find active systems
 \item Port sweeps to find active systems with specific ports
-\end{itemize}
+\end{list2}
 
 {\bf Hints:} \\
 Try nmap in sweep mode - and you may run this from Zenmap
 
 {\bf Solution:}\\
 Use the command below as examples:
-\begin{itemize}
+\begin{list2}
 \item Ping sweep ICMP and port probes: \verb+nmap -sP 10.0.45.*+
 \item Port sweeps 80/tcp and 443/tcp: \verb+nmap -p 80 10.0.45.*+
 \item Port sweeps UDP scans can be done: \verb+nmap -sU -p 161 10.0.45.*+
-\end{itemize}
+\end{list2}
 
 {\bf Discussion:}\\
 Quick scans quickly reveal interesting hosts, ports and services
@@ -1974,7 +1974,7 @@ Recommended values to print from the file:
 You will probably not get it all running in the time allowed, but you get an idea of the complexity.
 
 {\bf Hints:}\\
-One option is to use the Python ElementTree XML API:\\
+Another option is to use the Python ElementTree XML API:\\
 \url{https://docs.python.org/3/library/xml.etree.elementtree.html}
 
 Also - always use Python3!
@@ -1988,6 +1988,36 @@ Improvements, you might consider:
 \item Create command line parameters for the program, making it more useful
 \item Pretty print using formatted output
 \end{list2}
+
+\textbf{AND ALSO}
+
+Checkout OWASP XML External Entity Prevention Cheat Sheet\\
+\url{https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html}
+
+and consider how you could fix your XML parsing in Python:
+\begin{minted}[fontsize=\footnotesize]{python}
+# Minimum configuration
+safe_parser = etree.XMLParser(
+    resolve_entities=False,    # Do not perform entity expansion.
+    no_network=True,           # Do not automatically load remote documents.
+)
+root = etree.fromstring(xmlstr, parser=safe_parser)
+
+
+# Better a reusable function...
+def safe_parser():
+    return etree.XMLParser(
+        resolve_entities=False,    # Do not perform entity expansion.
+        no_network=True,           # Do not automatically load remote documents.
+    )
+
+# ... elsewhere in the code.
+root = etree.fromstring(xmlstr, parser=safe_parser())
+\end{minted}
+
+
+
+
 {\bf Discussion:}\\
 Many examples contain code like this:
 
@@ -2009,10 +2039,104 @@ Parse the XML file and get the root tag and then using [0] will give us first ch
 \end{minted}
 Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
 
-What is the point of referring to a specific numbered child, when we specifically have the tags?!
+%\syft
 
-What happens if the XML output changes a bit, so another tag is before the expected one! Dont trust Stackoverflow, unless you want a stack overflow \smiley.
+\chapter{\faExclamationTriangle\ SBOM and vulnerability scan of Juice Shop with Syft and Grype up to 45 min}
+\label{ex:syft-grype-juiceshop}
 
+{\bf Objective:}\\
+Create a Software Bill of Materials (SBOM) for the OWASP Juice Shop container image with Syft, and match it against known vulnerabilities with Grype.
+
+{\bf Purpose:}\\
+An SBOM lists every package inside an image: operating system packages, libraries and application dependencies. Once you have the SBOM you can check it against new vulnerabilities every day, without pulling or unpacking the image again.
+
+You will see:
+\begin{list2}
+  \item How many packages are hidden inside a single application image
+  \item The difference between creating an inventory (Syft) and matching it against vulnerabilities (Grype)
+  \item How to use the result as a gate in a build pipeline
+\end{list2}
+
+{\bf Suggested method:}\\
+Use your Rancher Desktop with Juice Shop running as a container. Rancher Desktop does not include Syft or Grype, so install them first:
+\begin{list2}
+  \item macOS: \verb+brew install syft grype+
+  \item Linux: use the install scripts from the project pages
+  \item Windows: download the zip files from the releases pages and put the binaries in your PATH
+\end{list2}
+
+\link{https://github.com/anchore/syft}\\
+\link{https://github.com/anchore/grype}
+
+Then create the SBOM, scan it, and answer the questions in the hints.
+
+
+{\bf Hints:}\\
+Check if the Juice Shop image is present:
+\begin{alltt}
+nerdctl images | grep juice-shop
+\end{alltt}
+
+Next command will pull the image, if not present.
+
+Create the SBOM, both as a table on screen and as a CycloneDX file:
+\begin{alltt}
+syft registry:bkimminich/juice-shop -o table -o cyclonedx-json=juice-shop.cdx.json
+\end{alltt}
+
+The \verb+registry:+ prefix makes Syft download the image directly from the registry. Without it Syft first tries a local container daemon, which can take much longer.
+
+Note: this may take some time, depending on network speed, multiple students downloading at the same time etc. While the scan runs you can read up on the project pages.
+
+Answer from the Syft output:
+\begin{list2}
+  \item How many packages did Syft find in total?
+  \item Which package types are present (the TYPE column), and how many of each?
+  \item Which version of the \verb+express+ package is in the image?
+  \item Which version of the \verb+jsonwebtoken+ package is in the image?
+\end{list2}
+
+Scan the SBOM file -- not the image -- with Grype:
+\begin{alltt}
+grype db update
+grype sbom:./juice-shop.cdx.json
+\end{alltt}
+
+Answer from the Grype output:
+\begin{list2}
+  \item How many findings have severity Critical, and how many High?
+  \item Which single package has the most findings?
+  \item Pick one Critical finding: what is the CVE or GHSA ID, and which version fixes it (the FIXED-IN column)?
+\end{list2}
+
+Show only findings that can be fixed by upgrading, and make Grype fail on High or worse:
+\begin{alltt}
+grype sbom:./juice-shop.cdx.json --only-fixed --fail-on high
+
+...
+hlk@alice:~$ grype sbom:./juice-shop.cdx.json --only-fixed --fail-on high
+ ✘ Scan for vulnerabilities        [78 vulnerability matches]
+   ├── by severity: XX critical, XX high, XX medium, XX low, XX negligible
+   └── by status:   XX fixed, XX not-fixed, XX ignored
+\end{alltt}
+
+\begin{list2}
+\item How many findings remain with \verb+--only-fixed+?
+\item Which exit code does Grype return?
+\item The SBOM was created once. Which of the two steps, Syft or Grype, would you run every day, and why?
+\end{list2}
+
+{\bf Solution:}\\
+When you have the file \verb+juice-shop.cdx.json+, have answered the questions above and can explain the exit code from Grype, you are done.
+
+The numbers depend on the image version and the date of the Grype database, so compare with your neighbour instead of a fixed answer.
+
+{\bf Discussion:}\\
+Juice Shop is deliberately vulnerable, and its source code includes SQL injection and other flaws. These are NOT in the CVE databases, because they are in the application's own code, not in a published package. The many findings from Grype come from vulnerabilities in the packages the application uses!
+
+A non-zero exit code from \verb+--fail-on high+ can stop a build pipeline. Where in your own pipeline would this check fit, and what would you do with findings that have no fix yet?
+
+In production a common approach is: create SBOMs for all hosts and images, rescan them daily with Grype, alert only on new findings above a chosen severity, and keep the full report on disk.
 
 \end{document}
 
@@ -2129,12 +2253,12 @@ We dont really need a lot in the Elasticsearch database, and you can run most ta
 When you have a running Elasticsearch you are done, and ready for next exercise.
 
 The web page for the getting started show multiple sections:
-\begin{itemize}
+\begin{list2}
 \item Elasticsearch - the core engine, this must be done manually or with Ansible
 \item Kibana - the analytics and visualization platform
 \item Beats - data shippers, a way to get some data into ES
 \item Logstash (optional) offers a large selection of plugins to help you parse, enrich, transform, and buffer data from a variety of sources
-\end{itemize}
+\end{list2}
 
 Each describes a part and are recommended reading.
 
@@ -2191,10 +2315,10 @@ When appending ?pretty=true to any request made, the JSON returned will be prett
 Lots of tutorials exist for accessing Elasticsearch
 
 A couple of examples:
-\begin{itemize}
+\begin{list2}
 \item \link{https://aws.amazon.com/blogs/database/elasticsearch-tutorial-a-quick-start-guide/}
 \item \link{https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04}
-\end{itemize}
+\end{list2}
 
 {\bf Solution:}\\
 When you have seen examples of the API, understand the references with underscore, like \verb+_nodes+ and pretty printing you are done.
@@ -2567,9 +2691,9 @@ hping3 --flood -2 -p 53 10.0.45.12
 {\bf Hints:}\\
 
 Try doing the most common attacks:
-\begin{itemize}
+\begin{list2}
 \item UDP flooding, try port 53/udp DNS, 123/udp NTP and port 161/udp SNMP
-\end{itemize}
+\end{list2}
 
 {\bf Solution:}\\
 When your team has sent +1 million packets per second into the network, from one or two laptops - you are done.
@@ -2605,9 +2729,9 @@ Connect to the LAB network using Ethernet! Borrow a USB network card if you dont
 Start your Kali VM in bridged mode, try a basic TCP flooding attack against the server provided by the instructor, or your own Debian server.
 
 Try doing the most common attack:
-\begin{itemize}
+\begin{list2}
 \item ICMP flooding with echo
-\end{itemize}
+\end{list2}
 
 \begin{alltt}\footnotesize
 hping3 --flood -1 10.0.45.12
@@ -2732,10 +2856,10 @@ t50 -h
 The tools we use can do a lot of different things and using the command line options can produce high speed packet attacks without having to program in C ourselves.
 
 Try doing a special attack:
-\begin{itemize}
+\begin{list2}
 \item t50 with '--protocol T50' option sends ALL protocols, so try:\\
 \verb+t50 --protocol T50 10.0.45.12+
-\end{itemize}
+\end{list2}
 
 
 {\bf Solution:}\\

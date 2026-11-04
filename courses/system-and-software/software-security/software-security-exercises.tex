@@ -1947,100 +1947,6 @@ Example links:
 
 
 
-\chapter{\faInfoCircle\ Use a XML library in Python up to 45min}
-\label{ex-python-library}
-
-{\bf Objective:}\\
-Try using a programing library in the Python programming language.
-
-{\bf Purpose:}\\
-See how easy it is to produce functionality by re-using existing functions and features available in a popular language.
-
-{\bf Suggested method:}\\
-Start by getting an XML file. Suggested method is to boot your Kali Linux and run a command like \verb+nmap -p 80,443 -A -oA testfile www.zencurity.com+. Output should be testfile.xml and two other files, grepable output \verb+testfile.gnmap+ and text output \verb+testfile.nmap+.
-
-Then using Python import a library to parse XML and print a few values from the XML, or all of them.
-
-Recommended values to print from the file:
-\begin{list2}
-\item Nmap version
-\item Date of the Nmap run, note either use start and convert from Unix time or startstr which is a string
-\item Nmaprun args - aka the command line
-\item Host address
-\item Ports like from the <port protocol="tcp" portid="443">
-\item Anything you feel like
-\end{list2}
-
-You will probably not get it all running in the time allowed, but you get an idea of the complexity.
-
-{\bf Hints:}\\
-Another option is to use the Python ElementTree XML API:\\
-\url{https://docs.python.org/3/library/xml.etree.elementtree.html}
-
-Also - always use Python3!
-
-{\bf Solution:}\\
-When you can read a file and process it using Python3.
-
-Improvements, you might consider:
-\begin{list2}
-\item Use Python3 to run the Nmap process
-\item Create command line parameters for the program, making it more useful
-\item Pretty print using formatted output
-\end{list2}
-
-\textbf{AND ALSO}
-
-Checkout OWASP XML External Entity Prevention Cheat Sheet\\
-\url{https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html}
-
-and consider how you could fix your XML parsing in Python:
-\begin{minted}[fontsize=\footnotesize]{python}
-# Minimum configuration
-safe_parser = etree.XMLParser(
-    resolve_entities=False,    # Do not perform entity expansion.
-    no_network=True,           # Do not automatically load remote documents.
-)
-root = etree.fromstring(xmlstr, parser=safe_parser)
-
-
-# Better a reusable function...
-def safe_parser():
-    return etree.XMLParser(
-        resolve_entities=False,    # Do not perform entity expansion.
-        no_network=True,           # Do not automatically load remote documents.
-    )
-
-# ... elsewhere in the code.
-root = etree.fromstring(xmlstr, parser=safe_parser())
-\end{minted}
-
-
-
-
-{\bf Discussion:}\\
-Many examples contain code like this:
-
-\begin{quote}
-Getting child tag's attribute value in a XML using ElementTree
-
-Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
-\end{quote}
-\begin{minted}[fontsize=\footnotesize]{python}
->>> import xml.etree.ElementTree as ET
->>> xmlstr = '<foo><bar key="value">text</bar></foo>'
->>> root = ET.fromstring(xmlstr)
->>> root.tag
-'foo'
->>> root[0].tag
-'bar'
->>> root[0].attrib['key']
-'value'
-\end{minted}
-Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
-
-%\syft
-
 \chapter{\faExclamationTriangle\ SBOM and vulnerability scan of Juice Shop with Syft and Grype up to 45 min}
 \label{ex:syft-grype-juiceshop}
 
@@ -2137,6 +2043,102 @@ Juice Shop is deliberately vulnerable, and its source code includes SQL injectio
 A non-zero exit code from \verb+--fail-on high+ can stop a build pipeline. Where in your own pipeline would this check fit, and what would you do with findings that have no fix yet?
 
 In production a common approach is: create SBOMs for all hosts and images, rescan them daily with Grype, alert only on new findings above a chosen severity, and keep the full report on disk.
+
+
+\chapter{\faInfoCircle\ Use a XML library in Python up to 45min}
+\label{ex-python-library}
+
+{\bf Objective:}\\
+Try using a programing library in the Python programming language.
+
+{\bf Purpose:}\\
+See how easy it is to produce functionality by re-using existing functions and features available in a popular language.
+
+{\bf Suggested method:}\\
+Start by getting an XML file. Suggested method is to boot your Kali Linux and run a command like \verb+nmap -p 80,443 -A -oA testfile www.zencurity.com+. Output should be testfile.xml and two other files, grepable output \verb+testfile.gnmap+ and text output \verb+testfile.nmap+.
+
+Then using Python import a library to parse XML and print a few values from the XML, or all of them.
+
+Recommended values to print from the file:
+\begin{list2}
+\item Nmap version
+\item Date of the Nmap run, note either use start and convert from Unix time or startstr which is a string
+\item Nmaprun args - aka the command line
+\item Host address
+\item Ports like from the <port protocol="tcp" portid="443">
+\item Anything you feel like
+\end{list2}
+
+You will probably not get it all running in the time allowed, but you get an idea of the complexity.
+
+{\bf Hints:}\\
+Another option is to use the Python ElementTree XML API:\\
+\url{https://docs.python.org/3/library/xml.etree.elementtree.html}
+
+Also - always use Python3!
+
+{\bf Solution:}\\
+When you can read a file and process it using Python3.
+
+Improvements, you might consider:
+\begin{list2}
+\item Use Python3 to run the Nmap process
+\item Create command line parameters for the program, making it more useful
+\item Pretty print using formatted output
+\end{list2}
+
+\textbf{AND ALSO}
+
+Checkout OWASP XML External Entity Prevention Cheat Sheet\\
+\url{https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html}
+
+and consider how you could fix your XML parsing in Python:
+\begin{minted}[fontsize=\footnotesize]{python}
+# Minimum configuration
+safe_parser = etree.XMLParser(
+    resolve_entities=False,    # Do not perform entity expansion.
+    no_network=True,           # Do not automatically load remote documents.
+)
+root = etree.fromstring(xmlstr, parser=safe_parser)
+
+
+# Better a reusable function...
+def safe_parser():
+    return etree.XMLParser(
+        resolve_entities=False,    # Do not perform entity expansion.
+        no_network=True,           # Do not automatically load remote documents.
+    )
+
+# ... elsewhere in the code.
+root = etree.fromstring(xmlstr, parser=safe_parser())
+\end{minted}
+
+
+
+
+{\bf Discussion:}\\
+Many examples contain code like this:
+
+\begin{quote}
+Getting child tag's attribute value in a XML using ElementTree
+
+Parse the XML file and get the root tag and then using [0] will give us first child tag. Similarly [1], [2] gives us subsequent child tags. After getting child tag use \verb+.attrib[attribute_name]+ to get value of that attribute.
+\end{quote}
+\begin{minted}[fontsize=\footnotesize]{python}
+>>> import xml.etree.ElementTree as ET
+>>> xmlstr = '<foo><bar key="value">text</bar></foo>'
+>>> root = ET.fromstring(xmlstr)
+>>> root.tag
+'foo'
+>>> root[0].tag
+'bar'
+>>> root[0].attrib['key']
+'value'
+\end{minted}
+Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-extract-xml-attribute-using-python-elementtree}}
+
+%\syft
+
 
 \end{document}
 

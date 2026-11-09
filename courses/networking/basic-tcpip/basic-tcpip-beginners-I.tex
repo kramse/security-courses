@@ -90,6 +90,9 @@ Photo is NWWC camp at BornHack 2024, next is BornHack July 21. to 28. 2027 \link
 
 During the presentation, in breaks etc. please do connect to the network, play with TCP/IP, switches and routers.
 
+\slide{Session 0: Introduction and basic network terms, small exercises}
+
+
 \slide{Exercises are completely optional}
 
 We will use a combination of your systems, my networking hardware and my systems.\\
@@ -111,7 +114,7 @@ I will use Linux and participants are welcome to use any operating system of the
 Note: even though I talk a lot about Unix, you can definitely run a lot of tools on Windows and Mac OS X.
 
 \begin{list2}
-\item Try ping and traceroute - they are on every OS
+\item Ping and traceroute - they are on every OS
 \item USB Ethernet work on most operating system
 \item USB Wi-Fi cards are fun, but some takes a little work to get going
 \item Basic tools like the Nmap suite is available for Microsoft Windows, Mac OS X, Linux and many others
@@ -698,14 +701,158 @@ from 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f, 64 hops max, 12 byte packets
 \end{alltt}
 
 
+\slide{ICMP and Ping}
+
+\begin{list1}
+\item Internet Control Message Protocol (ICMP)
+\item Error conditions are signalled using this
+\item The ping program sends ICMP ECHO request and
+ expect ICMP ECHO reply
+\item
+\begin{alltt}
+\small {\bfseries
+$ ping 192.168.1.1}
+PING 192.168.1.1 (192.168.1.1): 56 data bytes
+64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
+\end{alltt}
+\end{list1}
+
+\slide{traceroute}
+
+\begin{list1}
+\item traceroute works using the Time to Live (TTL) or Hop-Count fields
+\item Each router will subtract one from this, and if zero -- return ICMP message
+\item Unix uses UDP with a high port number as destination, receives ICMP Port Unreachable
+\item The tool is called \verb+tracert+ on Microsoft Windows and uses ICMP Echo request
+\begin{alltt}
+\small{\bfseries
+$ traceroute 185.129.60.129}
+traceroute to 185.129.60.129 (185.129.60.129),
+30 hops max, 40 byte packets
+ 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
+ 2  router (185.129.60.129)  1.481 ms  1.374 ms  1.261 ms
+\end{alltt}
+\end{list1}
+
+
+
+\slide{NAT Network Address Translation}
+\hlkimage{16cm}{nat-1.pdf}
+
+
+\vskip 2 cm
+\begin{list2}
+\item NAT is used for connecting private networks to the Internet
+\item NAT gateway replaces source address and forwards packets
+\item A quick and dirty fix that keeps messing up networks and protocols
+\item The NAT router/firewall has state tables
+\end{list2}
+
+\slide{ARP in IPv4}
+
+\begin{center}
+\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
+\end{center}
+
+%server 00:30:65:22:94:a1\\
+%client 00:40:70:12:95:1c\\
+%hacker 00:02:03:04:05:06\\
+
+
+\slide{ARP request and reply}
+\begin{list1}
+\item {\bfseries ping 10.0.0.2} from server
+\item ARP Address Resolution Protocol request/reply:
+  \begin{list2}
+  \item ARP request broadcasted on layer 2 - Who has 10.0.0.2 Tell 10.0.0.1
+  \item ARP reply (from 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
+  \end{list2}
+\item IP ICMP request/reply:
+  \begin{list2}
+    \item Echo (ping) request from 10.0.0.1 to 10.0.0.2
+\item Echo (ping) reply from 10.0.0.2 to 10.0.0.1
+\item ...
+  \end{list2}
+\item ARP is performed on Ethernet before IP can be transmitted
+\end{list1}
+
 
 \exercise{ex:ping}
 \exercise{ex:basic-dns-lookup}
-\exercise{ex:whois}
-\exercise{ex:ip-address-research}
 
 
 \breakdance
+
+\slide{Session 1: Diving deeper into networking and TCP/IP}
+
+
+\slide{User Datagram Protocol (UDP)}
+\hlkimage{16cm}{udp-1.pdf}
+Connectionless \url{https://en.wikipedia.org/wiki/User_Datagram_Protocol}
+
+
+\slide{Transmission Control Protocol (TCP)}
+\hlkimage{14cm}{tcp-1.pdf}
+
+Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Protocol}
+
+
+\slide{TCP three way handshake}
+
+\hlkimage{6cm}{images/tcp-three-way.pdf}
+
+\begin{list2}
+\item Session setup is used in some protocols
+\item Other protocols like HTTP/2 can perform request in the first packet
+\end{list2}
+
+
+\slide{Well-Known Port Numbers}
+
+\hlkimage{6cm}{iana1.jpg}
+
+\begin{list1}
+\item IANA maintains a list of magical numbers in TCP/IP
+\item Lists of protocl numbers, port numers etc.
+\item A few notable examples:
+\begin{list2}
+\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
+\item Port 53/udp and 53/tcp Domain Name System (DNS)
+\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
+\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
+\end{list2}
+\item Source: \link{http://www.iana.org}
+\end{list1}
+
+
+\slide{Whois -- Where do IP addresses come from}
+
+\begin{list1}
+\item A these magical numbers we use on the internet are administered by IANA \url{https://www.iana.org/}
+\item They have handed out portions to the Region Internet Registries (RIR)
+\begin{list2}
+\item RIPE (Réseaux IP Européens)  \link{http://ripe.net}
+\item ARIN American Registry for Internet Numbers \link{http://www.arin.net}
+\item Asia Pacific Network Information Center \link{http://www.apnic.net}
+\item LACNIC (Regional Latin-American and Caribbean IP Address Registry) - Latin America and some Caribbean Islands
+\end{list2}
+\item AFRINIC \url{https://afrinic.net/}
+\item They are memberbased, and members are called Local Internet Registries (LIRs) og National Internet Registry (NIR)
+\end{list1}
+
+
+
+\slide{Hosting and internet providers}
+
+\hlkimage{16cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\item Try RIPE BGPlay \url{https://stat.ripe.net/special/bgplay#bgplay_fetch.resource=185.129.60.1}
+\end{list2}
 
 
 \slide{Routing Basics: Prefixes, AS and BGP}
@@ -811,236 +958,6 @@ Source: \link{https://www.ripe.net/membership/payment/}
 
 Full-disclosure: I have a company that does these requests and charge a yearly fee of €100 -- where €75 is paid to RIPE
 
-
-\slide{The basic tools for looking at packets}
-
-Knowledge and insight
-\begin{list2}
-\item Networks have end-points and conversations on multiple layers
-\item Name resolution includes low level MAC addresses, and IP -- names
-\item Tcpdump format, built-in to many network devices
-\item Wireshark is advanced, try right-clicking different places
-\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
-\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
- \link{https://en.wikipedia.org/wiki/Tcpdump}
-\end{list2}
-
-\vskip 5mm
-
-You can learn a lot by just listening!
-
-
-\slide{Wireshark - graphical network sniffer}
-
-\hlkimage{13cm}{images/wireshark-http.png}
-
-\centerline{Capture - Options, select a network interface}
-\centerline{\link{http://www.wireshark.org}}
-
-
-\slide{Your Privacy }
-
-\hlkimage{18cm}{images/internet-browsing.pdf}
-
-\begin{list2}
-\item Your data travels far
-\item Often crossing borders, virtually and literally
-\end{list2}
-
-
-\slide{User Datagram Protocol (UDP)}
-\hlkimage{16cm}{udp-1.pdf}
-Connectionless \url{https://en.wikipedia.org/wiki/User_Datagram_Protocol}
-
-
-\slide{Transmission Control Protocol (TCP)}
-\hlkimage{14cm}{tcp-1.pdf}
-
-Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Protocol}
-
-
-\slide{TCP three way handshake}
-
-\hlkimage{6cm}{images/tcp-three-way.pdf}
-
-\begin{list2}
-\item Session setup is used in some protocols
-\item Other protocols like HTTP/2 can perform request in the first packet
-\end{list2}
-
-
-\slide{Well-Known Port Numbers}
-
-\hlkimage{6cm}{iana1.jpg}
-
-\begin{list1}
-\item IANA maintains a list of magical numbers in TCP/IP
-\item Lists of protocl numbers, port numers etc.
-\item A few notable examples:
-\begin{list2}
-\item Port 25/tcp Simple Mail Transfer Protocol (SMTP)
-\item Port 53/udp and 53/tcp Domain Name System (DNS)
-\item Port 80/tcp Hyper Text Transfer Protocol (HTTP)
-\item Port 443/tcp HTTP over TLS/SSL (HTTPS)
-\end{list2}
-\item Source: \link{http://www.iana.org}
-\end{list1}
-
-
-\slide{Whois -- Where do IP addresses come from}
-
-\begin{list1}
-\item A these magical numbers we use on the internet are administered by IANA \url{https://www.iana.org/}
-\item They have handed out portions to the Region Internet Registries (RIR)
-\begin{list2}
-\item RIPE (Réseaux IP Européens)  \link{http://ripe.net}
-\item ARIN American Registry for Internet Numbers \link{http://www.arin.net}
-\item Asia Pacific Network Information Center \link{http://www.apnic.net}
-\item LACNIC (Regional Latin-American and Caribbean IP Address Registry) - Latin America and some Caribbean Islands
-\end{list2}
-\item AFRINIC \url{https://afrinic.net/}
-\item They are memberbased, and members are called Local Internet Registries (LIRs) og National Internet Registry (NIR)
-\end{list1}
-
-
-
-\slide{Hosting and internet providers}
-
-\hlkimage{16cm}{network-bgp-asn.png}
-
-\begin{list2}
-\item BGP networks are used for all of the Internet
-\item New standards like Resource Public Key Infrastructure (RPKI) are underway
-\item Try RIPE BGPlay \url{https://stat.ripe.net/special/bgplay#bgplay_fetch.resource=185.129.60.1}
-\end{list2}
-
-
-\slide{DNS root -- the server addresses }
-
-\begin{alltt}\small
-a.root-servers.net 198.41.0.4, 2001:503:ba3e::2:30 Verisign, Inc.
-b.root-servers.net 170.247.170.2, 2801:1b8:10::b University of Southern California,
-Information Sciences Institute
-c.root-servers.net 192.33.4.12, 2001:500:2::c Cogent Communications
-d.root-servers.net 199.7.91.13, 2001:500:2d::d University of Maryland
-e.root-servers.net 192.203.230.10, 2001:500:a8::e NASA (Ames Research Center)
-f.root-servers.net 192.5.5.241, 2001:500:2f::f Internet Systems Consortium, Inc.
-g.root-servers.net 192.112.36.4, 2001:500:12::d0d US Department of Defense (NIC)
-h.root-servers.net 198.97.190.53, 2001:500:1::53 US Army (Research Lab)
-i.root-servers.net 192.36.148.17, 2001:7fe::53 Netnod
-j.root-servers.net 192.58.128.30, 2001:503:c27::2:30 Verisign, Inc.
-k.root-servers.net 193.0.14.129, 2001:7fd::1 RIPE NCC
-l.root-servers.net 199.7.83.42, 2001:500:9f::42 ICANN
-m.root-servers.net 202.12.27.33, 2001:dc3::35 WIDE Project
-\end{alltt}
-Source: \url{https://www.iana.org/domains/root/servers}, see also \url{https://en.wikipedia.org/wiki/Root_name_server}
-
-
-\slide{DNS root servers}
-
-\hlkimage{20cm}{root-servers.png}
-
-\link{http://root-servers.org/}
-
-
-\slide{Run your own DNS -- Unbound}
-
-\begin{quote}
-Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
-
-To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
-\end{quote}
-
-\link{https://www.nlnetlabs.nl/projects/unbound/about/}
-
-My preferred local recursive DNS server
-
-
-\slide{Metadata -- enrichment}
-
-\hlkimage{10cm}{crafting-security-playbook-metadata.png}
-
-Source: picture from Crafting the InfoSec Playbook, CIP
-
-Metadata + Context
-
-
-
-\slide{ICMP and Ping}
-
-\begin{list1}
-\item Internet Control Message Protocol (ICMP)
-\item Error conditions are signalled using this
-\item The ping program sends ICMP ECHO request and
- expect ICMP ECHO reply
-\item
-\begin{alltt}
-\small {\bfseries
-$ ping 192.168.1.1}
-PING 192.168.1.1 (192.168.1.1): 56 data bytes
-64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
-64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
-64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
-\end{alltt}
-\end{list1}
-
-\slide{traceroute}
-
-\begin{list1}
-  \item traceroute works using the Time to Live (TTL) or Hop-Count fields
-\item Each router will subtract one from this, and if zero -- return ICMP message
-\item Unix uses UDP and Windows usually uses ICMP Echo
-\item
-\begin{alltt}
-\small{\bfseries
-$ traceroute 185.129.60.129}
-traceroute to 185.129.60.129 (185.129.60.129),
-30 hops max, 40 byte packets
- 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
- 2  router (185.129.60.129)  1.481 ms  1.374 ms  1.261 ms
-\end{alltt}
-\end{list1}
-
-
-\slide{NAT Network Address Translation}
-\hlkimage{16cm}{nat-1.pdf}
-
-
-\vskip 2 cm
-\begin{list2}
-\item NAT is used for connecting private networks to the Internet
-\item NAT gateway replaces source address and forwards packets
-\item A quick and dirty fix that keeps messing up networks and protocols
-\item The NAT router/firewall has state tables
-\end{list2}
-
-\slide{ARP in IPv4}
-
-\begin{center}
-\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
-\end{center}
-
-%server 00:30:65:22:94:a1\\
-%client 00:40:70:12:95:1c\\
-%hacker 00:02:03:04:05:06\\
-
-
-\slide{ARP request and reply}
-\begin{list1}
-\item {\bfseries ping 10.0.0.2} from server
-\item ARP Address Resolution Protocol request/reply:
-  \begin{list2}
-  \item ARP request broadcasted on layer 2 - Who has 10.0.0.2 Tell 10.0.0.1
-  \item ARP reply (from 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
-  \end{list2}
-\item IP ICMP request/reply:
-  \begin{list2}
-    \item Echo (ping) request from 10.0.0.1 to 10.0.0.2
-\item Echo (ping) reply from 10.0.0.2 to 10.0.0.1
-\item ...
-  \end{list2}
-\item ARP is performed on Ethernet before IP can be transmitted
-\end{list1}
 
 
 \slide{ IPv6 Neighbor Discovery Protocol (NDP)}
@@ -1180,8 +1097,177 @@ PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
 
 \hlkimage{10cm}{ipv6-router-advertisement.png}
 
+\exercise{ex:whois}
+\exercise{ex:ip-address-research}
 
 \breakdance
+
+\slide{Session 2: Try out a more exercises, play with protocols, see devices}
+
+
+\slide{Virtual Hosts in Web Servers}
+
+\begin{alltt}\footnotesize
+server \{ server_name example.com www.example.com; root /var/www/example.com; \}
+server \{ server_name example.org; root /var/www/example.org; \}
+\end{alltt}
+
+
+\begin{list2}
+\item One server with one IP address can serve many websites
+\item DNS for both {\bf example.com} and {\bf example.org} points to the same IP
+\item The browser sends the name it wants in the HTTP {\bf Host} header, the web server picks the matching site
+\item With HTTPS the name is also sent in TLS as {\bf SNI}, so the server can present the right certificate
+\end{list2}
+
+Side note: Digital Ocean and NGINX as a reverse proxy
+
+That said DigitalOcean has very good documentation for lots of things! example:\\
+\link{https://www.digitalocean.com/community/tutorials/how-to-configure-nginx-as-a-reverse-proxy-on-ubuntu-22-04}
+
+
+\slide{NGINX as a Reverse Proxy}
+
+\hlkimage{15cm}{nginx_reverse_proxy.png}
+\begin{list2}
+\item A reverse proxy sits in front of backend servers, accepting client requests and forwarding them internally
+\item NGINX uses the \verb+proxy_pass+ directive to route traffic to upstream services by hostname or IP
+\item Can provide TLS termination, load balancing, caching, and request buffering at the edge\\
+A single system with NGINX get certificates with Let's Encrypt (or alternatives)
+\end{list2}
+
+% \link{https://en.wikipedia.org/wiki/Reverse_proxy}
+
+
+
+\slide{The basic tools for looking at packets}
+
+Knowledge and insight
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Name resolution includes low level MAC addresses, and IP -- names
+\item Tcpdump format, built-in to many network devices
+\item Wireshark is advanced, try right-clicking different places
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+You can learn a lot by just listening!
+
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+\centerline{\link{http://www.wireshark.org}}
+
+
+\slide{Your Privacy }
+
+\hlkimage{18cm}{images/internet-browsing.pdf}
+
+\begin{list2}
+\item Your data travels far
+\item Often crossing borders, virtually and literally
+\end{list2}
+
+
+
+\slide{DNS root -- the server addresses }
+
+\begin{alltt}\small
+a.root-servers.net 198.41.0.4, 2001:503:ba3e::2:30 Verisign, Inc.
+b.root-servers.net 170.247.170.2, 2801:1b8:10::b University of Southern California,
+Information Sciences Institute
+c.root-servers.net 192.33.4.12, 2001:500:2::c Cogent Communications
+d.root-servers.net 199.7.91.13, 2001:500:2d::d University of Maryland
+e.root-servers.net 192.203.230.10, 2001:500:a8::e NASA (Ames Research Center)
+f.root-servers.net 192.5.5.241, 2001:500:2f::f Internet Systems Consortium, Inc.
+g.root-servers.net 192.112.36.4, 2001:500:12::d0d US Department of Defense (NIC)
+h.root-servers.net 198.97.190.53, 2001:500:1::53 US Army (Research Lab)
+i.root-servers.net 192.36.148.17, 2001:7fe::53 Netnod
+j.root-servers.net 192.58.128.30, 2001:503:c27::2:30 Verisign, Inc.
+k.root-servers.net 193.0.14.129, 2001:7fd::1 RIPE NCC
+l.root-servers.net 199.7.83.42, 2001:500:9f::42 ICANN
+m.root-servers.net 202.12.27.33, 2001:dc3::35 WIDE Project
+\end{alltt}
+Source: \url{https://www.iana.org/domains/root/servers}, see also \url{https://en.wikipedia.org/wiki/Root_name_server}
+
+
+\slide{DNS root servers}
+
+\hlkimage{20cm}{root-servers.png}
+
+\link{http://root-servers.org/}
+
+
+\slide{Run your own DNS -- Unbound}
+
+\begin{quote}
+Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
+
+To help increase online privacy, Unbound supports DNS-over-TLS which allows clients to encrypt their communication. In addition, it supports various modern standards that limit the amount of data exchanged with authoritative servers.
+\end{quote}
+
+\link{https://www.nlnetlabs.nl/projects/unbound/about/}
+
+My preferred local recursive DNS server
+
+
+\slide{Linux Wireguard VPN}
+
+\begin{quote}\small
+WireGuard is a secure network tunnel, operating at layer 3, implemented as a kernel virtual network interface for Linux, which aims to replace both IPsec for most use cases, as well as popular user space and/or TLS-based solutions like OpenVPN, while being more secure, more performant, and easier to use.
+\end{quote}
+
+Description from \link{https://www.wireguard.com/papers/wireguard.pdf}
+
+\begin{list2}
+\item Very easy to setup!
+\item single round trip key exchange, based on NoiseIK
+\item Short pre-shared static keys—Curve25519
+\item strong perfect forward secrecy
+\item Transport
+speed is accomplished using ChaCha20Poly1305 authenticated-encryption
+\item encapsulation of packets in UDP
+\item WireGuard can be
+simply implemented for Linux in less than 4,000 lines of code, making it easily audited and verified
+\end{list2}
+
+
+
+\slide{Virtual Private Network (VPN) -- client}
+
+\hlkimage{8cm}{opal-wireguard-client.png}
+
+You can enable VPN functionality as a client or server. Client would be connecting you to your \emph{home network} when travelling. Picture shown is the GL-Inet router Opal web interface
+
+We recommend Wireguard as a modern Virtual Private Network technology
+
+\slide{Virtual Private Network (VPN) -- server}
+
+\hlkimage{8cm}{opal-wireguard-server.png}
+
+Server would be if this was your home router.  Picture shown is the GL-Inet router Opal web interface
+
+We recommend Wireguard as a modern Virtual Private Network technology
+
+\slide{Demo: Web interface on router}
+
+\hlkimage{8cm}{opal-wireguard-server.png}
+
+
+\exercise{ex:wireshark-install}
+\exercise{ex:nping-tcp}
+
+\breakdance
+
+
+\slide{Bonus: Activating Firewalls }
 
 
 \slide{Back in the day: Firewalls and Internet Security, 1994}
@@ -1193,6 +1279,27 @@ PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
 Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
 \item How to configure firewalls often boil down to, should we allow protocol X
 \item If we allow certain protocols through a firewall, we are asking for trouble
+\end{list2}
+
+
+\slide{Administration and securing your own environment}
+
+
+Defense in depth
+
+%\hlkimage{10cm}{Bartizan.png}
+\hlkimage{13cm}{medieval-clipart-5}
+\centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
+
+
+\slide{Firewalls}
+
+\hlkimage{8cm}{opal-luci-firewall-easy.png}
+
+\begin{list2}
+\item Firewalls are a great project to look into, there are so many \smiley
+\item I recommend looking into open source firewalls like OPNsense, UFW and OpenBSD and many routers also include firewalls. You can often find images from commercial vendors, that you can try out.
+\item Picture is from GL-Inet router Opal with OpenWRT/LuCI which is router software for smaller routers
 \end{list2}
 
 
@@ -1210,6 +1317,7 @@ to do network security monitoring!
 \end{list2}
 
 They are all firewalls -- or firewall devices!
+
 
 
 \slide{Firewall OPNsense GUI based and easy to install}
@@ -1271,6 +1379,20 @@ Status: active
 \item Virtual LAN, to pass from one to another, must use a router/firewall
 \item Allows separation/segmentation and protects traffic from many security issues
 \end{list1}
+
+
+\slide{Network Segmentation: Which VLANs to create}
+
+Using VLANs to segment networks we can extend it to the rest of the network, and an example of isolated segments could be:
+\begin{list2}
+\item Guest network for cabled and Wi-Fi clients
+\item Client networks can be isolated per department, floor or building
+\item Server networks for multiple purposes – development, staging, testing, production, manufacturing, …
+\item Internet servers in a demilitarized zone (DMZ) which would make it less likely that compromised internet
+server would affect the rest of the network
+\item Dedicated printer network
+\item \textbf{Management network for virtualisation, one for network management, one for storage}
+\end{list2}
 
 
 \slide{Cilium overview an example firewall for Kubernetes}

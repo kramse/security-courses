@@ -9,6 +9,7 @@
 {11. Network Attacks}
 {EK  Software Security}
 
+
 \slide{Plan for today}
 
 \begin{list1}
@@ -50,12 +51,11 @@ Henning Brauer, BSDCan 2017 \link{http://quigon.bsws.de/papers/2017/bsdcan/}
 \end{list1}
 
 
-\slide{Goals today: Networking with some pentesting}
 
-{\bf What is pentest}
+\slide{What is pentesting and a pentest }
 
 \begin{quote}
-A penetration test, informally pen test, is an attack on a computer system that looks for security weaknesses, potentially gaining access to the computer's features and data.[1][2]
+  A penetration test, colloquially known as a pen test, pentest or ethical hacking, is an authorized simulated cyberattack on a computer system, performed to evaluate the security of the system;[1][2] this is not to be confused with a vulnerability assessment.[3] The test is performed to identify weaknesses (also referred to as vulnerabilities), including the potential for unauthorized parties to gain access to the system's features and data,[4][5] as well as strengths,[6] enabling a full risk assessment to be completed.
 \end{quote}
 Source: quote from \link{https://en.wikipedia.org/wiki/Penetration_test}
 
@@ -63,9 +63,99 @@ Source: quote from \link{https://en.wikipedia.org/wiki/Penetration_test}
 \item Penetration testing is a simulation, with good intentions
 \item People around the world constantly \emph{test your defenses}
 \item Often better to test at planned times
-\item How to create DDoS simulations, tools and process
-\item I use and recommend Kali Linux as the base for this
 \end{list1}
+
+\slide{Time schedule}
+
+\hlkimage{4cm}{kame-noanime-small.png}
+
+Plan for the day
+\begin{list1}
+\item 12:45 - 13:45 -- Session 0: Teaching  Network Attacks intro
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- Session 1: Exercise: *sshole
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 16:45 -- Sessions 2+3: Teaching and exercises in Networks and DDoS
+\end{list1}
+
+\slide{Session 0: Teaching and exercise: Network Attacks intro}
+
+
+
+\slide{Internet Today}
+
+\begin{quote}
+\textbf{\large Computer network}
+
+In computer science, computer engineering, and telecommunications, \textbf{a network} is a \textbf{group} of communicating computers and peripherals called hosts, which communicate data to other hosts via communication protocols, as facilitated by networking hardware.
+
+Within a computer network, \textbf{hosts} are identified by \textbf{network addresses}, which allow networking hardware to locate and identify hosts. Hosts may also have \textbf{hostnames}, memorable labels for the host nodes, which can be mapped to a network address using a hosts file or a name server such as \textbf{Domain Name Service}. The physical medium that supports information exchange includes \textbf{wired media like copper cables, optical fibers, and wireless radio-frequency media}. The arrangement of hosts and hardware within a network architecture is called the \textbf{network topology}.[1][2]
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Computer_network}
+
+
+
+\slide{Internet Today}
+
+\hlkimage{13cm}{images/server-client.pdf}
+
+\begin{list1}
+\item Clients and servers, roots in the academic world
+\item Protocols are old, very old! RFC 791: STD 5: Internet Protocol is from  September 1981!
+\item Very few protocols were encrypted, today a lot has switched to HTTPS and TLS
+\end{list1}
+
+\slide{Internet is Open Standards!}
+
+{\hlkbig \color{titlecolor}
+We reject kings, presidents, and voting.\\
+We believe in rough consensus and running code.\\
+-- The IETF credo Dave Clark, 1992.}
+
+\begin{list1}
+\item Request for comments (RFC) -- a series of documents spanning decades
+\item RFC, BCP, FYI, informational -- first ones from 1969!
+\item Are not updated but status is changed to Obsoleted when new versions are published
+\item Standards track:\\
+Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
+\end{list1}
+
+
+\slide{Network data at different layers}
+
+\hlkimage{16cm}{sample-ip-network.pdf}
+
+
+\begin{list2}
+\item Network traffic is sent using network protocols with fields, values and destinations
+\item Can we inspect this and decide to pass or block traffic, certainly! Does it help, sure!
+\end{list2}
+
+
+\slide{Protocols: OSI and Internet models}
+
+\hlkimage{9cm,angle=90}{images/compare-osi-ip.pdf}
+
+Protocols are rules, like how to say; Hello!
+Don't worry too much yet, this is an overview!
+
+
+\slide{Recommended network technologies to learn}
+
+Small set of recommended networking technologies to learn
+
+Networking: Basic Protocols from the Internet Protocols suite -- TCP/IP
+\begin{list2}
+\item Network Layer: Ethernet, Address Resolution Protocol (ARP), IPv4 and ICMPv4
+\item Transport Layer: Transmission Control Protocol (TCP) and User Datagram Protocol (UDP)
+\item Common upper layer: Dynamic Host Configuration Protocol (DHCP), Domain Name System (DNS),
+Hypertext Transfer Protocol (HTTP)\\
+\vskip 5mm
+\item Later add the encrypted/secure versions like Hypertext Transfer Protocol Secure (HTTPS) which uses Transport Layer Security (TLS)
+\item Later add Wi-Fi and IPv6/ICMPv6 with Neighbor Discovery Protocol (NDP)
+\end{list2}
+
+Enough to be able to go to other resources, and a connected path from ARP to TLS
 
 
 
@@ -144,22 +234,6 @@ Note: We investigate protocols, so we can see what is sent, so we can design \em
 \item This is what honeypots also do
 \end{list2}
 
-
-
-\slide{Most Important Network Protocols in TCP/IP}
-
-
-\begin{list1}
-\item ARP Address Resolution Protocol
-\item IP og ICMP Internet Control Message Protocol
-\item UDP User Datagram Protocol
-\item TCP Transmission Control Protocol
-\item DHCP Dynamic Host Configuration Protocol
-\item DNS Domain Name System
-\end{list1}
-\vskip 1cm
-\centerline{Basically the ones you need to get online on the Internet}
-
 \slide{Binary Protocols}
 
 \begin{list2}
@@ -168,6 +242,90 @@ Note: We investigate protocols, so we can see what is sent, so we can design \em
 \item When parsing DNS use standard libraries!
 \item When attacking DNS applications, use standard libraries! \smiley
 \item DNS is just an example, new protocols may not be implemented in easy to use tools\\ -- but someone might have analyzed it or parts already!
+\end{list2}
+
+\slide{ASN.1 problems}
+
+\begin{list2}
+\item Abstract format designed for representing objects in a machine independent format
+\item Used for various technologies in use on the internet:
+\item Certificates and key encoding
+\item Simple Network Management Protocol (SNMP)
+\item ISAKMP part of IPsec
+\item Lightweight Directory Access Protocol (LDAP)
+\end{list2}
+
+\slide{Linux Kernel ASN.1}
+
+\begin{list2}
+\item CVE-2016-0758 Integer overflow in lib/asn1\_decoder.c in the Linux kernel before 4.6 allows local users to gain privileges via crafted ASN.1 data.\\
+\url{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-0758}
+\item Linux kernel have about 5 ASN.1 parsers\\
+\url{https://www.x41-dsec.de/de/lab/blog/kernel_userspace/}
+\end{list2}
+
+\slide{ASN.1 parsing CVEs -- 2003 to 2019}
+
+\begin{list2}
+\item CVE-2003-0818 Microsoft MSASN1.DLL (MS04-007), CVSS 9.8:
+      BER length integer overflows, RCE via Kerberos, NTLM, IPsec, TLS\\
+\url{https://docs.microsoft.com/en-us/security-updates/securitybulletins/2004/ms04-007}
+\item CVE-2016-2053 Linux kernel, CVSS 4.7: panic in \verb+asn1_ber_decoder+\\
+\url{https://github.com/torvalds/linux/commit/0d62e9dd6da45bbf0f33a8617afc5fe774c8f45f}
+\item CVE-2016-2108 OpenSSL, CVSS 9.8: ``negative zero'',
+      memory corruption via crafted ANY field\\
+\url{https://nvd.nist.gov/vuln/detail/CVE-2016-2108}
+\item CVE-2016-5080 Objective Systems ASN1C (Cisco ASR 5000), CVSS 9.8:
+      integer overflow in compiler-generated code\\
+      \url{https://www.cisco.com/c/en/us/support/docs/csa/cisco-sa-20160721-asn1c.html}
+\item CVE-2019-9162 Linux kernel, CVSS 7.8: missing ASN.1 length checks
+      in SNMP NAT helper, OOB read/write\\
+      \url{https://bugs.chromium.org/p/project-zero/issues/detail?id=1776}
+\end{list2}
+
+Need a rabbit hole, check out ASN.1 parsing, parsing anything is hard!
+
+\slide{ASN.1 parsing CVEs -- 2021 to 2025}
+
+\begin{list2}
+\item CVE-2021-43527 Mozilla NSS ``BigSig'', CVSS 9.8: heap overflow on
+      oversized DER-encoded signature\\
+      \url{https://nvd.nist.gov/vuln/detail/CVE-2021-43527}
+\item CVE-2022-44640 Heimdal Kerberos KDC, CVSS 9.8: invalid free on
+      crafted DER CHOICE, generated by its ASN.1 compiler
+      \url{https://github.com/heimdal/heimdal/security/advisories/GHSA-88pm-hfmq-7vv4}
+\item CVE-2023-0286 OpenSSL, CVSS 7.4: X.400 address type confusion
+      in GeneralName, attacker pointers to \verb+memcmp+\\
+      \url{https://www.openssl.org/news/secadv/20230207.txt}
+\item CVE-2024-12133 libtasn1, CVSS 5.3: many SEQUENCE OF/SET OF
+      elements, quadratic decoding, DoS\\
+      \url{https://gitlab.com/gnutls/libtasn1/-/issues/52}
+\item CVE-2025-0343 Swift ASN.1, CVSS 7.5: primitive vs.\ constructed
+      form not enforced, crash on crafted BER/DER\\
+      \url{https://nvd.nist.gov/vuln/detail/CVE-2025-0343}
+\item CVE-2025-13151 libtasn1, CVSS 7.5 (upstream: Low): one-byte
+      stack overflow in \verb+asn1_expand_octet_string+\\
+      \url{https://gitlab.com/gnutls/libtasn1/-/issues/55}
+\end{list2}
+
+\begin{list1}
+\item Same bug class for 20+ years: trusting length, type and form fields
+\end{list1}
+
+
+\slide{Type Length Value TLVs}
+
+\begin{quote}
+  TLV sequences are easily searched using generalized parsing functions;
+New message elements which are received at an older node can be safely skipped and the rest of the message can be parsed. This is similar to the way that unknown XML tags can be safely skipped;
+TLV elements can be placed in any order inside the message body;
+TLV elements are typically used in a binary format which makes parsing faster and the data smaller than in comparable text based protocols.
+\end{quote}
+Source: \url{https://en.wikipedia.org/wiki/Type-length-value}
+
+\begin{list2}
+\item Type Length Value is an encoding used in data communication
+\item For example in Link Layer Discovery Protocol (LLDP), SSH, RADIUS
 \end{list2}
 
 
@@ -201,68 +359,111 @@ Software Vulnerabilities}
 Mark Dowd, John McDonald, Justin Schuh ISBN: 9780321444424
 \end{list2}
 
-\exercise{ex:sniff-captive-portal}
+\breakdance
+
+\slide{Session 1: Exercise: *sshole}
+
+\slide{password: AAAAAAAAAAAAAAAA...AAAAAAAAAAAAA}
+
+\begin{quote}{\bf\large
+*sshole}
+
+so openssh on musl linux (alpine, openwrt, buildroot, yocto, and a lot of the docker images you've pulled) has had a little problem since 2016.
+
+accounts that should never take a password at all (root, your key-only deploy user, ldap users, the default user on alpine's aws and azure images) take any password longer than 256 characters.
+
+yes, any password. yes. i know. yes.
+\end{quote}
+Source: \url{https://sshhole.com/}!
+
+Lets look into this including CVE-2016-6210 and CVE-2019-5021
+
+\slide{Release notes: OpenSSH 10.6p2 (2026-11-05)}
+
+New version
+\begin{alltt}\small
+Portable OpenSSH 10.6p2 was released on 2026-11-05. It will be available
+from the mirrors listed at https://www.openssh.com/.
+...
+Security
+========
+ * sshd(8): \textbf{avoid password authentication bypass} that is \textbf{exploitable}
+   through sshd(8) that affects some Linux systems when built and run
+   with \textbf{PAM support disabled}. We consider the root cause of this bug
+   to be \textbf{outside sshd}, but it is \textbf{exploitable via sshd} and \textbf{can be
+   avoided there}.
+
+   This bug was reported by Özgün Kültekin of Wakefield
+   (wakefield.co)
+\end{alltt}
+Source: \url{https://www.openssh.org/releasenotes.html} bold by me
+
+\slide{OpenSSH receives large number of security bug reports}
+
+\begin{alltt}\small
+Recently the OpenSSH team have received a large number of security
+bug reports, many of which are findings from AI models or made with
+AI assistance. While many AI reports are determined not to have
+security impact when considered in the context of a realistic
+threat model, we very much welcome these reports, especially when
+combined with human triage, analysis, test-cases and particularly
+when accompanied by proposed fixes.
+\end{alltt}
+Source: \url{https://www.openssh.org/releasenotes.html}
 
 
-\slide{ASN.1 problems}
+\slide{OpenSSH AI changes disclosure policies!}
+
+\begin{alltt}\small
+** We have seen a number of cases where a security bug identified
+** by AI tools is subsequently independently discovered by a
+** different researcher. This suggests that adversaries who do not
+** report bugs to OSS projects are likely to be able to discover
+** these bugs too. Given this, the OpenSSH team will, for now, be
+** making more frequent releases to get bugfixes into users' hands
+** more quickly rather than batching them until the next planned
+** release.
+\end{alltt}
+Source: \url{https://www.openssh.org/releasenotes.html}
+
+Saw something similar about cURL!
+
+\slide{Lets try it!}
 
 \begin{list2}
-\item Abstract format designed for representing objects in a machine independent format
-\item Used for various technologies in use on the internet:
-\item Certificates and key encoding
-\item Simple Network Management Protocol (SNMP)
-\item ISAKMP part of IPsec
-\item Lightweight Directory Access Protocol (LDAP)
+\item Read up on the bugs -- multiple, note how it would have been hard predicting the interactions!
+\item Lets find the container images -- run them in your K8s clusters
+\item Maybe it needs some configuration?
+\vskip 5mm
+\item When the attack works, retry with updated software/images -- and same configuration
 \end{list2}
 
-\slide{Linux Kernel ASN.1}
+Bonus question: would any of our previous Defense in Depth strategies work? Running container as non-root?
 
-\begin{list2}
-\item CVE-2016-0758 Integer overflow in lib/asn1\_decoder.c in the Linux kernel before 4.6 allows local users to gain privileges via crafted ASN.1 data.\\
-\url{https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-0758}
-\item Linux kernel have about 5 ASN.1 parsers\\
-\url{https://www.x41-dsec.de/de/lab/blog/kernel_userspace/}
-\end{list2}
+Would VictoriaLogs or similar work? What would that provide us?
+
+\breakdance
 
 
+\slide{Sessions 2+3: Teaching and exercises in Networks and DDoS}
 
-\slide{Type Length Value TLVs}
+
+\slide{Networking with some pentesting}
+
+{\bf What is pentest}
 
 \begin{quote}
-  TLV sequences are easily searched using generalized parsing functions;
-New message elements which are received at an older node can be safely skipped and the rest of the message can be parsed. This is similar to the way that unknown XML tags can be safely skipped;
-TLV elements can be placed in any order inside the message body;
-TLV elements are typically used in a binary format which makes parsing faster and the data smaller than in comparable text based protocols.
+A penetration test, informally pen test, is an attack on a computer system that looks for security weaknesses, potentially gaining access to the computer's features and data.[1][2]
 \end{quote}
-Source: \url{https://en.wikipedia.org/wiki/Type-length-value}
+Source: quote from \link{https://en.wikipedia.org/wiki/Penetration_test}
 
-\begin{list2}
-\item Type Length Value is an encoding used in data communication
-\item For example in Link Layer Discovery Protocol (LLDP), SSH, RADIUS
-\end{list2}
-
-
-
-\slide{Cisco Application Centric Infrastructure, aka Security Device}
-
-\begin{quote}
-  The first time an APIC gets physically connected to one of the leaf switches of an ACI fabric, it will initiate a
-  configuration process for the switches. The initial packets sent by the APIC are Link Layer Discovery Protocol
-  (LLDP) packets containing information that is used by the leaf switch to initiate the configuration process. The
-  LLDP protocol is used to advertise the identity, capabilities and certain other parameters of the APIC via TypeLength-Value (TLV) fields.
-\end{quote}
-
-ERNW WHITEPAPER 68, SECURITY ASSESSMENT OF CISCO ACI, 2019\\
-{\footnotesize\url{https://static.ernw.de/whitepaper/ERNW_Whitepaper68_Vulnerability_Assessment_Cisco_ACI_signed.pdf}}
-
-
-\begin{list2}
-\item Cisco Nexus 9000 Series Fabric Switches ACI Mode Fabric Infrastructure VLAN\\
-Unauthorized Access Vulnerability (CVE-2019-1890)
-\item Cisco Nexus 9000 Series Fabric Switches Application Centric Infrastructure Mode\\
-{\bf Link Layer Discovery Protocol Buffer Overflow Vulnerability} (CVE-2019-1901)
-\end{list2}
-
+\begin{list1}
+\item Penetration testing is a simulation, with good intentions
+\item People around the world constantly \emph{test your defenses}
+\item Often better to test at planned times
+\item How to create DDoS simulations, tools and process
+\item I use and recommend Kali Linux as the base for this
+\end{list1}
 
 
 \slide{Networks today}
@@ -346,6 +547,33 @@ Proposed Standard $\rightarrow$ Draft Standard $\rightarrow$ Standard
 \end{alltt}
 
 
+\slide{The basic tools for looking at packets}
+
+Knowledge and insight
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Name resolution includes low level MAC addresses, and IP -- names
+\item Tcpdump format, built-in to many network devices
+\item Wireshark is advanced, try right-clicking different places
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+You can learn a lot by just listening!
+
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+\centerline{\link{http://www.wireshark.org}}
+
+
+
 \slide{DNS problems}
 
 \begin{quote}
@@ -367,7 +595,7 @@ see DNS flag day \link{https://dnsflagday.net/}
 \end{list2}
 \end{list1}
 
-\slide{Recommended Software -- Unbound and NSD}
+\slide{Recommended Software -- Unbound}
 
 \begin{quote}
 Unbound is a validating, recursive, caching DNS resolver. It is designed to be fast and lean and incorporates modern features based on open standards.
@@ -378,28 +606,6 @@ To help increase online privacy, Unbound supports DNS-over-TLS which allows clie
 \link{https://www.nlnetlabs.nl/projects/unbound/about/}
 
 My preferred local DNS server
-
-Also check out uncensored DNS and his DNS over TLS setup!\\
-Even has pinning information available:\\ {\small\link{https://blog.censurfridns.dk/blog/32-dns-over-tls-pinning-information-for-unicastcensurfridnsdk/}}
-
-
-
-
-
-
-\slide{DNS over TLS vs DNS over HTTPS - DNS encryption}
-
-\begin{list1}
-\item Protocols exist that encrypt DNS data, like dnscrypt which is not RFC\\ standard \link{https://dnscrypt.info/} \link{https://en.wikipedia.org/wiki/DNSCrypt}
-\item Today we have competing standards:
-\item
-\emph{Specification for DNS over Transport Layer Security (TLS)} (DoT), RFC 7858 MAY 2016\\
-\link{https://en.wikipedia.org/wiki/DNS_over_TLS}
-
-\item \emph{DNS Queries over HTTPS (DoH)} RFC 8484
-
-
-\end{list1}
 
 
 \slide{DNS problems}
@@ -439,43 +645,80 @@ Firewalls are by design a choke point, natural place \\
 to do network security monitoring!
 
 
-\slide{Firewall historik}
 
-\hlkimage{3cm}{images/cheswick-cover2e.jpg}
+\slide{Back in the day: Firewalls and Internet Security, 1994}
 
-\begin{list1}
-\item Firewalls har været kendt siden starten af 90'erne
-\item Første bog \emph{Firewalls and Internet Security} udkom i 1994 men kan stadig anbefales, læs den på \link{http://www.wilyhacker.com/}
-
-\item 2003 kom den i anden udgave \emph{Firewalls and Internet Security}
-William R. Cheswick, Steven M. Bellovin, Aviel D. Rubin,
-Addison-Wesley, 2nd edition
-%\item Idag findes mange, men findes der en god generel firewall bog?
-\end{list1}
+\hlkimage{4cm}{images/cheswick-cover2e.jpg}
+\begin{list2}
+\item \emph{Firewalls and Internet Security: Repelling the Wily Hacker} , Second Edition 2003, William R. Cheswick, Steven M. Bellovin, and Aviel D. Rubin, {\bf 2003} \link{http://www.wilyhacker.com/}
+\item The full PDF—and the full LaTeX source of the book.
+Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+\item How to configure firewalls often boil down to, should we allow protocol X
+\item If we allow certain protocols through a firewall, we are asking for trouble
+\end{list2}
 
 
 
-\slide{Together with Firewalls - VLAN Virtual LAN}
+\slide{Definition of firewalls -- multiple definitions exist}
 
-\hlkimage{6cm}{vlan-portbased.pdf}
+\begin{quote}
+We define a firewall as {\bf a collection of components} placed between two networks that collectively have
+the following properties:
+\begin{list2}
+\item All traffic from inside to outside, and vice-versa, must pass through the firewall.
+\item Only authorized traffic, as defined by the {\bf local security policy}, will be allowed to pass.
+\item The firewall itself is immune to penetration.
+\end{list2}
+We should note that these are design goals; a failure in one aspect does not mean that the collection
+is not a firewall, simply that it is not a very good one.
+\end{quote}
 
-\begin{list1}
-\item Nogle switche tillader at man opdeler portene
-\item Denne opdeling kaldes VLAN og portbaseret er det mest simple
-\item Port 1-4 er et LAN
-\item De resterende er et andet LAN
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\end{list1}
+We will consider this a firewall, but we know today that {\bf both inside and outside at meaningless}, since we have {\bf multiple networks inside, we have partner network connections etc.}
 
-\slide{IEEE 802.1q}
+Source: \citetitle{Cheswick94} by \citeauthor{Cheswick94} \citeyear{Cheswick94}
 
-\hlkimage{16cm}{vlan-8021q.pdf}
+\slide{Definition of firewalls -- Wikipedia}
 
-\begin{list1}
-\item Med 802.1q tillades VLAN tagging på Ethernet niveau
-\item Data skal omkring en firewall eller en router for at krydse fra VLAN1 til VLAN2
-\item VLAN trunking giver mulighed for at dele VLANs ud på flere switches
-\end{list1}
+Another short definition that encapsulates this is found on Wikipedia, and may suffice in many situations. Again there will typically be multiple networks, zones or areas of the networks with varying degrees of trust.
+\begin{quote}
+In computing, a firewall is a {\bf network security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules}.[1] A firewall typically establishes a barrier between a trusted network and an untrusted network, such as the Internet.[2]
+\end{quote}
+Source: Wikipedia
+ \link{https://en.wikipedia.org/wiki/Firewall_(computing)}
+
+{\bf TL;DR Not necessarily a single device}
+
+
+
+\slide{A firewall -- in the vendor eyes}
+
+% Single line in firewall - single line out
+% With text device under test, as caption
+\hlkimage{19cm}{Firewall-vendor.pdf}
+
+
+\begin{quote}
+"{\bf Can your firewall flex in the face of change?}\\
+Does it harmonize your network, workload, and application security? Does it protect apps and employees in your hybrid or multicloud environment? Make sure you're covered."
+\end{quote}
+Source: not shown to protect the audience from further marketing speak
+% Source is Cisco.com
+
+
+
+
+\slide{A firewall -- in the enterprise mindset }
+
+% Single line in firewall,
+% cloud with at-sign Internet on the left,\\
+% cloud with at-sign LAN on the right
+\hlkimage{19cm}{Firewall-enterprise.pdf}
+
+\begin{list2}
+\item Even though some vendors suggest they can do everything in a single box, I don't believe them!
+\item Truth -- yes, we can do almost anything in software
+\item Realization {\bf Your infrastructure is based on multiple components and or devices}
+\end{list2}
 
 
 \slide{Defense in depth}
@@ -484,34 +727,75 @@ Addison-Wesley, 2nd edition
 \hlkimage{15cm}{medieval-clipart-5}
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
 
-\slide{Firewall er ikke alene}
+\slide{Firewalls}
 
-\hlkimage{15cm}{network-layers-1.png}
+\hlkimage{8cm}{opal-luci-firewall-easy.png}
 
-\centerline{Forsvaret er som altid - flere lag af sikkerhed! }
+\begin{list2}
+\item Firewalls are a great project to look into, there are so many \smiley
+\item I recommend looking into open source firewalls like OPNsense, UFW and OpenBSD and many routers also include firewalls.
+ You can often find images from commercial vendors, that you can try out.
+\item Picture is from GL-Inet router Opal with OpenWRT/LuCI which is router software for smaller routers
+\end{list2}
 
 
-\slide{Modern Firewalls}
+\slide{What is a packet filter}
 
-\begin{list1}
-\item Basalt set et netværksfilter - det yderste fæstningsværk
-\item Indeholder typisk:
-  \begin{list2}
-   \item Grafisk brugergrænseflade til konfiguration - er det en
-   fordel?
-\item TCP/IP filtermuligheder - pakkernes afsender, modtager, retning
-  ind/ud, porte, protokol, ...
-\item både IPv4 og IPv6
-\item foruddefinerede regler/eksempler - er det godt hvis det er nemt
-  at tilføje/åbne en usikker protokol?
-\item typisk NAT funktionalitet indbygget
-\item typisk mulighed for nogle serverfunktioner: kan agere
-  DHCP-server, DNS caching server og lignende
-  \end{list2}
-\item En router med Access Control Lists - kaldes ofte netværksfilter,
-  mens en dedikeret maskine kaldes firewall
-%  funktionen er reelt den samme - der filtreres traffik
-\end{list1}
+We may want to consider the difference between different types of firewalls/devices:
+\begin{list2}
+\item Network layer, we often call them packet filters, stateless
+\item Application level, we often call them, stateful filtering and gateways
+\item Firewalls are by design a choke point, natural place \\
+to do network security monitoring!
+%\item Older but still interesting Cheswick chapter 2 PDF
+%\emph{A Security Review of Protocols: Lower Layers}\\
+%\link{http://www.wilyhacker.com/}
+\end{list2}
+
+They are all firewalls -- or firewall devices!
+
+
+
+\slide{Firewall OPNsense GUI based and easy to install}
+
+\hlkimage{12cm}{images/screenshots_OPNsense-1024x518.png}
+
+\begin{list2}
+\item OPNsense \link{https://opnsense.org/}
+\item Firewall built on FreeBSD with web interface
+\item Originally thoughts from m0n0wall and later \link{https://www.pfsense.org/}\\
+\item Danish companies have been using these for many years now
+\end{list2}
+
+
+
+\slide{Linux Uncomplicated Firewall (UFW)}
+
+Debian / Ubuntu:
+\begin{alltt}\scriptsize
+root@debian01:~# apt install ufw
+...
+root@debian01:~# ufw allow 22/tcp
+Rules updated
+Rules updated (v6)
+root@debian01:~# ufw enable
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+root@debian01:~# ufw status numbered
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere
+[ 2] 22/tcp (v6)                ALLOW IN    Anywhere (v6)
+\end{alltt}
+
+\begin{list2}
+\item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
+\end{list2}
+
+
+
 
 
 \slide{Sample rules from OpenBSD PF}
@@ -540,33 +824,6 @@ pass out
 
 
 
-
-\slide{Packet filtering}
-
-\begin{alltt}\footnotesize
-0                   1                   2                   3
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Version|  IHL  |Type of Service|          Total Length         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identification        |Flags|      Fragment Offset    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Time to Live |    Protocol   |         Header Checksum       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Source Address                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Destination Address                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Options                    |    Padding    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-\end{alltt}
-
-\begin{list1}
-\item Packet filtering er firewalls der filtrerer på IP niveau
-\item Idag inkluderer de fleste stateful inspection
-\end{list1}
-
-
 \slide{Linux TCP SACK PANIC  - CVE-2019-11477 et al}
 
 Kernel vulnerabilities, CVE-2019-11477, CVE-2019-11478 and CVE-2019-11479
@@ -585,25 +842,92 @@ These issues are corrected either through applying mitigations or kernel patches
 Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/tcpsack}}
 
 
+\slide{Linux TCP IPv4 options UAF - CVE-2026-98432}
+
+Kernel vulnerability CVE-2026-98432, present since Linux 4.4 (2016)
+
+\begin{quote}\footnotesize{\bf
+Summary}\\
+A race condition in the Linux kernel's handling of new IPv4 TCP connections can lead to a use-after-free. IP options stored with a pending connection request are handed to the new socket without being copied. If that socket is destroyed while a retransmitted SYN is still being answered, freed memory is used. IPv6 is not affected.
+
+An unauthenticated remote attacker sends SYNs carrying IPv4 options (Record Route or Timestamp) to a listening port and retries until the race is won. A lost race only fails that one connection attempt, so the attacker can keep trying.
+
+Anthropic demonstrated remote root against servers with a Multipath TCP listener. Go 1.24 and later programs open MPTCP listeners by default.
+
+Fixed in 5.10.272, 5.15.223, 6.1.190, 6.6.159, 6.12.113, 6.18.56 and 7.2.10. As a mitigation, Red Hat suggests filtering incoming IPv4 TCP packets that carry header options.
+\end{quote}
+
+Source: {\footnotesize\url{https://access.redhat.com/security/vulnerabilities/RHSB-2026-016}}
+
+\slide{Rooting devices from far away}
+
+\begin{quote}\small{\bf
+\# Root from kilometers away: RCE in Ubiquiti airMAX antennas}\\
+Researchers at Faraday Security (Gastón Aznarez, Federico Kirschbaum, Dan Borgogno) found two unauthenticated remote code execution vulnerabilities in Ubiquiti's outdoor wireless equipment: airMAX and airFiber antennas and UniFi building bridges. These are the devices mounted on rooftops and poles to carry internet, cameras and building links over long distances.
+
+**CVEs** (both CVSS 3.1 score 8.8, `AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`):
+
+- **CVE-2026-21639**: airMAX AC, airMAX M, airFiber AF60-XG, airFiber AF60\\
+- **CVE-2026-21638**: UBB-XG, UDB-Pro/UDB-Pro-Sector, UBB
+
+\end{quote}
+Source: \url{https://faradaysec.com/update-your-ubiquiti-equipment-what-we-found-in-airmax-antennas/}
+
+\slide{Why?!}
+\begin{quote}\small{\bf
+\# What went wrong}
+
+- The proprietary airMAX protocol is carried inside vendor-specific fields of ordinary Wi-Fi management frames.
+- Parts of that data looked encrypted, but were only obfuscated.
+- The flaw is a command injection (CWE-77): input from the radio frame reached system command execution without proper sanitisation.
+- Several affected models ran \textbf{internal software around 17 years old, unsupported for close to a decade.}
+\end{quote}
+
+\begin{list2}
+\item Faraday blog post: \url{https://faradaysec.com/update-your-ubiquiti-equipment-what-we-found-in-airmax-antennas/}
+\item Ubiquiti Security Advisory Bulletin 061 (CVE-2026-21639):\\
+\url{https://community.ui.com/releases/Security-Advisory-Bulletin-061-061/1e4fe5f8-29c7-4a7d-a518-01b1537983ba}
+\item Ubiquiti Security Advisory Bulletin 060 (CVE-2026-21638):\\
+ \url{https://community.ui.com/releases/Security-Advisory-Bulletin-060-060/cde18da7-2bc4-41bb-a9cc-48a4a4c479c1}
+\item The talk "Root From Kilometers Away" was presented at Black Hat USA 2026 and DEF CON 34.
+\end{list2}
+
+
+\slide{Bottlenecks exist, but where}
+
+
+\hlkimage{12cm}{overview-routing-customer-2015.pdf}
+
+\begin{list2}
+\item Lower layer attacks Transport Layer Attacks TCP SYN flood -- packet based
+\item Higher layer attacks like Slowloris and web attacks -- keep sessions running
+\item Protect everything without loosing functionality or creating administrative nightmare
+\end{list2}
+
 \slide{Availability and Network flooding attacks}
 
 \begin{list2}
-\item SYN flood is the most basic and very common on the internet towards 80/tcp and 443/tcp
-\item ICMP and UDP flooding are the next targets
-\item Supporting litterature is TCP Synfloods - an old yet current problem, and improving pf's response to it, Henning Brauer, BSDCan 2017
+\item {\bf SYN flood} is the most basic and very common on the internet towards 80/tcp and 443/tcp
+\item {\bf ICMP and UDP flooding} are the next popular targets -- more similar ones exist
+\item Special packets and protocols -- anything that can create \emph{load on systems} work
 \item All of them try to use up some resources
 \begin{list2}
-\item Memory space in specific sections of the kernel, TCP state, firewalls state, number of concurrent sessions/connections
-\item interrupt processing of packets - packets per second
-\item CPU processing in firewalls, pps
+\item {\bf Memory space} in specific sections of the {\bf kernel, TCP state, firewalls state, number of concurrent sessions/connections}
+\item {\bf Interrupt processing} of packets - packets per second (pps)
+\item {\bf CPU processing} in firewalls, pps
 \item CPU processing in server software
-\item Bandwidth - megabits per second mbps
+\item {\bf Bandwidth} - megabits per second (mbps)
+\item Typically source is spoofed or amplification attacks abusing devices on the Internet
 \end{list2}
 \end{list2}
 
-There is a presentation about DDoS protection with low level technical measures to implement at\\
-{\footnotesize \link{https://github.com/kramse/security-courses/tree/master/presentations/network/introduction-ddos-testing}}
 
+\slide{Packet processing in firewalls -- detailed view}
+
+% Picture with pipeline from Juniper SRX
+\hlkimage{23cm}{srx-firewall-flow-based-processing.png}
+\emph{Traffic Processing on SRX Series Devices Overview}\\ {\scriptsize
+\link{https://www.juniper.net/documentation/us/en/software/junos/flow-packet-processing/topics/topic-map/security-srx-devices-processing-overview.html}}
 
 
 
@@ -633,6 +957,49 @@ then we will discuss which changes to environment could be implemented.
 
 You will go away from this with tools for producing packets, hping3 and some configurations for protecting - PF rules, switch rules, server firewall rules.
 
+
+
+\slide{Scanning and Attacking -- \bf Pressure Points and Scope}
+
+% Drawing showing "network"
+
+\hlkimage{21cm}{generic-network-pressure-points.pdf}
+
+\begin{list2}
+\item In scope for me is everything that could adversely affect the network
+\item Typical scope IPv4: Link network /28 or /26 and a hosting network /24 or even /22
+\item Typical scope IPv6: Link network /64 (bad) or /127 (RFC9099) and a hosting network /48 with subnets
+%\item Domain Name Service outside of the network is ofc also attack vector, ignored today
+\end{list2}
+
+
+
+\slide{Prepare for the testing}
+
+
+\hlkimage{10cm}{trinity-nmapscreen-hd-cropscale-418x250.jpg}
+
+\begin{list2}
+\item Portscan the whole linknet and hosting range in IPv4
+\item Ask about IPv6 ranges in use, specific subnets and IPv6 addresses\\
+We can guess from traceroute, Nmap test first 100 addresses in each subnet etc. but easier to ask
+\item Portscan the whole linknet - identify provider devices, hosting network devices, type of device router/firewall
+\item Also Thank you Fyodor (Gordon Lyon) and contributors for Nmap!
+\end{list2}
+
+
+\slide{Detailed Scope and Plan}
+
+Select a few targets for monitoring and attacks, from the port scans
+
+Best case would be to have:
+\begin{list2}
+\item Ping ICMP allowed to a provider router and hosting firewall -- is the connection alive
+\item TCP port with service checks, HTTP being attacked and one not being attacked
+\item UDP port with service check, DNS is a favourite -- ask for localhost/127.0.0.1
+\item Put monitoring on these, a week before testing is nice
+\item Agree on a day or night for testing, inform participants and system owners
+\end{list2}
 
 
 \slide{hping3 packet generator}
@@ -684,7 +1051,36 @@ can easily overload most firewalls by producing a randomized traffic with multip
 home page: \link{http://t50.sourceforge.net/resources.html}
 \end{list2}
 
-\centerline{Extremely fast and breaks most firewalls when flooding, easy 800k pps/400Mbps}
+\centerline{Fast and breaks most firewalls when flooding, easy 800k pps/400Mbps}
+
+
+\slide{Enter MoonGen and Dedicated Hardware}
+
+\hlkimage{6cm}{dell-precision-3240-compact.jpg}
+
+\begin{list2}
+\item Modern computer with modern CPU and PCIe x8 or better\\
+I currently use a few cheap Dell devices Precision 3640 Tower / Precision 3240 Compact (not a recommendation)
+\item Supported card - I am using the old Intel 82599 based 10Gbit cards
+\item DPDK and software -- I use MoonGen \link{https://github.com/emmericp/MoonGen}
+\item A huge thanks to Paul Emmerich emmericp for programming and publishing his works!
+\item Maybe the easiest way to use DPDK currently -- "Craft all packets in user-controlled Lua scripts"
+\end{list2}
+
+
+\slide{Penguingping packet generator}
+
+\hlkimage{13cm}{penguinping-02-peak.png}
+
+\begin{list2}
+\item PenguinPing packet generator, my high speed packet generator
+home page: \link{https://penguinping.org}
+\item First versions are only about 230 lines of Lua code and implement basic command line to replace hping3
+\item Built on top of MoonGen/libmoon \link{https://github.com/emmericp/MoonGen}
+\end{list2}
+
+\centerline{Extremely fast and allows easy customization}
+
 
 \slide{Process: monitor, attack, break, repeat}
 
@@ -715,6 +1111,21 @@ home page: \link{http://t50.sourceforge.net/resources.html}
 
 \centerline{Another external monitoring from Pingdom.com}
 
+\slide{Performing the DDoS test }
+
+So lets break this task down into:
+\begin{list2}
+\item Use Nmap to port scan the network
+\item Run testing tool \verb+hping3+, \verb+t50+ or \verb+penguinping+
+\item Go through all scenarios before making changes to environment
+\item Expect things to break, investigate, repeat failed scenarios
+\vskip 1cm
+\item BTW we usually schedule this for night time! There WILL be interruptions
+\vskip 1cm
+\item How do you run the tools, since they all have so many options?\\
+\verb+man nmap | enscript -o test.ps+ result in 54 pages,
+\verb+hping3+ has about 80 options and \verb+t50+ has even more
+\end{list2}
 
 \slide{Running full port scan on network}
 
@@ -863,8 +1274,6 @@ Exercise booklet contains some bonus exercises, feel free to try them at home
 
 \slide{Conclusion}
 
-\hlkrightimage{15cm}{network-layers-1.png}
-.
 \begin{list1}
 \item You really should try testing
 \item Investigate your existing devices\\
@@ -878,7 +1287,57 @@ for later devices to dig deeper
 \centerline{And dont forget that DDoS testing is as much a firedrill for the organisation}
 
 
-\slide{Strict stateless filtering}
+%\slide{Stateless filtering Junos}
+\slide{Stateless firewall filter throw stuff away}
+
+\begin{alltt}\footnotesize
+hlk@MX-CPH-02> show configuration firewall filter all | no-more
+/* This is a static sample, perhaps better to use BGP flowspec and RTBH */
+term edgeblocker \{
+    from \{
+        source-address \{
+            84.180.xxx.173/32;
+            87.245.xxx.171/32;
+        \}
+        destination-address \{
+            91.102.91.16/28;
+        \}
+        protocol [ tcp udp icmp ];
+    \}
+    then \{
+        count edge-block;
+        discard;
+    \}
+\}
+\end{alltt}
+Hint: can also leave out protocol and then it will match all protocols
+
+\slide{Stateless firewall filter limit protocols}
+
+\begin{alltt}\footnotesize
+term limit-icmp \{
+    from \{
+        protocol icmp;
+    \}
+    then \{
+        policer ICMP-100M;
+        accept;
+    \}
+\}
+term limit-udp \{
+    from \{
+        protocol udp;
+    \}
+    then \{
+        policer UDP-1000M;
+        accept;
+    \}
+\}
+\end{alltt}
+
+Routers have extensive Class-of-Service (CoS) tools today
+
+\slide{Strict filtering for some servers, still stateless!}
 
 \begin{alltt}\footnotesize
 term some-server-allow \{
@@ -899,6 +1358,34 @@ term some-server-block-unneeded \{
         protocol-except icmp;
     \}
     then discard;
+\}
+\end{alltt}
+
+Wut - no UDP, yes UDP service is not used on these servers
+
+
+\slide{ Firewalls - screens, IDS like features}
+
+When you know regular traffic you can decide \emph{normal settings}:
+
+\begin{alltt}\footnotesize
+hlk@srx-kas-05# show security screen ids-option untrust-screen
+icmp \{
+    ping-death;
+\}
+ip \{
+    source-route-option;
+    tear-drop;
+\}
+tcp \{    Note: UDP flood setting also exist
+    syn-flood \{
+        alarm-threshold 10024;
+        attack-threshold 200;
+        source-threshold 10024;
+        destination-threshold 2048;
+        timeout 20;
+    \}
+    land;
 \}
 \end{alltt}
 

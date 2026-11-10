@@ -2140,382 +2140,6 @@ Source:\\{\footnotesize \url{https://stackoverflow.com/questions/4573237/how-to-
 %\syft
 
 
-\end{document}
-
-\chapter{\faInfoCircle\ Use Ansible to install Elastic Stack}
-\label{ex:basicansible}
-
-
-{\bf Objective:}\\
-Run Elasticsearch
-
-{\bf Purpose:}\\
-See an example tool used for many integration projects, Elasticsearch from the Elastic Stack
-
-{\bf Suggested method:}\\
-
-{\large teacher will run this -- no need for everyone to do this. Will show this as an example of a JSON API.}
-
-We will run Elasticsearch, either using the method from:\\{\footnotesize
-\url{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}}
-
-or by the method described below using Ansible - your choice.
-
-Ansible used below is a configuration management tool \url{https://www.ansible.com/}
-
-I try to test my playbooks using both Ubuntu and Debian Linux, but Debian is the main target for this training.
-
-First make sure your system is updated, as root run:
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
-\end{minted}
-
-You should reboot if the kernel is upgraded :-)
-
-Second make sure your system has ansible and my playbooks: (as root run)
-\begin{minted}[fontsize=\footnotesize]{shell}
-apt -y install ansible git
-git clone https://codeberg.org/kramse/kramse-labs
-\end{minted}
-
-We will run the playbooks locally, while a normal Ansible setup would use SSH to connect to the remote node.
-
-Then it should be easy to run Ansible playbooks, like this: (again as root, most packet sniffing things will need root too later)
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-cd kramse-labs/suricatazeek
-ansible-playbook -v 1-dependencies.yml 2-suricatazeek.yml 3-elasticstack.yml
-\end{minted}
-
-Note: I keep these playbooks flat and simple, but you should investigate Ansible roles for real deployments.
-
-If I update these, it might be necessary to update your copy of the playbooks. Run this while you are in the cloned repository:
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-git pull
-\end{minted}
-
-Note: usually I would recommend running git clone as your personal user, and then use sudo command to run some commands as root. In a training environment it is OK if you want to run everything as root. Just beware.
-
-Note: these instructions are originally from the course\\
-Go to \url{https://codeberg.org/kramse/kramse-labs/tree/master/suricatazeek}
-
-{\bf Hints:}\\
-Ansible is great for automating stuff, so by running the playbooks we can get a whole lot of programs installed, files modified - avoiding the Vi editor \smiley
-
-Example playbook content
-\begin{alltt}
-apt:
-      name: "{{ packages }}"
-    vars:
-      packages:
-        - nmap
-        - curl
-        - iperf
-        ...
-\end{alltt}
-
-{\bf Solution:}\\
-When you have a updated VM and Ansible running, then we are good.
-
-{\bf Discussion:}\\
-Linux is free and everywhere. The tools we will run in this course are made for Unix, so they run great on Linux.
-
-
-
-\chapter{\faInfoCircle\ Getting started with the Elastic Stack - 60 min}
-\label{ex:dateformats}
-
-%\hlkimage{10cm}{kali-linux.png}
-
-{\bf Objective:}\\
-Get a working Elasticsearch, so we can do requests.
-
-{\bf Purpose:}\\
-Elasticsearch uses REST extensively in their application.
-
-{\bf Suggested method:}\\
-
-{\large teacher will run this -- no need for everyone to do this. Will show this as an example of a JSON API.}
-
-
-either use the
-\emph{Getting started with the Elastic Stack}
-\link{https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-elastic-stack.html}
-
-OR my Ansible based approach - which some already ran.
-
-The ansible is described in exercise \ref{ex:basicansible} on \pageref{ex:basicansible}
-
-{\bf Hints:}\\
-We dont really need a lot in the Elasticsearch database, and you can run most tasks with zero data. Graphs will not be as pretty though.
-
-{\bf Solution:}\\
-When you have a running Elasticsearch you are done, and ready for next exercise.
-
-The web page for the getting started show multiple sections:
-\begin{list2}
-\item Elasticsearch - the core engine, this must be done manually or with Ansible
-\item Kibana - the analytics and visualization platform
-\item Beats - data shippers, a way to get some data into ES
-\item Logstash (optional) offers a large selection of plugins to help you parse, enrich, transform, and buffer data from a variety of sources
-\end{list2}
-
-Each describes a part and are recommended reading.
-
-{\bf Discussion:}\\
-We could have used a lot of other servers and service, which ones would you prefer?
-
-If you have access to Azure, you can try Azure REST API Reference\\ \link{https://docs.microsoft.com/en-us/rest/api/azure/}
-
-\chapter{\faInfoCircle\ Making requests to Elasticsearch - 15-75min}
-\label{ex:es-rest-api}
-
-%\hlkimage{10cm}{kali-linux.png}
-
-{\bf Objective:}\\
-Use APIs for accessing Elasticsearch data, both internal and user data.
-
-{\bf Purpose:}\\
-Learn how to make requests to an API.
-
-Teacher will provide an endpoint for you to connect to.
-
-{\bf Suggested method:}\\
-Go to the list of exposed Elasticsearch REST APIs:\\
-\link{https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html}
-
-The Elasticsearch REST APIs are exposed using JSON over HTTP.
-
-Select a category example, Cluster APIs, then select Nodes Info APIs. This will show URLs you can use:
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-# return just process
-curl -X GET "localhost:9200/\_nodes/process?pretty"
-# same as above
-curl -X GET "localhost:9200/\_nodes/_all/process?pretty"
-
-curl -X GET "localhost:9200/_nodes/plugins?pretty"
-
-# return just jvm and process of only nodeId1 and nodeId2
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/jvm,process?pretty"
-# same as above
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/info/jvm,process?pretty"
-# return all the information of only nodeId1 and nodeId2
-curl -X GET "localhost:9200/\_nodes/nodeId1,nodeId2/_all?pretty"
-\end{minted}
-
-When you can see this works, then feel free to install X-Pack and monitoring plugins
-
-{\bf Hints:}\\
-Pretty Results can be obtained using the pretty parameter.
-\begin{quote}
-When appending ?pretty=true to any request made, the JSON returned will be pretty formatted (use it for debugging only!). Another option is to set ?format=yaml which will cause the result to be returned in the (sometimes) more readable yaml format.
-\end{quote}
-
-Lots of tutorials exist for accessing Elasticsearch
-
-A couple of examples:
-\begin{list2}
-\item \link{https://aws.amazon.com/blogs/database/elasticsearch-tutorial-a-quick-start-guide/}
-\item \link{https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04}
-\end{list2}
-
-{\bf Solution:}\\
-When you have seen examples of the API, understand the references with underscore, like \verb+_nodes+ and pretty printing you are done.
-
-I recommend playing with Elasticsearch plugins and X-pack.\\
-\link{https://www.elastic.co/downloads/x-pack}
-
-Note: In versions 6.3 and later, X-Pack is included with the default distributions of Elastic Stack, with all free features enabled by default.
-
-Also Kibana can be used for creating nice dashboards and become applications more or less.
-
-{\bf Discussion:}\\
-You can also try calling the REST API from Python
-
-Similar to what we did previously in this course:
-\inputminted{python}{programs/rest-1.py}
-
-
-\chapter{\faExclamationTriangle\ Django String Handling 20min}
-\label{ex:django-string}
-
-Recommendations for handling strings, how does Python help, how does Django handle strings, and input validation
-
-{\bf Objective:}\\
-Look into string handling in Django framework
-
-{\bf Purpose:}\\
-See that Python 3 and Django includes functions for conversion, so you dont need to write these yourself.
-
-{\bf Suggested method:}\\
-First look into Python3 string handling, for example by looking at\\
-\url{https://docs.python.org/3.9/library/text.html}
-
-Note: There may be a newer version, feel free to check multiple versions.
-
-Then look at Django string and unicode handling:
-\begin{list2}
-\item Look for string, url, encode, decode in\\
-\url{https://docs.djangoproject.com/en/4.1/ref/utils/}
-\item \url{https://docs.djangoproject.com/en/4.1/ref/unicode/}
-\end{list2}
-
-Note: There may be a newer version, feel free to check multiple versions.
-
-{\bf Hints:}\\
-Follow the URLs above, or more updated versions.
-
-{\bf Solution:}\\
-When you have looked up and seen the names of a few relevant functions like these below, you are done:
-
-\begin{alltt}
-django.utils.html escape(text)
-django.utils.safestring
-django.utils.dateparse
-\end{alltt}
-
-Note the links after where you can see the source implementation, for example:\\
-\url{https://docs.djangoproject.com/en/2.2/_modules/django/utils/html/#escape}
-
-
-{\bf Discussion:}\\
-Are strings easy to work with?
-
-
-\chapter{\faExclamationTriangle\ Django ORM 20 min}
-\label{ex:django-orm}
-
-\begin{minted}[fontsize=\small]{python}
-from django.db import models
-
-class Person(models.Model):
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-\end{minted}
-
-\begin{minted}[fontsize=\small]{sql}
-CREATE TABLE myapp_person (
-    "id" serial NOT NULL PRIMARY KEY,
-    "first_name" varchar(30) NOT NULL,
-    "last_name" varchar(30) NOT NULL
-);
-\end{minted}
-
-{\bf Objective:}\\
-See how a mapping model, Object–relational mapping (ORM) can help reduce complexity for you.
-
-
-{\bf Purpose:}\\
-Using an ORM frees you from a lot of low level detail, and keeps your application more portable between database systems.
-
-
-{\bf Suggested method:}\\
-Read about the Django  Object–relational mapping (ORM) at:
-
-\begin{list2}
-\item \link{https://docs.djangoproject.com/en/4.0/topics/db/models/}
-\item \link{https://docs.djangoproject.com/en/4.0/topics/db/queries/}
-\end{list2}
-
-{\bf Hints:}\\
-Many programming languages use ORM and have similar functions. See Wikipedia for a list:\\
-\url{https://en.wikipedia.org/wiki/List_of_object%E2%80%93relational_mapping_software}
-
-{\bf Solution:}\\
-When you have read about either the Django model, or a similar method in another framework or programming language you are done.
-
-{\bf Discussion:}\\
-I have myself used Grails,
-\emph{A powerful Groovy-based web application framework for the JVM built on top of Spring Boot}
-
-\link{https://grails.org/}
-
-
-\chapter{\faExclamationTriangle\ Django email validation 30 min}
-\label{ex:django-email}
-
-
-
-{\bf Objective:}\\
-Find a mature implementation for validating email, a common requirement in modern applications.
-
-We will use Django as an example.
-
-{\bf Purpose:}\\
-See if we can find an implementation that will suit our own projects, even if not using Django.
-
-{\bf Suggested method:}\\
-Find the Django email validation -- how is the validation done, can it be copied and reused somewhere else.
-
-{\bf Hints:}\\
-The Django software is open source, and available at github:\\
-\link{https://codeberg.org/django/django}
-
-Git clone and searching locally might give the best results.
-
-\begin{minted}[fontsize=\footnotesize]{shell}
-$ pwd
-/home/user/projects/github/django
-user@Projects:django$ grep -ril email | less
-\end{minted}
-
-One file includes \verb+class EmailValidator:+ which sounds promising.
-
-
-{\bf Solution:}\\
-When you have found the files implementing the actual email validation, not all related files, only the one doing the validation -- you are done.
-
-{\bf Discussion:}\\
-Email addresses are notoriously hard to validate, since the standard is very complex. Often we can do with less, say if we want to use it as a user-id. Then we might decide NOT to support comments and things like \verb?hlk+kea@kramse.org?
-
-Which other validators would be nice to have, in your own library?
-
-Via Angular: \url{https://v17.angular.io/api/forms/Validators#email}\\
-\url{https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address}
-
-
-\chapter{\faInfoCircle\ Sniff Your Browser 15min}
-\label{ex:sniff-captive-portal}
-
-
-{\bf Objective:}\\
-See an example of a simple network application behaviour.
-
-{\bf Purpose:}\\
-Learn how to get started analysing network application traffic.
-
-{\bf Suggested method:}\\
-Modern browser check if they are online by making requests.
-
-Which requests does a browser make by itself, even though you haven't entered URL yet? hint: captive portal detection.
-
-Use Wireshark on your Debian, Kali or normal operating system. Start your capture, start your browser.
-
-See if you can identify the traffic.
-
-{\bf Hints:}\\
-You should be looking for DNS and HTTP/HTTPS requests.
-
-DNS uses port 53/udp and 53/tcp.
-
-Also googling captive portal and Firefox reveals a setting you can turn of or on.
-
-You might also have observed this when you proxied your browser through Burp suite in an earlier exercise.
-
-{\bf Solution:}\\
-When you have identified the traffic belonging to at least one browser you are done. Firefox should be easy.
-
-{\bf Discussion:}\\
-Does initiating this from a browser have privacy implications?
-
-Your internet provider can see when you are home, when you start your browser etc. Requests made are often with a lot of extra information, like User-Agent and distinguishable.
-
-
-
-
 \chapter{\faInfoCircle\ TCP SYN flooding 30min}
 \label{ex:syn-flood}
 
@@ -2875,6 +2499,147 @@ There is a presentation about DDoS protection with low level technical measures 
 
 Receiving systems, and those en route to the service, should be checked for resources like CPU load, bandwidth, logging. Logging can also overload the logging infrastructure, so take care when configuring this in your own networks.
 
+
+
+\end{document}
+
+
+\chapter{\faExclamationTriangle\ Django String Handling 20min}
+\label{ex:django-string}
+
+Recommendations for handling strings, how does Python help, how does Django handle strings, and input validation
+
+{\bf Objective:}\\
+Look into string handling in Django framework
+
+{\bf Purpose:}\\
+See that Python 3 and Django includes functions for conversion, so you dont need to write these yourself.
+
+{\bf Suggested method:}\\
+First look into Python3 string handling, for example by looking at\\
+\url{https://docs.python.org/3.9/library/text.html}
+
+Note: There may be a newer version, feel free to check multiple versions.
+
+Then look at Django string and unicode handling:
+\begin{list2}
+\item Look for string, url, encode, decode in\\
+\url{https://docs.djangoproject.com/en/4.1/ref/utils/}
+\item \url{https://docs.djangoproject.com/en/4.1/ref/unicode/}
+\end{list2}
+
+Note: There may be a newer version, feel free to check multiple versions.
+
+{\bf Hints:}\\
+Follow the URLs above, or more updated versions.
+
+{\bf Solution:}\\
+When you have looked up and seen the names of a few relevant functions like these below, you are done:
+
+\begin{alltt}
+django.utils.html escape(text)
+django.utils.safestring
+django.utils.dateparse
+\end{alltt}
+
+Note the links after where you can see the source implementation, for example:\\
+\url{https://docs.djangoproject.com/en/2.2/_modules/django/utils/html/#escape}
+
+
+{\bf Discussion:}\\
+Are strings easy to work with?
+
+
+\chapter{\faExclamationTriangle\ Django ORM 20 min}
+\label{ex:django-orm}
+
+\begin{minted}[fontsize=\small]{python}
+from django.db import models
+
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+\end{minted}
+
+\begin{minted}[fontsize=\small]{sql}
+CREATE TABLE myapp_person (
+    "id" serial NOT NULL PRIMARY KEY,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL
+);
+\end{minted}
+
+{\bf Objective:}\\
+See how a mapping model, Object–relational mapping (ORM) can help reduce complexity for you.
+
+
+{\bf Purpose:}\\
+Using an ORM frees you from a lot of low level detail, and keeps your application more portable between database systems.
+
+
+{\bf Suggested method:}\\
+Read about the Django  Object–relational mapping (ORM) at:
+
+\begin{list2}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/models/}
+\item \link{https://docs.djangoproject.com/en/4.0/topics/db/queries/}
+\end{list2}
+
+{\bf Hints:}\\
+Many programming languages use ORM and have similar functions. See Wikipedia for a list:\\
+\url{https://en.wikipedia.org/wiki/List_of_object%E2%80%93relational_mapping_software}
+
+{\bf Solution:}\\
+When you have read about either the Django model, or a similar method in another framework or programming language you are done.
+
+{\bf Discussion:}\\
+I have myself used Grails,
+\emph{A powerful Groovy-based web application framework for the JVM built on top of Spring Boot}
+
+\link{https://grails.org/}
+
+
+\chapter{\faExclamationTriangle\ Django email validation 30 min}
+\label{ex:django-email}
+
+
+
+{\bf Objective:}\\
+Find a mature implementation for validating email, a common requirement in modern applications.
+
+We will use Django as an example.
+
+{\bf Purpose:}\\
+See if we can find an implementation that will suit our own projects, even if not using Django.
+
+{\bf Suggested method:}\\
+Find the Django email validation -- how is the validation done, can it be copied and reused somewhere else.
+
+{\bf Hints:}\\
+The Django software is open source, and available at github:\\
+\link{https://codeberg.org/django/django}
+
+Git clone and searching locally might give the best results.
+
+\begin{minted}[fontsize=\footnotesize]{shell}
+$ pwd
+/home/user/projects/github/django
+user@Projects:django$ grep -ril email | less
+\end{minted}
+
+One file includes \verb+class EmailValidator:+ which sounds promising.
+
+
+{\bf Solution:}\\
+When you have found the files implementing the actual email validation, not all related files, only the one doing the validation -- you are done.
+
+{\bf Discussion:}\\
+Email addresses are notoriously hard to validate, since the standard is very complex. Often we can do with less, say if we want to use it as a user-id. Then we might decide NOT to support comments and things like \verb?hlk+kea@kramse.org?
+
+Which other validators would be nice to have, in your own library?
+
+Via Angular: \url{https://v17.angular.io/api/forms/Validators#email}\\
+\url{https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address}
 
 
 

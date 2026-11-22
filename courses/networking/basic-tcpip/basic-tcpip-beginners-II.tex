@@ -440,9 +440,129 @@ Source: \url{https://www.gl-inet.com/products/gl-sft1200/}
 \item Hosting setup
 \end{list2}
 
+Lets work through some example using RFC1918 and documentation prefixes 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 and 2001:db8::/32 instead of real public addresses
+
+Most IPv4 private networks would use NAT to access the internet!
+
+
+
+\slide{NAT Network Address Translation}
+\hlkimage{16cm}{nat-1.pdf}
+
+
+\vskip 2 cm
+\begin{list2}
+\item NAT is used for connecting private networks to the Internet
+\item NAT gateway replaces source address and forwards packets
+\item A quick and dirty fix that keeps messing up networks and protocols
+\item The NAT router/firewall has state tables
+\end{list2}
+
+  \slide{Home network: guest and home office VLANs}
+
+  ISP gives one public IPv4 address (NAT) and IPv6 \verb+2001:db8:1200::/56+
+
+  \begin{alltt}\small
+  \textbf{VLAN Name         IPv4 (NAT)        IPv6}
+  10   Home         192.168.10.0/24   2001:db8:1200:10::/64
+  20   Guest Wi-Fi  192.168.20.0/24   2001:db8:1200:20::/64
+  30   Home office  192.168.30.0/24   2001:db8:1200:30::/64
+  40   IoT and TV   192.168.40.0/24   2001:db8:1200:40::/64
+  \end{alltt}
+
+  \begin{list2}
+  \item Let the VLAN ID match the third octet and the IPv6 subnet ID -- easy to remember
+  \item An ISP would give you /48 or /56, a /56 holds 256 /64 subnets, so there is room for many more VLANs
+  \item Firewall rule: Guest and IoT may reach the internet, but not Home or Home office
+  \end{list2}
+
+\slide{Small company: clients, servers and a DMZ}
+
+ISP gives external public IP \verb+203.0.113.0/29+ and \verb+2001:db8:100::/48+, internal IPv4 uses \verb+10.10.0.0/16+
+
+\begin{alltt}\small
+\textbf{VLAN Name         IPv4              IPv6}
+10   Clients       10.10.10.0/24     2001:db8:100:10::/64
+11   Admin_clients 10.10.10.0/24     2001:db8:100:11::/64
+20   Servers       10.10.20.0/24     2001:db8:100:20::/64
+30   Printers      10.10.30.0/24     2001:db8:100:30::/64
+40   Guest         10.10.40.0/24     2001:db8:100:40::/64
+50   DMZ           203.0.113.0/29    2001:db8:100:50::/64
+99   Management    10.10.99.0/24     2001:db8:100:99::/64
+\end{alltt}
+
+\begin{list2}
+\item The /29 has 8 addresses: first and last not used network, broadcast
+\item Their router uses 1 so only about 5 available for customer
+\item Clients, printers and guests use NAT for IPv4 when going to the internet
+\item Management only reachable from admin workstations VLAN 11
+\item Hint: do not use the first networks from 10.0.0.0/16 as you may want to do Site-2-Site VPN later with others
+\end{list2}
+
+  \slide{Bigger company: multiple sites}
+
+  Plan \verb+10.0.0.0/8+ and \verb+2001:db8:a0::/44+, one /16 and one /48 per site
+
+  \begin{alltt}\small
+  \textbf{VLAN Site    Name     IPv4             IPv6}
+  10   HQ      Clients  10.1.10.0/24     2001:db8:a1:10::/64
+  20   HQ      Servers  10.1.20.0/24     2001:db8:a1:20::/64
+  99   HQ      Mgmt     10.1.99.0/24     2001:db8:a1:99::/64
+
+  10   Branch  Clients  10.2.10.0/24     2001:db8:a2:10::/64
+  20   Branch  Servers  10.2.20.0/24     2001:db8:a2:20::/64
+
+  -    WAN     Links    10.255.0.0/24    2001:db8:af00::/48
+  \end{alltt}
+
+  \begin{list2}
+  \item Same VLAN ID means same function at every site -- one firewall policy template
+  \item Each site is announced as one /16 and one /48 -- small routing tables
+  \item Avoid 10.0.0.0/24 and 192.168.0.0/24 internally, home networks use them and VPN users get conflicts
+  \end{list2}
+
+
 \slide{Bridges and routers}
 
 \hlkimage{17cm}{wan-network.pdf}
+
+
+  \slide{Hosting setup: a VLAN per customer}
+
+  Hosting provider has \verb+198.51.100.0/24+ and \verb+2001:db8:5000::/48+
+
+  \begin{alltt}\small
+  \textbf{VLAN Name         IPv4                IPv6}
+  101  Customer A   198.51.100.0/28     2001:db8:5000:100::/56
+  102  Customer B   198.51.100.16/28    2001:db8:5000:200::/56
+  200  Shared web   198.51.100.64/26    2001:db8:5000:300::/56
+  900  Management   10.90.0.0/24        2001:db8:5000:900::/56
+  901  Storage      10.91.0.0/24        2001:db8:5000:f00::/56
+  \end{alltt}
+
+  \begin{list2}
+  \item IPv4 is scarce: a /28 gives 14 usable addresses, the gateway takes one of them
+  \item IPv6 is plentiful: every customer gets a full /64
+  \item Point-to-point links use /31 (RFC 3021) and /127 (RFC 6164)
+  \item Management and storage must never be reachable from customer VLANs
+  \end{list2}
+
+
+
+\slide{DHCP Dynamic Host Configuration Protocol}
+
+\hlkimage{10cm}{dhcp-1.pdf}
+
+DHCP is responsible for giving you a dynamic address
+\begin{list1}
+\item How does a system get the address?
+\item Typically in  IPv4 they will get them from DHCP
+\item System sends a DHCP request, server allocates an address \emph{lease}
+\item IPv6 typically uses Router Advertisement -- get prefix, configure their own IPv6 address
+\end{list1}
+
+
+\slide{Filtering here}
 
 
 \slide{Packets across the wire or wireless}
@@ -459,91 +579,6 @@ Source: \url{https://www.gl-inet.com/products/gl-sft1200/}
 
 
 
-\slide{Windows - ipconfig}
-
-\hlkimage{14cm}{win-ipconfig-ipv6.png}
-
-\slide{Windows -- control panel with DHCP}
-\hlkimage{10cm}{win-control-panel-ipv6.png}
-
-DHCP is responsible for giving you a dynamic address
-
-
-
-\slide{DHCP Dynamic Host Configuration Protocol}
-
-\hlkimage{10cm}{dhcp-1.pdf}
-
-\begin{list1}
-\item How does a system get the address?
-\item Typically in  IPv4 they will get them from DHCP
-\item System sends a DHCP request, server allocates an address \emph{lease}
-\item IPv6 typically uses Router Advertisement -- get prefix, configure their own IPv6 address
-\end{list1}
-
-
-
-\slide{Unix - practical examples ifconfig and ping}
-
-\begin{alltt}\small
-$ ifconfig en0
-en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
-        inet6 {\bf fe80::216:cbff:feac:1d9f%en0} prefixlen 64 scopeid 0x4
-        inet {\bf 10.0.42.15} netmask 0xffffff00 broadcast 10.0.42.255
-        inet6 {\bf 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f} prefixlen 64 autoconf
-        ether 00:16:cb:ac:1d:9f
-        media: autoselect (1000baseT <full-duplex>) status: active
-
-$ ping6 ::1
-PING6(56=40+8+8 bytes) ::1 --> ::1
-16 bytes from ::1, icmp_seq=0 hlim=64 time=0.089 ms
-16 bytes from ::1, icmp_seq=1 hlim=64 time=0.155 ms
-
-$ traceroute6 2001:16d8:dd0f:cf0f::1
-traceroute6 to 2001:16d8:dd0f:cf0f::1 (2001:16d8:dd0f:cf0f::1)
-from 2001:16d8:dd0f:cf0f:216:cbff:feac:1d9f, 64 hops max, 12 byte packets
- 1  2001:16d8:dd0f:cf0f::1  0.399 ms  0.371 ms  0.294 ms
-\end{alltt}
-
-
-\slide{The basic tools for countering threats}
-
-{\Large Knowledge and insight}
-\begin{list2}
-\item Networks have end-points and conversations on multiple layers
-\item Wireshark is advanced, try right-clicking different places
-\item Name resolution includes low level MAC addresses, and IP - names
-\end{list2}
-
-\begin{list2}
-\item Tcpdump format, built-in to many network devices
-\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
-\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
- \link{https://en.wikipedia.org/wiki/Tcpdump}
-\end{list2}
-
-\vskip 5mm
-
-\centerline{\Large Great network security comes from knowing networks!}
-
-
-
-\slide{Network Knowledge Needed}
-
-To work with network security the following protocols are the bare minimum to know about.
-
-\begin{list2}
-\item ARP Address Resolution Protocol for IPv4
-\item NDP Neighbor Discovery Protocol for IPv6
-\item IPv4 \& IPv6 -- the basic packet fields source, destination,
-\item ICMPv4 \& ICMPv6 Internet Control Message Protocol
-\item UDP User Datagram Protocol
-\item TCP Transmission Control Protocol
-\item DHCP Dynamic Host Configuration Protocol
-\item DNS Domain Name System
-\end{list2}
-
-\centerline{A little Linux knowledge is also {\bf highly recommended}}
 
 
 \slide{IPv4 header - RFC-791 september 1981}
@@ -636,61 +671,33 @@ Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Prot
 \end{list1}
 
 
-\slide{Whois -- Where do IP addresses come from}
+\slide{Session 1: More Security and Wi-Fi security}
 
-\begin{list1}
-\item A these magical numbers we use on the internet are administered by IANA \url{https://www.iana.org/}
-\item They have handed out portions to the Region Internet Registries (RIR)
+
+
+
+
+\slide{Session 2: Digging into some examples of progams that help}
+
+\slide{The basic tools for countering threats}
+
+{\Large Knowledge and insight}
 \begin{list2}
-\item RIPE (Réseaux IP Européens)  \link{http://ripe.net}
-\item ARIN American Registry for Internet Numbers \link{http://www.arin.net}
-\item Asia Pacific Network Information Center \link{http://www.apnic.net}
-\item LACNIC (Regional Latin-American and Caribbean IP Address Registry) - Latin America and some Caribbean Islands
-\end{list2}
-\item AFRINIC \url{https://afrinic.net/}
-\item They are memberbased, and members are called Local Internet Registries (LIRs) og National Internet Registry (NIR)
-\end{list1}
-
-
-
-\slide{Hosting and internet providers}
-
-\hlkimage{16cm}{network-bgp-asn.png}
-
-\begin{list2}
-\item BGP networks are used for all of the Internet
-\item New standards like Resource Public Key Infrastructure (RPKI) are underway
-\item Try RIPE BGPlay \url{https://stat.ripe.net/special/bgplay#bgplay_fetch.resource=185.129.60.1}
+\item Networks have end-points and conversations on multiple layers
+\item Wireshark is advanced, try right-clicking different places
+\item Name resolution includes low level MAC addresses, and IP - names
 \end{list2}
 
+\begin{list2}
+\item Tcpdump format, built-in to many network devices
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
 
-\slide{DNS root -- the server addresses }
+\vskip 5mm
 
-\begin{alltt}\small
-a.root-servers.net 198.41.0.4, 2001:503:ba3e::2:30 Verisign, Inc.
-b.root-servers.net 170.247.170.2, 2801:1b8:10::b University of Southern California,
-Information Sciences Institute
-c.root-servers.net 192.33.4.12, 2001:500:2::c Cogent Communications
-d.root-servers.net 199.7.91.13, 2001:500:2d::d University of Maryland
-e.root-servers.net 192.203.230.10, 2001:500:a8::e NASA (Ames Research Center)
-f.root-servers.net 192.5.5.241, 2001:500:2f::f Internet Systems Consortium, Inc.
-g.root-servers.net 192.112.36.4, 2001:500:12::d0d US Department of Defense (NIC)
-h.root-servers.net 198.97.190.53, 2001:500:1::53 US Army (Research Lab)
-i.root-servers.net 192.36.148.17, 2001:7fe::53 Netnod
-j.root-servers.net 192.58.128.30, 2001:503:c27::2:30 Verisign, Inc.
-k.root-servers.net 193.0.14.129, 2001:7fd::1 RIPE NCC
-l.root-servers.net 199.7.83.42, 2001:500:9f::42 ICANN
-m.root-servers.net 202.12.27.33, 2001:dc3::35 WIDE Project
-\end{alltt}
-Source: \url{https://www.iana.org/domains/root/servers}, see also \url{https://en.wikipedia.org/wiki/Root_name_server}
-
-
-\slide{DNS root servers}
-
-\hlkimage{20cm}{root-servers.png}
-
-\link{http://root-servers.org/}
-
+\centerline{\Large Great network security comes from knowing networks!}
 
 
 \slide{Metadata -- enrichment}
@@ -702,226 +709,6 @@ Source: picture from Crafting the InfoSec Playbook, CIP
 Metadata + Context
 
 
-
-\slide{ICMP and Ping}
-
-\begin{list1}
-\item Internet Control Message Protocol (ICMP)
-\item Error conditions are signalled using this
-\item The ping program sends ICMP ECHO request and
- expect ICMP ECHO reply
-\item
-\begin{alltt}
-\small {\bfseries
-$ ping 192.168.1.1}
-PING 192.168.1.1 (192.168.1.1): 56 data bytes
-64 bytes from 192.168.1.1: icmp_seq=0 ttl=150 time=8.849 ms
-64 bytes from 192.168.1.1: icmp_seq=1 ttl=150 time=0.588 ms
-64 bytes from 192.168.1.1: icmp_seq=2 ttl=150 time=0.553 ms
-\end{alltt}
-\end{list1}
-
-\slide{traceroute}
-
-\begin{list1}
-  \item traceroute works using the Time to Live (TTL) or Hop-Count fields
-\item Each router will subtract one from this, and if zero -- return ICMP message
-\item Unix uses UDP and Windows usually uses ICMP Echo
-\item
-\begin{alltt}
-\small{\bfseries
-$ traceroute 185.129.60.129}
-traceroute to 185.129.60.129 (185.129.60.129),
-30 hops max, 40 byte packets
- 1  safri (10.0.0.11)  3.577 ms  0.565 ms  0.323 ms
- 2  router (185.129.60.129)  1.481 ms  1.374 ms  1.261 ms
-\end{alltt}
-\end{list1}
-
-
-\slide{NAT Network Address Translation}
-\hlkimage{16cm}{nat-1.pdf}
-
-
-\vskip 2 cm
-\begin{list2}
-\item NAT is used for connecting private networks to the Internet
-\item NAT gateway replaces source address and forwards packets
-\item A quick and dirty fix that keeps messing up networks and protocols
-\item The NAT router/firewall has state tables
-\end{list2}
-
-\slide{ARP in IPv4}
-
-\begin{center}
-\colorbox{white}{\includegraphics[width=18cm]{images/arp-basic.pdf}}
-\end{center}
-
-%server 00:30:65:22:94:a1\\
-%client 00:40:70:12:95:1c\\
-%hacker 00:02:03:04:05:06\\
-
-
-\slide{ARP request and reply}
-\begin{list1}
-\item {\bfseries ping 10.0.0.2} from server
-\item ARP Address Resolution Protocol request/reply:
-  \begin{list2}
-  \item ARP request broadcasted on layer 2 - Who has 10.0.0.2 Tell 10.0.0.1
-  \item ARP reply (from 10.0.0.2) 10.0.0.2 is at 00:40:70:12:95:1c
-  \end{list2}
-\item IP ICMP request/reply:
-  \begin{list2}
-    \item Echo (ping) request from 10.0.0.1 to 10.0.0.2
-\item Echo (ping) reply from 10.0.0.2 to 10.0.0.1
-\item ...
-  \end{list2}
-\item ARP is performed on Ethernet before IP can be transmitted
-\end{list1}
-
-
-\slide{ IPv6 Neighbor Discovery Protocol (NDP)}
-
-\hlkimage{18cm}{ipv6-arp-ndp.pdf}
-
-\begin{list1}
-\item Address Resolution Protocol (ARP) is replaced
-\item NDP expands on the ARP concept, similar command \verb+arp -an+ compared to \verb+ndp -an+
-\item Can do some things we knew from DHCPv4 still DHCPv6 exist
-\item {\bf Note ICMPv6 often need to be added to firewall rules for NDP!} {\myalert}
-\end{list1}
-
-\slide{ARP vs NDP}
-
-So at the low level, near the hardware we have protocols connecting IP addreses with MAC addresses, Ethernet and Wi-Fi are commonly found
-
-\begin{alltt}
-\small
-hlk@bigfoot:basic-ipv6-new$ arp -an
-? (10.0.42.1) at{\bf 0:0:24:c8:b2:4c} on en1 [ethernet]
-? (10.0.42.2) at 0:c0:b7:6c:19:b on en1 [ethernet]
-
-hlk@bigfoot:basic-ipv6-new$ ndp -an
-Neighbor                      Linklayer Address  Netif Expire    St Flgs Prbs
-::1                           (incomplete)         lo0 permanent R
-2001:16d8:ffd2:cf0f:21c:b3ff:fec4:e1b6 0:1c:b3:c4:e1:b6 en1 permanent R
-fe80::1%lo0                   (incomplete)         lo0 permanent R
-fe80::200:24ff:fec8:b24c%en1 {\bf 0:0:24:c8:b2:4c}      en1 8h54m51s  S  R
-fe80::21c:b3ff:fec4:e1b6%en1  0:1c:b3:c4:e1:b6     en1 permanent R
-\end{alltt}
-
-\slide{ARP and NDP problems}
-
-\begin{list2}
-\item This mapping is used in your operating system, keep a dynamic ARP/neighbor cache -- a table
-\item Switches map devices to ports -- tables
-\item Routers remember your IP, so it can send responses back -- tables
-\item A table has a maximum size! This can cause problems {\myalert}
-\item This is all done without ANY security -- you can lie, attackers can lie
-\item See ARP spoofing and a sample tool \link{https://en.wikipedia.org/wiki/ARP_spoofing} \\
-and \link{https://en.wikipedia.org/wiki/DSniff}
-\end{list2}
-
-
-\slide{IPv6 addressing RFC-4291}
-
-\begin{list1}
-\item Addresses are always 128-bit identifiers for interfaces and sets of
-   interfaces
-\item Unicast:   An identifier for a {\bf single interface}.\\
-A packet sent to a
-               unicast address is delivered to the interface identified
-               by that address.
-\item Anycast:   An identifier for a {\bf set of interfaces} (typically
-               belonging to different nodes).\\  A packet sent to an
-               anycast address is {\bf delivered to one} of the interfaces
-               identified by that address (the "nearest" one, according
-               to the routing protocols' measure of distance).
-
-\item Multicast: An identifier for a {\bf set of interfaces} (typically
-               belonging to different nodes). \\ A packet sent to a
-               multicast address is {\bf delivered to all interfaces
-               identified by that address}.
-\end{list1}
-
-\slide{IPv6 addressing RFC-4291, cont.}
-
-\hlkimage{22cm}{ipv6-address-1.pdf}
-
-\begin{list1}
-\item 8 times 4 hex-digits seperated by colon x:x:x:x:x:x:x:x
-\item Written as ipv6-address/prefix-length CIDR notation
-\item Leading zeros can be removed
-\item One or more groups of 16 bits of zeros can be replaced by ::
-\end{list1}
-
-
-\slide{Examples:}
-\begin{list2}
-\item ABCD:EF01:2345:6789:ABCD:EF01:2345:6789
-
-\item Adddress 2001:DB8:0:0:8:800:200C:417A
-\item Address of loopback ::1
-\item IPv6 prefix 2a02:09d0:95::1/64, subnet 2a02:09d0:0095:0000::/64
-\item Address 2a02:09d0:95::1 or 2a02:09d0:0095:0000:0000:0000:0000:0001
-\end{list2}
-
-
-
-\slide{IPv6 address - special prefixes }
-
-\begin{list2}
-\item link-local unicast addresses\\
-fe80::/10 generated from the interface MAC address EUI-64
-\item FEC0::/10 site-local - deprecated in RFC-3879
-
-\item 2001:0DB8::/32 NON-ROUTABLE range to be used for documentation purpose RFC-3849.
-
-\item FC00::/7 Unique Local IPv6 Unicast Addresses RFC-4193\\
-\link{http://www.simpledns.com/private-ipv6.aspx}\\
-If you do not like to put public addresses on internal network - use this instead
-\end{list2}
-
-
-
-\slide{Hello neighbors}
-
-\begin{alltt}\small
-$ ping6 -w -I en1 ff02::1
-PING6(72=40+8+24 bytes) fe80::223:6cff:fe9a:f52c%en1 --> ff02::1
-30 bytes from fe80::223:6cff:fe9a:f52c%en1: bigfoot
-36 bytes from fe80::216:cbff:feac:1d9f%en1: mike.kramse.dk.
-38 bytes from fe80::200:aaff:feab:9f06%en1: xrx0000aaab9f06
-34 bytes from fe80::20d:93ff:fe4d:55fe%en1: harry.local
-36 bytes from fe80::200:24ff:fec8:b24c%en1: kris.kramse.dk.
-31 bytes from fe80::21b:63ff:fef5:38df%en1: airport5
-32 bytes from fe80::216:cbff:fec4:403a%en1: main-base
-44 bytes from fe80::217:f2ff:fee4:2156%en1: Base Station Koekken
-35 bytes from fe80::21e:c2ff:feac:cd17%en1: arnold.local
-\end{alltt}
-
-
-\slide{IPv6 autoconfiguration}
-
-\hlkimage{24cm}{modified-eui64.pdf}
-
-\begin{list1}
-\item DHCPv6 is available, but {\bfseries stateless autoconfiguration} is king
-\item Routers announce subnet prefix via {\bfseries router advertisements}
-\item Individual nodes then combine this with their EUI64 identifier
-\end{list1}
-
-%\link{http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_7-2/ipv6_autoconfig.html}
-
-\slide{Router Advertisement ICMPv6}
-
-\hlkimage{10cm}{ipv6-router-advertisement.png}
-
-
-\exercise{ex:ping}
-\exercise{ex:basic-dns-lookup}
-\exercise{ex:whois}
-\exercise{ex:ip-address-research}
 
 \slide{Defense in depth}
 

@@ -548,6 +548,30 @@ ISP gives external public IP \verb+203.0.113.0/29+ and \verb+2001:db8:100::/48+,
   \end{list2}
 
 
+\slide{Hosting and internet providers}
+
+\hlkimage{16cm}{network-bgp-asn.png}
+
+\begin{list2}
+\item BGP networks are used for all of the Internet
+\item New standards like Resource Public Key Infrastructure (RPKI) are underway
+\item Try RIPE BGPlay \url{https://stat.ripe.net/special/bgplay#bgplay_fetch.resource=185.129.60.1}
+\end{list2}
+
+
+\slide{Routing Basics: Prefixes, AS and BGP}
+
+\begin{list2}
+\item {\bf Prefix} -- a block of addresses, like 192.0.2.0/24 or 2001:db8:1234::/48
+\item {\bf Autonomous System (AS)} -- a network under one routing policy, identified by an AS number (ASN) registered at an RIR such as RIPE NCC
+\item {\bf BGP} -- Border Gateway Protocol, how autonomous systems tell each other which prefixes they can reach
+\item {\bf RPKI and ROA} -- signed statements of which AS may originate a prefix, prefixes without a valid ROA are filtered by many networks
+\item {\bf Upstream / transit} -- the provider that announces your prefixes to the rest of the internet
+\item {\bf Smallest routable prefix} -- normally /24 for IPv4 and /48 for IPv6
+\item Using your own PI addresses requires an ASN, a BGP session and an upstream willing to announce them -- usually a business connection.
+\item Exception: Netnørden offers BGP on private connections \link{https://netnoerden.dk/faq}
+\end{list2}
+
 
 \slide{DHCP Dynamic Host Configuration Protocol}
 
@@ -560,9 +584,6 @@ DHCP is responsible for giving you a dynamic address
 \item System sends a DHCP request, server allocates an address \emph{lease}
 \item IPv6 typically uses Router Advertisement -- get prefix, configure their own IPv6 address
 \end{list1}
-
-
-\slide{Filtering here}
 
 
 \slide{Packets across the wire or wireless}
@@ -671,44 +692,6 @@ Connection-oriented \url{https://en.wikipedia.org/wiki/Transmission_Control_Prot
 \end{list1}
 
 
-\slide{Session 1: More Security and Wi-Fi security}
-
-
-
-
-
-\slide{Session 2: Digging into some examples of progams that help}
-
-\slide{The basic tools for countering threats}
-
-{\Large Knowledge and insight}
-\begin{list2}
-\item Networks have end-points and conversations on multiple layers
-\item Wireshark is advanced, try right-clicking different places
-\item Name resolution includes low level MAC addresses, and IP - names
-\end{list2}
-
-\begin{list2}
-\item Tcpdump format, built-in to many network devices
-\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
-\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
- \link{https://en.wikipedia.org/wiki/Tcpdump}
-\end{list2}
-
-\vskip 5mm
-
-\centerline{\Large Great network security comes from knowing networks!}
-
-
-\slide{Metadata -- enrichment}
-
-\hlkimage{10cm}{crafting-security-playbook-metadata.png}
-
-Source: picture from Crafting the InfoSec Playbook, CIP
-
-Metadata + Context
-
-
 
 \slide{Defense in depth}
 
@@ -716,34 +699,6 @@ Metadata + Context
 \hlkimage{15cm}{medieval-clipart-5}
 \centerline{Picture originally from: \url{http://karenswhimsy.com/public-domain-images}}
 
-
-\slide{Intrusion Kill Chains}
-
-\hlkimage{13cm}{crafting-cip-kill-chain.png}
-
-\begin{list2}
-\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
- \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
-\end{list2}
-
-
-\slide{The Spamhaus Don't Route Or Peer Lists}
-
-\begin{quote}
-The Spamhaus Don't Route Or Peer Lists
-
-DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
-\end{quote}
-
-\link{http://www.spamhaus.org/drop/}
-
-
-\begin{list2}
-\item When your SIEM alerts you, you need tools to block and restrict
-\item Recommend adding empty blocking access control lists etc. to your network infrastructure
-\item Add premade blocking to your name servers, proxy servers, recursive servers
-\item Recommend implementing country lists
-\end{list2}
 
 
 \slide{Back in the day: Firewalls and Internet Security, 1994}
@@ -806,6 +761,16 @@ to do network security monitoring!
 They are all firewalls -- or firewall devices!
 
 
+
+\slide{Firewalls}
+
+\hlkimage{8cm}{opal-luci-firewall-easy.png}
+
+\begin{list2}
+\item Firewalls are a great project to look into, there are so many \smiley
+\item I recommend looking into open source firewalls like OPNsense, UFW and OpenBSD and many routers also include firewalls. You can often find images from commercial vendors, that you can try out.
+\item Picture is from GL-Inet router Opal with OpenWRT/LuCI which is router software for smaller routers
+\end{list2}
 
 
 \slide{Modern Firewall Infrastructures}
@@ -943,6 +908,18 @@ Status: active
 \item Extremely easy to use -- I recommend and use the (Uncomplicated Firewall) UFW
 \end{list2}
 
+\slide{Cilium overview}
+
+\hlkimage{12cm}{cilium-overview.png}
+
+\begin{quote}
+Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
+\end{quote}
+Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
+
+\slide{Kubernetes setup only VPN access to Nextcloud}
+\hlkimage{13cm}{zencurity-k8s-netvaerk.png}
+I do not use all Nextcloud features, so it is only reachable through WireGuard VPN
 
 
 \slide{Firewalls are NOT Alone}
@@ -950,6 +927,96 @@ Status: active
 \hlkimage{15cm}{network-layers-1.png}
 
 \centerline{Use Defense in Depth -- all layers have features}
+
+
+
+\slide{NGINX as a Reverse Proxy}
+
+\hlkimage{15cm}{nginx_reverse_proxy.png}
+\begin{list2}
+\item A reverse proxy sits in front of backend servers, accepting client requests and forwarding them internally
+\item NGINX uses the \verb+proxy_pass+ directive to route traffic to upstream services by hostname or IP
+\item Can provide TLS termination, load balancing, caching, and request buffering at the edge\\
+A single system with NGINX get certificates with Let's Encrypt (or alternatives)
+\end{list2}
+
+% \link{https://en.wikipedia.org/wiki/Reverse_proxy}
+
+\slide{Proxy servers and Web Application Firewalls (WAF)}
+
+Filtering at higher layers is also possible
+\begin{list2}
+\item Web proxies for clients can help security a lot -- a centralized filter for everyone
+
+\item Reverse proxies for web applications are called
+Web Application Firewalls (WAF) -- and filter incoming web requests, and outgoing answers. Can help with attacks like SQL injection and exfiltration of data
+\item Depending on your network it can replace or be combined with filtering on DNS servers, and I would prefer to filter domains with DNS
+\item I would also prefer blocking large prefixes of IP destinations using routers/stateless packet filters -- maybe use BGP for distributing \emph{lists} or automation for downloading block lists
+\end{list2}
+
+Also great home lab projects!
+
+\slide{CrowdSec -- Crowd sourced security information}
+
+%\hlkimage{}{}
+
+\begin{quote}
+{\bf Detect and block Log4j exploitation attempts with CrowdSec}\\
+If you work in Infosec, you had a very lousy weekend. And that’s because of the Log4j zero-day vulnerability (CVE-2021-44228) that was discovered. We had no cho
+ice but to roll up our sleeves to help our community before things got messier than they already were.
+
+As a result, we have released a scenario that will help you detect and block exploitation attempts of the vulnerability. This new scenario can be directly downl
+oaded from our Hub and installed in a blink of an eye. Check this quick video to see the plugin in action:
+\end{quote}
+
+\url{https://www.crowdsec.net/blog/detect-block-log4j-exploitation-attempts}
+
+
+\begin{list2}
+\item Log4j is a popular software library in the Java world
+\item CrowdSec quickly provided a list of systems scanning the internet for this vulnerability\\
+ \link{https://gist.github.com/blotus/f87ed46718bfdc634c9081110d243166}
+\item Full disclosure they gave me a hoodie at an event \smiley
+\end{list2}
+
+\slide{CrowdSec with NGINX}
+
+%\hlkimage{8cm}{crowdsec_nginx.png}
+
+\begin{list2}
+\item {\bf CrowdSec} is an open-source, community-driven security engine -- the llama company \link{https://crowdsec.net}
+\item {\bf NGINX Bouncer} -- a Lua plugin enforcing ban decisions in real time via \verb+access_by_lua_block+,
+blocking malicious IPs before requests reach the backend
+\item {\bf Security Engine} -- reads NGINX logs and detects behavioural patterns: HTTP probing,
+scanning, brute force, and matches against the community blocklist
+\item {\bf AppSec/WAF component} -- inline virtual patching, SQLi, XSS, and known CVE protection;
+install with:
+\verb+cscli collections install crowdsecurity/appsec-virtual-patching+
+\item {\bf Community Blocklist} -- crowd-sourced IP reputation feed, continuously updated from
+millions of sensors worldwide; free tier available
+\item Two complementary modes: reactive (log-based, bans offenders) and
+inline (WAF, blocks the request before it is processed)
+\end{list2}
+Source: Docs: \link{https://docs.crowdsec.net/u/bouncers/nginx/}
+
+
+\slide{The OWASP Core Rule Set for WAF}
+
+\begin{list2}
+\item {\bf OWASP Core Rule Set (CRS)} -- the standard open source rules, protects against SQL injection, XSS, remote code execution and other common attacks \link{https://coreruleset.org}
+\item CRS uses {\bf anomaly scoring} -- each matching rule adds points, the request is blocked when the total passes a threshold. {\bf Paranoia levels} 1--4 -- higher levels catch more attacks, but also block more legitimate traffic, start at level 1
+\item Expect tuning: false positives are normal, run in detection-only mode first and read the logs
+\item {\bf ModSecurity} -- open source Web Application Firewall engine, inspects each HTTP request and response against rules. Works with Apache, NGINX and IIS, version 3 (libmodsecurity) uses a connector module for NGINX
+\item Trustwave ended support in July 2024, ModSecurity is now an OWASP project\\
+\link{https://owasp.org/www-project-modsecurity/}
+\item {\bf Coraza} -- newer OWASP WAF engine written in Go, first stable release 2021, fully compatible with CRS v4\\
+\link{https://coraza.io}
+
+\end{list2}
+
+
+
+
 
 \slide{First or Last match firewall?}
 
@@ -990,64 +1057,8 @@ pass in on $ext_if proto \{ tcp, udp \} to ($ext_if) port domain keep state
 \end{alltt}
 
 This is also a default deny, all packets incoming are maked as block, so unless they are allowed by a later rule -- thrown away
-\slide{Together with Firewalls - Virtual LAN (VLAN)}
 
-\hlkimage{8cm}{vlan-portbased.pdf}
-
-\begin{list1}
-\item Managed switches often allow splitting into zones called virtual LANs
-\item Most simple version is port based
-\item Like putting ports 1-4 into one LAN and remaining in another LAN
-\item Packets must traverse a router or firewall to cross between VLANs
-\end{list1}
-
-\slide{Virtual LAN (VLAN) IEEE 802.1q}
-
-\hlkimage{16cm}{vlan-8021q.pdf}
-
-\begin{list1}
-\item Using IEEE 802.1q  VLAN tagging on Ethernet frames
-\item Virtual LAN, to pass from one to another, must use a router/firewall
-\item Allows separation/segmentation and protects traffic from many security issues
-\end{list1}
-
-
-\slide{Cilium overview}
-
-\hlkimage{12cm}{cilium-overview.png}
-
-\begin{quote}
-Kubernetes provides Network Policies for controlling traffic going in and out of the pods. Cilium implements the Kubernetes Network Policies for L3/L4 level and extends with L7 policies for granular API-level security for common protocols such as HTTP, Kafka, gRPC, etc
-\end{quote}
-Source: picture and text from \link{https://cilium.io/blog/2018/09/19/kubernetes-network-policies/}
-
-
-
-\exercise{ex:debian-firewall}
-%\exercise{ex:git-tutorial}
-
-
-\slide{Wireshark - graphical network sniffer}
-
-\hlkimage{13cm}{images/wireshark-http.png}
-
-\centerline{Capture - Options, select a network interface}
-\centerline{\link{http://www.wireshark.org}}
-
-
-\slide{Your Privacy }
-
-\hlkimage{18cm}{images/internet-browsing.pdf}
-
-\begin{list2}
-\item Your data travels far
-\item Often crossing borders, virtually and literally
-\end{list2}
-
-
-
-\exercise{ex:wireshark-install}
-\exercise{ex:nping-tcp}
+\slide{Session 1: More Security and Wi-Fi security}
 
 
 \slide{Wi-Fi Introduction and Security}
@@ -1261,9 +1272,128 @@ Source: \link{https://wpa3.mathyvanhoef.com/}
 
 
 
+\slide{Session 2: Digging into some examples of progams that help}
+
+
+
+\slide{Intrusion Kill Chains}
+
+\hlkimage{13cm}{crafting-cip-kill-chain.png}
+
+\begin{list2}
+\item See also \emph{Intelligence-Driven Computer Network Defense Informed by Analysis of Adversary Campaigns and Intrusion Kill Chains}, Eric M. Hutchins , Michael J. Cloppert, Rohan M. Amin, Ph.D. Lockheed Martin Corporation\\{\footnotesize
+ \link{https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/LM-White-Paper-Intel-Driven-Defense.pdf}}
+\end{list2}
+
+
+
+
+\slide{Metadata -- enrichment}
+
+\hlkimage{10cm}{crafting-security-playbook-metadata.png}
+
+Source: picture from Crafting the InfoSec Playbook, CIP
+
+Metadata + Context
+
+
+\slide{The Spamhaus Don't Route Or Peer Lists}
+
+\begin{quote}
+The Spamhaus Don't Route Or Peer Lists
+
+DROP (Don't Route Or Peer) and EDROP are advisory "drop all traffic" lists, consisting of stolen 'hijacked' netblocks and netblocks controlled entirely by criminals and professional spammers. DROP and EDROP are a tiny subset of the SBL designed for use by firewalls and routing equipment.
+\end{quote}
+
+\link{http://www.spamhaus.org/drop/}
+
+
+\begin{list2}
+\item When your SIEM alerts you, you need tools to block and restrict
+\item Recommend adding empty blocking access control lists etc. to your network infrastructure
+\item Add premade blocking to your name servers, proxy servers, recursive servers
+\item Recommend implementing country lists
+\end{list2}
+
+
+
+\slide{The basic tools for countering threats}
+
+{\Large Knowledge and insight}
+\begin{list2}
+\item Networks have end-points and conversations on multiple layers
+\item Wireshark is advanced, try right-clicking different places
+\item Name resolution includes low level MAC addresses, and IP - names
+\end{list2}
+
+\begin{list2}
+\item Tcpdump format, built-in to many network devices
+\item Remote packet dumps, like \verb+tcpdump –i eth0 –w packets.pcap+
+\item Story: tcpdump was originally written in 1988 by Van Jacobson, Sally Floyd, Vern Paxson and Steven McCanne who were, at the time, working in the Lawrence Berkeley Laboratory Network Research Group\\
+ \link{https://en.wikipedia.org/wiki/Tcpdump}
+\end{list2}
+
+\vskip 5mm
+
+\centerline{\Large Great network security comes from knowing networks!}
+
+
+
+\slide{Wireshark - graphical network sniffer}
+
+\hlkimage{13cm}{images/wireshark-http.png}
+
+\centerline{Capture - Options, select a network interface}
+\centerline{\link{http://www.wireshark.org}}
+
+
+
+\slide{Architecture for packet capture}
+
+\hlkimage{5cm}{network-horiz-onion.png}
+Source: picture from \link{https://docs.securityonion.net/en/2.3/introduction.html}
+
+\begin{list2}
+\item Note the terminology North-South -- from the internet into the systems
+\item East-West -- horizontal traffic inside the data center
+\item See also from Security Onion \url{https://docs.securityonion.net/en/2.3/architecture.html#architecture}
+\end{list2}
+
+
+
+\slide{The Zeek Network Security Monitor}
+
+\hlkimage{13cm}{zeek-overview.png}
+
+The Zeek Network Security Monitor is not a single tool, more of a
+powerful network analysis framework. Note: the project was renamed from Bro to Zeek in Oct 2018
+
+{\small Source \url{https://www.zeek.org/}}
+
+
+\slide{Suricata IDS/IPS/NSM}
+
+\hlkimage{6cm}{suricata.png}
+
+\begin{quote}
+Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
+\end{quote}
+
+ \link{http://suricata-ids.org/}
+ \link{http://openinfosecfoundation.org}
+
+\centerline{I often use Suricata and Zeek together}
+
+Recommend the Emergning Threats ruleset, open source, or commercial license\\
+\url{https://rules.emergingthreatspro.com/OPEN_download_instructions.html}
+
+
+
 \slide{Basic port scanning}
 
-\begin{list1}
+Testing your TCP/IP networks, map them!
+
+\begin{list2}
 \item What is a port scan
 \item Testing all values possible for port number from 0/1 to 65535
 \item Goal is to identify open ports, listening and vulnerable services
@@ -1272,8 +1402,7 @@ Source: \link{https://wpa3.mathyvanhoef.com/}
 \item TCP handshake must respond with SYN-ACK packets
 \item UDP applications respond differently -- if they even respond\\
 so probes with real requests may get response, no firewall they respond withb ICMP on closed ports
-\item Use the GUI program Zenmap while learning Nmap
-\end{list1}
+\end{list2}
 
 \slide{TCP three-way handshake}
 
@@ -1424,58 +1553,6 @@ Please report any incorrect results at http://nmap.org/submit/
 %Pictured a small white and black dog playing with a toy porcupine
 \myquestionspage
 
-
-
-\slide{Advanced Subjects}
-
-Below are some pointers to very advanced tools.
-
-They are listed here as a next step from doing manual tcpdump and Wireshark packet capture.
-
-The tools also allow you to continuously monitor a network easily.
-
-\begin{list2}
-\item Zeek
-\item Suricata
-\end{list2}
-
-That said, they are also great learning tools -- start from a packet capture files, decode it, get an overview and read about it.
-
-\slide{Architecture for packet capture}
-
-\hlkimage{4cm}{network-horiz-onion.png}
-Source: picture from \link{https://docs.securityonion.net/en/2.3/introduction.html}
-
-\begin{list2}
-\item Note the terminology North-South -- from the internet into the systems
-\item East-West -- horizontal traffic inside the data center
-\item See also from Security Onion \url{https://docs.securityonion.net/en/2.3/architecture.html#architecture}
-\end{list2}
-
-
-
-\slide{The Zeek Network Security Monitor}
-
-\hlkimage{13cm}{zeek-overview.png}
-
-The Zeek Network Security Monitor is not a single tool, more of a
-powerful network analysis framework. Note: the project was renamed from Bro to Zeek in Oct 2018
-
-{\small Source \url{https://www.zeek.org/}}
-
-
-\slide{Suricata IDS/IPS/NSM}
-
-\hlkimage{6cm}{suricata.png}
-
-\begin{quote}
-Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine. Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF and its supporting vendors.
-\end{quote}
-
- \link{http://suricata-ids.org/}
- \link{http://openinfosecfoundation.org}
-
-\centerline{I often use Suricata and Zeek together}
 
 
 

